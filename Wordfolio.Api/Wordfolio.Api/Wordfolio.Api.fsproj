@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Wordfolio.ServiceDefaults\Wordfolio.ServiceDefaults.fsproj" />
+    <ProjectReference Include="..\..\Wordfolio.ServiceDefaults\Wordfolio.ServiceDefaults.fsproj" />
   </ItemGroup>
 
 </Project>

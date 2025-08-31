@@ -2,9 +2,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wordfolio.AppHost", "Wordfolio.AppHost\Wordfolio.AppHost.csproj", "{1F48FDE7-1257-4F0F-925E-A836F990FBAD}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Wordfolio.Api", "Wordfolio.Api\Wordfolio.Api.fsproj", "{88BA765D-8081-4801-B410-B2435FBB5638}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Wordfolio.Api", "Wordfolio.Api\Wordfolio.Api\Wordfolio.Api.fsproj", "{88BA765D-8081-4801-B410-B2435FBB5638}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Wordfolio.ServiceDefaults", "Wordfolio.ServiceDefaults\Wordfolio.ServiceDefaults.fsproj", "{959EBEDA-349A-482B-92C8-F11D605AFF91}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Wordfolio.Api", "Wordfolio.Api", "{4EF4DA0E-5E0F-4F24-B988-73BD9CE59E80}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +26,8 @@ Global
 		{959EBEDA-349A-482B-92C8-F11D605AFF91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{959EBEDA-349A-482B-92C8-F11D605AFF91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{959EBEDA-349A-482B-92C8-F11D605AFF91}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{88BA765D-8081-4801-B410-B2435FBB5638} = {4EF4DA0E-5E0F-4F24-B988-73BD9CE59E80}
 	EndGlobalSection
 EndGlobal
