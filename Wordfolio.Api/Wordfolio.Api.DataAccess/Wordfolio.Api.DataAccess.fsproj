@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Npgsql" Version="9.4.1" />
+    <PackageReference Include="Dapper.FSharp" Version="4.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Dapper.fs" />
+    <Compile Include="Database.fs" />
+    <Compile Include="Schema.fs" />
+    <Compile Include="Users.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Wordfolio.Common\Wordfolio.Common.fsproj" />
+  </ItemGroup>
+
+</Project>

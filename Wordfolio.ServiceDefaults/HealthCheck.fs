@@ -11,13 +11,13 @@ let internal LiveTag = "live"
 
 let mapHealthChecks (app: WebApplication) =
     if app.Environment.IsDevelopment() then
-        app.MapHealthChecks(HealthEndpointPath)
+        app.MapHealthChecks(HealthEndpointPath).AllowAnonymous()
         |> ignore
 
         app.MapHealthChecks(
             AlivenessEndpointPath,
             HealthCheckOptions(Predicate = _.Tags.Contains(LiveTag))
-        )
+        ).AllowAnonymous()
         |> ignore
 
     app

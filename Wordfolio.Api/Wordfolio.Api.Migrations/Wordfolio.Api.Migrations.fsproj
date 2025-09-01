@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Constants.fs" />
+    <Compile Include="20250831001_CreaseWordfolioSchema.fs" />
+    <Compile Include="20250831002_CreateUsersTable.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentMigrator" Version="7.1.0" />
+  </ItemGroup>
+
+</Project>

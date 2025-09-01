@@ -5,11 +5,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="IdentityIntegration.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Wordfolio.ServiceDefaults\Wordfolio.ServiceDefaults.fsproj" />
+    <ProjectReference Include="..\Wordfolio.Api.DataAccess\Wordfolio.Api.DataAccess.fsproj" />
+    <ProjectReference Include="..\Wordfolio.Api.Identity\Wordfolio.Api.Identity.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>
