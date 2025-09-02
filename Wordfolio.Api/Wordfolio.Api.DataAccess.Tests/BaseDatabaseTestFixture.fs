@@ -1,5 +1,6 @@
 ﻿namespace Wordfolio.Api.DataAccess.Tests
 
+open System
 open System.Data
 open System.Data.Common
 open System.Threading
@@ -16,52 +17,81 @@ open Xunit.Sdk
 
 open Wordfolio.Api.Migrations
 
-type BaseDatabaseTestFixture(messageSink: IMessageSink) =
-  inherit DbContainerFixture<PostgreSqlBuilder, PostgreSqlContainer>(messageSink)
+ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
+    inherit DbContainerFixture<PostgreSqlBuilder, PostgreSqlContainer>(messageSink)
 
-  let mutable migrated = false
+    let mutable state: {| Seeder: TestDatabaseSeeder
+                          SeederConnection: DbConnection |} option = None
 
-  override this.Configure (builder: PostgreSqlBuilder): PostgreSqlBuilder =
-      base.Configure(builder).WithImage("postgres:17.5")
+    override this.Configure (builder: PostgreSqlBuilder): PostgreSqlBuilder =
+        base.Configure(builder).WithImage("postgres:17.5")
 
-  override _.DbProviderFactory : DbProviderFactory = NpgsqlFactory.Instance
+    override _.DbProviderFactory: DbProviderFactory = NpgsqlFactory.Instance
 
-  override _.InitializeAsync(): ValueTask =
-      OptionTypes.register()
-      base.InitializeAsync()
+    member private this.CreateSeeder(): TestDatabaseSeeder * DbConnection =
+        let connection = this.CreateConnection()
+        connection.Open()
+        let seeder = DatabaseSeeder.create connection
+        seeder, connection
 
-  member private this.EnsureMigrated() =
-    if not migrated then
-      let connectionString = this.Container.GetConnectionString()
-      let serviceProvider =
-        ServiceCollection()
-          .AddFluentMigratorCore()
-          .ConfigureRunner(fun builder ->
-            builder.AddPostgres()
-                   .WithGlobalConnectionString(connectionString)
-                   .ScanIn(typeof<CreateUsersTable>.Assembly).For.Migrations() |> ignore)
-          .BuildServiceProvider()
-      let scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope()
-      let runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>()
-      runner.MigrateUp()
-      migrated <- true
+    member private this.EnsureMigrated() =
+        let connectionString = this.Container.GetConnectionString()
+        let serviceProvider =
+            ServiceCollection()
+                .AddFluentMigratorCore()
+                .ConfigureRunner(fun builder ->
+                    builder
+                        .AddPostgres()
+                        .WithGlobalConnectionString(connectionString)
+                        .ScanIn(typeof<CreateUsersTable>.Assembly)
+                        .For.Migrations()
+                    |> ignore)
+                .BuildServiceProvider()
+        let scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope()
+        let runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>()
+        runner.MigrateUp()
 
-  member this.WithConnectionAsync
-    (callback: IDbConnection -> IDbTransaction -> CancellationToken -> Task<'a>)
-    : Task<'a> =
-    task {
-      this.EnsureMigrated()
+    member private this.EnsureInitialized() =
+        match state with
+        | None ->
+            this.EnsureMigrated()
+            OptionTypes.register()
+            let seeder, connection = this.CreateSeeder()
+            state <- {| Seeder = seeder
+                        SeederConnection = connection |}
+                      |> Some
+        | Some _ -> ()
 
-      let cancellationToken = TestContext.Current.CancellationToken
+    member this.Seeder with get(): TestDatabaseSeeder =
+        this.EnsureInitialized()
+        match state with
+        | Some s -> s.Seeder
+        | None -> failwith "State is not initialized"
 
-      use connection = this.CreateConnection()
-      connection.Open()
+    member this.WithConnectionAsync
+        (callback: IDbConnection -> IDbTransaction -> CancellationToken -> Task<'a>)
+        : Task<'a> =
+        task {
+            this.EnsureInitialized()
 
-      use transaction = connection.BeginTransaction()
+            let cancellationToken = TestContext.Current.CancellationToken
 
-      let! result = callback connection transaction cancellationToken
+            use connection = this.CreateConnection()
+            connection.Open()
 
-      do! transaction.CommitAsync()
+            use transaction = connection.BeginTransaction()
 
-      return result
-    }
+            let! result = callback connection transaction cancellationToken
+
+            do! transaction.CommitAsync()
+
+            return result
+        }
+
+    interface IDisposable with
+        member this.Dispose (): unit =
+            match state with
+            | None -> ()
+            | Some state ->
+                (state.Seeder :> IDisposable).Dispose()
+                (state.SeederConnection :> IDisposable).Dispose()
