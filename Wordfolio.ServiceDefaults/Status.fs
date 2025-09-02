@@ -15,17 +15,17 @@ type ApplicationStatus =
 [<Literal>]
 let StatusUrl = "/status"
 
-let private getStatus (webHostEnvironment: IWebHostEnvironment) =
-    let assembly = Assembly.GetEntryAssembly().GetName()
+let private getStatus(webHostEnvironment: IWebHostEnvironment) =
+    let assembly =
+        Assembly.GetEntryAssembly().GetName()
 
-    {
-        Application = assembly.Name
-        Version = assembly.Version |> string
-        Environment = webHostEnvironment.EnvironmentName
-    }
+    { Application = assembly.Name
+      Version = assembly.Version |> string
+      Environment = webHostEnvironment.EnvironmentName }
 
-let mapStatusEndpoint (app: WebApplication) =
-    app.MapGet(StatusUrl, Func<IWebHostEnvironment, ApplicationStatus>(getStatus))
+let mapStatusEndpoint(app: WebApplication) =
+    app
+        .MapGet(StatusUrl, Func<IWebHostEnvironment, ApplicationStatus>(getStatus))
         .WithTags([| "Status" |])
     |> ignore
 

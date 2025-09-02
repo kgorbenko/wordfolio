@@ -6,7 +6,7 @@ open System.Threading.Tasks
 
 open Dapper.FSharp.PostgreSQL
 
-let registerTypes () =
+let registerTypes() =
     OptionTypes.register()
     ()
 
@@ -16,6 +16,4 @@ let insertAsync
     (cancellationToken: CancellationToken)
     (insertFunc: InsertQuery<'a>)
     : Task<int> =
-    task {
-        return! connection.InsertAsync(insertFunc, trans = transaction, cancellationToken = cancellationToken)
-    }
+    task { return! connection.InsertAsync(insertFunc, trans = transaction, cancellationToken = cancellationToken) }

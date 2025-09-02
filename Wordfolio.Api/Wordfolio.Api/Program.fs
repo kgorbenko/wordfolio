@@ -42,15 +42,17 @@ let main args =
     |> _.MapGroup("auth").MapIdentityApi<User>().AllowAnonymous()
     |> ignore
 
-    app.MapGet("/weatherforecast", Func<WeatherForecast[]>(fun source ->
-        [1..5]
-        |> Seq.map (fun index ->
-            { Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index))
-              TemperatureC = Random.Shared.Next(-20, 55)
-              Summary = Some "Hot" }
-        )
-        |> Array.ofSeq
-    )) |> ignore
+    app.MapGet(
+        "/weatherforecast",
+        Func<WeatherForecast[]>(fun source ->
+            [ 1..5 ]
+            |> Seq.map(fun index ->
+                { Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index))
+                  TemperatureC = Random.Shared.Next(-20, 55)
+                  Summary = Some "Hot" })
+            |> Array.ofSeq)
+    )
+    |> ignore
 
     app.Run()
 

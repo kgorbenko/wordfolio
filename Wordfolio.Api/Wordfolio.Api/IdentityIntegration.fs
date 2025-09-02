@@ -15,20 +15,26 @@ module DataAccess = Wordfolio.Api.DataAccess.Users
 
 type UserStoreExtension() =
     interface IUserStoreExtension with
-        member _.OnAfterUserCreatedAsync (parameters: UserCreationParameters, connection: IDbConnection, transaction: IDbTransaction, cancellationToken: CancellationToken): Task =
+        member _.OnAfterUserCreatedAsync
+            (
+                parameters: UserCreationParameters,
+                connection: IDbConnection,
+                transaction: IDbTransaction,
+                cancellationToken: CancellationToken
+            ) : Task =
             let dataAccessParameters =
-                { Id = parameters.Id }
-                : DataAccess.UserCreationParameters
+                { Id = parameters.Id }: DataAccess.UserCreationParameters
 
             DataAccess.createUserAsync dataAccessParameters connection transaction cancellationToken
 
-let addIdentity<'TBuilder when 'TBuilder :> IHostApplicationBuilder> (builder: 'TBuilder) =
+let addIdentity<'TBuilder when 'TBuilder :> IHostApplicationBuilder>(builder: 'TBuilder) =
     builder.AddNpgsqlDbContext<IdentityDbContext>("wordfoliodb")
 
     builder.Services.AddScoped<IUserStoreExtension, UserStoreExtension>()
     |> ignore
 
-    builder.Services.AddIdentityCore<User>()
+    builder.Services
+        .AddIdentityCore<User>()
         .AddEntityFrameworkStores<IdentityDbContext>()
         .AddUserStore<UserStore>()
         .AddApiEndpoints()
@@ -36,12 +42,14 @@ let addIdentity<'TBuilder when 'TBuilder :> IHostApplicationBuilder> (builder: '
 
     builder
 
-let addAuthentication<'TBuilder when 'TBuilder :> IHostApplicationBuilder> (builder: 'TBuilder) =
-    builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme)
+let addAuthentication<'TBuilder when 'TBuilder :> IHostApplicationBuilder>(builder: 'TBuilder) =
+    builder.Services
+        .AddAuthentication()
+        .AddBearerToken(IdentityConstants.BearerScheme)
     |> ignore
 
     builder.Services.AddAuthorization(fun options ->
-        options.FallbackPolicy <- AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()
-    ) |> ignore
+        options.FallbackPolicy <- AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
+    |> ignore
 
     builder
