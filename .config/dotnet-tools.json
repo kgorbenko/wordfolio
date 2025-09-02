@@ -1,4 +1,4 @@
-{
+﻿{
   "version": 1,
   "isRoot": true,
   "tools": {
@@ -15,6 +15,12 @@
         "dotnet-ef"
       ],
       "rollForward": false
+    },
+    "fantomas": {
+      "version": "6.2.3",
+      "commands": [
+        "fantomas"
+      ]
     }
   }
 }
