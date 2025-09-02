@@ -2,8 +2,8 @@ namespace Wordfolio.Api.DataAccess.Tests
 
 open System
 open System.Data.Common
-
 open System.Threading.Tasks
+
 open Microsoft.EntityFrameworkCore
 
 open Wordfolio.Api.DataAccess

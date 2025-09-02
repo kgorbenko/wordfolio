@@ -1,13 +1,15 @@
 namespace Wordfolio.Api.DataAccess.Tests
 
-open System
 open System.Threading.Tasks
+
 open Npgsql
 open Xunit
 
 open Wordfolio.Api.DataAccess
 
 type UsersTests(fixture: BaseDatabaseTestFixture) =
+    let UniqueViolationErrorCode = "23505"
+
     interface IClassFixture<BaseDatabaseTestFixture>
 
     [<Fact>]
@@ -39,5 +41,5 @@ type UsersTests(fixture: BaseDatabaseTestFixture) =
                     :> Task)
                 )
 
-            Assert.Equal("23505", ex.SqlState)
+            Assert.Equal(UniqueViolationErrorCode, ex.SqlState)
         }
