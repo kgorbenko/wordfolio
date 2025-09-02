@@ -10,7 +10,7 @@ open Wordfolio.Api.DataAccess.Tests
 [<CLIMutable>]
 type RegisterRequest = { Email: string; Password: string }
 
-type RegisterTests(fixture: FunctionalTestFixture) =
+type AuthTests(fixture: FunctionalTestFixture) =
     interface IClassFixture<FunctionalTestFixture>
 
     [<Fact>]
@@ -33,8 +33,11 @@ type RegisterTests(fixture: FunctionalTestFixture) =
             let! actualWordfolioUsers = DatabaseSeeder.getAllUsersAsync fixture.WordfolioSeeder
             let! actualIdentityUsers = IdentityDatabaseSeeder.getAllUsersAsync fixture.IdentitySeeder
 
-            let wordfolioUser = Assert.Single(actualWordfolioUsers)
-            let identityUser = Assert.Single(actualIdentityUsers)
+            let wordfolioUser =
+                Assert.Single(actualWordfolioUsers)
+
+            let identityUser =
+                Assert.Single(actualIdentityUsers)
 
             Assert.Equal(request.Email, identityUser.Email)
             Assert.Equal(wordfolioUser.Id, identityUser.Id)
