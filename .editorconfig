@@ -1,0 +1,43 @@
+﻿root = true
+
+[*.fs]
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+insert_final_newline = true
+charset = utf-8
+
+# Microsoft recommended F# formatting rules
+fsharp_max_line_length = 120
+fsharp_multiline_brace_style = stroustrup
+fsharp_experimental_stroustrup_style = true
+fsharp_experimental_elastic_elided_spaces = true
+fsharp_space_before_parameter = false
+fsharp_space_before_lowercase_invocation = false
+fsharp_space_before_semicolon = false
+fsharp_space_after_comma = true
+fsharp_space_before_class_constructor = false
+fsharp_keep_max_number_of_blank_lines = 1
+fsharp_newline_between_type_and_members = true
+fsharp_align_function_signature_to_indentation = false
+fsharp_align_on_equal_with_double_colon = false
+fsharp_align_on_pipe = false
+fsharp_bar_before_discriminated_union_declaration = true
+fsharp_keep_indent_in_branch = false
+fsharp_max_if_then_else_short_width = 40
+fsharp_max_infix_operator_expression = 40
+fsharp_max_record_width = 40
+fsharp_max_value_binding_width = 40
+fsharp_multiline_block_brackets_on_same_column = true
+fsharp_multiline_function_brackets_on_same_column = true
+fsharp_newline_on_open_brace = false
+fsharp_newline_on_open_bracket = false
+fsharp_newline_on_open_paren = false
+fsharp_space_after_semicolon = true
+fsharp_space_before_argument = false
+fsharp_space_before_colon = false
+fsharp_space_before_generic_arguments = false
+fsharp_space_before_uppercase_invocation = false
+fsharp_space_inside_brackets = false
+fsharp_space_inside_parenthesis = false
+fsharp_space_inside_record_braces = true
