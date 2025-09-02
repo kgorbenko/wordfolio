@@ -5,6 +5,7 @@ open System.Data.Common
 open System.Threading
 open System.Threading.Tasks
 
+open Dapper.FSharp.PostgreSQL
 open FluentMigrator.Runner
 open Microsoft.Extensions.DependencyInjection
 open Npgsql
@@ -20,7 +21,14 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
 
   let mutable migrated = false
 
+  override this.Configure (builder: PostgreSqlBuilder): PostgreSqlBuilder =
+      base.Configure(builder).WithImage("postgres:17.5")
+
   override _.DbProviderFactory : DbProviderFactory = NpgsqlFactory.Instance
+
+  override _.InitializeAsync(): ValueTask =
+      OptionTypes.register()
+      base.InitializeAsync()
 
   member private this.EnsureMigrated() =
     if not migrated then

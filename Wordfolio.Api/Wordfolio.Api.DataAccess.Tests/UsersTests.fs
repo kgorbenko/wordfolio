@@ -1,12 +1,5 @@
 namespace Wordfolio.Api.DataAccess.Tests
 
-open System.Data
-open System.Data.Common
-open System.Linq
-open System.Threading
-
-open Dapper.FSharp.PostgreSQL
-open Microsoft.EntityFrameworkCore
 open Xunit
 
 open Wordfolio.Api.DataAccess
@@ -16,14 +9,19 @@ open Wordfolio.Api.DataAccess
 
   [<Fact>]
   member _.``createUserAsync inserts a row`` () =
-    fixture.WithConnectionAsync(fun (connection: IDbConnection) (transaction: IDbTransaction) (cancellationToken: CancellationToken) -> task {
-      OptionTypes.register()
-      do! Users.createUserAsync { Users.UserCreationParameters.Id = 123 } connection transaction cancellationToken
+      task {
+          use connection = fixture.CreateConnection()
 
-      use context: TestDbContext = createContext (connection :?> DbConnection)
+          do!
+              Users.createUserAsync { Users.UserCreationParameters.Id = 123 }
+              |> fixture.WithConnectionAsync
 
-      let! count =
-        context.Users.Where(fun u -> u.Id = 123).CountAsync(cancellationToken)
+          use seeder = DatabaseSeeder.create connection
 
-      Assert.Equal(1, count)
-    })
+          let! actual = seeder |> DatabaseSeeder.getAllUsersAsync
+
+          let expected: UserEntity list =
+              [ { Id = 123 } ]
+
+          Assert.Equivalent(expected, actual)
+      }

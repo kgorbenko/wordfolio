@@ -30,7 +30,7 @@
 
   <ItemGroup>
     <Compile Include="BaseDatabaseTestFixture.fs" />
-    <Compile Include="EfTestSupport.fs" />
+    <Compile Include="DatabaseSeeder.fs" />
     <Compile Include="UsersTests.fs" />
   </ItemGroup>
 
