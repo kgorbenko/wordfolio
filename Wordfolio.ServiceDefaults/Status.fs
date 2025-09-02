@@ -26,6 +26,7 @@ let private getStatus(webHostEnvironment: IWebHostEnvironment) =
 let mapStatusEndpoint(app: WebApplication) =
     app
         .MapGet(StatusUrl, Func<IWebHostEnvironment, ApplicationStatus>(getStatus))
+        .AllowAnonymous()
         .WithTags([| "Status" |])
     |> ignore
 
