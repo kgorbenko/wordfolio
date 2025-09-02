@@ -13,13 +13,15 @@ type UsersTests(fixture: BaseDatabaseTestFixture) =
     interface IClassFixture<BaseDatabaseTestFixture>
 
     [<Fact>]
-    member _.``createUserAsync inserts a row`` () =
+    member _.``createUserAsync inserts a row``() =
         task {
             do!
                 Users.createUserAsync { Id = 123 }
                 |> fixture.WithConnectionAsync
 
-            let! actual = fixture.Seeder |> DatabaseSeeder.getAllUsersAsync
+            let! actual =
+                fixture.Seeder
+                |> DatabaseSeeder.getAllUsersAsync
 
             let expected: UserEntity list =
                 [ { Id = 123 } ]
@@ -28,7 +30,7 @@ type UsersTests(fixture: BaseDatabaseTestFixture) =
         }
 
     [<Fact>]
-    member _.``createUserAsync fails on duplicate Id`` () =
+    member _.``createUserAsync fails on duplicate Id``() =
         task {
             do!
                 Users.createUserAsync { Id = 5 }
@@ -37,9 +39,8 @@ type UsersTests(fixture: BaseDatabaseTestFixture) =
             let! ex =
                 Assert.ThrowsAsync<PostgresException>(fun () ->
                     (Users.createUserAsync { Id = 5 }
-                    |> fixture.WithConnectionAsync
-                    :> Task)
-                )
+                     |> fixture.WithConnectionAsync
+                    :> Task))
 
             Assert.Equal(UniqueViolationErrorCode, ex.SqlState)
         }

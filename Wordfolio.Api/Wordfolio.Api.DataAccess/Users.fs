@@ -9,15 +9,13 @@ open Dapper.FSharp.PostgreSQL
 open Wordfolio.Api.DataAccess.Dapper
 open Wordfolio.Common
 
-type User = {
-    Id: int
-}
+type User = { Id: int }
 
-type UserCreationParameters = {
-    Id: int
-}
+type UserCreationParameters = { Id: int }
 
-let usersTable = table'<User> Schema.UsersTable.Name |> inSchema Schema.Name
+let usersTable =
+    table'<User> Schema.UsersTable.Name
+    |> inSchema Schema.Name
 
 let createUserAsync
     (parameters: UserCreationParameters)
@@ -26,7 +24,8 @@ let createUserAsync
     (cancellationToken: CancellationToken)
     : Task<unit> =
     task {
-        let userToInsert: User = { Id = parameters.Id }
+        let userToInsert: User =
+            { Id = parameters.Id }
 
         do!
             insert {
