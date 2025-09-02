@@ -11,7 +11,9 @@ type StatusTests(fixture: FunctionalTestFixture) =
     [<Fact>]
     member _.``Status endpoint``() : Task =
         task {
-            use factory = new WebApplicationFactory(fixture.ConnectionString)
+            use factory =
+                new WebApplicationFactory(fixture.ConnectionString)
+
             use client = factory.CreateClient()
 
             let! response = client.GetAsync("/status")

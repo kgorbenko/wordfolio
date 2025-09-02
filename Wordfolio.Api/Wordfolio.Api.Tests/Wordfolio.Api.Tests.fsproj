@@ -34,6 +34,7 @@
 
   <ItemGroup>
     <Compile Include="WebApplicationFactory.fs" />
+    <Compile Include="TestIdentityDatabaseSeeder.fs" />
     <Compile Include="FunctionalTestFixture.fs" />
     <Compile Include="RegisterTests.fs" />
     <Compile Include="StatusTests.fs" />

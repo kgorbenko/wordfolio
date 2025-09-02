@@ -8,17 +8,17 @@ open Xunit
 open Wordfolio.Api.DataAccess.Tests
 
 [<CLIMutable>]
-type RegisterRequest =
-    { Email: string
-      Password: string }
+type RegisterRequest = { Email: string; Password: string }
 
 type RegisterTests(fixture: FunctionalTestFixture) =
     interface IClassFixture<FunctionalTestFixture>
 
     [<Fact>]
-    member _.``POST /auth/register succeeds and creates a wordfolio user row``() : Task =
+    member _.``POST /auth/register succeeds and creates rows in both schemas``() : Task =
         task {
-            use factory = new WebApplicationFactory(fixture.ConnectionString)
+            use factory =
+                new WebApplicationFactory(fixture.ConnectionString)
+
             use client = factory.CreateClient()
 
             let request: RegisterRequest =
@@ -26,11 +26,16 @@ type RegisterTests(fixture: FunctionalTestFixture) =
                   Password = "P@ssw0rd!" }
 
             let! response = client.PostAsJsonAsync("/auth/register", request)
+            let! body = response.Content.ReadAsStringAsync()
 
-            do response.EnsureSuccessStatusCode() |> ignore
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actualWordfolioUsers = DatabaseSeeder.getAllUsersAsync fixture.Seeder
+            let! actualWordfolioUsers = DatabaseSeeder.getAllUsersAsync fixture.WordfolioSeeder
+            let! actualIdentityUsers = IdentityDatabaseSeeder.getAllUsersAsync fixture.IdentitySeeder
 
-            Assert.Single(actualWordfolioUsers)
-            |> ignore
+            let wordfolioUser = Assert.Single(actualWordfolioUsers)
+            let identityUser = Assert.Single(actualIdentityUsers)
+
+            Assert.Equal(request.Email, identityUser.Email)
+            Assert.Equal(wordfolioUser.Id, identityUser.Id)
         }

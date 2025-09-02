@@ -24,7 +24,8 @@ type FunctionalTestFixture(messageSink: IMessageSink) =
     inherit DbContainerFixture<PostgreSqlBuilder, PostgreSqlContainer>(messageSink)
 
     let mutable state
-        : {| Seeder: TestDatabaseSeeder
+        : {| WordfolioSeeder: TestDatabaseSeeder
+             IdentitySeeder: TestIdentityDatabaseSeeder
              Connection: DbConnection |} option =
         None
 
@@ -65,10 +66,13 @@ type FunctionalTestFixture(messageSink: IMessageSink) =
                     this.ConnectionString,
                     fun o ->
                         o.MigrationsHistoryTable(Constants.MigrationsHistoryTableName, Constants.SchemaName)
-                        |> ignore)
+                        |> ignore
+                )
                 .Options
 
-        use identityContext = new IdentityDbContext(options)
+        use identityContext =
+            new IdentityDbContext(options)
+
         identityContext.Database.Migrate()
 
     member private this.EnsureInitialized() =
@@ -79,13 +83,14 @@ type FunctionalTestFixture(messageSink: IMessageSink) =
             let connection = this.CreateConnection()
             connection.Open()
 
-            state <-
-                {| Seeder = DatabaseSeeder.create connection
-                   Connection = connection |}
-                |> Some
-
             this.MigrateIdentity()
             this.MigrateWordfolio()
+
+            state <-
+                {| WordfolioSeeder = DatabaseSeeder.create connection
+                   IdentitySeeder = IdentityDatabaseSeeder.create connection
+                   Connection = connection |}
+                |> Some
         | Some _ -> ()
 
     override this.InitializeAsync() : ValueTask =
@@ -95,8 +100,11 @@ type FunctionalTestFixture(messageSink: IMessageSink) =
         this.EnsureInitialized()
         ValueTask.CompletedTask
 
-    member this.Seeder: TestDatabaseSeeder =
-        state.Value.Seeder
+    member this.WordfolioSeeder: TestDatabaseSeeder =
+        state.Value.WordfolioSeeder
+
+    member this.IdentitySeeder: TestIdentityDatabaseSeeder =
+        state.Value.IdentitySeeder
 
     member this.WithConnectionAsync
         (callback: IDbConnection -> IDbTransaction -> CancellationToken -> Task<'a>)
@@ -121,5 +129,6 @@ type FunctionalTestFixture(messageSink: IMessageSink) =
             match state with
             | None -> ()
             | Some state ->
-                (state.Seeder :> IDisposable).Dispose()
+                (state.WordfolioSeeder :> IDisposable).Dispose()
+                (state.IdentitySeeder :> IDisposable).Dispose()
                 (state.Connection :> IDisposable).Dispose()
