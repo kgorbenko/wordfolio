@@ -1,10 +1,13 @@
 # Project Guidelines
 
 - Coding guidelines
-  - Prefer short, single-word variable names.
+  - Variable names should be descriptive.
+  - Prefer short variable names, but keep them descriptive.
+  - Avoid abbreviations in variable and type names.
   - Do not write comments.
   - Prefer using `open` statements instead of referencing namespaces explicitly.
   - F#
+    - Use 4 spaces for indentation.
     - Prefer modules and functions, small files grouped by responsibility.
     - Use explicit types for public APIs. Keep pipelines readable.
     - unused `open` statements should be removed.
