@@ -11,6 +11,10 @@ open Wordfolio.ServiceDefaults.HealthCheck
 open Wordfolio.ServiceDefaults.OpenApi
 open Wordfolio.ServiceDefaults.Status
 
+type Program() =
+    class
+    end
+
 type WeatherForecast =
     { Date: DateOnly
       TemperatureC: int
