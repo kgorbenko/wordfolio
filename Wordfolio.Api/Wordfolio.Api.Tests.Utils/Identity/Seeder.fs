@@ -1,4 +1,4 @@
-﻿namespace Wordfolio.Api.Tests.Utils
+﻿namespace Wordfolio.Api.Tests.Utils.Identity
 
 open System
 open System.Data.Common
@@ -10,7 +10,7 @@ open Wordfolio.Api.Identity
 open Wordfolio.Common
 
 [<Sealed>]
-type TestIdentityDatabaseSeeder(context: IdentityDbContext) =
+type IdentitySeeder(context: IdentityDbContext) =
     member _.DbContext = context
 
     interface IDisposable with
@@ -18,8 +18,8 @@ type TestIdentityDatabaseSeeder(context: IdentityDbContext) =
             (this.DbContext :> IDisposable).Dispose()
 
 [<RequireQualifiedAccess>]
-module IdentityDatabaseSeeder =
-    let create(connection: DbConnection) : TestIdentityDatabaseSeeder =
+module Seeder =
+    let create(connection: DbConnection) : IdentitySeeder =
         let builder =
             DbContextOptionsBuilder<IdentityDbContext>()
 
@@ -28,20 +28,20 @@ module IdentityDatabaseSeeder =
         let context =
             new IdentityDbContext(builder.Options)
 
-        new TestIdentityDatabaseSeeder(context)
+        new IdentitySeeder(context)
 
-    let addUsers (users: User list) (seeder: TestIdentityDatabaseSeeder) =
+    let addUsers (users: User list) (seeder: IdentitySeeder) =
         seeder.DbContext.Users.AddRange(users)
         seeder
 
-    let saveChangesAsync(seeder: TestIdentityDatabaseSeeder) =
+    let saveChangesAsync(seeder: IdentitySeeder) =
         task {
             do!
                 seeder.DbContext.SaveChangesAsync()
                 |> Task.ignore
         }
 
-    let getAllUsersAsync(seeder: TestIdentityDatabaseSeeder) : Task<User list> =
+    let getAllUsersAsync(seeder: IdentitySeeder) : Task<User list> =
         task {
             let! users = seeder.DbContext.Users.AsNoTracking().ToArrayAsync()
             return users |> List.ofSeq

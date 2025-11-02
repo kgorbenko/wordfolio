@@ -30,9 +30,9 @@
   <ItemGroup>
     <Compile Include="Wordfolio\Seeder.fs" />
     <Compile Include="Wordfolio\MigrationRunner.fs" />
+    <Compile Include="Identity\Seeder.fs" />
     <Compile Include="BasePostgreSqlFixture.fs" />
     <Compile Include="Migrations.fs" />
-    <Compile Include="TestIdentityDatabaseSeeder.fs" />
   </ItemGroup>
 
 </Project>

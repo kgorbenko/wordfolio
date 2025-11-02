@@ -8,6 +8,7 @@ open Xunit.Sdk
 
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
+open Wordfolio.Api.Tests.Utils.Identity
 
 [<Sealed>]
 type FunctionalTestFixture(messageSink: IMessageSink) =
@@ -15,7 +16,7 @@ type FunctionalTestFixture(messageSink: IMessageSink) =
 
     let mutable state
         : {| WordfolioSeeder: WordfolioSeeder
-             IdentitySeeder: TestIdentityDatabaseSeeder |} option =
+             IdentitySeeder: IdentitySeeder |} option =
         None
 
     override this.RunMigrations() =
@@ -29,8 +30,8 @@ type FunctionalTestFixture(messageSink: IMessageSink) =
 
             state <-
                 Some
-                    {| WordfolioSeeder = Seeder.create connection
-                       IdentitySeeder = IdentityDatabaseSeeder.create connection |}
+                    {| WordfolioSeeder = Wordfolio.Seeder.create connection
+                       IdentitySeeder = Identity.Seeder.create connection |}
         | Some _ -> ()
 
     override this.InitializeAsync() : ValueTask =
@@ -41,7 +42,7 @@ type FunctionalTestFixture(messageSink: IMessageSink) =
     member this.WordfolioSeeder: WordfolioSeeder =
         state.Value.WordfolioSeeder
 
-    member this.IdentitySeeder: TestIdentityDatabaseSeeder =
+    member this.IdentitySeeder: IdentitySeeder =
         state.Value.IdentitySeeder
 
     member this.WithConnectionAsync

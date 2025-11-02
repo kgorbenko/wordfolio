@@ -31,8 +31,8 @@ type AuthTests(fixture: FunctionalTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actualWordfolioUsers = Seeder.getAllUsersAsync fixture.WordfolioSeeder
-            let! actualIdentityUsers = IdentityDatabaseSeeder.getAllUsersAsync fixture.IdentitySeeder
+            let! actualWordfolioUsers = Wordfolio.Seeder.getAllUsersAsync fixture.WordfolioSeeder
+            let! actualIdentityUsers = Identity.Seeder.getAllUsersAsync fixture.IdentitySeeder
 
             let wordfolioUser =
                 Assert.Single(actualWordfolioUsers)
