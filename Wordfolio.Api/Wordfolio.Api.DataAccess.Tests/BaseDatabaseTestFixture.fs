@@ -1,108 +1,50 @@
 ﻿namespace Wordfolio.Api.DataAccess.Tests
 
 open System
-open System.Data
-open System.Data.Common
 open System.Threading
 open System.Threading.Tasks
 
-open Dapper.FSharp.PostgreSQL
 open FluentMigrator.Runner
 open Microsoft.Extensions.DependencyInjection
-open Npgsql
-open Testcontainers.PostgreSql
-open Testcontainers.Xunit
 open Xunit
 open Xunit.Sdk
 
 open Wordfolio.Api.Migrations
+open Wordfolio.Api.Tests.Utils
 
 type BaseDatabaseTestFixture(messageSink: IMessageSink) =
-    inherit DbContainerFixture<PostgreSqlBuilder, PostgreSqlContainer>(messageSink)
+    inherit BasePostgreSqlFixture(messageSink)
 
-    let mutable state
-        : {| Seeder: TestDatabaseSeeder
-             Connection: DbConnection |} option =
+    let mutable state: {| Seeder: TestDatabaseSeeder |} option =
         None
 
-    override this.Configure(builder: PostgreSqlBuilder) : PostgreSqlBuilder =
-        base.Configure(builder).WithImage("postgres:17.5")
-
-    override _.DbProviderFactory: DbProviderFactory =
-        NpgsqlFactory.Instance
-
-    override this.InitializeAsync() : ValueTask =
-        // https://github.com/dotnet/fsharp/issues/2307
-        do base.InitializeAsync().GetAwaiter().GetResult()
-
-        this.EnsureInitialized()
-        ValueTask.CompletedTask
-
-    member private this.EnsureMigrated() =
-        let connectionString =
-            this.Container.GetConnectionString()
-
-        let serviceProvider =
-            ServiceCollection()
-                .AddFluentMigratorCore()
-                .ConfigureRunner(fun builder ->
-                    builder
-                        .AddPostgres()
-                        .WithGlobalConnectionString(connectionString)
-                        .ScanIn(typeof<CreateUsersTable>.Assembly)
-                        .For.Migrations()
-                    |> ignore)
-                .BuildServiceProvider()
-
-        let scope =
-            serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope()
-
-        let runner =
-            scope.ServiceProvider.GetRequiredService<IMigrationRunner>()
-
-        runner.MigrateUp()
+    override this.RunMigrations() =
+        SchemaMigrations.runWordfolioMigrations this.ConnectionString
 
     member private this.EnsureInitialized() =
         match state with
         | None ->
-            OptionTypes.register()
+            let seeder =
+                DatabaseSeeder.create this.Connection
 
-            let connection = this.CreateConnection()
-            connection.Open()
-
-            state <-
-                {| Seeder = DatabaseSeeder.create connection
-                   Connection = connection |}
-                |> Some
-
-            this.EnsureMigrated()
+            state <- Some {| Seeder = seeder |}
         | Some _ -> ()
+
+    override this.InitializeAsync() : ValueTask =
+        do base.InitializeAsync().GetAwaiter().GetResult()
+        this.EnsureInitialized()
+        ValueTask.CompletedTask
 
     member this.Seeder: TestDatabaseSeeder =
         state.Value.Seeder
 
     member this.WithConnectionAsync
-        (callback: IDbConnection -> IDbTransaction -> CancellationToken -> Task<'a>)
+        (callback: System.Data.IDbConnection -> System.Data.IDbTransaction -> CancellationToken -> Task<'a>)
         : Task<'a> =
-        task {
-            let cancellationToken =
-                TestContext.Current.CancellationToken
-
-            let connection = state.Value.Connection
-
-            use transaction =
-                connection.BeginTransaction()
-
-            let! result = callback connection transaction cancellationToken
-            do! transaction.CommitAsync()
-
-            return result
-        }
+        base.WithConnectionAsync callback
 
     interface IDisposable with
         member this.Dispose() : unit =
             match state with
             | None -> ()
-            | Some state ->
-                (state.Seeder :> IDisposable).Dispose()
-                (state.Connection :> IDisposable).Dispose()
+            | Some state -> (state.Seeder :> IDisposable).Dispose()

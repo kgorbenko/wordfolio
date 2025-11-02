@@ -6,6 +6,7 @@ open Npgsql
 open Xunit
 
 open Wordfolio.Api.DataAccess
+open Wordfolio.Api.Tests.Utils
 
 type UsersTests(fixture: BaseDatabaseTestFixture) =
     let UniqueViolationErrorCode = "23505"

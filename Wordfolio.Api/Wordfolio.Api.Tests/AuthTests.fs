@@ -5,7 +5,7 @@ open System.Threading.Tasks
 
 open Xunit
 
-open Wordfolio.Api.DataAccess.Tests
+open Wordfolio.Api.Tests.Utils
 
 [<CLIMutable>]
 type RegisterRequest = { Email: string; Password: string }
