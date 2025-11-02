@@ -20,7 +20,7 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
         None
 
     override this.RunMigrations() =
-        SchemaMigrations.runWordfolioMigrations this.ConnectionString
+        Wordfolio.MigrationRunner.run this.ConnectionString
 
     member private this.EnsureInitialized() =
         match state with

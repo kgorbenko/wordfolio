@@ -20,7 +20,7 @@ type FunctionalTestFixture(messageSink: IMessageSink) =
 
     override this.RunMigrations() =
         SchemaMigrations.runIdentityMigrations this.ConnectionString
-        SchemaMigrations.runWordfolioMigrations this.ConnectionString
+        Wordfolio.MigrationRunner.run this.ConnectionString
 
     member private this.EnsureInitialized() =
         match state with
