@@ -9,7 +9,6 @@ open Microsoft.EntityFrameworkCore
 open Wordfolio.Api.Identity
 open Wordfolio.Common
 
-[<Sealed>]
 type IdentitySeeder(context: IdentityDbContext) =
     member _.DbContext = context
 

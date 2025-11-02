@@ -30,7 +30,6 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
 
         base.OnModelCreating(modelBuilder)
 
-[<Sealed>]
 type WordfolioSeeder(context: WordfolioTestDbContext) =
     member _.DbContext = context
 
