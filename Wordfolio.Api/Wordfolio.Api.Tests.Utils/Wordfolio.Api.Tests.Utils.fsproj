@@ -34,6 +34,7 @@
     <Compile Include="Identity\MigrationRunner.fs" />
     <Compile Include="BaseDatabaseTestFixture.fs" />
     <Compile Include="WordfolioTestFixture.fs" />
+    <Compile Include="WordfolioIdentityTestFixture.fs" />
   </ItemGroup>
 
 </Project>

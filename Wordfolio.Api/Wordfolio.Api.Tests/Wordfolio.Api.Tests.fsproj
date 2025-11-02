@@ -27,7 +27,6 @@
 
   <ItemGroup>
     <Compile Include="WebApplicationFactory.fs" />
-    <Compile Include="FunctionalTestFixture.fs" />
     <Compile Include="AuthTests.fs" />
     <Compile Include="StatusTests.fs" />
   </ItemGroup>

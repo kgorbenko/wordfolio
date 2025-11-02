@@ -11,8 +11,8 @@ open Wordfolio.Api.Tests.Utils.Wordfolio
 [<CLIMutable>]
 type RegisterRequest = { Email: string; Password: string }
 
-type AuthTests(fixture: FunctionalTestFixture) =
-    interface IClassFixture<FunctionalTestFixture>
+type AuthTests(fixture: WordfolioIdentityTestFixture) =
+    interface IClassFixture<WordfolioIdentityTestFixture>
 
     [<Fact>]
     member _.``POST /auth/register succeeds and creates rows in both schemas``() : Task =

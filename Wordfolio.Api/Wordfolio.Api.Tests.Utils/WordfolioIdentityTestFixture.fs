@@ -1,4 +1,4 @@
-﻿namespace Wordfolio.Api.Tests
+﻿namespace Wordfolio.Api.Tests.Utils
 
 open System
 open System.Threading
@@ -10,8 +10,7 @@ open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 open Wordfolio.Api.Tests.Utils.Identity
 
-[<Sealed>]
-type FunctionalTestFixture(messageSink: IMessageSink) =
+type WordfolioIdentityTestFixture(messageSink: IMessageSink) =
     inherit BaseDatabaseTestFixture(messageSink)
 
     let mutable state

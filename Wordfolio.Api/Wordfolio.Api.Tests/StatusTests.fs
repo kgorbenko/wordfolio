@@ -5,8 +5,10 @@ open System.Threading.Tasks
 
 open Xunit
 
-type StatusTests(fixture: FunctionalTestFixture) =
-    interface IClassFixture<FunctionalTestFixture>
+open Wordfolio.Api.Tests.Utils
+
+type StatusTests(fixture: WordfolioIdentityTestFixture) =
+    interface IClassFixture<WordfolioIdentityTestFixture>
 
     [<Fact>]
     member _.``Status endpoint``() : Task =
