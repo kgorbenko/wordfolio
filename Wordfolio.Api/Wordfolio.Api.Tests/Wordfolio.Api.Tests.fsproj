@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0" />
+    <PackageReference Include="xunit.v3" Version="3.0.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -16,15 +17,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Wordfolio.Api\Wordfolio.Api.fsproj" />
-    <ProjectReference Include="..\Wordfolio.Api.DataAccess.Tests\Wordfolio.Api.DataAccess.Tests.fsproj" />
-    <ProjectReference Include="..\..\Wordfolio.Common\Wordfolio.Common.fsproj" />
-    <ProjectReference Include="..\Wordfolio.Api.Identity\Wordfolio.Api.Identity.csproj" />
+    <ProjectReference Include="..\Wordfolio.Api.Tests.Utils\Wordfolio.Api.Tests.Utils.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="WebApplicationFactory.fs" />
-    <Compile Include="TestIdentityDatabaseSeeder.fs" />
-    <Compile Include="FunctionalTestFixture.fs" />
     <Compile Include="AuthTests.fs" />
     <Compile Include="StatusTests.fs" />
   </ItemGroup>

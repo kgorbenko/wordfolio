@@ -5,13 +5,14 @@ open System.Threading.Tasks
 
 open Xunit
 
-open Wordfolio.Api.DataAccess.Tests
+open Wordfolio.Api.Tests.Utils
+open Wordfolio.Api.Tests.Utils.Wordfolio
 
 [<CLIMutable>]
 type RegisterRequest = { Email: string; Password: string }
 
-type AuthTests(fixture: FunctionalTestFixture) =
-    interface IClassFixture<FunctionalTestFixture>
+type AuthTests(fixture: WordfolioIdentityTestFixture) =
+    interface IClassFixture<WordfolioIdentityTestFixture>
 
     [<Fact>]
     member _.``POST /auth/register succeeds and creates rows in both schemas``() : Task =
@@ -30,8 +31,8 @@ type AuthTests(fixture: FunctionalTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actualWordfolioUsers = DatabaseSeeder.getAllUsersAsync fixture.WordfolioSeeder
-            let! actualIdentityUsers = IdentityDatabaseSeeder.getAllUsersAsync fixture.IdentitySeeder
+            let! actualWordfolioUsers = Wordfolio.Seeder.getAllUsersAsync fixture.WordfolioSeeder
+            let! actualIdentityUsers = Identity.Seeder.getAllUsersAsync fixture.IdentitySeeder
 
             let wordfolioUser =
                 Assert.Single(actualWordfolioUsers)

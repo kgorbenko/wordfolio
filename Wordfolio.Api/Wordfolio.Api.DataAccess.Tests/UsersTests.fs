@@ -6,11 +6,13 @@ open Npgsql
 open Xunit
 
 open Wordfolio.Api.DataAccess
+open Wordfolio.Api.Tests.Utils
+open Wordfolio.Api.Tests.Utils.Wordfolio
 
-type UsersTests(fixture: BaseDatabaseTestFixture) =
+type UsersTests(fixture: WordfolioTestFixture) =
     let UniqueViolationErrorCode = "23505"
 
-    interface IClassFixture<BaseDatabaseTestFixture>
+    interface IClassFixture<WordfolioTestFixture>
 
     [<Fact>]
     member _.``createUserAsync inserts a row``() =
@@ -21,7 +23,7 @@ type UsersTests(fixture: BaseDatabaseTestFixture) =
 
             let! actual =
                 fixture.Seeder
-                |> DatabaseSeeder.getAllUsersAsync
+                |> Seeder.getAllUsersAsync
 
             let expected: UserEntity list =
                 [ { Id = 123 } ]

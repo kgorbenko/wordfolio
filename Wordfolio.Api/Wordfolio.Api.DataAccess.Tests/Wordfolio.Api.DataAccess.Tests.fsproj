@@ -12,24 +12,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FluentMigrator.Runner" Version="7.1.0" />
-    <PackageReference Include="FluentMigrator.Runner.Postgres" Version="7.1.0" />
-    <PackageReference Include="Testcontainers.PostgreSql" Version="4.6.0" />
-    <PackageReference Include="Testcontainers.XunitV3" Version="4.6.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.4" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Wordfolio.Api.DataAccess\Wordfolio.Api.DataAccess.fsproj" />
-    <ProjectReference Include="..\Wordfolio.Api.Migrations\Wordfolio.Api.Migrations.fsproj" />
-    <ProjectReference Include="..\..\Wordfolio.Common\Wordfolio.Common.fsproj" />
+    <ProjectReference Include="..\Wordfolio.Api.Tests.Utils\Wordfolio.Api.Tests.Utils.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="DatabaseSeeder.fs" />
-    <Compile Include="BaseDatabaseTestFixture.fs" />
     <Compile Include="UsersTests.fs" />
   </ItemGroup>
 
