@@ -33,6 +33,7 @@
     <Compile Include="Identity\Seeder.fs" />
     <Compile Include="Identity\MigrationRunner.fs" />
     <Compile Include="BaseDatabaseTestFixture.fs" />
+    <Compile Include="WordfolioTestFixture.fs" />
   </ItemGroup>
 
 </Project>

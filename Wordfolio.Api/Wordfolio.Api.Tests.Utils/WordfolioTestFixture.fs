@@ -1,15 +1,11 @@
-﻿namespace Wordfolio.Api.DataAccess.Tests
+﻿namespace Wordfolio.Api.Tests.Utils
 
 open System
 open System.Threading
 open System.Threading.Tasks
 
-open FluentMigrator.Runner
-open Microsoft.Extensions.DependencyInjection
-open Xunit
 open Xunit.Sdk
 
-open Wordfolio.Api.Migrations
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
@@ -20,7 +16,7 @@ type WordfolioTestFixture(messageSink: IMessageSink) =
         None
 
     override this.RunMigrations() =
-        Wordfolio.MigrationRunner.run this.ConnectionString
+        MigrationRunner.run this.ConnectionString
 
     member private this.EnsureInitialized() =
         match state with

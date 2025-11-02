@@ -6,6 +6,7 @@ open Npgsql
 open Xunit
 
 open Wordfolio.Api.DataAccess
+open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
 type UsersTests(fixture: WordfolioTestFixture) =
