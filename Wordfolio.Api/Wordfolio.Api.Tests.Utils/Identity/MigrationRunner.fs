@@ -4,7 +4,7 @@ open Microsoft.EntityFrameworkCore
 
 open Wordfolio.Api.Identity
 
-let run (connectionString: string) =
+let run(connectionString: string) =
     let options =
         DbContextOptionsBuilder<IdentityDbContext>()
             .UseNpgsql(

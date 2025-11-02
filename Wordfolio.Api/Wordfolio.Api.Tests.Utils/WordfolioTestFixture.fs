@@ -21,8 +21,7 @@ type WordfolioTestFixture(messageSink: IMessageSink) =
     member private this.EnsureInitialized() =
         match state with
         | None ->
-            let seeder =
-                Seeder.create this.Connection
+            let seeder = Seeder.create this.Connection
 
             state <- Some {| Seeder = seeder |}
         | Some _ -> ()

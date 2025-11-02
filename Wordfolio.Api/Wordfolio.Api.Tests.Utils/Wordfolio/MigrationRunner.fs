@@ -6,7 +6,7 @@ open FluentMigrator.Runner
 
 open Wordfolio.Api.Migrations
 
-let run (connectionString: string) : unit =
+let run(connectionString: string) : unit =
     use serviceProvider =
         ServiceCollection()
             .AddFluentMigratorCore()
