@@ -32,7 +32,7 @@
     <Compile Include="Wordfolio\MigrationRunner.fs" />
     <Compile Include="Identity\Seeder.fs" />
     <Compile Include="Identity\MigrationRunner.fs" />
-    <Compile Include="BasePostgreSqlFixture.fs" />
+    <Compile Include="BaseDatabaseTestFixture.fs" />
   </ItemGroup>
 
 </Project>

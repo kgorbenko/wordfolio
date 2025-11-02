@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="BaseDatabaseTestFixture.fs" />
+    <Compile Include="WordfolioTestFixture.fs" />
     <Compile Include="UsersTests.fs" />
   </ItemGroup>
 

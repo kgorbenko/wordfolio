@@ -14,7 +14,7 @@ open Xunit
 open Xunit.Sdk
 
 [<AbstractClass>]
-type BasePostgreSqlFixture(messageSink: IMessageSink) =
+type BaseDatabaseTestFixture(messageSink: IMessageSink) =
     inherit DbContainerFixture<PostgreSqlBuilder, PostgreSqlContainer>(messageSink)
 
     let mutable state

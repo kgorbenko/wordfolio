@@ -12,7 +12,7 @@ open Wordfolio.Api.Tests.Utils.Identity
 
 [<Sealed>]
 type FunctionalTestFixture(messageSink: IMessageSink) =
-    inherit BasePostgreSqlFixture(messageSink)
+    inherit BaseDatabaseTestFixture(messageSink)
 
     let mutable state
         : {| WordfolioSeeder: WordfolioSeeder

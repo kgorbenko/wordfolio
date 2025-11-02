@@ -13,8 +13,8 @@ open Wordfolio.Api.Migrations
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
-type BaseDatabaseTestFixture(messageSink: IMessageSink) =
-    inherit BasePostgreSqlFixture(messageSink)
+type WordfolioTestFixture(messageSink: IMessageSink) =
+    inherit BaseDatabaseTestFixture(messageSink)
 
     let mutable state: {| Seeder: WordfolioSeeder |} option =
         None
