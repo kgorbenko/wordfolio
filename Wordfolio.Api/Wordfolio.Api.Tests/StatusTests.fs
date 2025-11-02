@@ -6,6 +6,7 @@ open System.Threading.Tasks
 open Xunit
 
 open Wordfolio.Api.Tests.Utils
+open Wordfolio.ServiceDefaults.Status
 
 type StatusTests(fixture: WordfolioIdentityTestFixture) =
     interface IClassFixture<WordfolioIdentityTestFixture>
@@ -18,7 +19,7 @@ type StatusTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! response = client.GetAsync("/status")
+            let! response = client.GetAsync(StatusUrl)
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode)
         }
