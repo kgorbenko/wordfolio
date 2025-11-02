@@ -1,4 +1,4 @@
-﻿namespace Wordfolio.Api.Tests.Utils
+﻿namespace Wordfolio.Api.Tests.Utils.Wordfolio
 
 open System
 open System.Data.Common
@@ -12,7 +12,7 @@ open Wordfolio.Common
 [<CLIMutable>]
 type UserEntity = { Id: int }
 
-type TestDbContext(options: DbContextOptions<TestDbContext>) =
+type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
     inherit DbContext(options)
 
     member this.Users: DbSet<UserEntity> =
@@ -31,37 +31,37 @@ type TestDbContext(options: DbContextOptions<TestDbContext>) =
         base.OnModelCreating(modelBuilder)
 
 [<Sealed>]
-type TestDatabaseSeeder(context: TestDbContext) =
+type WordfolioSeeder(context: WordfolioTestDbContext) =
     member _.DbContext = context
 
     interface IDisposable with
         member this.Dispose() : unit = this.DbContext.Dispose()
 
 [<RequireQualifiedAccess>]
-module DatabaseSeeder =
-    let create(connection: DbConnection) : TestDatabaseSeeder =
+module Seeder =
+    let create(connection: DbConnection) : WordfolioSeeder =
         let builder =
-            DbContextOptionsBuilder<TestDbContext>()
+            DbContextOptionsBuilder<WordfolioTestDbContext>()
 
         builder.UseNpgsql(connection) |> ignore
 
         let context =
-            new TestDbContext(builder.Options)
+            new WordfolioTestDbContext(builder.Options)
 
-        new TestDatabaseSeeder(context)
+        new WordfolioSeeder(context)
 
-    let addUsers (users: UserEntity list) (seeder: TestDatabaseSeeder) =
+    let addUsers (users: UserEntity list) (seeder: WordfolioSeeder) =
         do seeder.DbContext.Users.AddRange(users)
         seeder
 
-    let saveChangesAsync(seeder: TestDatabaseSeeder) =
+    let saveChangesAsync(seeder: WordfolioSeeder) =
         task {
             do!
                 seeder.DbContext.SaveChangesAsync()
                 |> Task.ignore
         }
 
-    let getAllUsersAsync(seeder: TestDatabaseSeeder) : Task<UserEntity list> =
+    let getAllUsersAsync(seeder: WordfolioSeeder) : Task<UserEntity list> =
         task {
             let! users = seeder.DbContext.Users.ToArrayAsync()
             return users |> List.ofSeq

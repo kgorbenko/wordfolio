@@ -4,17 +4,17 @@ open System
 open System.Threading
 open System.Threading.Tasks
 
-open Xunit
 open Xunit.Sdk
 
 open Wordfolio.Api.Tests.Utils
+open Wordfolio.Api.Tests.Utils.Wordfolio
 
 [<Sealed>]
 type FunctionalTestFixture(messageSink: IMessageSink) =
     inherit BasePostgreSqlFixture(messageSink)
 
     let mutable state
-        : {| WordfolioSeeder: TestDatabaseSeeder
+        : {| WordfolioSeeder: WordfolioSeeder
              IdentitySeeder: TestIdentityDatabaseSeeder |} option =
         None
 
@@ -29,7 +29,7 @@ type FunctionalTestFixture(messageSink: IMessageSink) =
 
             state <-
                 Some
-                    {| WordfolioSeeder = DatabaseSeeder.create connection
+                    {| WordfolioSeeder = Seeder.create connection
                        IdentitySeeder = IdentityDatabaseSeeder.create connection |}
         | Some _ -> ()
 
@@ -38,7 +38,7 @@ type FunctionalTestFixture(messageSink: IMessageSink) =
         this.EnsureInitialized()
         ValueTask.CompletedTask
 
-    member this.WordfolioSeeder: TestDatabaseSeeder =
+    member this.WordfolioSeeder: WordfolioSeeder =
         state.Value.WordfolioSeeder
 
     member this.IdentitySeeder: TestIdentityDatabaseSeeder =

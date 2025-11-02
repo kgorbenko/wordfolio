@@ -6,6 +6,7 @@ open System.Threading.Tasks
 open Xunit
 
 open Wordfolio.Api.Tests.Utils
+open Wordfolio.Api.Tests.Utils.Wordfolio
 
 [<CLIMutable>]
 type RegisterRequest = { Email: string; Password: string }
@@ -30,7 +31,7 @@ type AuthTests(fixture: FunctionalTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actualWordfolioUsers = DatabaseSeeder.getAllUsersAsync fixture.WordfolioSeeder
+            let! actualWordfolioUsers = Seeder.getAllUsersAsync fixture.WordfolioSeeder
             let! actualIdentityUsers = IdentityDatabaseSeeder.getAllUsersAsync fixture.IdentitySeeder
 
             let wordfolioUser =

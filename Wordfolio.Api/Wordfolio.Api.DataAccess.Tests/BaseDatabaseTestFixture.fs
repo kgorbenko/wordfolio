@@ -11,11 +11,12 @@ open Xunit.Sdk
 
 open Wordfolio.Api.Migrations
 open Wordfolio.Api.Tests.Utils
+open Wordfolio.Api.Tests.Utils.Wordfolio
 
 type BaseDatabaseTestFixture(messageSink: IMessageSink) =
     inherit BasePostgreSqlFixture(messageSink)
 
-    let mutable state: {| Seeder: TestDatabaseSeeder |} option =
+    let mutable state: {| Seeder: WordfolioSeeder |} option =
         None
 
     override this.RunMigrations() =
@@ -25,7 +26,7 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
         match state with
         | None ->
             let seeder =
-                DatabaseSeeder.create this.Connection
+                Seeder.create this.Connection
 
             state <- Some {| Seeder = seeder |}
         | Some _ -> ()
@@ -35,7 +36,7 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
         this.EnsureInitialized()
         ValueTask.CompletedTask
 
-    member this.Seeder: TestDatabaseSeeder =
+    member this.Seeder: WordfolioSeeder =
         state.Value.Seeder
 
     member this.WithConnectionAsync

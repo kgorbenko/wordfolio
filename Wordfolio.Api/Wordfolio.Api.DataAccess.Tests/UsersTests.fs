@@ -6,7 +6,7 @@ open Npgsql
 open Xunit
 
 open Wordfolio.Api.DataAccess
-open Wordfolio.Api.Tests.Utils
+open Wordfolio.Api.Tests.Utils.Wordfolio
 
 type UsersTests(fixture: BaseDatabaseTestFixture) =
     let UniqueViolationErrorCode = "23505"
@@ -22,7 +22,7 @@ type UsersTests(fixture: BaseDatabaseTestFixture) =
 
             let! actual =
                 fixture.Seeder
-                |> DatabaseSeeder.getAllUsersAsync
+                |> Seeder.getAllUsersAsync
 
             let expected: UserEntity list =
                 [ { Id = 123 } ]
