@@ -24,6 +24,7 @@
     <Compile Include="WebApplicationFactory.fs" />
     <Compile Include="AuthTests.fs" />
     <Compile Include="StatusTests.fs" />
+    <Compile Include="OpenApiTests.fs" />
   </ItemGroup>
 
 </Project>

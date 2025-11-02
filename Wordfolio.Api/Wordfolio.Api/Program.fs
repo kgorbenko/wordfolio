@@ -36,11 +36,12 @@ let main args =
 
     let app = builder.Build()
 
+    app |> mapOpenApi |> ignore
+
     app.UseAuthentication() |> ignore
     app.UseAuthorization() |> ignore
 
     app
-    |> mapOpenApi
     |> mapHealthChecks
     |> mapStatusEndpoint
     |> _.MapGroup("auth").MapIdentityApi<User>().AllowAnonymous()
