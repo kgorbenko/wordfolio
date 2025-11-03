@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Respawn" Version="6.2.1" />
     <PackageReference Include="Testcontainers.PostgreSql" Version="4.6.0" />
     <PackageReference Include="Testcontainers.XunitV3" Version="4.6.0" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
