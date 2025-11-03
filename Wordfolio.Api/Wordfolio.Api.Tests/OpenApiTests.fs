@@ -14,6 +14,8 @@ type OpenApiTests(fixture: WordfolioIdentityTestFixture) =
     [<Fact>]
     member _.``OpenApi document is accessible without auth``() : Task =
         task {
+            do! fixture.ResetDatabaseAsync()
+
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 
@@ -28,6 +30,8 @@ type OpenApiTests(fixture: WordfolioIdentityTestFixture) =
     [<Fact>]
     member _.``Swagger UI is accessible without auth``() : Task =
         task {
+            do! fixture.ResetDatabaseAsync()
+
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 
