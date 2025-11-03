@@ -22,8 +22,7 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
     let mutable state
         : {| Connection: DbConnection
              ConnectionString: string
-             Respawner: Respawner
-             LastTestId: string |} option =
+             Respawner: Respawner |} option =
         None
 
     abstract member RunMigrations: string -> unit
@@ -57,8 +56,7 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
                 Some
                     {| Connection = connection
                        ConnectionString = connectionString
-                       Respawner = respawner
-                       LastTestId = "" |}
+                       Respawner = respawner |}
         | Some _ -> ()
 
     override this.Configure(builder: PostgreSqlBuilder) : PostgreSqlBuilder =
@@ -78,30 +76,17 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
     member this.ConnectionString: string =
         state.Value.ConnectionString
 
-    member private this.ResetDatabaseAsync() : Task =
+    member this.ResetDatabaseAsync() : Task =
         state.Value.Respawner.ResetAsync(state.Value.Connection)
 
     member this.WithConnectionAsync
         (callback: IDbConnection -> IDbTransaction -> CancellationToken -> Task<'a>)
         : Task<'a> =
         task {
-            let currentTestId =
-                TestContext.Current.Test.UniqueID
-
-            let currentState = state.Value
-
-            if currentState.LastTestId <> currentTestId then
-                do! this.ResetDatabaseAsync()
-
-                state <-
-                    Some
-                        {| currentState with
-                            LastTestId = currentTestId |}
-
             let cancellationToken =
                 TestContext.Current.CancellationToken
 
-            let connection = currentState.Connection
+            let connection = state.Value.Connection
 
             use transaction =
                 connection.BeginTransaction()

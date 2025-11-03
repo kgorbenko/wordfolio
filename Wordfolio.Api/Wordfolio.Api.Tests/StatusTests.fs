@@ -14,6 +14,8 @@ type StatusTests(fixture: WordfolioIdentityTestFixture) =
     [<Fact>]
     member _.``Status endpoint``() : Task =
         task {
+            do! fixture.ResetDatabaseAsync()
+
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 

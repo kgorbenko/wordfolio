@@ -17,6 +17,8 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
     [<Fact>]
     member _.``POST /auth/register succeeds and creates rows in both schemas``() : Task =
         task {
+            do! fixture.ResetDatabaseAsync()
+
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 

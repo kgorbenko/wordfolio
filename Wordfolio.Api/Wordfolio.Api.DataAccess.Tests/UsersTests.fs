@@ -17,6 +17,8 @@ type UsersTests(fixture: WordfolioTestFixture) =
     [<Fact>]
     member _.``createUserAsync inserts a row``() =
         task {
+            do! fixture.ResetDatabaseAsync()
+
             do!
                 Users.createUserAsync { Id = 123 }
                 |> fixture.WithConnectionAsync
@@ -34,6 +36,8 @@ type UsersTests(fixture: WordfolioTestFixture) =
     [<Fact>]
     member _.``createUserAsync fails on duplicate Id``() =
         task {
+            do! fixture.ResetDatabaseAsync()
+
             do!
                 Users.createUserAsync { Id = 5 }
                 |> fixture.WithConnectionAsync
