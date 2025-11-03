@@ -15,8 +15,7 @@ type WordfolioTestFixture(messageSink: IMessageSink) =
     let mutable state: {| Seeder: WordfolioSeeder |} option =
         None
 
-    override this.RunMigrations() =
-        MigrationRunner.run this.ConnectionString
+    override this.RunMigrations(connectionString: string) = MigrationRunner.run connectionString
 
     member private this.EnsureInitialized() =
         match state with

@@ -18,9 +18,9 @@ type WordfolioIdentityTestFixture(messageSink: IMessageSink) =
              IdentitySeeder: IdentitySeeder |} option =
         None
 
-    override this.RunMigrations() =
-        Identity.MigrationRunner.run this.ConnectionString
-        Wordfolio.MigrationRunner.run this.ConnectionString
+    override this.RunMigrations(connectionString: string) =
+        Identity.MigrationRunner.run connectionString
+        Wordfolio.MigrationRunner.run connectionString
 
     member private this.EnsureInitialized() =
         match state with

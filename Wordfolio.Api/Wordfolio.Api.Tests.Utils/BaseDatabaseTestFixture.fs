@@ -8,6 +8,8 @@ open System.Threading.Tasks
 
 open Dapper.FSharp.MSSQL
 open Npgsql
+open Respawn
+open Respawn.Graph
 open Testcontainers.PostgreSql
 open Testcontainers.Xunit
 open Xunit
@@ -19,10 +21,12 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
 
     let mutable state
         : {| Connection: DbConnection
-             ConnectionString: string |} option =
+             ConnectionString: string
+             Respawner: Respawner
+             LastTestId: string |} option =
         None
 
-    abstract member RunMigrations: unit -> unit
+    abstract member RunMigrations: string -> unit
 
     member private this.EnsureInitialized() =
         match state with
@@ -35,12 +39,26 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
             let connection = this.CreateConnection()
             connection.Open()
 
+            this.RunMigrations(connectionString)
+
+            let respawner =
+                Respawner
+                    .CreateAsync(
+                        connection,
+                        RespawnerOptions(
+                            DbAdapter = DbAdapter.Postgres,
+                            TablesToIgnore = [| Table("VersionInfo"); Table("identity", "MigrationsHistory") |]
+                        )
+                    )
+                    .GetAwaiter()
+                    .GetResult()
+
             state <-
                 Some
                     {| Connection = connection
-                       ConnectionString = connectionString |}
-
-            this.RunMigrations()
+                       ConnectionString = connectionString
+                       Respawner = respawner
+                       LastTestId = "" |}
         | Some _ -> ()
 
     override this.Configure(builder: PostgreSqlBuilder) : PostgreSqlBuilder =
@@ -60,14 +78,30 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
     member this.ConnectionString: string =
         state.Value.ConnectionString
 
+    member private this.ResetDatabaseAsync() : Task =
+        state.Value.Respawner.ResetAsync(state.Value.Connection)
+
     member this.WithConnectionAsync
         (callback: IDbConnection -> IDbTransaction -> CancellationToken -> Task<'a>)
         : Task<'a> =
         task {
+            let currentTestId =
+                TestContext.Current.Test.UniqueID
+
+            let currentState = state.Value
+
+            if currentState.LastTestId <> currentTestId then
+                do! this.ResetDatabaseAsync()
+
+                state <-
+                    Some
+                        {| currentState with
+                            LastTestId = currentTestId |}
+
             let cancellationToken =
                 TestContext.Current.CancellationToken
 
-            let connection = state.Value.Connection
+            let connection = currentState.Connection
 
             use transaction =
                 connection.BeginTransaction()
