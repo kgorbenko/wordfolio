@@ -42,14 +42,13 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
                 this.RunMigrations(connectionString)
 
                 let! respawner =
-                    Respawner
-                        .CreateAsync(
-                            connection,
-                            RespawnerOptions(
-                                DbAdapter = DbAdapter.Postgres,
-                                TablesToIgnore = [| Table("VersionInfo"); Table("identity", "MigrationsHistory") |]
-                            )
+                    Respawner.CreateAsync(
+                        connection,
+                        RespawnerOptions(
+                            DbAdapter = DbAdapter.Postgres,
+                            TablesToIgnore = [| Table("VersionInfo"); Table("identity", "MigrationsHistory") |]
                         )
+                    )
 
                 state <-
                     Some
