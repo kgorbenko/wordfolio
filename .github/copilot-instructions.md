@@ -56,3 +56,4 @@ Follow these concise rules when generating code or suggestions for this reposito
 - General
   - Keep changes minimal and focused.
   - Follow repository conventions when suggesting edits.
+  - Keep commits small and atomic. If you need to make multiple independent changes, split them into separate commits.
