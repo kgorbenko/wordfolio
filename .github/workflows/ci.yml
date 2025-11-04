@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: Wordfolio.Frontend/package-lock.json
+    
+    - name: Restore .NET tools
+      run: dotnet tool restore
+    
+    - name: Restore .NET dependencies
+      run: dotnet restore
+    
+    - name: Build .NET projects
+      run: dotnet build --no-restore --configuration Release
+    
+    - name: Run .NET tests
+      run: dotnet test --no-build --configuration Release --verbosity normal
+    
+    - name: Check F# formatting with Fantomas
+      run: dotnet fantomas --check .
+    
+    - name: Install frontend dependencies
+      working-directory: Wordfolio.Frontend
+      run: npm ci
+    
+    - name: Lint frontend
+      working-directory: Wordfolio.Frontend
+      run: npm run lint
+    
+    - name: Build frontend
+      working-directory: Wordfolio.Frontend
+      run: npm run build
