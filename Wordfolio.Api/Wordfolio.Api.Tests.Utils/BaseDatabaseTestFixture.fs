@@ -72,9 +72,6 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
     member this.Connection: DbConnection =
         state.Value.Connection
 
-    member this.ConnectionString: string =
-        state.Value.ConnectionString
-
     member this.ResetDatabaseAsync() : Task =
         state.Value.Respawner.ResetAsync(state.Value.Connection)
 
