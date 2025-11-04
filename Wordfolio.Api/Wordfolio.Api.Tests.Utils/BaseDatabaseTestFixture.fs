@@ -27,37 +27,37 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
 
     abstract member RunMigrations: string -> unit
 
-    member private this.EnsureInitialized() =
-        match state with
-        | None ->
-            OptionTypes.register()
+    member private this.EnsureInitializedAsync() =
+        task {
+            match state with
+            | None ->
+                OptionTypes.register()
 
-            let connectionString =
-                this.Container.GetConnectionString()
+                let connectionString =
+                    this.Container.GetConnectionString()
 
-            let connection = this.CreateConnection()
-            connection.Open()
+                let connection = this.CreateConnection()
+                connection.Open()
 
-            this.RunMigrations(connectionString)
+                this.RunMigrations(connectionString)
 
-            let respawner =
-                Respawner
-                    .CreateAsync(
-                        connection,
-                        RespawnerOptions(
-                            DbAdapter = DbAdapter.Postgres,
-                            TablesToIgnore = [| Table("VersionInfo"); Table("identity", "MigrationsHistory") |]
+                let! respawner =
+                    Respawner
+                        .CreateAsync(
+                            connection,
+                            RespawnerOptions(
+                                DbAdapter = DbAdapter.Postgres,
+                                TablesToIgnore = [| Table("VersionInfo"); Table("identity", "MigrationsHistory") |]
+                            )
                         )
-                    )
-                    .GetAwaiter()
-                    .GetResult()
 
-            state <-
-                Some
-                    {| Connection = connection
-                       ConnectionString = connectionString
-                       Respawner = respawner |}
-        | Some _ -> ()
+                state <-
+                    Some
+                        {| Connection = connection
+                           ConnectionString = connectionString
+                           Respawner = respawner |}
+            | Some _ -> ()
+        }
 
     override this.Configure(builder: PostgreSqlBuilder) : PostgreSqlBuilder =
         base.Configure(builder).WithImage("postgres:17.5")
@@ -67,7 +67,7 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
 
     override this.InitializeAsync() : ValueTask =
         do base.InitializeAsync().GetAwaiter().GetResult()
-        this.EnsureInitialized()
+        do this.EnsureInitializedAsync().GetAwaiter().GetResult()
         ValueTask.CompletedTask
 
     member this.Connection: DbConnection =
