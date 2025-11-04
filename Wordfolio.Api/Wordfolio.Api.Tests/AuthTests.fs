@@ -3,7 +3,6 @@
 open System.Collections.Generic
 open System.Net
 open System.Net.Http.Json
-open System.Text.Json
 open System.Threading.Tasks
 
 open Xunit
@@ -97,22 +96,9 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             Assert.False(secondResponse.IsSuccessStatusCode)
             Assert.Equal(HttpStatusCode.BadRequest, secondResponse.StatusCode)
 
-            let! errorContent = secondResponse.Content.ReadAsStringAsync()
-
-            let errorJson =
-                JsonDocument.Parse(errorContent)
-
-            let root = errorJson.RootElement
-
-            let mutable errorsProperty =
-                Unchecked.defaultof<JsonElement>
-
-            Assert.True(root.TryGetProperty("errors", &errorsProperty))
-
-            let mutable duplicateUserProperty =
-                Unchecked.defaultof<JsonElement>
-
-            Assert.True(errorsProperty.TryGetProperty("DuplicateUserName", &duplicateUserProperty))
+            let! validationError = secondResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>()
+            Assert.NotNull(validationError)
+            Assert.True(validationError.Errors.ContainsKey("DuplicateUserName"))
         }
 
     [<Fact>]
@@ -133,22 +119,9 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             Assert.False(response.IsSuccessStatusCode)
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
 
-            let! errorContent = response.Content.ReadAsStringAsync()
-
-            let errorJson =
-                JsonDocument.Parse(errorContent)
-
-            let root = errorJson.RootElement
-
-            let mutable errorsProperty =
-                Unchecked.defaultof<JsonElement>
-
-            Assert.True(root.TryGetProperty("errors", &errorsProperty))
-
-            let mutable passwordProperty =
-                Unchecked.defaultof<JsonElement>
-
-            Assert.True(errorsProperty.TryGetProperty("PasswordTooShort", &passwordProperty))
+            let! validationError = response.Content.ReadFromJsonAsync<ValidationProblemDetails>()
+            Assert.NotNull(validationError)
+            Assert.True(validationError.Errors.ContainsKey("PasswordTooShort"))
         }
 
     [<Fact>]
