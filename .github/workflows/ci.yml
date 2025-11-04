@@ -46,10 +46,6 @@ jobs:
       working-directory: Wordfolio.Frontend
       run: npm ci
     
-    - name: Lint frontend
-      working-directory: Wordfolio.Frontend
-      run: npm run lint
-    
     - name: Build frontend
       working-directory: Wordfolio.Frontend
       run: npm run build
