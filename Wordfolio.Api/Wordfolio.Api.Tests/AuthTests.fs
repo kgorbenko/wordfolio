@@ -1,7 +1,9 @@
 ﻿namespace Wordfolio.Api.Tests
 
+open System.Collections.Generic
 open System.Net
 open System.Net.Http.Json
+open System.Text.Json
 open System.Threading.Tasks
 
 open Xunit
@@ -13,11 +15,7 @@ open Wordfolio.Api.Tests.Utils.Wordfolio
 type RegisterRequest = { Email: string; Password: string }
 
 [<CLIMutable>]
-type LoginRequest =
-    { Email: string
-      Password: string
-      TwoFactorCode: string option
-      TwoFactorRecoveryCode: string option }
+type LoginRequest = { Email: string; Password: string }
 
 [<CLIMutable>]
 type LoginResponse =
@@ -35,6 +33,13 @@ type RefreshResponse =
       AccessToken: string
       ExpiresIn: int
       RefreshToken: string }
+
+[<CLIMutable>]
+type ValidationProblemDetails =
+    { Type: string
+      Title: string
+      Status: int
+      Errors: Dictionary<string, string[]> }
 
 type AuthTests(fixture: WordfolioIdentityTestFixture) =
     interface IClassFixture<WordfolioIdentityTestFixture>
@@ -91,6 +96,23 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             let! secondResponse = client.PostAsJsonAsync("/auth/register", request)
             Assert.False(secondResponse.IsSuccessStatusCode)
             Assert.Equal(HttpStatusCode.BadRequest, secondResponse.StatusCode)
+
+            let! errorContent = secondResponse.Content.ReadAsStringAsync()
+
+            let errorJson =
+                JsonDocument.Parse(errorContent)
+
+            let root = errorJson.RootElement
+
+            let mutable errorsProperty =
+                Unchecked.defaultof<JsonElement>
+
+            Assert.True(root.TryGetProperty("errors", &errorsProperty))
+
+            let mutable duplicateUserProperty =
+                Unchecked.defaultof<JsonElement>
+
+            Assert.True(errorsProperty.TryGetProperty("DuplicateUserName", &duplicateUserProperty))
         }
 
     [<Fact>]
@@ -110,6 +132,23 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.PostAsJsonAsync("/auth/register", request)
             Assert.False(response.IsSuccessStatusCode)
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
+
+            let! errorContent = response.Content.ReadAsStringAsync()
+
+            let errorJson =
+                JsonDocument.Parse(errorContent)
+
+            let root = errorJson.RootElement
+
+            let mutable errorsProperty =
+                Unchecked.defaultof<JsonElement>
+
+            Assert.True(root.TryGetProperty("errors", &errorsProperty))
+
+            let mutable passwordProperty =
+                Unchecked.defaultof<JsonElement>
+
+            Assert.True(errorsProperty.TryGetProperty("PasswordTooShort", &passwordProperty))
         }
 
     [<Fact>]
@@ -131,9 +170,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
 
             let loginRequest: LoginRequest =
                 { Email = "user@example.com"
-                  Password = "P@ssw0rd!"
-                  TwoFactorCode = None
-                  TwoFactorRecoveryCode = None }
+                  Password = "P@ssw0rd!" }
 
             let! loginResponse = client.PostAsJsonAsync("/auth/login", loginRequest)
             let! body = loginResponse.Content.ReadAsStringAsync()
@@ -168,9 +205,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
 
             let loginRequest: LoginRequest =
                 { Email = "user@example.com"
-                  Password = "WrongPassword123!"
-                  TwoFactorCode = None
-                  TwoFactorRecoveryCode = None }
+                  Password = "WrongPassword123!" }
 
             let! loginResponse = client.PostAsJsonAsync("/auth/login", loginRequest)
 
@@ -190,9 +225,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
 
             let loginRequest: LoginRequest =
                 { Email = "nonexistent@example.com"
-                  Password = "P@ssw0rd!"
-                  TwoFactorCode = None
-                  TwoFactorRecoveryCode = None }
+                  Password = "P@ssw0rd!" }
 
             let! loginResponse = client.PostAsJsonAsync("/auth/login", loginRequest)
 
@@ -219,9 +252,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
 
             let loginRequest: LoginRequest =
                 { Email = "user@example.com"
-                  Password = "P@ssw0rd!"
-                  TwoFactorCode = None
-                  TwoFactorRecoveryCode = None }
+                  Password = "P@ssw0rd!" }
 
             let! loginResponse = client.PostAsJsonAsync("/auth/login", loginRequest)
             Assert.True(loginResponse.IsSuccessStatusCode)
