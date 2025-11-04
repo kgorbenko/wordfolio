@@ -13,7 +13,7 @@
     - unused `open` statements should be removed.
     - `open` statements should be sorted:
       - System imports should go first.
-      - trird party imports should go second.
+      - third party imports should go second.
       - local imports should go last.
       - different groups of imports should be separated by a blank line.
       - imports should be sorted alphabetically within each group.
