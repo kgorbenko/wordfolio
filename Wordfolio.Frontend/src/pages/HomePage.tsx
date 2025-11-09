@@ -1,5 +1,6 @@
 import { useAuthStore } from '../stores/authStore';
 import { useNavigate } from '@tanstack/react-router';
+import './HomePage.css';
 
 export function HomePage() {
   const { isAuthenticated, clearAuth } = useAuthStore();
@@ -11,21 +12,12 @@ export function HomePage() {
   };
 
   return (
-    <div style={{ maxWidth: '800px', margin: '50px auto', padding: '20px' }}>
+    <div className="home-page">
       <h1>Welcome to Wordfolio</h1>
       {isAuthenticated ? (
-        <div>
+        <div className="content">
           <p>You are logged in!</p>
-          <button
-            onClick={handleLogout}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-          >
+          <button onClick={handleLogout} className="logout-button">
             Logout
           </button>
         </div>

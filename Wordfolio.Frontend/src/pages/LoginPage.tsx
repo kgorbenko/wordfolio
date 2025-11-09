@@ -1,8 +1,9 @@
 import { useState, FormEvent } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import { useNavigate, Link } from '@tanstack/react-router';
-import { authApi, ApiError } from '../api/authApi';
+import { ApiError } from '../api/authApi';
 import { useAuthStore } from '../stores/authStore';
+import { useLoginMutation } from '../mutations/useLoginMutation';
+import './LoginPage.css';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -11,8 +12,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const loginMutation = useMutation({
-    mutationFn: authApi.login,
+  const loginMutation = useLoginMutation({
     onSuccess: (data) => {
       setTokens(data);
       navigate({ to: '/' });
@@ -33,56 +33,39 @@ export function LoginPage() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
+    <div className="login-page">
       <h1>Login</h1>
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="email" style={{ display: 'block', marginBottom: '5px' }}>
-            Email:
-          </label>
+        <div className="form-group">
+          <label htmlFor="email">Email:</label>
           <input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
           />
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="password" style={{ display: 'block', marginBottom: '5px' }}>
-            Password:
-          </label>
+        <div className="form-group">
+          <label htmlFor="password">Password:</label>
           <input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
           />
         </div>
 
-        {error && <div style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}
+        {error && <div className="error-message">{error}</div>}
 
-        <button
-          type="submit"
-          disabled={loginMutation.isPending}
-          style={{
-            width: '100%',
-            padding: '10px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
+        <button type="submit" disabled={loginMutation.isPending} className="submit-button">
           {loginMutation.isPending ? 'Logging in...' : 'Login'}
         </button>
       </form>
 
-      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+      <div className="footer-link">
         Don't have an account? <Link to="/register">Register here</Link>
       </div>
     </div>

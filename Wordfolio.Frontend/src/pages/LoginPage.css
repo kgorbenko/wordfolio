@@ -1,0 +1,48 @@
+.login-page {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+}
+
+.login-page h1 {
+  margin-bottom: 20px;
+}
+
+.login-page .form-group {
+  margin-bottom: 15px;
+}
+
+.login-page .form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.login-page .form-group input {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.login-page .error-message {
+  color: red;
+  margin-bottom: 15px;
+}
+
+.login-page .submit-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.login-page .submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-page .footer-link {
+  margin-top: 20px;
+  text-align: center;
+}
