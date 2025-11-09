@@ -1,25 +1,25 @@
 export interface RegisterRequest {
-  email: string;
-  password: string;
+  readonly email: string;
+  readonly password: string;
 }
 
 export interface LoginRequest {
-  email: string;
-  password: string;
+  readonly email: string;
+  readonly password: string;
 }
 
 export interface LoginResponse {
-  tokenType: string;
-  accessToken: string;
-  expiresIn: number;
-  refreshToken: string;
+  readonly tokenType: string;
+  readonly accessToken: string;
+  readonly expiresIn: number;
+  readonly refreshToken: string;
 }
 
 export interface ApiError {
-  type?: string;
-  title?: string;
-  status?: number;
-  errors?: Record<string, string[]>;
+  readonly type?: string;
+  readonly title?: string;
+  readonly status?: number;
+  readonly errors?: Record<string, string[]>;
 }
 
 const API_BASE_URL = '/api';

@@ -2,15 +2,15 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface AuthTokens {
-  tokenType: string;
-  accessToken: string;
-  expiresIn: number;
-  refreshToken: string;
+  readonly tokenType: string;
+  readonly accessToken: string;
+  readonly expiresIn: number;
+  readonly refreshToken: string;
 }
 
 interface AuthState {
-  tokens: AuthTokens | null;
-  isAuthenticated: boolean;
+  readonly tokens: AuthTokens | null;
+  readonly isAuthenticated: boolean;
   setTokens: (tokens: AuthTokens) => void;
   clearAuth: () => void;
 }
