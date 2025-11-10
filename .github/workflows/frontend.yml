@@ -1,11 +1,6 @@
 name: Frontend CI
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'Wordfolio.Frontend/**'
-      - '.github/workflows/frontend.yml'
   pull_request:
     branches: [ main ]
     paths:

@@ -1,17 +1,6 @@
 name: Backend CI
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'Wordfolio.Api/**'
-      - 'Wordfolio.AppHost/**'
-      - 'Wordfolio.Common/**'
-      - 'Wordfolio.ServiceDefaults/**'
-      - '*.sln'
-      - '*.props'
-      - '*.targets'
-      - '.github/workflows/backend.yml'
   pull_request:
     branches: [ main ]
     paths:
