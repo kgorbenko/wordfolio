@@ -1,5 +1,5 @@
 import { useAuthStore } from '../stores/authStore';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, Link } from '@tanstack/react-router';
 import './HomePage.css';
 
 export function HomePage() {
@@ -22,7 +22,17 @@ export function HomePage() {
           </button>
         </div>
       ) : (
-        <p>Please log in to continue.</p>
+        <div className="content">
+          <p>Please log in to continue.</p>
+          <div className="auth-links">
+            <Link to="/login" className="auth-link">
+              Login
+            </Link>
+            <Link to="/register" className="auth-link">
+              Register
+            </Link>
+          </div>
+        </div>
       )}
     </div>
   );
