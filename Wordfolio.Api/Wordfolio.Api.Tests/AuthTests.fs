@@ -40,6 +40,15 @@ type ValidationProblemDetails =
       Status: int
       Errors: Dictionary<string, string[]> }
 
+[<CLIMutable>]
+type PasswordRequirements =
+    { RequiredLength: int
+      RequireDigit: bool
+      RequireLowercase: bool
+      RequireUppercase: bool
+      RequireNonAlphanumeric: bool
+      RequiredUniqueChars: int }
+
 type AuthTests(fixture: WordfolioIdentityTestFixture) =
     interface IClassFixture<WordfolioIdentityTestFixture>
 
@@ -267,4 +276,25 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.False(refreshResponse.IsSuccessStatusCode)
             Assert.Equal(HttpStatusCode.Unauthorized, refreshResponse.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``GET /auth/password-requirements returns password requirements``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture.ConnectionString)
+
+            use client = factory.CreateClient()
+
+            let! response = client.GetAsync("/auth/password-requirements")
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+
+            let! requirements = response.Content.ReadFromJsonAsync<PasswordRequirements>()
+
+            Assert.NotNull(requirements)
+            Assert.True(requirements.RequiredLength > 0)
         }
