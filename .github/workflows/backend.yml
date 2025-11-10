@@ -1,10 +1,17 @@
-name: CI
+name: Backend CI
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
+    paths:
+      - 'Wordfolio.Api/**'
+      - 'Wordfolio.AppHost/**'
+      - 'Wordfolio.Common/**'
+      - 'Wordfolio.ServiceDefaults/**'
+      - '*.sln'
+      - '*.props'
+      - '*.targets'
+      - '.github/workflows/backend.yml'
   workflow_dispatch:
 
 jobs:
@@ -22,13 +29,6 @@ jobs:
       with:
         dotnet-version: '9.0.x'
     
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: Wordfolio.Frontend/package-lock.json
-    
     - name: Restore .NET tools
       run: dotnet tool restore
     
@@ -43,11 +43,3 @@ jobs:
     
     - name: Check F# formatting with Fantomas
       run: dotnet fantomas --check .
-    
-    - name: Install frontend dependencies
-      working-directory: Wordfolio.Frontend
-      run: npm ci
-    
-    - name: Build frontend
-      working-directory: Wordfolio.Frontend
-      run: npm run build
