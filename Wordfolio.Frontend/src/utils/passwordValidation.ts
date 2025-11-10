@@ -1,8 +1,8 @@
 import { PasswordRequirements } from '../api/authApi';
 
 export interface PasswordValidationResult {
-  isValid: boolean;
-  message: string;
+  readonly isValid: boolean;
+  readonly message: string;
 }
 
 export function validatePassword(
