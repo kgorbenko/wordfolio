@@ -15,6 +15,15 @@ export interface LoginResponse {
   readonly refreshToken: string;
 }
 
+export interface PasswordRequirements {
+  readonly requiredLength: number;
+  readonly requireDigit: boolean;
+  readonly requireLowercase: boolean;
+  readonly requireUppercase: boolean;
+  readonly requireNonAlphanumeric: boolean;
+  readonly requiredUniqueChars: number;
+}
+
 export interface ApiError {
   readonly type?: string;
   readonly title?: string;
@@ -47,6 +56,19 @@ export const authApi = {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const error: ApiError = await response.json();
+      throw error;
+    }
+
+    return response.json();
+  },
+
+  getPasswordRequirements: async (): Promise<PasswordRequirements> => {
+    const response = await fetch(`${API_BASE_URL}/auth/password-requirements`, {
+      method: 'GET',
     });
 
     if (!response.ok) {

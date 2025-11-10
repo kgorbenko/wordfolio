@@ -7,6 +7,7 @@ open System.Threading.Tasks
 
 open Xunit
 
+open Wordfolio.Api.Handlers.Auth
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
@@ -39,6 +40,14 @@ type ValidationProblemDetails =
       Title: string
       Status: int
       Errors: Dictionary<string, string[]> }
+
+type PasswordRequirements =
+    { RequiredLength: int
+      RequireDigit: bool
+      RequireLowercase: bool
+      RequireUppercase: bool
+      RequireNonAlphanumeric: bool
+      RequiredUniqueChars: int }
 
 type AuthTests(fixture: WordfolioIdentityTestFixture) =
     interface IClassFixture<WordfolioIdentityTestFixture>
@@ -267,4 +276,31 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.False(refreshResponse.IsSuccessStatusCode)
             Assert.Equal(HttpStatusCode.Unauthorized, refreshResponse.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``GET /auth/password-requirements returns password requirements``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture.ConnectionString)
+
+            use client = factory.CreateClient()
+
+            let! response = client.GetAsync(Urls.PasswordRequirements)
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+
+            let! requirements = response.Content.ReadFromJsonAsync<PasswordRequirements>()
+
+            Assert.NotNull(requirements)
+            Assert.True(requirements.RequiredLength > 0)
+            Assert.Equal(6, requirements.RequiredLength)
+            Assert.True(requirements.RequireDigit)
+            Assert.True(requirements.RequireLowercase)
+            Assert.True(requirements.RequireUppercase)
+            Assert.True(requirements.RequireNonAlphanumeric)
+            Assert.Equal(1, requirements.RequiredUniqueChars)
         }

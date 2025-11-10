@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Include="IdentityIntegration.fs" />
+    <Compile Include="Handlers\Auth.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

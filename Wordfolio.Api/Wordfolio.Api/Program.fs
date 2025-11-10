@@ -1,10 +1,11 @@
 open System
 
 open Microsoft.AspNetCore.Builder
+open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Routing
 open Microsoft.Extensions.Hosting
 
-open Wordfolio.Api.Identity
+open Wordfolio.Api.Handlers.Auth
 open Wordfolio.Api.IdentityIntegration
 open Wordfolio.ServiceDefaults.Builder
 open Wordfolio.ServiceDefaults.HealthCheck
@@ -44,7 +45,7 @@ let main args =
     app
     |> mapHealthChecks
     |> mapStatusEndpoint
-    |> _.MapGroup("auth").MapIdentityApi<User>().AllowAnonymous()
+    |> mapAuthEndpoints
     |> ignore
 
     app.MapGet(
