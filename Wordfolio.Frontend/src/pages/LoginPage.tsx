@@ -1,16 +1,25 @@
-import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from '@tanstack/react-router';
+import { useForm } from 'react-hook-form';
 import { ApiError } from '../api/authApi';
 import { useAuthStore } from '../stores/authStore';
 import { useLoginMutation } from '../mutations/useLoginMutation';
 import './LoginPage.css';
 
+interface LoginFormData {
+  email: string;
+  password: string;
+}
+
 export function LoginPage() {
   const navigate = useNavigate();
   const setTokens = useAuthStore((state) => state.setTokens);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<LoginFormData>();
 
   const loginMutation = useLoginMutation({
     onSuccess: (data) => {
@@ -19,32 +28,35 @@ export function LoginPage() {
     },
     onError: (error: ApiError) => {
       if (error.status === 401) {
-        setError('Invalid email or password');
+        setError('root', {
+          type: 'manual',
+          message: 'Invalid email or password',
+        });
       } else {
-        setError('An error occurred. Please try again.');
+        setError('root', {
+          type: 'manual',
+          message: 'An error occurred. Please try again.',
+        });
       }
     },
   });
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
-    loginMutation.mutate({ email, password });
+  const onSubmit = (data: LoginFormData) => {
+    loginMutation.mutate({ email: data.email, password: data.password });
   };
 
   return (
     <div className="login-page">
       <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div className="form-group">
           <label htmlFor="email">Email:</label>
           <input
             id="email"
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            {...register('email', { required: 'Email is required' })}
           />
+          {errors.email && <div className="error-message">{errors.email.message}</div>}
         </div>
 
         <div className="form-group">
@@ -52,13 +64,12 @@ export function LoginPage() {
           <input
             id="password"
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
+            {...register('password', { required: 'Password is required' })}
           />
+          {errors.password && <div className="error-message">{errors.password.message}</div>}
         </div>
 
-        {error && <div className="error-message">{error}</div>}
+        {errors.root && <div className="error-message">{errors.root.message}</div>}
 
         <button type="submit" disabled={loginMutation.isPending} className="submit-button">
           {loginMutation.isPending ? 'Logging in...' : 'Login'}
