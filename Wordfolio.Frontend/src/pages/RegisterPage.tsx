@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from '@tanstack/react-router';
 import { ApiError } from '../api/authApi';
 import { useRegisterMutation } from '../mutations/useRegisterMutation';
+import { usePasswordRequirementsQuery } from '../queries/usePasswordRequirementsQuery';
 import './RegisterPage.css';
 
 export function RegisterPage() {
@@ -11,6 +12,8 @@ export function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [validationError, setValidationError] = useState('');
+
+  const { data: passwordRequirements } = usePasswordRequirementsQuery();
 
   const registerMutation = useRegisterMutation({
     onSuccess: () => {
@@ -23,6 +26,41 @@ export function RegisterPage() {
     },
   });
 
+  const validatePassword = (pwd: string): string | null => {
+    if (!passwordRequirements) {
+      return null;
+    }
+
+    if (pwd.length < passwordRequirements.requiredLength) {
+      return `Password must be at least ${passwordRequirements.requiredLength} characters long`;
+    }
+
+    if (passwordRequirements.requireDigit && !/\d/.test(pwd)) {
+      return 'Password must contain at least one digit';
+    }
+
+    if (passwordRequirements.requireLowercase && !/[a-z]/.test(pwd)) {
+      return 'Password must contain at least one lowercase letter';
+    }
+
+    if (passwordRequirements.requireUppercase && !/[A-Z]/.test(pwd)) {
+      return 'Password must contain at least one uppercase letter';
+    }
+
+    if (passwordRequirements.requireNonAlphanumeric && !/[^a-zA-Z0-9]/.test(pwd)) {
+      return 'Password must contain at least one non-alphanumeric character';
+    }
+
+    if (passwordRequirements.requiredUniqueChars > 0) {
+      const uniqueChars = new Set(pwd).size;
+      if (uniqueChars < passwordRequirements.requiredUniqueChars) {
+        return `Password must contain at least ${passwordRequirements.requiredUniqueChars} unique characters`;
+      }
+    }
+
+    return null;
+  };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -33,8 +71,9 @@ export function RegisterPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setValidationError('Password must be at least 6 characters long');
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setValidationError(passwordError);
       return;
     }
 
@@ -66,6 +105,22 @@ export function RegisterPage() {
             required
           />
         </div>
+
+        {passwordRequirements && (
+          <div className="password-requirements">
+            <p>Password must meet the following requirements:</p>
+            <ul>
+              <li>At least {passwordRequirements.requiredLength} characters long</li>
+              {passwordRequirements.requireDigit && <li>Contains at least one digit</li>}
+              {passwordRequirements.requireLowercase && <li>Contains at least one lowercase letter</li>}
+              {passwordRequirements.requireUppercase && <li>Contains at least one uppercase letter</li>}
+              {passwordRequirements.requireNonAlphanumeric && <li>Contains at least one non-alphanumeric character</li>}
+              {passwordRequirements.requiredUniqueChars > 0 && (
+                <li>Contains at least {passwordRequirements.requiredUniqueChars} unique characters</li>
+              )}
+            </ul>
+          </div>
+        )}
 
         <div className="form-group">
           <label htmlFor="confirmPassword">Confirm Password:</label>
