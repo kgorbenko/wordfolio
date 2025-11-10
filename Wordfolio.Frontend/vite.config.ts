@@ -25,6 +25,11 @@ export default defineConfig(({ mode }) => {
             rollupOptions: {
                 input: './index.html'
             }
+        },
+        test: {
+            globals: true,
+            environment: 'happy-dom',
+            setupFiles: './src/test/setup.ts',
         }
     }
 })
