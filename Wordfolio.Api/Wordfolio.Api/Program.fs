@@ -2,12 +2,10 @@ open System
 
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Http
-open Microsoft.AspNetCore.Identity
 open Microsoft.AspNetCore.Routing
 open Microsoft.Extensions.Hosting
-open Microsoft.Extensions.Options
 
-open Wordfolio.Api.Identity
+open Wordfolio.Api.Handlers.Auth
 open Wordfolio.Api.IdentityIntegration
 open Wordfolio.ServiceDefaults.Builder
 open Wordfolio.ServiceDefaults.HealthCheck
@@ -22,15 +20,6 @@ type WeatherForecast =
     { Date: DateOnly
       TemperatureC: int
       Summary: string option }
-
-[<CLIMutable>]
-type PasswordRequirements =
-    { RequiredLength: int
-      RequireDigit: bool
-      RequireLowercase: bool
-      RequireUppercase: bool
-      RequireNonAlphanumeric: bool
-      RequiredUniqueChars: int }
 
 [<EntryPoint>]
 let main args =
@@ -56,24 +45,7 @@ let main args =
     app
     |> mapHealthChecks
     |> mapStatusEndpoint
-    |> _.MapGroup("auth").MapIdentityApi<User>().AllowAnonymous()
-    |> ignore
-
-    app
-        .MapGet(
-            "/auth/password-requirements",
-            Func<IOptions<IdentityOptions>, PasswordRequirements>(fun identityOptions ->
-                let passwordOptions =
-                    identityOptions.Value.Password
-
-                { RequiredLength = passwordOptions.RequiredLength
-                  RequireDigit = passwordOptions.RequireDigit
-                  RequireLowercase = passwordOptions.RequireLowercase
-                  RequireUppercase = passwordOptions.RequireUppercase
-                  RequireNonAlphanumeric = passwordOptions.RequireNonAlphanumeric
-                  RequiredUniqueChars = passwordOptions.RequiredUniqueChars })
-        )
-        .AllowAnonymous()
+    |> mapAuthEndpoints
     |> ignore
 
     app.MapGet(

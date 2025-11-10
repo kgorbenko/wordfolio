@@ -28,30 +28,6 @@
   margin-bottom: 15px;
 }
 
-.register-page .password-requirements {
-  background-color: #f0f8ff;
-  border: 1px solid #b0d4f1;
-  border-radius: 4px;
-  padding: 12px;
-  margin-bottom: 15px;
-  font-size: 14px;
-}
-
-.register-page .password-requirements p {
-  margin: 0 0 8px 0;
-  font-weight: 600;
-}
-
-.register-page .password-requirements ul {
-  margin: 0;
-  padding-left: 20px;
-  list-style-type: disc;
-}
-
-.register-page .password-requirements li {
-  margin: 4px 0;
-}
-
 .register-page .submit-button {
   width: 100%;
   padding: 10px;

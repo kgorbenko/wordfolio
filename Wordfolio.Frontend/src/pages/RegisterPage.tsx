@@ -13,7 +13,7 @@ export function RegisterPage() {
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [validationError, setValidationError] = useState('');
 
-  const { data: passwordRequirements } = usePasswordRequirementsQuery();
+  const { data: passwordRequirements, isLoading: isLoadingRequirements } = usePasswordRequirementsQuery();
 
   const registerMutation = useRegisterMutation({
     onSuccess: () => {
@@ -26,39 +26,45 @@ export function RegisterPage() {
     },
   });
 
-  const validatePassword = (pwd: string): string | null => {
+  const validatePassword = (pwd: string): { isValid: boolean; message: string } => {
     if (!passwordRequirements) {
-      return null;
+      return { isValid: true, message: '' };
     }
 
     if (pwd.length < passwordRequirements.requiredLength) {
-      return `Password must be at least ${passwordRequirements.requiredLength} characters long`;
+      return { 
+        isValid: false, 
+        message: `Password must be at least ${passwordRequirements.requiredLength} characters long` 
+      };
     }
 
     if (passwordRequirements.requireDigit && !/\d/.test(pwd)) {
-      return 'Password must contain at least one digit';
+      return { isValid: false, message: 'Password must contain at least one digit' };
     }
 
     if (passwordRequirements.requireLowercase && !/[a-z]/.test(pwd)) {
-      return 'Password must contain at least one lowercase letter';
+      return { isValid: false, message: 'Password must contain at least one lowercase letter' };
     }
 
     if (passwordRequirements.requireUppercase && !/[A-Z]/.test(pwd)) {
-      return 'Password must contain at least one uppercase letter';
+      return { isValid: false, message: 'Password must contain at least one uppercase letter' };
     }
 
     if (passwordRequirements.requireNonAlphanumeric && !/[^a-zA-Z0-9]/.test(pwd)) {
-      return 'Password must contain at least one non-alphanumeric character';
+      return { isValid: false, message: 'Password must contain at least one non-alphanumeric character' };
     }
 
     if (passwordRequirements.requiredUniqueChars > 0) {
       const uniqueChars = new Set(pwd).size;
       if (uniqueChars < passwordRequirements.requiredUniqueChars) {
-        return `Password must contain at least ${passwordRequirements.requiredUniqueChars} unique characters`;
+        return { 
+          isValid: false, 
+          message: `Password must contain at least ${passwordRequirements.requiredUniqueChars} unique characters` 
+        };
       }
     }
 
-    return null;
+    return { isValid: true, message: '' };
   };
 
   const handleSubmit = (e: FormEvent) => {
@@ -71,9 +77,9 @@ export function RegisterPage() {
       return;
     }
 
-    const passwordError = validatePassword(password);
-    if (passwordError) {
-      setValidationError(passwordError);
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      setValidationError(passwordValidation.message);
       return;
     }
 
@@ -83,74 +89,62 @@ export function RegisterPage() {
   return (
     <div className="register-page">
       <h1>Register</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="email">Email:</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="password">Password:</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-
-        {passwordRequirements && (
-          <div className="password-requirements">
-            <p>Password must meet the following requirements:</p>
-            <ul>
-              <li>At least {passwordRequirements.requiredLength} characters long</li>
-              {passwordRequirements.requireDigit && <li>Contains at least one digit</li>}
-              {passwordRequirements.requireLowercase && <li>Contains at least one lowercase letter</li>}
-              {passwordRequirements.requireUppercase && <li>Contains at least one uppercase letter</li>}
-              {passwordRequirements.requireNonAlphanumeric && <li>Contains at least one non-alphanumeric character</li>}
-              {passwordRequirements.requiredUniqueChars > 0 && (
-                <li>Contains at least {passwordRequirements.requiredUniqueChars} unique characters</li>
-              )}
-            </ul>
+      {isLoadingRequirements ? (
+        <div>Loading...</div>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="email">Email:</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
-        )}
 
-        <div className="form-group">
-          <label htmlFor="confirmPassword">Confirm Password:</label>
-          <input
-            id="confirmPassword"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </div>
-
-        {validationError && <div className="error-message">{validationError}</div>}
-
-        {Object.keys(errors).length > 0 && (
-          <div className="error-message">
-            {Object.entries(errors).map(([key, messages]) => (
-              <div key={key}>
-                {messages.map((msg, idx) => (
-                  <div key={idx}>{msg}</div>
-                ))}
-              </div>
-            ))}
+          <div className="form-group">
+            <label htmlFor="password">Password:</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
-        )}
 
-        <button type="submit" disabled={registerMutation.isPending} className="submit-button">
-          {registerMutation.isPending ? 'Registering...' : 'Register'}
-        </button>
-      </form>
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password:</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {validationError && <div className="error-message">{validationError}</div>}
+
+          {Object.keys(errors).length > 0 && (
+            <div className="error-message">
+              {Object.entries(errors).map(([key, messages]) => (
+                <div key={key}>
+                  {messages.map((msg, idx) => (
+                    <div key={idx}>{msg}</div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button type="submit" disabled={registerMutation.isPending} className="submit-button">
+            {registerMutation.isPending ? 'Registering...' : 'Register'}
+          </button>
+        </form>
+      )}
 
       <div className="footer-link">
         Already have an account? <Link to="/login">Login here</Link>

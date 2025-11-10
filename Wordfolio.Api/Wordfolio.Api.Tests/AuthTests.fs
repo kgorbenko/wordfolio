@@ -7,6 +7,7 @@ open System.Threading.Tasks
 
 open Xunit
 
+open Wordfolio.Api.Handlers.Auth
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
@@ -40,7 +41,6 @@ type ValidationProblemDetails =
       Status: int
       Errors: Dictionary<string, string[]> }
 
-[<CLIMutable>]
 type PasswordRequirements =
     { RequiredLength: int
       RequireDigit: bool
@@ -288,7 +288,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! response = client.GetAsync("/auth/password-requirements")
+            let! response = client.GetAsync(Urls.PasswordRequirements)
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
@@ -297,4 +297,10 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.NotNull(requirements)
             Assert.True(requirements.RequiredLength > 0)
+            Assert.Equal(6, requirements.RequiredLength)
+            Assert.True(requirements.RequireDigit)
+            Assert.True(requirements.RequireLowercase)
+            Assert.True(requirements.RequireUppercase)
+            Assert.True(requirements.RequireNonAlphanumeric)
+            Assert.Equal(1, requirements.RequiredUniqueChars)
         }
