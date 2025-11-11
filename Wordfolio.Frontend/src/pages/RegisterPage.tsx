@@ -5,6 +5,15 @@ import { ApiError } from '../api/authApi';
 import { useRegisterMutation } from '../mutations/useRegisterMutation';
 import { usePasswordRequirementsQuery } from '../queries/usePasswordRequirementsQuery';
 import { createRegisterSchema, RegisterFormData } from '../schemas/authSchemas';
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Box,
+  Skeleton,
+  Link as MuiLink,
+} from '@mui/material';
 import './RegisterPage.css';
 
 export function RegisterPage() {
@@ -44,51 +53,77 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="register-page">
-      <h1>Register</h1>
-      {isLoadingRequirements ? (
-        <div>Loading...</div>
-      ) : (
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div className="form-group">
-            <label htmlFor="email">Email:</label>
-            <input
+    <div className="centered-page-container">
+      <Container maxWidth="sm" className="register-container">
+        <Typography className="page-header" variant="h5" component="h1" gutterBottom align="center">
+          Sign Up for Wordfolio
+        </Typography>
+        {isLoadingRequirements ? (
+          <Box className="register-loading">
+            <Skeleton variant="rectangular" height={40} sx={{ mb: '10px' }} />
+            <Skeleton variant="rectangular" height={40} sx={{ mb: '10px' }} />
+            <Skeleton variant="rectangular" height={40} sx={{ mb: '10px' }} />
+            <Skeleton variant="rectangular" height={40} />
+          </Box>
+        ) : (
+          <Box className="register-form" component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+            <TextField
+              fullWidth
+              margin="normal"
               id="email"
+              label="Email"
               type="email"
+              autoComplete="email"
+              error={!!errors.email}
+              helperText={errors.email?.message}
               {...register('email')}
             />
-            {errors.email && <div className="error-message">{errors.email.message}</div>}
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password:</label>
-            <input
+            <TextField
+              fullWidth
+              margin="normal"
               id="password"
+              label="Password"
               type="password"
+              autoComplete="new-password"
+              error={!!errors.password}
+              helperText={errors.password?.message}
               {...register('password')}
             />
-            {errors.password && <div className="error-message">{errors.password.message}</div>}
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password:</label>
-            <input
+            <TextField
+              fullWidth
+              margin="normal"
               id="confirmPassword"
+              label="Confirm Password"
               type="password"
+              autoComplete="new-password"
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword?.message}
               {...register('confirmPassword')}
             />
-            {errors.confirmPassword && <div className="error-message">{errors.confirmPassword.message}</div>}
-          </div>
 
-          <button type="submit" disabled={registerMutation.isPending} className="submit-button">
-            {registerMutation.isPending ? 'Registering...' : 'Register'}
-          </button>
-        </form>
-      )}
+            <Button
+              fullWidth
+              type="submit"
+              variant="contained"
+              disabled={registerMutation.isPending}
+              className="register-button"
+            >
+              {registerMutation.isPending ? 'Registering...' : 'Register'}
+            </Button>
 
-      <div className="footer-link">
-        Already have an account? <Link to="/login">Login here</Link>
-      </div>
+            <Box className="register-footer">
+              <Typography variant="body2">
+                Already have an account?{' '}
+                <MuiLink component={Link} to="/login" underline="hover">
+                  Login here
+                </MuiLink>
+              </Typography>
+            </Box>
+          </Box>
+        )}
+      </Container>
     </div>
   );
 }

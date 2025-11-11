@@ -1,5 +1,6 @@
 import { useAuthStore } from '../stores/authStore';
 import { useNavigate, Link } from '@tanstack/react-router';
+import { Container, Typography, Box, Button } from '@mui/material';
 import './HomePage.css';
 
 export function HomePage() {
@@ -12,28 +13,49 @@ export function HomePage() {
   };
 
   return (
-    <div className="home-page">
-      <h1>Welcome to Wordfolio</h1>
+    <Container maxWidth="md" className="home-container">
+      <Typography variant="h2" component="h1" gutterBottom>
+        Welcome to Wordfolio
+      </Typography>
       {isAuthenticated ? (
-        <div className="content">
-          <p>You are logged in!</p>
-          <button onClick={handleLogout} className="logout-button">
+        <Box className="home-content">
+          <Typography variant="body1" paragraph>
+            You are logged in!
+          </Typography>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleLogout}
+            className="home-button"
+          >
             Logout
-          </button>
-        </div>
+          </Button>
+        </Box>
       ) : (
-        <div className="content">
-          <p>Please log in to continue.</p>
-          <div className="auth-links">
-            <Link to="/login" className="auth-link">
+        <Box className="home-content">
+          <Typography variant="body1" paragraph>
+            Please log in to continue.
+          </Typography>
+          <Box className="home-auth-links">
+            <Button
+              component={Link}
+              to="/login"
+              variant="contained"
+              color="primary"
+            >
               Login
-            </Link>
-            <Link to="/register" className="auth-link">
+            </Button>
+            <Button
+              component={Link}
+              to="/register"
+              variant="outlined"
+              color="primary"
+            >
               Register
-            </Link>
-          </div>
-        </div>
+            </Button>
+          </Box>
+        </Box>
       )}
-    </div>
+    </Container>
   );
 }

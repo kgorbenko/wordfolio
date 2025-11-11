@@ -1,45 +1,19 @@
-.home-page {
-  max-width: 800px;
-  margin: 50px auto;
-  padding: 20px;
+.home-container {
+  margin-top: 4rem;
+  text-align: center;
 }
 
-.home-page h1 {
-  margin-bottom: 20px;
+.home-content {
+  margin-top: 2rem;
 }
 
-.home-page .content {
-  margin-top: 20px;
+.home-button {
+  margin-top: 1rem;
 }
 
-.home-page .logout-button {
-  padding: 10px 20px;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.home-page .logout-button:hover {
-  background-color: #c82333;
-}
-
-.home-page .auth-links {
+.home-auth-links {
   display: flex;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.home-page .auth-link {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  text-decoration: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.home-page .auth-link:hover {
-  background-color: #0056b3;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
 }

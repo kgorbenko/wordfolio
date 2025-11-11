@@ -5,6 +5,15 @@ import { ApiError } from '../api/authApi';
 import { useAuthStore } from '../stores/authStore';
 import { useLoginMutation } from '../mutations/useLoginMutation';
 import { createLoginSchema, LoginFormData } from '../schemas/authSchemas';
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Box,
+  Alert,
+  Link as MuiLink,
+} from '@mui/material';
 import './LoginPage.css';
 
 export function LoginPage() {
@@ -45,39 +54,62 @@ export function LoginPage() {
   };
 
   return (
-    <div className="login-page">
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <div className="form-group">
-          <label htmlFor="email">Email:</label>
-          <input
+    <div className="centered-page-container">
+      <Container maxWidth="sm" className="login-container">
+        <Typography className="page-header" variant="h5" component="h1" gutterBottom align="center">
+          Login to Wordfolio
+        </Typography>
+        <Box className="login-form" component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <TextField
+            fullWidth
+            margin="normal"
             id="email"
+            label="Email"
             type="email"
+            autoComplete="email"
+            error={!!errors.email}
+            helperText={errors.email?.message}
             {...register('email')}
           />
-          {errors.email && <div className="error-message">{errors.email.message}</div>}
-        </div>
 
-        <div className="form-group">
-          <label htmlFor="password">Password:</label>
-          <input
+          <TextField
+            fullWidth
+            margin="normal"
             id="password"
+            label="Password"
             type="password"
+            autoComplete="current-password"
+            error={!!errors.password}
+            helperText={errors.password?.message}
             {...register('password')}
           />
-          {errors.password && <div className="error-message">{errors.password.message}</div>}
-        </div>
 
-        {errors.root && <div className="error-message">{errors.root.message}</div>}
+          {errors.root && (
+            <Alert severity="error" className="login-alert">
+              {errors.root.message}
+            </Alert>
+          )}
 
-        <button type="submit" disabled={loginMutation.isPending} className="submit-button">
-          {loginMutation.isPending ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
+          <Button
+            fullWidth
+            type="submit"
+            variant="contained"
+            disabled={loginMutation.isPending}
+            className="login-button"
+          >
+            {loginMutation.isPending ? 'Logging in...' : 'Login'}
+          </Button>
 
-      <div className="footer-link">
-        Don't have an account? <Link to="/register">Register here</Link>
-      </div>
+          <Box className="login-footer">
+            <Typography variant="body2">
+              Don't have an account?{' '}
+              <MuiLink component={Link} to="/register" underline="hover">
+                Register here
+              </MuiLink>
+            </Typography>
+          </Box>
+        </Box>
+      </Container>
     </div>
   );
 }
