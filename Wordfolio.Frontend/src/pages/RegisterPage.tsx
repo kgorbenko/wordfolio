@@ -49,7 +49,7 @@ export function RegisterPage() {
       {isLoadingRequirements ? (
         <div>Loading...</div>
       ) : (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="form-group">
             <label htmlFor="email">Email:</label>
             <input

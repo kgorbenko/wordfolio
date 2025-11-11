@@ -47,7 +47,7 @@ export function LoginPage() {
   return (
     <div className="login-page">
       <h1>Login</h1>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="form-group">
           <label htmlFor="email">Email:</label>
           <input
