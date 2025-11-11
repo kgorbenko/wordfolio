@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { PasswordRequirements } from '../api/authApi';
+import { validatePassword } from '../utils/passwordValidation';
 
 export const createLoginSchema = () => {
   return z.object({
@@ -15,31 +16,15 @@ export const createRegisterSchema = (passwordRequirements: PasswordRequirements)
       password: z
         .string()
         .min(1, 'Password is required')
-        .min(passwordRequirements.requiredLength, `Password must be at least ${passwordRequirements.requiredLength} characters long`)
-        .refine(
-          (password) => !passwordRequirements.requireDigit || /\d/.test(password),
-          'Password must contain at least one digit'
-        )
-        .refine(
-          (password) => !passwordRequirements.requireLowercase || /[a-z]/.test(password),
-          'Password must contain at least one lowercase letter'
-        )
-        .refine(
-          (password) => !passwordRequirements.requireUppercase || /[A-Z]/.test(password),
-          'Password must contain at least one uppercase letter'
-        )
-        .refine(
-          (password) => !passwordRequirements.requireNonAlphanumeric || /[^a-zA-Z0-9]/.test(password),
-          'Password must contain at least one non-alphanumeric character'
-        )
-        .refine(
-          (password) => {
-            if (passwordRequirements.requiredUniqueChars === 0) return true;
-            const uniqueChars = new Set(password).size;
-            return uniqueChars >= passwordRequirements.requiredUniqueChars;
-          },
-          `Password must contain at least ${passwordRequirements.requiredUniqueChars} unique characters`
-        ),
+        .superRefine((password, ctx) => {
+          const result = validatePassword(password, passwordRequirements);
+          if (!result.isValid) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: result.message,
+            });
+          }
+        }),
       confirmPassword: z.string().min(1, 'Please confirm your password'),
     })
     .refine((data) => data.password === data.confirmPassword, {
