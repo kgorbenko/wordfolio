@@ -1,19 +1,24 @@
-import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from '@tanstack/react-router';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { ApiError } from '../api/authApi';
 import { useRegisterMutation } from '../mutations/useRegisterMutation';
 import { usePasswordRequirementsQuery } from '../queries/usePasswordRequirementsQuery';
+import { createRegisterSchema, RegisterFormData } from '../schemas/authSchemas';
 import './RegisterPage.css';
 
 export function RegisterPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<Record<string, string[]>>({});
-  const [validationError, setValidationError] = useState('');
-
   const { data: passwordRequirements, isLoading: isLoadingRequirements } = usePasswordRequirementsQuery();
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: passwordRequirements ? zodResolver(createRegisterSchema(passwordRequirements)) : undefined,
+  });
 
   const registerMutation = useRegisterMutation({
     onSuccess: () => {
@@ -21,69 +26,21 @@ export function RegisterPage() {
     },
     onError: (error: ApiError) => {
       if (error.errors) {
-        setErrors(error.errors);
+        Object.entries(error.errors).forEach(([field, messages]) => {
+          const fieldName = field.toLowerCase() as keyof RegisterFormData;
+          if (fieldName in { email: true, password: true, confirmPassword: true }) {
+            setError(fieldName, {
+              type: 'server',
+              message: messages.join(', '),
+            });
+          }
+        });
       }
     },
   });
 
-  const validatePassword = (pwd: string): { isValid: boolean; message: string } => {
-    if (!passwordRequirements) {
-      return { isValid: true, message: '' };
-    }
-
-    if (pwd.length < passwordRequirements.requiredLength) {
-      return { 
-        isValid: false, 
-        message: `Password must be at least ${passwordRequirements.requiredLength} characters long` 
-      };
-    }
-
-    if (passwordRequirements.requireDigit && !/\d/.test(pwd)) {
-      return { isValid: false, message: 'Password must contain at least one digit' };
-    }
-
-    if (passwordRequirements.requireLowercase && !/[a-z]/.test(pwd)) {
-      return { isValid: false, message: 'Password must contain at least one lowercase letter' };
-    }
-
-    if (passwordRequirements.requireUppercase && !/[A-Z]/.test(pwd)) {
-      return { isValid: false, message: 'Password must contain at least one uppercase letter' };
-    }
-
-    if (passwordRequirements.requireNonAlphanumeric && !/[^a-zA-Z0-9]/.test(pwd)) {
-      return { isValid: false, message: 'Password must contain at least one non-alphanumeric character' };
-    }
-
-    if (passwordRequirements.requiredUniqueChars > 0) {
-      const uniqueChars = new Set(pwd).size;
-      if (uniqueChars < passwordRequirements.requiredUniqueChars) {
-        return { 
-          isValid: false, 
-          message: `Password must contain at least ${passwordRequirements.requiredUniqueChars} unique characters` 
-        };
-      }
-    }
-
-    return { isValid: true, message: '' };
-  };
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-    setValidationError('');
-
-    if (password !== confirmPassword) {
-      setValidationError('Passwords do not match');
-      return;
-    }
-
-    const passwordValidation = validatePassword(password);
-    if (!passwordValidation.isValid) {
-      setValidationError(passwordValidation.message);
-      return;
-    }
-
-    registerMutation.mutate({ email, password });
+  const onSubmit = (data: RegisterFormData) => {
+    registerMutation.mutate({ email: data.email, password: data.password });
   };
 
   return (
@@ -92,16 +49,15 @@ export function RegisterPage() {
       {isLoadingRequirements ? (
         <div>Loading...</div>
       ) : (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="form-group">
             <label htmlFor="email">Email:</label>
             <input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              {...register('email')}
             />
+            {errors.email && <div className="error-message">{errors.email.message}</div>}
           </div>
 
           <div className="form-group">
@@ -109,10 +65,9 @@ export function RegisterPage() {
             <input
               id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              {...register('password')}
             />
+            {errors.password && <div className="error-message">{errors.password.message}</div>}
           </div>
 
           <div className="form-group">
@@ -120,25 +75,10 @@ export function RegisterPage() {
             <input
               id="confirmPassword"
               type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
+              {...register('confirmPassword')}
             />
+            {errors.confirmPassword && <div className="error-message">{errors.confirmPassword.message}</div>}
           </div>
-
-          {validationError && <div className="error-message">{validationError}</div>}
-
-          {Object.keys(errors).length > 0 && (
-            <div className="error-message">
-              {Object.entries(errors).map(([key, messages]) => (
-                <div key={key}>
-                  {messages.map((msg, idx) => (
-                    <div key={idx}>{msg}</div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          )}
 
           <button type="submit" disabled={registerMutation.isPending} className="submit-button">
             {registerMutation.isPending ? 'Registering...' : 'Register'}
