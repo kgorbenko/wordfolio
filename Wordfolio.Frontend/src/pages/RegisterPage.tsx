@@ -12,9 +12,10 @@ import {
   TextField,
   Button,
   Box,
-  CircularProgress,
+  Skeleton,
   Link as MuiLink,
 } from '@mui/material';
+import './RegisterPage.css';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -53,14 +54,17 @@ export function RegisterPage() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
+    <Container maxWidth="sm" className="register-container">
+      <Paper elevation={3} className="register-paper">
         <Typography variant="h4" component="h1" gutterBottom align="center">
           Register
         </Typography>
         {isLoadingRequirements ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress />
+          <Box className="register-loading">
+            <Skeleton variant="rectangular" height={56} sx={{ mb: 2 }} />
+            <Skeleton variant="rectangular" height={56} sx={{ mb: 2 }} />
+            <Skeleton variant="rectangular" height={56} sx={{ mb: 2 }} />
+            <Skeleton variant="rectangular" height={42} />
           </Box>
         ) : (
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -72,7 +76,7 @@ export function RegisterPage() {
               type="email"
               autoComplete="email"
               error={!!errors.email}
-              helperText={errors.email?.message}
+              helperText={errors.email?.message ?? ' '}
               {...register('email')}
             />
 
@@ -84,7 +88,7 @@ export function RegisterPage() {
               type="password"
               autoComplete="new-password"
               error={!!errors.password}
-              helperText={errors.password?.message}
+              helperText={errors.password?.message ?? ' '}
               {...register('password')}
             />
 
@@ -96,7 +100,7 @@ export function RegisterPage() {
               type="password"
               autoComplete="new-password"
               error={!!errors.confirmPassword}
-              helperText={errors.confirmPassword?.message}
+              helperText={errors.confirmPassword?.message ?? ' '}
               {...register('confirmPassword')}
             />
 
@@ -106,12 +110,12 @@ export function RegisterPage() {
               variant="contained"
               size="large"
               disabled={registerMutation.isPending}
-              sx={{ mt: 3, mb: 2 }}
+              className="register-button"
             >
               {registerMutation.isPending ? 'Registering...' : 'Register'}
             </Button>
 
-            <Box sx={{ textAlign: 'center', mt: 2 }}>
+            <Box className="register-footer">
               <Typography variant="body2">
                 Already have an account?{' '}
                 <MuiLink component={Link} to="/login" underline="hover">

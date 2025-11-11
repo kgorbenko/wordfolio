@@ -15,6 +15,7 @@ import {
   Alert,
   Link as MuiLink,
 } from '@mui/material';
+import './LoginPage.css';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -54,8 +55,8 @@ export function LoginPage() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
+    <Container maxWidth="sm" className="login-container">
+      <Paper elevation={3} className="login-paper">
         <Typography variant="h4" component="h1" gutterBottom align="center">
           Login
         </Typography>
@@ -68,7 +69,7 @@ export function LoginPage() {
             type="email"
             autoComplete="email"
             error={!!errors.email}
-            helperText={errors.email?.message}
+            helperText={errors.email?.message ?? ' '}
             {...register('email')}
           />
 
@@ -80,12 +81,12 @@ export function LoginPage() {
             type="password"
             autoComplete="current-password"
             error={!!errors.password}
-            helperText={errors.password?.message}
+            helperText={errors.password?.message ?? ' '}
             {...register('password')}
           />
 
           {errors.root && (
-            <Alert severity="error" sx={{ mt: 2 }}>
+            <Alert severity="error" className="login-alert">
               {errors.root.message}
             </Alert>
           )}
@@ -96,12 +97,12 @@ export function LoginPage() {
             variant="contained"
             size="large"
             disabled={loginMutation.isPending}
-            sx={{ mt: 3, mb: 2 }}
+            className="login-button"
           >
             {loginMutation.isPending ? 'Logging in...' : 'Login'}
           </Button>
 
-          <Box sx={{ textAlign: 'center', mt: 2 }}>
+          <Box className="login-footer">
             <Typography variant="body2">
               Don't have an account?{' '}
               <MuiLink component={Link} to="/register" underline="hover">

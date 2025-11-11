@@ -1,0 +1,19 @@
+.home-container {
+  margin-top: 4rem;
+  text-align: center;
+}
+
+.home-content {
+  margin-top: 2rem;
+}
+
+.home-button {
+  margin-top: 1rem;
+}
+
+.home-auth-links {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}

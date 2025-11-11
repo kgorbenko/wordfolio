@@ -1,6 +1,7 @@
 import { useAuthStore } from '../stores/authStore';
 import { useNavigate, Link } from '@tanstack/react-router';
 import { Container, Typography, Box, Button } from '@mui/material';
+import './HomePage.css';
 
 export function HomePage() {
   const { isAuthenticated, clearAuth } = useAuthStore();
@@ -12,12 +13,12 @@ export function HomePage() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 8, textAlign: 'center' }}>
+    <Container maxWidth="md" className="home-container">
       <Typography variant="h2" component="h1" gutterBottom>
         Welcome to Wordfolio
       </Typography>
       {isAuthenticated ? (
-        <Box sx={{ mt: 4 }}>
+        <Box className="home-content">
           <Typography variant="body1" paragraph>
             You are logged in!
           </Typography>
@@ -25,17 +26,17 @@ export function HomePage() {
             variant="contained"
             color="error"
             onClick={handleLogout}
-            sx={{ mt: 2 }}
+            className="home-button"
           >
             Logout
           </Button>
         </Box>
       ) : (
-        <Box sx={{ mt: 4 }}>
+        <Box className="home-content">
           <Typography variant="body1" paragraph>
             Please log in to continue.
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 3 }}>
+          <Box className="home-auth-links">
             <Button
               component={Link}
               to="/login"
