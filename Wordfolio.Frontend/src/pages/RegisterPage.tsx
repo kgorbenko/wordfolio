@@ -5,7 +5,16 @@ import { ApiError } from '../api/authApi';
 import { useRegisterMutation } from '../mutations/useRegisterMutation';
 import { usePasswordRequirementsQuery } from '../queries/usePasswordRequirementsQuery';
 import { createRegisterSchema, RegisterFormData } from '../schemas/authSchemas';
-import './RegisterPage.css';
+import {
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Box,
+  CircularProgress,
+  Link as MuiLink,
+} from '@mui/material';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -44,51 +53,75 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="register-page">
-      <h1>Register</h1>
-      {isLoadingRequirements ? (
-        <div>Loading...</div>
-      ) : (
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div className="form-group">
-            <label htmlFor="email">Email:</label>
-            <input
+    <Container maxWidth="sm" sx={{ mt: 8 }}>
+      <Paper elevation={3} sx={{ p: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom align="center">
+          Register
+        </Typography>
+        {isLoadingRequirements ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+            <TextField
+              fullWidth
+              margin="normal"
               id="email"
+              label="Email"
               type="email"
+              autoComplete="email"
+              error={!!errors.email}
+              helperText={errors.email?.message}
               {...register('email')}
             />
-            {errors.email && <div className="error-message">{errors.email.message}</div>}
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password:</label>
-            <input
+            <TextField
+              fullWidth
+              margin="normal"
               id="password"
+              label="Password"
               type="password"
+              autoComplete="new-password"
+              error={!!errors.password}
+              helperText={errors.password?.message}
               {...register('password')}
             />
-            {errors.password && <div className="error-message">{errors.password.message}</div>}
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password:</label>
-            <input
+            <TextField
+              fullWidth
+              margin="normal"
               id="confirmPassword"
+              label="Confirm Password"
               type="password"
+              autoComplete="new-password"
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword?.message}
               {...register('confirmPassword')}
             />
-            {errors.confirmPassword && <div className="error-message">{errors.confirmPassword.message}</div>}
-          </div>
 
-          <button type="submit" disabled={registerMutation.isPending} className="submit-button">
-            {registerMutation.isPending ? 'Registering...' : 'Register'}
-          </button>
-        </form>
-      )}
+            <Button
+              fullWidth
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={registerMutation.isPending}
+              sx={{ mt: 3, mb: 2 }}
+            >
+              {registerMutation.isPending ? 'Registering...' : 'Register'}
+            </Button>
 
-      <div className="footer-link">
-        Already have an account? <Link to="/login">Login here</Link>
-      </div>
-    </div>
+            <Box sx={{ textAlign: 'center', mt: 2 }}>
+              <Typography variant="body2">
+                Already have an account?{' '}
+                <MuiLink component={Link} to="/login" underline="hover">
+                  Login here
+                </MuiLink>
+              </Typography>
+            </Box>
+          </Box>
+        )}
+      </Paper>
+    </Container>
   );
 }
