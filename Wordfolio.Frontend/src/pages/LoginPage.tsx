@@ -1,14 +1,11 @@
 import { useNavigate, Link } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { ApiError } from '../api/authApi';
 import { useAuthStore } from '../stores/authStore';
 import { useLoginMutation } from '../mutations/useLoginMutation';
+import { createLoginSchema, LoginFormData } from '../schemas/authSchemas';
 import './LoginPage.css';
-
-interface LoginFormData {
-  email: string;
-  password: string;
-}
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -19,7 +16,9 @@ export function LoginPage() {
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<LoginFormData>();
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(createLoginSchema()),
+  });
 
   const loginMutation = useLoginMutation({
     onSuccess: (data) => {
@@ -54,7 +53,7 @@ export function LoginPage() {
           <input
             id="email"
             type="email"
-            {...register('email', { required: 'Email is required' })}
+            {...register('email')}
           />
           {errors.email && <div className="error-message">{errors.email.message}</div>}
         </div>
@@ -64,7 +63,7 @@ export function LoginPage() {
           <input
             id="password"
             type="password"
-            {...register('password', { required: 'Password is required' })}
+            {...register('password')}
           />
           {errors.password && <div className="error-message">{errors.password.message}</div>}
         </div>

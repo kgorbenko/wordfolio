@@ -1,16 +1,11 @@
 import { useNavigate, Link } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { ApiError } from '../api/authApi';
 import { useRegisterMutation } from '../mutations/useRegisterMutation';
 import { usePasswordRequirementsQuery } from '../queries/usePasswordRequirementsQuery';
-import { validatePassword } from '../utils/passwordValidation';
+import { createRegisterSchema, RegisterFormData } from '../schemas/authSchemas';
 import './RegisterPage.css';
-
-interface RegisterFormData {
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -21,7 +16,9 @@ export function RegisterPage() {
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<RegisterFormData>();
+  } = useForm<RegisterFormData>({
+    resolver: passwordRequirements ? zodResolver(createRegisterSchema(passwordRequirements)) : undefined,
+  });
 
   const registerMutation = useRegisterMutation({
     onSuccess: () => {
@@ -43,27 +40,6 @@ export function RegisterPage() {
   });
 
   const onSubmit = (data: RegisterFormData) => {
-    if (!passwordRequirements) {
-      return;
-    }
-
-    if (data.password !== data.confirmPassword) {
-      setError('confirmPassword', {
-        type: 'manual',
-        message: 'Passwords do not match',
-      });
-      return;
-    }
-
-    const passwordValidation = validatePassword(data.password, passwordRequirements);
-    if (!passwordValidation.isValid) {
-      setError('password', {
-        type: 'manual',
-        message: passwordValidation.message,
-      });
-      return;
-    }
-
     registerMutation.mutate({ email: data.email, password: data.password });
   };
 
@@ -79,7 +55,7 @@ export function RegisterPage() {
             <input
               id="email"
               type="email"
-              {...register('email', { required: 'Email is required' })}
+              {...register('email')}
             />
             {errors.email && <div className="error-message">{errors.email.message}</div>}
           </div>
@@ -89,7 +65,7 @@ export function RegisterPage() {
             <input
               id="password"
               type="password"
-              {...register('password', { required: 'Password is required' })}
+              {...register('password')}
             />
             {errors.password && <div className="error-message">{errors.password.message}</div>}
           </div>
@@ -99,7 +75,7 @@ export function RegisterPage() {
             <input
               id="confirmPassword"
               type="password"
-              {...register('confirmPassword', { required: 'Please confirm your password' })}
+              {...register('confirmPassword')}
             />
             {errors.confirmPassword && <div className="error-message">{errors.confirmPassword.message}</div>}
           </div>
