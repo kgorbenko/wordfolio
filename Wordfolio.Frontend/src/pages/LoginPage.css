@@ -1,9 +1,5 @@
-.login-container {
-  margin-top: 4rem;
-}
-
-.login-paper {
-  padding: 2rem;
+.login-container .page-header {
+  margin-bottom: 2rem;
 }
 
 .login-alert {
@@ -18,4 +14,10 @@
 .login-footer {
   text-align: center;
   margin-top: 1rem;
+}
+
+.login-form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 1rem;
 }

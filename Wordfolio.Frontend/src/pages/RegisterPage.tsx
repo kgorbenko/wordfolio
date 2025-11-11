@@ -7,7 +7,6 @@ import { usePasswordRequirementsQuery } from '../queries/usePasswordRequirements
 import { createRegisterSchema, RegisterFormData } from '../schemas/authSchemas';
 import {
   Container,
-  Paper,
   Typography,
   TextField,
   Button,
@@ -54,20 +53,20 @@ export function RegisterPage() {
   };
 
   return (
-    <Container maxWidth="sm" className="register-container">
-      <Paper elevation={3} className="register-paper">
-        <Typography variant="h4" component="h1" gutterBottom align="center">
-          Register
+    <div className="centered-page-container">
+      <Container maxWidth="sm" className="register-container">
+        <Typography className="page-header" variant="h5" component="h1" gutterBottom align="center">
+          Sign Up for Wordfolio
         </Typography>
         {isLoadingRequirements ? (
           <Box className="register-loading">
-            <Skeleton variant="rectangular" height={56} sx={{ mb: 2 }} />
-            <Skeleton variant="rectangular" height={56} sx={{ mb: 2 }} />
-            <Skeleton variant="rectangular" height={56} sx={{ mb: 2 }} />
-            <Skeleton variant="rectangular" height={42} />
+            <Skeleton variant="rectangular" height={40} sx={{ mb: '10px' }} />
+            <Skeleton variant="rectangular" height={40} sx={{ mb: '10px' }} />
+            <Skeleton variant="rectangular" height={40} sx={{ mb: '10px' }} />
+            <Skeleton variant="rectangular" height={40} />
           </Box>
         ) : (
-          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Box className="register-form" component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <TextField
               fullWidth
               margin="normal"
@@ -76,7 +75,7 @@ export function RegisterPage() {
               type="email"
               autoComplete="email"
               error={!!errors.email}
-              helperText={errors.email?.message ?? ' '}
+              helperText={errors.email?.message}
               {...register('email')}
             />
 
@@ -88,7 +87,7 @@ export function RegisterPage() {
               type="password"
               autoComplete="new-password"
               error={!!errors.password}
-              helperText={errors.password?.message ?? ' '}
+              helperText={errors.password?.message}
               {...register('password')}
             />
 
@@ -100,7 +99,7 @@ export function RegisterPage() {
               type="password"
               autoComplete="new-password"
               error={!!errors.confirmPassword}
-              helperText={errors.confirmPassword?.message ?? ' '}
+              helperText={errors.confirmPassword?.message}
               {...register('confirmPassword')}
             />
 
@@ -108,7 +107,6 @@ export function RegisterPage() {
               fullWidth
               type="submit"
               variant="contained"
-              size="large"
               disabled={registerMutation.isPending}
               className="register-button"
             >
@@ -125,7 +123,7 @@ export function RegisterPage() {
             </Box>
           </Box>
         )}
-      </Paper>
-    </Container>
+      </Container>
+    </div>
   );
 }

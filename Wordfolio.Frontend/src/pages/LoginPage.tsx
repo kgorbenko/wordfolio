@@ -7,7 +7,6 @@ import { useLoginMutation } from '../mutations/useLoginMutation';
 import { createLoginSchema, LoginFormData } from '../schemas/authSchemas';
 import {
   Container,
-  Paper,
   Typography,
   TextField,
   Button,
@@ -55,12 +54,12 @@ export function LoginPage() {
   };
 
   return (
-    <Container maxWidth="sm" className="login-container">
-      <Paper elevation={3} className="login-paper">
-        <Typography variant="h4" component="h1" gutterBottom align="center">
-          Login
+    <div className="centered-page-container">
+      <Container maxWidth="sm" className="login-container">
+        <Typography className="page-header" variant="h5" component="h1" gutterBottom align="center">
+          Login to Wordfolio
         </Typography>
-        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <Box className="login-form" component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <TextField
             fullWidth
             margin="normal"
@@ -69,7 +68,7 @@ export function LoginPage() {
             type="email"
             autoComplete="email"
             error={!!errors.email}
-            helperText={errors.email?.message ?? ' '}
+            helperText={errors.email?.message}
             {...register('email')}
           />
 
@@ -81,7 +80,7 @@ export function LoginPage() {
             type="password"
             autoComplete="current-password"
             error={!!errors.password}
-            helperText={errors.password?.message ?? ' '}
+            helperText={errors.password?.message}
             {...register('password')}
           />
 
@@ -95,7 +94,6 @@ export function LoginPage() {
             fullWidth
             type="submit"
             variant="contained"
-            size="large"
             disabled={loginMutation.isPending}
             className="login-button"
           >
@@ -111,7 +109,7 @@ export function LoginPage() {
             </Typography>
           </Box>
         </Box>
-      </Paper>
-    </Container>
+      </Container>
+    </div>
   );
 }

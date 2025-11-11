@@ -1,14 +1,5 @@
-.register-container {
-  margin-top: 4rem;
-}
-
-.register-paper {
-  padding: 2rem;
-}
-
-.register-loading {
-  padding-top: 2rem;
-  padding-bottom: 2rem;
+.register-container .page-header {
+  margin-bottom: 2rem;
 }
 
 .register-button {
@@ -19,4 +10,10 @@
 .register-footer {
   text-align: center;
   margin-top: 1rem;
+}
+
+.register-form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 1rem;
 }
