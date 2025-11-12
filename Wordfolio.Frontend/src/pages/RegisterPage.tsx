@@ -14,6 +14,7 @@ import {
     Skeleton,
     Link as MuiLink,
 } from '@mui/material';
+
 import './RegisterPage.css';
 
 export const RegisterPage = () => {
