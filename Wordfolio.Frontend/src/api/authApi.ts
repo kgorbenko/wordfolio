@@ -15,6 +15,17 @@ export interface LoginResponse {
     readonly refreshToken: string;
 }
 
+export interface RefreshRequest {
+    readonly refreshToken: string;
+}
+
+export interface RefreshResponse {
+    readonly tokenType: string;
+    readonly accessToken: string;
+    readonly expiresIn: number;
+    readonly refreshToken: string;
+}
+
 export interface PasswordRequirements {
     readonly requiredLength: number;
     readonly requireDigit: boolean;
@@ -73,6 +84,23 @@ export const authApi = {
                 method: "GET",
             }
         );
+
+        if (!response.ok) {
+            const error: ApiError = await response.json();
+            throw error;
+        }
+
+        return response.json();
+    },
+
+    refresh: async (request: RefreshRequest): Promise<RefreshResponse> => {
+        const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(request),
+        });
 
         if (!response.ok) {
             const error: ApiError = await response.json();
