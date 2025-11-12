@@ -30,6 +30,7 @@ Follow these concise rules when generating code or suggestions for this reposito
   - Run: `dotnet fantomas .` to format generated F# code.
   - For csproj/fsproj files use double spaces for indentation.
   - Separate `PropertyGroup`s and `ItemGroup`s by a blank line.
+  - For CSS files use 4 spaces for indentation.
 
 - Naming
   - Use descriptive variable and type names.
@@ -48,10 +49,18 @@ Follow these concise rules when generating code or suggestions for this reposito
     - Local imports last.
   - Within each group, sort imports alphabetically.
 
+- Imports (TypeScript/React)
+  - Separate CSS imports from JavaScript/TypeScript imports by one blank line.
+  - CSS imports should come after JavaScript/TypeScript imports.
+
 - F# style
   - Prefer modules and small functions; group files by responsibility.
   - Use explicit types for public APIs.
   - Keep pipelines readable.
+
+- TypeScript/React style
+  - Use arrow function expressions for component declarations instead of function declarations.
+  - Example: `export const MyComponent = () => { ... }` instead of `export function MyComponent() { ... }`
 
 - General
   - Keep changes minimal and focused.
