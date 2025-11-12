@@ -1,23 +1,34 @@
-import { z } from 'zod';
-import { PasswordRequirements } from '../api/authApi';
-import { validatePassword } from '../utils/passwordValidation';
+import { z } from "zod";
+import { PasswordRequirements } from "../api/authApi";
+import { validatePassword } from "../utils/passwordValidation";
 
 export const createLoginSchema = () => {
     return z.object({
-        email: z.string().min(1, 'Email is required').email('Invalid email address'),
-        password: z.string().min(1, 'Password is required'),
+        email: z
+            .string()
+            .min(1, "Email is required")
+            .email("Invalid email address"),
+        password: z.string().min(1, "Password is required"),
     });
 };
 
-export const createRegisterSchema = (passwordRequirements: PasswordRequirements) => {
+export const createRegisterSchema = (
+    passwordRequirements: PasswordRequirements
+) => {
     return z
         .object({
-            email: z.string().min(1, 'Email is required').email('Invalid email address'),
+            email: z
+                .string()
+                .min(1, "Email is required")
+                .email("Invalid email address"),
             password: z
                 .string()
-                .min(1, 'Password is required')
+                .min(1, "Password is required")
                 .superRefine((password, ctx) => {
-                    const result = validatePassword(password, passwordRequirements);
+                    const result = validatePassword(
+                        password,
+                        passwordRequirements
+                    );
                     if (!result.isValid) {
                         ctx.addIssue({
                             code: z.ZodIssueCode.custom,
@@ -25,11 +36,11 @@ export const createRegisterSchema = (passwordRequirements: PasswordRequirements)
                         });
                     }
                 }),
-            confirmPassword: z.string().min(1, 'Please confirm your password'),
+            confirmPassword: z.string().min(1, "Please confirm your password"),
         })
         .refine((data) => data.password === data.confirmPassword, {
-            message: 'Passwords do not match',
-            path: ['confirmPassword'],
+            message: "Passwords do not match",
+            path: ["confirmPassword"],
         });
 };
 

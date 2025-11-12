@@ -1,4 +1,4 @@
-import { PasswordRequirements } from '../api/authApi';
+import { PasswordRequirements } from "../api/authApi";
 
 export interface PasswordValidationResult {
     readonly isValid: boolean;
@@ -17,19 +17,32 @@ export function validatePassword(
     }
 
     if (requirements.requireDigit && !/\d/.test(password)) {
-        return { isValid: false, message: 'Password must contain at least one digit' };
+        return {
+            isValid: false,
+            message: "Password must contain at least one digit",
+        };
     }
 
     if (requirements.requireLowercase && !/[a-z]/.test(password)) {
-        return { isValid: false, message: 'Password must contain at least one lowercase letter' };
+        return {
+            isValid: false,
+            message: "Password must contain at least one lowercase letter",
+        };
     }
 
     if (requirements.requireUppercase && !/[A-Z]/.test(password)) {
-        return { isValid: false, message: 'Password must contain at least one uppercase letter' };
+        return {
+            isValid: false,
+            message: "Password must contain at least one uppercase letter",
+        };
     }
 
     if (requirements.requireNonAlphanumeric && !/[^a-zA-Z0-9]/.test(password)) {
-        return { isValid: false, message: 'Password must contain at least one non-alphanumeric character' };
+        return {
+            isValid: false,
+            message:
+                "Password must contain at least one non-alphanumeric character",
+        };
     }
 
     if (requirements.requiredUniqueChars > 0) {
@@ -42,5 +55,5 @@ export function validatePassword(
         }
     }
 
-    return { isValid: true, message: '' };
+    return { isValid: true, message: "" };
 }

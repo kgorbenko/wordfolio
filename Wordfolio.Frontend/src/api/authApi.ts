@@ -31,14 +31,14 @@ export interface ApiError {
     readonly errors?: Record<string, string[]>;
 }
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = "/api";
 
 export const authApi = {
     register: async (request: RegisterRequest): Promise<void> => {
         const response = await fetch(`${API_BASE_URL}/auth/register`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
             },
             body: JSON.stringify(request),
         });
@@ -51,9 +51,9 @@ export const authApi = {
 
     login: async (request: LoginRequest): Promise<LoginResponse> => {
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
             },
             body: JSON.stringify(request),
         });
@@ -67,9 +67,12 @@ export const authApi = {
     },
 
     getPasswordRequirements: async (): Promise<PasswordRequirements> => {
-        const response = await fetch(`${API_BASE_URL}/auth/password-requirements`, {
-            method: 'GET',
-        });
+        const response = await fetch(
+            `${API_BASE_URL}/auth/password-requirements`,
+            {
+                method: "GET",
+            }
+        );
 
         if (!response.ok) {
             const error: ApiError = await response.json();

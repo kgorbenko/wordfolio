@@ -1,19 +1,19 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme } from "@mui/material/styles";
 
 export const theme = createTheme({
     palette: {
         primary: {
-            main: '#1976d2',
+            main: "#1976d2",
         },
         secondary: {
-            main: '#dc004e',
+            main: "#dc004e",
         },
         error: {
-            main: '#f44336',
+            main: "#f44336",
         },
     },
     typography: {
-        fontSize: 14
+        fontSize: 14,
     },
     breakpoints: {
         values: {
@@ -22,43 +22,43 @@ export const theme = createTheme({
             md: 900,
             lg: 1200,
             xl: 1536,
-        }
+        },
     },
     components: {
         MuiButton: {
             defaultProps: {
-                size: 'small',
+                size: "small",
             },
             styleOverrides: {
                 root: {
-                    textTransform: 'none',
+                    textTransform: "none",
                 },
             },
         },
         MuiTextField: {
             defaultProps: {
-                size: 'small',
+                size: "small",
             },
             styleOverrides: {
                 root: {
-                    margin: 0
-                }
-            }
+                    margin: 0,
+                },
+            },
         },
         MuiInputLabel: {
             styleOverrides: {
                 root: {
                     fontSize: 14,
-                }
-            }
+                },
+            },
         },
         MuiFormHelperText: {
             styleOverrides: {
                 root: {
-                    fontSize: '0.7rem',
-                    marginTop: '2px'
-                }
-            }
-        }
+                    fontSize: "0.7rem",
+                    marginTop: "2px",
+                },
+            },
+        },
     },
 });

@@ -1,5 +1,5 @@
-import { useMutation } from '@tanstack/react-query';
-import { authApi, RegisterRequest, ApiError } from '../api/authApi';
+import { useMutation } from "@tanstack/react-query";
+import { authApi, RegisterRequest, ApiError } from "../api/authApi";
 
 interface UseRegisterMutationOptions {
     onSuccess?: () => void;

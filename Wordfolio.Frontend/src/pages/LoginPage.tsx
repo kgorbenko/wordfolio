@@ -1,10 +1,10 @@
-import { useNavigate, Link } from '@tanstack/react-router';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { ApiError } from '../api/authApi';
-import { useAuthStore } from '../stores/authStore';
-import { useLoginMutation } from '../mutations/useLoginMutation';
-import { createLoginSchema, LoginFormData } from '../schemas/authSchemas';
+import { useNavigate, Link } from "@tanstack/react-router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ApiError } from "../api/authApi";
+import { useAuthStore } from "../stores/authStore";
+import { useLoginMutation } from "../mutations/useLoginMutation";
+import { createLoginSchema, LoginFormData } from "../schemas/authSchemas";
 import {
     Container,
     Typography,
@@ -13,9 +13,9 @@ import {
     Box,
     Alert,
     Link as MuiLink,
-} from '@mui/material';
+} from "@mui/material";
 
-import './LoginPage.css';
+import "./LoginPage.css";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -33,18 +33,18 @@ export const LoginPage = () => {
     const loginMutation = useLoginMutation({
         onSuccess: (data) => {
             setTokens(data);
-            navigate({ to: '/' });
+            navigate({ to: "/" });
         },
         onError: (error: ApiError) => {
             if (error.status === 401) {
-                setError('root', {
-                    type: 'manual',
-                    message: 'Invalid email or password',
+                setError("root", {
+                    type: "manual",
+                    message: "Invalid email or password",
                 });
             } else {
-                setError('root', {
-                    type: 'manual',
-                    message: 'An error occurred. Please try again.',
+                setError("root", {
+                    type: "manual",
+                    message: "An error occurred. Please try again.",
                 });
             }
         },
@@ -57,10 +57,21 @@ export const LoginPage = () => {
     return (
         <div className="centered-page-container">
             <Container maxWidth="sm" className="login-container">
-                <Typography className="page-header" variant="h5" component="h1" gutterBottom align="center">
+                <Typography
+                    className="page-header"
+                    variant="h5"
+                    component="h1"
+                    gutterBottom
+                    align="center"
+                >
                     Login to Wordfolio
                 </Typography>
-                <Box className="login-form" component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+                <Box
+                    className="login-form"
+                    component="form"
+                    onSubmit={handleSubmit(onSubmit)}
+                    noValidate
+                >
                     <TextField
                         fullWidth
                         margin="normal"
@@ -70,7 +81,7 @@ export const LoginPage = () => {
                         autoComplete="email"
                         error={!!errors.email}
                         helperText={errors.email?.message}
-                        {...register('email')}
+                        {...register("email")}
                     />
 
                     <TextField
@@ -82,7 +93,7 @@ export const LoginPage = () => {
                         autoComplete="current-password"
                         error={!!errors.password}
                         helperText={errors.password?.message}
-                        {...register('password')}
+                        {...register("password")}
                     />
 
                     {errors.root && (
@@ -98,13 +109,17 @@ export const LoginPage = () => {
                         disabled={loginMutation.isPending}
                         className="login-button"
                     >
-                        {loginMutation.isPending ? 'Logging in...' : 'Login'}
+                        {loginMutation.isPending ? "Logging in..." : "Login"}
                     </Button>
 
                     <Box className="login-footer">
                         <Typography variant="body2">
-                            Don't have an account?{' '}
-                            <MuiLink component={Link} to="/register" underline="hover">
+                            Don't have an account?{" "}
+                            <MuiLink
+                                component={Link}
+                                to="/register"
+                                underline="hover"
+                            >
                                 Register here
                             </MuiLink>
                         </Typography>
