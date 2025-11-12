@@ -33,6 +33,6 @@ export default tseslint.config(
     files: ['**/*.css'],
     language: 'css/css',
     plugins: { css },
-    rules: css.configs.recommended.rules,
+    rules: css.configs.recommended.rules
   }
 );

@@ -7,7 +7,7 @@
     "dev": "vite --host",
     "start": "vite --host",
     "build": "tsc -b && vite build",
-    "lint": "eslint . --report-unused-disable-directives --max-warnings 0 && stylelint \"**/*.css\"",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -29,7 +29,6 @@
   "devDependencies": {
     "@eslint/css": "0.14.1",
     "@stylistic/eslint-plugin": "5.5.0",
-    "@stylistic/stylelint-plugin": "4.0.0",
     "@tanstack/router-devtools": "1.134.17",
     "@tanstack/router-plugin": "1.134.17",
     "@testing-library/jest-dom": "6.9.1",
@@ -47,8 +46,6 @@
     "globals": "16.5.0",
     "happy-dom": "20.0.10",
     "jsdom": "27.1.0",
-    "stylelint": "16.25.0",
-    "stylelint-config-standard": "39.0.1",
     "typescript": "5.9.2",
     "typescript-eslint": "8.46.3",
     "vite": "7.1.2",
