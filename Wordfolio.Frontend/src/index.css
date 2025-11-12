@@ -1,20 +1,20 @@
 body {
-  margin: 0;
-  padding: 0;
-  min-height: 100dvh;
-  overscroll-behavior: none;
+    margin: 0;
+    padding: 0;
+    min-height: 100dvh;
+    overscroll-behavior: none;
 }
 
 #root {
-  display: flex;
-  flex-direction: column;
-  min-height: 100dvh;
-  overscroll-behavior: none;
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    overscroll-behavior: none;
 }
 
 #root .centered-page-container {
-  flex-grow: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
