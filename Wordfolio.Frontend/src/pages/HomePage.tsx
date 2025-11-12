@@ -3,7 +3,7 @@ import { useNavigate, Link } from '@tanstack/react-router';
 import { Container, Typography, Box, Button } from '@mui/material';
 import './HomePage.css';
 
-export function HomePage() {
+export const HomePage = () => {
     const { isAuthenticated, clearAuth } = useAuthStore();
     const navigate = useNavigate();
 
@@ -58,4 +58,4 @@ export function HomePage() {
             )}
         </Container>
     );
-}
+};
