@@ -25,12 +25,15 @@ Follow these concise rules when generating code or suggestions for this reposito
   - Format: `dotnet fantomas .`
   - Frontend build: `cd Wordfolio.Frontend && npm run build`
   - Frontend lint: `cd Wordfolio.Frontend && npm run lint`
-  - Frontend format CSS: `cd Wordfolio.Frontend && npm run format`
 
 - Formatting
   - Run: `dotnet fantomas .` to format generated F# code.
   - For csproj/fsproj files use double spaces for indentation.
   - Separate `PropertyGroup`s and `ItemGroup`s by a blank line.
+
+- Dependencies
+  - Use strict dependency versions without ^ or ~ prefixes in package.json.
+  - This ensures reproducible builds and prevents unexpected updates.
 
 - Naming
   - Use descriptive variable and type names.
