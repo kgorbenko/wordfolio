@@ -46,7 +46,7 @@ type BaseDatabaseTestFixture(messageSink: IMessageSink) =
                         connection,
                         RespawnerOptions(
                             DbAdapter = DbAdapter.Postgres,
-                            TablesToIgnore = [| Table("VersionInfo"); Table("identity", "MigrationsHistory") |]
+                            TablesToIgnore = [| Table("VersionInfo"); Table("__EFMigrationsHistory") |]
                         )
                     )
 

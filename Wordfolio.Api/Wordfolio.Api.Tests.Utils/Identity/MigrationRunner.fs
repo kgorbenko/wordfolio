@@ -6,14 +6,7 @@ open Wordfolio.Api.Identity
 
 let run(connectionString: string) =
     let options =
-        DbContextOptionsBuilder<IdentityDbContext>()
-            .UseNpgsql(
-                connectionString,
-                fun o ->
-                    o.MigrationsHistoryTable(Constants.MigrationsHistoryTableName, Constants.SchemaName)
-                    |> ignore
-            )
-            .Options
+        DbContextOptionsBuilder<IdentityDbContext>().UseNpgsql(connectionString).Options
 
     use identityContext =
         new IdentityDbContext(options)
