@@ -14,9 +14,10 @@ import {
     Alert,
     Link as MuiLink,
 } from '@mui/material';
+
 import './LoginPage.css';
 
-export function LoginPage() {
+export const LoginPage = () => {
     const navigate = useNavigate();
     const setTokens = useAuthStore((state) => state.setTokens);
 
@@ -112,4 +113,4 @@ export function LoginPage() {
             </Container>
         </div>
     );
-}
+};

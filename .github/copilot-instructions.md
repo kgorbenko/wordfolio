@@ -31,6 +31,10 @@ Follow these concise rules when generating code or suggestions for this reposito
   - For csproj/fsproj files use double spaces for indentation.
   - Separate `PropertyGroup`s and `ItemGroup`s by a blank line.
 
+- Dependencies
+  - Use strict dependency versions without ^ or ~ prefixes in package.json.
+  - This ensures reproducible builds and prevents unexpected updates.
+
 - Naming
   - Use descriptive variable and type names.
   - Prefer short names only if they remain descriptive.
@@ -48,10 +52,18 @@ Follow these concise rules when generating code or suggestions for this reposito
     - Local imports last.
   - Within each group, sort imports alphabetically.
 
+- Imports (TypeScript/React)
+  - Separate CSS imports from JavaScript/TypeScript imports by one blank line.
+  - CSS imports should come after JavaScript/TypeScript imports.
+
 - F# style
   - Prefer modules and small functions; group files by responsibility.
   - Use explicit types for public APIs.
   - Keep pipelines readable.
+
+- TypeScript/React style
+  - Use arrow function expressions for component declarations instead of function declarations.
+  - Example: `export const MyComponent = () => { ... }` instead of `export function MyComponent() { ... }`
 
 - General
   - Keep changes minimal and focused.

@@ -14,9 +14,10 @@ import {
     Skeleton,
     Link as MuiLink,
 } from '@mui/material';
+
 import './RegisterPage.css';
 
-export function RegisterPage() {
+export const RegisterPage = () => {
     const navigate = useNavigate();
     const { data: passwordRequirements, isLoading: isLoadingRequirements } = usePasswordRequirementsQuery();
 
@@ -126,4 +127,4 @@ export function RegisterPage() {
             </Container>
         </div>
     );
-}
+};

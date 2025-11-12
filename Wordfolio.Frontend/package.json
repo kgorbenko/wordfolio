@@ -27,7 +27,8 @@
     "zustand": "5.0.8"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^5.5.0",
+    "@eslint/css": "0.14.1",
+    "@stylistic/eslint-plugin": "5.5.0",
     "@tanstack/router-devtools": "1.134.17",
     "@tanstack/router-plugin": "1.134.17",
     "@testing-library/jest-dom": "6.9.1",
