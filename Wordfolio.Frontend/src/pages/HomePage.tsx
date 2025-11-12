@@ -1,8 +1,8 @@
-import { useAuthStore } from '../stores/authStore';
-import { useNavigate, Link } from '@tanstack/react-router';
-import { Container, Typography, Box, Button } from '@mui/material';
+import { useAuthStore } from "../stores/authStore";
+import { useNavigate, Link } from "@tanstack/react-router";
+import { Container, Typography, Box, Button } from "@mui/material";
 
-import './HomePage.css';
+import "./HomePage.css";
 
 export const HomePage = () => {
     const { isAuthenticated, clearAuth } = useAuthStore();
@@ -10,7 +10,7 @@ export const HomePage = () => {
 
     const handleLogout = () => {
         clearAuth();
-        navigate({ to: '/login' });
+        navigate({ to: "/login" });
     };
 
     return (

@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface AuthTokens {
     readonly tokenType: string;
@@ -25,7 +25,7 @@ export const useAuthStore = create<AuthState>()(
             clearAuth: () => set({ tokens: null, isAuthenticated: false }),
         }),
         {
-            name: 'auth-storage',
+            name: "auth-storage",
         }
     )
 );

@@ -1,5 +1,5 @@
-import { useMutation } from '@tanstack/react-query';
-import { authApi, LoginRequest, LoginResponse, ApiError } from '../api/authApi';
+import { useMutation } from "@tanstack/react-query";
+import { authApi, LoginRequest, LoginResponse, ApiError } from "../api/authApi";
 
 interface UseLoginMutationOptions {
     onSuccess?: (data: LoginResponse) => void;
