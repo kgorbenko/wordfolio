@@ -6,30 +6,30 @@ interface AuthTokens {
     readonly accessToken: string;
     readonly expiresIn: number;
     readonly refreshToken: string;
+    readonly setAt: number;
 }
 
 interface AuthState {
-    readonly tokens: AuthTokens | null;
-    readonly tokenSetAt: number | null;
+    readonly authTokens: AuthTokens | null;
     readonly isAuthenticated: boolean;
-    setTokens: (tokens: AuthTokens) => void;
+    setTokens: (tokens: Omit<AuthTokens, "setAt">) => void;
     clearAuth: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
     persist(
         (set) => ({
-            tokens: null,
-            tokenSetAt: null,
+            authTokens: null,
             isAuthenticated: false,
-            setTokens: (tokens: AuthTokens) =>
+            setTokens: (tokens: Omit<AuthTokens, "setAt">) =>
                 set({
-                    tokens,
-                    tokenSetAt: Date.now(),
+                    authTokens: {
+                        ...tokens,
+                        setAt: Date.now(),
+                    },
                     isAuthenticated: true,
                 }),
-            clearAuth: () =>
-                set({ tokens: null, tokenSetAt: null, isAuthenticated: false }),
+            clearAuth: () => set({ authTokens: null, isAuthenticated: false }),
         }),
         {
             name: "auth-storage",

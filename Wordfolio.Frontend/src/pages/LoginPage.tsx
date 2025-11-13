@@ -1,4 +1,4 @@
-import { useNavigate, Link } from "@tanstack/react-router";
+import { useNavigate, Link, useSearch } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "../api/authApi";
@@ -19,6 +19,7 @@ import "./LoginPage.css";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
+    const search = useSearch({ from: "/login" });
     const setTokens = useAuthStore((state) => state.setTokens);
 
     const {
@@ -72,6 +73,12 @@ export const LoginPage = () => {
                     onSubmit={handleSubmit(onSubmit)}
                     noValidate
                 >
+                    {search.message && (
+                        <Alert severity="info" sx={{ mb: 2 }}>
+                            {search.message}
+                        </Alert>
+                    )}
+
                     <TextField
                         fullWidth
                         margin="normal"
