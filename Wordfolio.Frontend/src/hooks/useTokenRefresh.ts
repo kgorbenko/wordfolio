@@ -4,7 +4,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../stores/authStore";
 import { useRefreshMutation } from "../mutations/useRefreshMutation";
 
-// Refresh token 5 minutes before it expires
 const REFRESH_BUFFER_MS = 5 * 60 * 1000;
 
 export const useTokenRefresh = () => {
@@ -32,12 +31,10 @@ export const useTokenRefresh = () => {
 
     const scheduleTokenRefresh = useCallback(
         (expiresIn: number) => {
-            // Clear any existing timeout
             if (refreshTimeoutRef.current !== null) {
                 clearTimeout(refreshTimeoutRef.current);
             }
 
-            // Calculate when to refresh (expiresIn is in seconds)
             const refreshInMs = Math.max(
                 expiresIn * 1000 - REFRESH_BUFFER_MS,
                 0
@@ -54,7 +51,6 @@ export const useTokenRefresh = () => {
         [authTokens, refreshMutation]
     );
 
-    // Attempt to refresh on startup if we have a refresh token
     useEffect(() => {
         if (authTokens?.refreshToken && !refreshMutation.isPending) {
             refreshMutation.mutate({ refreshToken: authTokens.refreshToken });
@@ -62,9 +58,8 @@ export const useTokenRefresh = () => {
             setIsInitializing(false);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Empty deps - only run once on mount
+    }, []);
 
-    // Schedule background refresh based on expiresIn
     useEffect(() => {
         if (authTokens && !isInitializing) {
             scheduleTokenRefresh(authTokens.expiresIn);
