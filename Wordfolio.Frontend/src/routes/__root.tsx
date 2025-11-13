@@ -1,24 +1,16 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { Box, CircularProgress } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 
 import { useTokenRefresh } from "../hooks/useTokenRefresh";
 
 const RootComponent = () => {
-    const { isInitialRefreshing, hasAttemptedInitialRefresh } =
-        useTokenRefresh();
+    const { isInitializing } = useTokenRefresh();
 
-    if (isInitialRefreshing || !hasAttemptedInitialRefresh) {
+    if (isInitializing) {
         return (
-            <Box
-                sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "100vh",
-                }}
-            >
+            <div className="centered-page-container">
                 <CircularProgress />
-            </Box>
+            </div>
         );
     }
 

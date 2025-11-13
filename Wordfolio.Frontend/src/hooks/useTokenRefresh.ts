@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 
 import { useAuthStore } from "../stores/authStore";
 import { useRefreshMutation } from "../mutations/useRefreshMutation";
@@ -7,20 +8,25 @@ import { useRefreshMutation } from "../mutations/useRefreshMutation";
 const REFRESH_BUFFER_MS = 5 * 60 * 1000;
 
 export const useTokenRefresh = () => {
-    const { tokens, tokenSetAt, setTokens, clearAuth } = useAuthStore();
-    const [isInitialRefreshing, setIsInitialRefreshing] = useState(false);
-    const [hasAttemptedInitialRefresh, setHasAttemptedInitialRefresh] =
-        useState(false);
+    const { authTokens, setTokens, clearAuth } = useAuthStore();
+    const navigate = useNavigate();
+    const [isInitializing, setIsInitializing] = useState(true);
     const refreshTimeoutRef = useRef<number | null>(null);
 
     const refreshMutation = useRefreshMutation({
         onSuccess: (data) => {
             setTokens(data);
-            setIsInitialRefreshing(false);
+            setIsInitializing(false);
         },
         onError: () => {
             clearAuth();
-            setIsInitialRefreshing(false);
+            setIsInitializing(false);
+            navigate({
+                to: "/login",
+                search: {
+                    message: "Your session has expired. Please log in again.",
+                },
+            });
         },
     });
 
@@ -38,38 +44,30 @@ export const useTokenRefresh = () => {
             );
 
             refreshTimeoutRef.current = window.setTimeout(() => {
-                if (tokens?.refreshToken) {
+                if (authTokens?.refreshToken) {
                     refreshMutation.mutate({
-                        refreshToken: tokens.refreshToken,
+                        refreshToken: authTokens.refreshToken,
                     });
                 }
             }, refreshInMs);
         },
-        [tokens, refreshMutation]
+        [authTokens, refreshMutation]
     );
 
     // Attempt to refresh on startup if we have a refresh token
     useEffect(() => {
-        if (
-            !hasAttemptedInitialRefresh &&
-            tokens?.refreshToken &&
-            !refreshMutation.isPending
-        ) {
-            setHasAttemptedInitialRefresh(true);
-            setIsInitialRefreshing(true);
-            refreshMutation.mutate({ refreshToken: tokens.refreshToken });
+        if (authTokens?.refreshToken && !refreshMutation.isPending) {
+            refreshMutation.mutate({ refreshToken: authTokens.refreshToken });
+        } else {
+            setIsInitializing(false);
         }
-    }, [
-        tokens,
-        hasAttemptedInitialRefresh,
-        refreshMutation.isPending,
-        refreshMutation,
-    ]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Empty deps - only run once on mount
 
     // Schedule background refresh based on expiresIn
     useEffect(() => {
-        if (tokens && tokenSetAt && !isInitialRefreshing) {
-            scheduleTokenRefresh(tokens.expiresIn);
+        if (authTokens && !isInitializing) {
+            scheduleTokenRefresh(authTokens.expiresIn);
         }
 
         return () => {
@@ -77,10 +75,9 @@ export const useTokenRefresh = () => {
                 clearTimeout(refreshTimeoutRef.current);
             }
         };
-    }, [tokens, tokenSetAt, isInitialRefreshing, scheduleTokenRefresh]);
+    }, [authTokens, isInitializing, scheduleTokenRefresh]);
 
     return {
-        isInitialRefreshing,
-        hasAttemptedInitialRefresh,
+        isInitializing,
     };
 };
