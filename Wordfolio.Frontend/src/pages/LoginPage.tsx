@@ -42,24 +42,28 @@ export const LoginPage = () => {
             navigate({ to: "/" });
         },
         onError: (error: ApiError) => {
-            const fallbackMessage =
-                error.status === 401
-                    ? "Invalid email or password"
-                    : "An error occurred. Please try again.";
+            const parsed = parseApiError(error, ["email", "password"]);
 
-            const parsed = parseApiError(error, ["email", "password"], fallbackMessage);
-
-            Object.entries(parsed.fieldErrors).forEach(([field, message]) => {
+            Object.entries(parsed.fieldErrors).forEach(([field, messages]) => {
                 setError(field as keyof LoginFormData, {
                     type: "server",
-                    message,
+                    message: messages[0],
                 });
             });
 
-            if (parsed.generalError) {
+            if (parsed.generalErrors.length > 0) {
                 setError("root", {
                     type: "server",
-                    message: parsed.generalError,
+                    message: parsed.generalErrors[0],
+                });
+            } else if (!error.errors) {
+                const fallbackMessage =
+                    error.status === 401
+                        ? "Invalid email or password"
+                        : "An error occurred. Please try again.";
+                setError("root", {
+                    type: "server",
+                    message: fallbackMessage,
                 });
             }
         },
