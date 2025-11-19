@@ -1,4 +1,9 @@
-import { Snackbar, Alert, AlertColor, SnackbarCloseReason } from "@mui/material";
+import {
+    Snackbar,
+    Alert,
+    AlertColor,
+    SnackbarCloseReason,
+} from "@mui/material";
 
 interface INotificationProps {
     readonly isOpen: boolean;
@@ -28,10 +33,12 @@ export const Notification = ({
             onClose={onSnackbarClose}
             autoHideDuration={autoHideDuration}
             anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            data-testid="notification-snackbar"
         >
             <Alert
                 onClose={canBeClosedByUser ? onAlertClose : undefined}
                 severity={severity}
+                data-testid="notification-alert"
             >
                 {message}
             </Alert>

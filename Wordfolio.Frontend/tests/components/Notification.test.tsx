@@ -15,19 +15,21 @@ describe("Notification", () => {
 
     it("should render notification when isOpen is true", () => {
         render(<Notification {...defaultProps} />);
+        const alert = screen.getByTestId("notification-alert");
+        expect(alert).toBeInTheDocument();
         expect(screen.getByText("Test message")).toBeInTheDocument();
     });
 
     it("should not render notification when isOpen is false", () => {
         render(<Notification {...defaultProps} isOpen={false} />);
-        expect(screen.queryByText("Test message")).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("notification-alert")
+        ).not.toBeInTheDocument();
     });
 
     it("should display correct severity", () => {
-        const { container } = render(
-            <Notification {...defaultProps} severity="error" />
-        );
-        const alert = container.querySelector(".MuiAlert-standardError");
+        render(<Notification {...defaultProps} severity="error" />);
+        const alert = screen.getByTestId("notification-alert");
         expect(alert).toBeInTheDocument();
     });
 
@@ -46,11 +48,9 @@ describe("Notification", () => {
         expect(screen.queryByRole("button")).not.toBeInTheDocument();
     });
 
-    it("should pass autoHideDuration to Snackbar", () => {
-        const { container } = render(
-            <Notification {...defaultProps} autoHideDuration={3000} />
-        );
-        const snackbar = container.querySelector(".MuiSnackbar-root");
+    it("should render snackbar with autoHideDuration", () => {
+        render(<Notification {...defaultProps} autoHideDuration={3000} />);
+        const snackbar = screen.getByTestId("notification-snackbar");
         expect(snackbar).toBeInTheDocument();
     });
 });
