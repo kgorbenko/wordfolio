@@ -1,10 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {
-    NotificationProvider,
-    useNotificationContext,
-} from "./NotificationContext";
+import { NotificationProvider } from "../../src/contexts/NotificationProvider";
+import { useNotificationContext } from "../../src/contexts/NotificationContext";
 
 const TestComponent = () => {
     const {
@@ -49,7 +47,7 @@ const TestComponent = () => {
     );
 };
 
-describe("NotificationContext", () => {
+describe("NotificationProvider", () => {
     it("should throw error when useNotificationContext is used outside provider", () => {
         const consoleError = vi
             .spyOn(console, "error")
