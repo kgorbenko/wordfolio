@@ -100,6 +100,50 @@ describe("useTokenRefresh", () => {
         );
     });
 
+    it("should call refresh API only once on mount even with StrictMode", async () => {
+        const mockTokens = {
+            tokenType: "Bearer",
+            accessToken: "old-token",
+            expiresIn: 3600,
+            refreshToken: "refresh-token",
+            setAt: Date.now(),
+        };
+
+        const mockRefreshResponse = {
+            tokenType: "Bearer",
+            accessToken: "new-token",
+            expiresIn: 3600,
+            refreshToken: "new-refresh-token",
+        };
+
+        act(() => {
+            useAuthStore.setState({
+                authTokens: mockTokens,
+                isAuthenticated: true,
+            });
+        });
+
+        const refreshSpy = vi
+            .spyOn(authApi.authApi, "refresh")
+            .mockResolvedValue(mockRefreshResponse);
+
+        renderHook(() => useTokenRefresh(), {
+            wrapper: createWrapper(),
+        });
+
+        await vi.waitFor(
+            () => {
+                expect(refreshSpy).toHaveBeenCalledWith({
+                    refreshToken: "refresh-token",
+                });
+            },
+            { timeout: 100 }
+        );
+
+        // Verify refresh was called exactly once
+        expect(refreshSpy).toHaveBeenCalledTimes(1);
+    });
+
     it("should clear auth state when refresh fails", async () => {
         const mockTokens = {
             tokenType: "Bearer",
