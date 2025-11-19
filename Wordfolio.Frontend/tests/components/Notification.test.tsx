@@ -28,9 +28,17 @@ describe("Notification", () => {
     });
 
     it("should display correct severity", () => {
-        render(<Notification {...defaultProps} severity="error" />);
-        const alert = screen.getByTestId("notification-alert");
-        expect(alert).toBeInTheDocument();
+        const { rerender } = render(
+            <Notification {...defaultProps} severity="error" />
+        );
+        const errorAlert = screen.getByTestId("notification-alert");
+        const errorClasses = errorAlert.className;
+
+        rerender(<Notification {...defaultProps} severity="success" />);
+        const successAlert = screen.getByTestId("notification-alert");
+        const successClasses = successAlert.className;
+
+        expect(errorClasses).not.toBe(successClasses);
     });
 
     it("should call onAlertClose when close button is clicked", async () => {
@@ -48,9 +56,39 @@ describe("Notification", () => {
         expect(screen.queryByRole("button")).not.toBeInTheDocument();
     });
 
-    it("should render snackbar with autoHideDuration", () => {
-        render(<Notification {...defaultProps} autoHideDuration={3000} />);
-        const snackbar = screen.getByTestId("notification-snackbar");
-        expect(snackbar).toBeInTheDocument();
+    it("should close notification after autoHideDuration timeout", async () => {
+        vi.useFakeTimers();
+        const onSnackbarClose = vi.fn();
+        render(
+            <Notification
+                {...defaultProps}
+                autoHideDuration={3000}
+                onSnackbarClose={onSnackbarClose}
+            />
+        );
+
+        expect(onSnackbarClose).not.toHaveBeenCalled();
+
+        vi.advanceTimersByTime(3000);
+
+        expect(onSnackbarClose).toHaveBeenCalledTimes(1);
+
+        vi.useRealTimers();
+    });
+
+    it("should not close notification by itself without autoHideDuration", async () => {
+        vi.useFakeTimers();
+        const onSnackbarClose = vi.fn();
+        render(
+            <Notification {...defaultProps} onSnackbarClose={onSnackbarClose} />
+        );
+
+        expect(onSnackbarClose).not.toHaveBeenCalled();
+
+        vi.advanceTimersByTime(10000);
+
+        expect(onSnackbarClose).not.toHaveBeenCalled();
+
+        vi.useRealTimers();
     });
 });
