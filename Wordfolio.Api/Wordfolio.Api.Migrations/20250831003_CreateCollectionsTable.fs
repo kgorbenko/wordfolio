@@ -15,11 +15,9 @@ type CreateCollectionsTable() =
             .WithColumn("Id")
             .AsInt32()
             .PrimaryKey()
-            .Identity()
             .WithColumn("UserId")
             .AsInt32()
             .NotNullable()
-            .ForeignKey(UsersTable.Name, "Id")
             .WithColumn("Name")
             .AsString(255)
             .NotNullable()
@@ -38,6 +36,16 @@ type CreateCollectionsTable() =
             .WithColumn("UpdatedAtOffset")
             .AsInt16()
             .NotNullable()
+        |> ignore
+
+        base.Create
+            .ForeignKey("FK_Collections_UserId_Users_Id")
+            .FromTable(CollectionsTable.Name)
+            .InSchema(WordfolioSchema)
+            .ForeignColumn("UserId")
+            .ToTable(UsersTable.Name)
+            .InSchema(WordfolioSchema)
+            .PrimaryColumn("Id")
         |> ignore
 
         base.Create

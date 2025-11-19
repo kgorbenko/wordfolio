@@ -21,6 +21,8 @@
 
   <ItemGroup>
     <Compile Include="UsersTests.fs" />
+    <Compile Include="CollectionsTests.fs" />
+    <Compile Include="VocabulariesTests.fs" />
   </ItemGroup>
 
 </Project>

@@ -15,11 +15,9 @@ type CreateVocabulariesTable() =
             .WithColumn("Id")
             .AsInt32()
             .PrimaryKey()
-            .Identity()
             .WithColumn("CollectionId")
             .AsInt32()
             .NotNullable()
-            .ForeignKey(CollectionsTable.Name, "Id")
             .WithColumn("Name")
             .AsString(255)
             .NotNullable()
@@ -38,6 +36,16 @@ type CreateVocabulariesTable() =
             .WithColumn("UpdatedAtOffset")
             .AsInt16()
             .NotNullable()
+        |> ignore
+
+        base.Create
+            .ForeignKey("FK_Vocabularies_CollectionId_Collections_Id")
+            .FromTable(VocabulariesTable.Name)
+            .InSchema(WordfolioSchema)
+            .ForeignColumn("CollectionId")
+            .ToTable(CollectionsTable.Name)
+            .InSchema(WordfolioSchema)
+            .PrimaryColumn("Id")
         |> ignore
 
         base.Create

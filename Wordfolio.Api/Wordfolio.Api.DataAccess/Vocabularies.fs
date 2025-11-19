@@ -10,6 +10,7 @@ open Dapper.FSharp.PostgreSQL
 open Wordfolio.Api.DataAccess.Dapper
 open Wordfolio.Common
 
+[<CLIMutable>]
 type internal VocabularyRecord =
     { Id: int
       CollectionId: int
@@ -62,15 +63,22 @@ let internal vocabulariesTable =
     table'<VocabularyRecord> Schema.VocabulariesTable.Name
     |> inSchema Schema.Name
 
+type VocabularyCreationParametersWithId =
+    { Id: int
+      CollectionId: int
+      Name: string
+      Description: string option
+      CreatedAt: DateTimeOffset }
+
 let createVocabularyAsync
-    (parameters: VocabularyCreationParameters)
+    (parameters: VocabularyCreationParametersWithId)
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<int> =
+    : Task<unit> =
     task {
         let vocabularyToInsert: VocabularyRecord =
-            { Id = 0
+            { Id = parameters.Id
               CollectionId = parameters.CollectionId
               Name = parameters.Name
               Description = parameters.Description
@@ -79,14 +87,13 @@ let createVocabularyAsync
               UpdatedAtDateTime = parameters.CreatedAt
               UpdatedAtOffset = int16 parameters.CreatedAt.Offset.TotalMinutes }
 
-        let! insertedId =
+        do!
             insert {
                 into vocabulariesTable
                 values [ vocabularyToInsert ]
             }
             |> insertAsync connection transaction cancellationToken
-
-        return insertedId
+            |> Task.ignore
     }
 
 let getVocabularyByIdAsync

@@ -10,6 +10,7 @@ open Dapper.FSharp.PostgreSQL
 open Wordfolio.Api.DataAccess.Dapper
 open Wordfolio.Common
 
+[<CLIMutable>]
 type internal CollectionRecord =
     { Id: int
       UserId: int
@@ -62,15 +63,22 @@ let internal collectionsTable =
     table'<CollectionRecord> Schema.CollectionsTable.Name
     |> inSchema Schema.Name
 
+type CollectionCreationParametersWithId =
+    { Id: int
+      UserId: int
+      Name: string
+      Description: string option
+      CreatedAt: DateTimeOffset }
+
 let createCollectionAsync
-    (parameters: CollectionCreationParameters)
+    (parameters: CollectionCreationParametersWithId)
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<int> =
+    : Task<unit> =
     task {
         let collectionToInsert: CollectionRecord =
-            { Id = 0
+            { Id = parameters.Id
               UserId = parameters.UserId
               Name = parameters.Name
               Description = parameters.Description
@@ -79,14 +87,13 @@ let createCollectionAsync
               UpdatedAtDateTime = parameters.CreatedAt
               UpdatedAtOffset = int16 parameters.CreatedAt.Offset.TotalMinutes }
 
-        let! insertedId =
+        do!
             insert {
                 into collectionsTable
                 values [ collectionToInsert ]
             }
             |> insertAsync connection transaction cancellationToken
-
-        return insertedId
+            |> Task.ignore
     }
 
 let getCollectionByIdAsync

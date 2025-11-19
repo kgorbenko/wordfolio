@@ -12,11 +12,39 @@ open Wordfolio.Common
 [<CLIMutable>]
 type UserEntity = { Id: int }
 
+[<CLIMutable>]
+type CollectionEntity =
+    { Id: int
+      UserId: int
+      Name: string
+      Description: string
+      CreatedAtDateTime: DateTimeOffset
+      CreatedAtOffset: int16
+      UpdatedAtDateTime: DateTimeOffset
+      UpdatedAtOffset: int16 }
+
+[<CLIMutable>]
+type VocabularyEntity =
+    { Id: int
+      CollectionId: int
+      Name: string
+      Description: string
+      CreatedAtDateTime: DateTimeOffset
+      CreatedAtOffset: int16
+      UpdatedAtDateTime: DateTimeOffset
+      UpdatedAtOffset: int16 }
+
 type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
     inherit DbContext(options)
 
     member this.Users: DbSet<UserEntity> =
         base.Set<UserEntity>()
+
+    member this.Collections: DbSet<CollectionEntity> =
+        base.Set<CollectionEntity>()
+
+    member this.Vocabularies: DbSet<VocabularyEntity> =
+        base.Set<VocabularyEntity>()
 
     override _.OnModelCreating(modelBuilder: ModelBuilder) =
         let users =
@@ -26,6 +54,28 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
         |> ignore
 
         users.Property(_.Id).ValueGeneratedNever()
+        |> ignore
+
+        let collections =
+            modelBuilder.Entity<CollectionEntity>()
+
+        collections
+            .ToTable(Schema.CollectionsTable.Name, Schema.Name)
+            .HasKey(fun x -> x.Id :> obj)
+        |> ignore
+
+        collections.Property(_.Id).ValueGeneratedOnAdd()
+        |> ignore
+
+        let vocabularies =
+            modelBuilder.Entity<VocabularyEntity>()
+
+        vocabularies
+            .ToTable(Schema.VocabulariesTable.Name, Schema.Name)
+            .HasKey(fun x -> x.Id :> obj)
+        |> ignore
+
+        vocabularies.Property(_.Id).ValueGeneratedOnAdd()
         |> ignore
 
         base.OnModelCreating(modelBuilder)
@@ -64,4 +114,35 @@ module Seeder =
         task {
             let! users = seeder.DbContext.Users.ToArrayAsync()
             return users |> List.ofSeq
+        }
+
+    let addCollections (collections: CollectionEntity list) (seeder: WordfolioSeeder) =
+        do seeder.DbContext.Collections.AddRange(collections)
+        seeder
+
+    let getAllCollectionsAsync(seeder: WordfolioSeeder) : Task<CollectionEntity list> =
+        task {
+            let! collections = seeder.DbContext.Collections.ToArrayAsync()
+            return collections |> List.ofSeq
+        }
+
+    let getCollectionByIdAsync (id: int) (seeder: WordfolioSeeder) : Task<CollectionEntity option> =
+        task {
+            let! collection = seeder.DbContext.Collections.FindAsync(id).AsTask()
+
+            return
+                if isNull(box collection) then
+                    None
+                else
+                    Some collection
+        }
+
+    let addVocabularies (vocabularies: VocabularyEntity list) (seeder: WordfolioSeeder) =
+        do seeder.DbContext.Vocabularies.AddRange(vocabularies)
+        seeder
+
+    let getAllVocabulariesAsync(seeder: WordfolioSeeder) : Task<VocabularyEntity list> =
+        task {
+            let! vocabularies = seeder.DbContext.Vocabularies.ToArrayAsync()
+            return vocabularies |> List.ofSeq
         }
