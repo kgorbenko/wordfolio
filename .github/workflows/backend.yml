@@ -43,3 +43,6 @@ jobs:
     
     - name: Check F# formatting with Fantomas
       run: dotnet fantomas --check .
+    
+    - name: Check C# formatting with dotnet format
+      run: dotnet format --verify-no-changes
