@@ -57,7 +57,7 @@ export const LoginPage = () => {
 
     useEffect(() => {
         if (search.message) {
-            openNotification(search.message, "info");
+            openNotification({ message: search.message, severity: "info" });
         }
     }, [search.message, openNotification]);
 
