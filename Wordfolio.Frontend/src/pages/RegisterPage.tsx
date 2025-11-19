@@ -1,10 +1,12 @@
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import { ApiError } from "../api/authApi";
 import { useRegisterMutation } from "../mutations/useRegisterMutation";
 import { usePasswordRequirementsQuery } from "../queries/usePasswordRequirementsQuery";
 import { createRegisterSchema, RegisterFormData } from "../schemas/authSchemas";
+import { parseApiError } from "../utils/errorHandling";
 import {
     Container,
     Typography,
@@ -39,33 +41,23 @@ export const RegisterPage = () => {
             navigate({ to: "/login" });
         },
         onError: (error: ApiError) => {
-            let hasFieldError = false;
-            if (error.errors) {
-                Object.entries(error.errors).forEach(([field, messages]) => {
-                    const fieldName =
-                        field.toLowerCase() as keyof RegisterFormData;
-                    if (
-                        fieldName in
-                        { email: true, password: true, confirmPassword: true }
-                    ) {
-                        setError(fieldName, {
-                            type: "server",
-                            message: messages.join(", "),
-                        });
-                        hasFieldError = true;
-                    }
+            const parsed = parseApiError(
+                error,
+                ["email", "password", "confirmpassword"],
+                "An error occurred during registration. Please try again."
+            );
+
+            Object.entries(parsed.fieldErrors).forEach(([field, message]) => {
+                setError(field as keyof RegisterFormData, {
+                    type: "server",
+                    message,
                 });
-            }
-            
-            if (!hasFieldError) {
-                const errorMessage = error.errors
-                    ? Object.entries(error.errors)
-                        .map(([, messages]) => messages.join(", "))
-                        .join(" ")
-                    : "An error occurred during registration. Please try again.";
+            });
+
+            if (parsed.generalError) {
                 setError("root", {
                     type: "server",
-                    message: errorMessage,
+                    message: parsed.generalError,
                 });
             }
         },
@@ -113,6 +105,12 @@ export const RegisterPage = () => {
                         onSubmit={handleSubmit(onSubmit)}
                         noValidate
                     >
+                        {errors.root && (
+                            <Alert severity="error" className="register-alert">
+                                {errors.root.message}
+                            </Alert>
+                        )}
+
                         <TextField
                             fullWidth
                             margin="normal"
@@ -148,12 +146,6 @@ export const RegisterPage = () => {
                             helperText={errors.confirmPassword?.message}
                             {...register("confirmPassword")}
                         />
-
-                        {errors.root && (
-                            <Alert severity="error" className="register-alert">
-                                {errors.root.message}
-                            </Alert>
-                        )}
 
                         <Button
                             fullWidth
