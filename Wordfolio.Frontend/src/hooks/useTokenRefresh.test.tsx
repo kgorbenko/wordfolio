@@ -86,18 +86,22 @@ describe("useTokenRefresh", () => {
             .spyOn(authApi.authApi, "refresh")
             .mockResolvedValue(mockRefreshResponse);
 
-        renderHook(() => useTokenRefresh(), {
-            wrapper: createWrapper(),
+        await act(async () => {
+            renderHook(() => useTokenRefresh(), {
+                wrapper: createWrapper(),
+            });
         });
 
-        await vi.waitFor(
-            () => {
-                expect(refreshSpy).toHaveBeenCalledWith({
-                    refreshToken: "refresh-token",
-                });
-            },
-            { timeout: 100 }
-        );
+        await act(async () => {
+            await vi.waitFor(
+                () => {
+                    expect(refreshSpy).toHaveBeenCalledWith({
+                        refreshToken: "refresh-token",
+                    });
+                },
+                { timeout: 100 }
+            );
+        });
     });
 
     it("should call refresh API only once on mount even with StrictMode", async () => {
@@ -127,18 +131,22 @@ describe("useTokenRefresh", () => {
             .spyOn(authApi.authApi, "refresh")
             .mockResolvedValue(mockRefreshResponse);
 
-        renderHook(() => useTokenRefresh(), {
-            wrapper: createWrapper(),
+        await act(async () => {
+            renderHook(() => useTokenRefresh(), {
+                wrapper: createWrapper(),
+            });
         });
 
-        await vi.waitFor(
-            () => {
-                expect(refreshSpy).toHaveBeenCalledWith({
-                    refreshToken: "refresh-token",
-                });
-            },
-            { timeout: 100 }
-        );
+        await act(async () => {
+            await vi.waitFor(
+                () => {
+                    expect(refreshSpy).toHaveBeenCalledWith({
+                        refreshToken: "refresh-token",
+                    });
+                },
+                { timeout: 100 }
+            );
+        });
 
         // Verify refresh was called exactly once
         expect(refreshSpy).toHaveBeenCalledTimes(1);
@@ -164,16 +172,22 @@ describe("useTokenRefresh", () => {
             new Error("Unauthorized")
         );
 
-        const { result } = renderHook(() => useTokenRefresh(), {
-            wrapper: createWrapper(),
+        const hookResult = await act(async () => {
+            return renderHook(() => useTokenRefresh(), {
+                wrapper: createWrapper(),
+            });
         });
 
-        await vi.waitFor(
-            () => {
-                expect(result.current.isInitializing).toBe(false);
-            },
-            { timeout: 100 }
-        );
+        await act(async () => {
+            await vi.waitFor(
+                () => {
+                    expect(hookResult.result.current.isInitializing).toBe(
+                        false
+                    );
+                },
+                { timeout: 100 }
+            );
+        });
 
         const state = useAuthStore.getState();
         expect(state.authTokens).toBeNull();
