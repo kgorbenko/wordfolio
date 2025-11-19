@@ -172,17 +172,18 @@ describe("useTokenRefresh", () => {
             new Error("Unauthorized")
         );
 
-        let result;
-        await act(async () => {
-            result = renderHook(() => useTokenRefresh(), {
+        const hookResult = await act(async () => {
+            return renderHook(() => useTokenRefresh(), {
                 wrapper: createWrapper(),
-            }).result;
+            });
         });
 
         await act(async () => {
             await vi.waitFor(
                 () => {
-                    expect(result.current.isInitializing).toBe(false);
+                    expect(hookResult.result.current.isInitializing).toBe(
+                        false
+                    );
                 },
                 { timeout: 100 }
             );
