@@ -11,6 +11,7 @@ export const useTokenRefresh = () => {
     const navigate = useNavigate();
     const [isInitializing, setIsInitializing] = useState(true);
     const refreshTimeoutRef = useRef<number | null>(null);
+    const hasInitializedRef = useRef(false);
 
     const refreshMutation = useRefreshMutation({
         onSuccess: (data) => {
@@ -52,6 +53,12 @@ export const useTokenRefresh = () => {
     );
 
     useEffect(() => {
+        if (hasInitializedRef.current) {
+            return;
+        }
+
+        hasInitializedRef.current = true;
+
         if (authTokens?.refreshToken && !refreshMutation.isPending) {
             refreshMutation.mutate({ refreshToken: authTokens.refreshToken });
         } else {
