@@ -40,7 +40,9 @@ describe("parseApiError", () => {
     it("should separate unmapped errors as general errors", () => {
         const error: ApiError = {
             errors: {
-                DuplicateUserName: ["User name 'test@example.com' is already taken."],
+                DuplicateUserName: [
+                    "User name 'test@example.com' is already taken.",
+                ],
                 Email: ["Email is required"],
             },
         };
