@@ -4,6 +4,7 @@
 
 .register-alert {
     margin-bottom: 1rem;
+    white-space: pre;
 }
 
 .register-button {
