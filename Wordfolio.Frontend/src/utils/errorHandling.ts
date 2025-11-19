@@ -1,27 +1,13 @@
 import { ApiError } from "../api/authApi";
 
-export interface ParsedError {
-    readonly fieldErrors: Record<string, string[]>;
-    readonly generalErrors: string[];
-}
-
-export function parseApiError(
-    error: ApiError,
-    validFieldNames: readonly string[]
-): ParsedError {
-    const fieldErrors: Record<string, string[]> = {};
-    const unmappedMessages: string[] = [];
+export function parseApiError(error: ApiError): string[] {
+    const messages: string[] = [];
 
     if (error.errors) {
-        Object.entries(error.errors).forEach(([field, messages]) => {
-            const fieldName = field.toLowerCase();
-            if (validFieldNames.includes(fieldName)) {
-                fieldErrors[fieldName] = messages;
-            } else {
-                unmappedMessages.push(...messages);
-            }
+        Object.values(error.errors).forEach((errorMessages) => {
+            messages.push(...errorMessages);
         });
     }
 
-    return { fieldErrors, generalErrors: unmappedMessages };
+    return messages;
 }

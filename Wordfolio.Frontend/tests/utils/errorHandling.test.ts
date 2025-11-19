@@ -3,7 +3,7 @@ import { parseApiError } from "../../src/utils/errorHandling";
 import { ApiError } from "../../src/api/authApi";
 
 describe("parseApiError", () => {
-    it("should parse field-specific errors", () => {
+    it("should return all error messages as an array", () => {
         const error: ApiError = {
             errors: {
                 Email: ["Email is required", "Email format is invalid"],
@@ -11,110 +11,62 @@ describe("parseApiError", () => {
             },
         };
 
-        const result = parseApiError(error, ["email", "password"]);
+        const result = parseApiError(error);
 
-        expect(result.fieldErrors).toEqual({
-            email: ["Email is required", "Email format is invalid"],
-            password: ["Password is too short"],
-        });
-        expect(result.generalErrors).toEqual([]);
+        expect(result).toEqual([
+            "Email is required",
+            "Email format is invalid",
+            "Password is too short",
+        ]);
     });
 
-    it("should handle case-insensitive field matching", () => {
+    it("should handle errors from multiple fields", () => {
         const error: ApiError = {
             errors: {
-                EMAIL: ["Email is invalid"],
-                PaSsWoRd: ["Password is weak"],
-            },
-        };
-
-        const result = parseApiError(error, ["email", "password"]);
-
-        expect(result.fieldErrors).toEqual({
-            email: ["Email is invalid"],
-            password: ["Password is weak"],
-        });
-        expect(result.generalErrors).toEqual([]);
-    });
-
-    it("should separate unmapped errors as general errors", () => {
-        const error: ApiError = {
-            errors: {
-                DuplicateUserName: [
-                    "User name 'test@example.com' is already taken.",
+                InvalidEmail: ["Email 'test' is invalid."],
+                PasswordTooShort: ["Passwords must be at least 6 characters."],
+                PasswordRequiresNonAlphanumeric: [
+                    "Passwords must have at least one non alphanumeric character.",
                 ],
-                Email: ["Email is required"],
+                PasswordRequiresDigit: [
+                    "Passwords must have at least one digit ('0'-'9').",
+                ],
+                PasswordRequiresUpper: [
+                    "Passwords must have at least one uppercase ('A'-'Z').",
+                ],
             },
         };
 
-        const result = parseApiError(error, ["email", "password"]);
+        const result = parseApiError(error);
 
-        expect(result.fieldErrors).toEqual({
-            email: ["Email is required"],
-        });
-        expect(result.generalErrors).toEqual([
-            "User name 'test@example.com' is already taken.",
+        expect(result).toEqual([
+            "Email 'test' is invalid.",
+            "Passwords must be at least 6 characters.",
+            "Passwords must have at least one non alphanumeric character.",
+            "Passwords must have at least one digit ('0'-'9').",
+            "Passwords must have at least one uppercase ('A'-'Z').",
         ]);
     });
 
-    it("should handle multiple unmapped errors", () => {
-        const error: ApiError = {
-            errors: {
-                DuplicateUserName: ["Username already exists"],
-                PasswordTooShort: ["Password must be at least 8 characters"],
-                Email: ["Email is invalid"],
-            },
-        };
-
-        const result = parseApiError(error, ["email"]);
-
-        expect(result.fieldErrors).toEqual({
-            email: ["Email is invalid"],
-        });
-        expect(result.generalErrors).toEqual([
-            "Username already exists",
-            "Password must be at least 8 characters",
-        ]);
-    });
-
-    it("should return empty arrays when no errors exist", () => {
+    it("should return empty array when no errors exist", () => {
         const error: ApiError = {};
 
-        const result = parseApiError(error, ["email", "password"]);
+        const result = parseApiError(error);
 
-        expect(result.fieldErrors).toEqual({});
-        expect(result.generalErrors).toEqual([]);
+        expect(result).toEqual([]);
     });
 
-    it("should handle error with empty errors object", () => {
+    it("should return empty array when errors object is empty", () => {
         const error: ApiError = {
             errors: {},
         };
 
-        const result = parseApiError(error, ["email", "password"]);
+        const result = parseApiError(error);
 
-        expect(result.fieldErrors).toEqual({});
-        expect(result.generalErrors).toEqual([]);
+        expect(result).toEqual([]);
     });
 
-    it("should handle all errors as general when no valid fields match", () => {
-        const error: ApiError = {
-            errors: {
-                DuplicateUserName: ["Username exists"],
-                PasswordTooShort: ["Password too short"],
-            },
-        };
-
-        const result = parseApiError(error, ["email", "password"]);
-
-        expect(result.fieldErrors).toEqual({});
-        expect(result.generalErrors).toEqual([
-            "Username exists",
-            "Password too short",
-        ]);
-    });
-
-    it("should handle multiple messages for the same field", () => {
+    it("should handle multiple messages for the same error key", () => {
         const error: ApiError = {
             errors: {
                 Password: [
@@ -125,51 +77,28 @@ describe("parseApiError", () => {
             },
         };
 
-        const result = parseApiError(error, ["password"]);
+        const result = parseApiError(error);
 
-        expect(result.fieldErrors).toEqual({
-            password: [
-                "Password is too short",
-                "Password must contain a digit",
-                "Password must contain uppercase",
-            ],
-        });
-        expect(result.generalErrors).toEqual([]);
+        expect(result).toEqual([
+            "Password is too short",
+            "Password must contain a digit",
+            "Password must contain uppercase",
+        ]);
     });
 
-    it("should handle mixed case with unmapped errors", () => {
+    it("should handle single error message", () => {
         const error: ApiError = {
             errors: {
-                email: ["Email is invalid"],
-                PASSWORD: ["Password is weak"],
-                UnknownError: ["Something went wrong"],
+                DuplicateUserName: [
+                    "User name 'test@example.com' is already taken.",
+                ],
             },
         };
 
-        const result = parseApiError(error, ["email", "password"]);
+        const result = parseApiError(error);
 
-        expect(result.fieldErrors).toEqual({
-            email: ["Email is invalid"],
-            password: ["Password is weak"],
-        });
-        expect(result.generalErrors).toEqual(["Something went wrong"]);
-    });
-
-    it("should handle fields that are not in the valid field names list", () => {
-        const error: ApiError = {
-            errors: {
-                Email: ["Email is required"],
-                Username: ["Username is taken"],
-                Password: ["Password is weak"],
-            },
-        };
-
-        const result = parseApiError(error, ["email", "password"]);
-
-        expect(result.fieldErrors).toEqual({
-            email: ["Email is required"],
-            password: ["Password is weak"],
-        });
-        expect(result.generalErrors).toEqual(["Username is taken"]);
+        expect(result).toEqual([
+            "User name 'test@example.com' is already taken.",
+        ]);
     });
 });
