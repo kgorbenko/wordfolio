@@ -45,7 +45,7 @@ export const RegisterPage = () => {
 
             const errorMessage =
                 errorMessages.length > 0
-                    ? errorMessages.join(" ")
+                    ? errorMessages.join("\n")
                     : "An error occurred during registration. Please try again.";
 
             setError("root", {
