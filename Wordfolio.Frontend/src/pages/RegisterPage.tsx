@@ -13,6 +13,7 @@ import {
     Box,
     Skeleton,
     Link as MuiLink,
+    Alert,
 } from "@mui/material";
 
 import "./RegisterPage.css";
@@ -38,6 +39,7 @@ export const RegisterPage = () => {
             navigate({ to: "/login" });
         },
         onError: (error: ApiError) => {
+            let hasFieldError = false;
             if (error.errors) {
                 Object.entries(error.errors).forEach(([field, messages]) => {
                     const fieldName =
@@ -50,7 +52,20 @@ export const RegisterPage = () => {
                             type: "server",
                             message: messages.join(", "),
                         });
+                        hasFieldError = true;
                     }
+                });
+            }
+            
+            if (!hasFieldError) {
+                const errorMessage = error.errors
+                    ? Object.entries(error.errors)
+                        .map(([, messages]) => messages.join(", "))
+                        .join(" ")
+                    : "An error occurred during registration. Please try again.";
+                setError("root", {
+                    type: "server",
+                    message: errorMessage,
                 });
             }
         },
@@ -133,6 +148,12 @@ export const RegisterPage = () => {
                             helperText={errors.confirmPassword?.message}
                             {...register("confirmPassword")}
                         />
+
+                        {errors.root && (
+                            <Alert severity="error" className="register-alert">
+                                {errors.root.message}
+                            </Alert>
+                        )}
 
                         <Button
                             fullWidth
