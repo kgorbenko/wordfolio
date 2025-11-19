@@ -8,7 +8,6 @@ import { useAuthStore } from "../stores/authStore";
 import { useLoginMutation } from "../mutations/useLoginMutation";
 import { createLoginSchema, LoginFormData } from "../schemas/authSchemas";
 import { useNotificationContext } from "../contexts/NotificationContext";
-import { parseApiError } from "../utils/errorHandling";
 import {
     Container,
     Typography,
@@ -42,30 +41,15 @@ export const LoginPage = () => {
             navigate({ to: "/" });
         },
         onError: (error: ApiError) => {
-            const parsed = parseApiError(error, ["email", "password"]);
+            const errorMessage =
+                error.status === 401
+                    ? "Invalid email or password"
+                    : "An error occurred. Please try again.";
 
-            Object.entries(parsed.fieldErrors).forEach(([field, messages]) => {
-                setError(field as keyof LoginFormData, {
-                    type: "server",
-                    message: messages[0],
-                });
+            setError("root", {
+                type: "server",
+                message: errorMessage,
             });
-
-            if (parsed.generalErrors.length > 0) {
-                setError("root", {
-                    type: "server",
-                    message: parsed.generalErrors[0],
-                });
-            } else if (!error.errors) {
-                const fallbackMessage =
-                    error.status === 401
-                        ? "Invalid email or password"
-                        : "An error occurred. Please try again.";
-                setError("root", {
-                    type: "server",
-                    message: fallbackMessage,
-                });
-            }
         },
     });
 

@@ -41,31 +41,17 @@ export const RegisterPage = () => {
             navigate({ to: "/login" });
         },
         onError: (error: ApiError) => {
-            const parsed = parseApiError(error, [
-                "email",
-                "password",
-                "confirmpassword",
-            ]);
+            const errorMessages = parseApiError(error);
 
-            Object.entries(parsed.fieldErrors).forEach(([field, messages]) => {
-                setError(field as keyof RegisterFormData, {
-                    type: "server",
-                    message: messages[0],
-                });
+            const errorMessage =
+                errorMessages.length > 0
+                    ? errorMessages.join(" ")
+                    : "An error occurred during registration. Please try again.";
+
+            setError("root", {
+                type: "server",
+                message: errorMessage,
             });
-
-            if (parsed.generalErrors.length > 0) {
-                setError("root", {
-                    type: "server",
-                    message: parsed.generalErrors[0],
-                });
-            } else if (!error.errors) {
-                setError("root", {
-                    type: "server",
-                    message:
-                        "An error occurred during registration. Please try again.",
-                });
-            }
         },
     });
 
