@@ -1,10 +1,12 @@
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import { ApiError } from "../api/authApi";
 import { useRegisterMutation } from "../mutations/useRegisterMutation";
 import { usePasswordRequirementsQuery } from "../queries/usePasswordRequirementsQuery";
 import { createRegisterSchema, RegisterFormData } from "../schemas/authSchemas";
+import { parseApiError } from "../utils/errorHandling";
 import {
     Container,
     Typography,
@@ -13,6 +15,7 @@ import {
     Box,
     Skeleton,
     Link as MuiLink,
+    Alert,
 } from "@mui/material";
 
 import "./RegisterPage.css";
@@ -38,19 +41,29 @@ export const RegisterPage = () => {
             navigate({ to: "/login" });
         },
         onError: (error: ApiError) => {
-            if (error.errors) {
-                Object.entries(error.errors).forEach(([field, messages]) => {
-                    const fieldName =
-                        field.toLowerCase() as keyof RegisterFormData;
-                    if (
-                        fieldName in
-                        { email: true, password: true, confirmPassword: true }
-                    ) {
-                        setError(fieldName, {
-                            type: "server",
-                            message: messages.join(", "),
-                        });
-                    }
+            const parsed = parseApiError(error, [
+                "email",
+                "password",
+                "confirmpassword",
+            ]);
+
+            Object.entries(parsed.fieldErrors).forEach(([field, messages]) => {
+                setError(field as keyof RegisterFormData, {
+                    type: "server",
+                    message: messages[0],
+                });
+            });
+
+            if (parsed.generalErrors.length > 0) {
+                setError("root", {
+                    type: "server",
+                    message: parsed.generalErrors[0],
+                });
+            } else if (!error.errors) {
+                setError("root", {
+                    type: "server",
+                    message:
+                        "An error occurred during registration. Please try again.",
                 });
             }
         },
@@ -98,6 +111,12 @@ export const RegisterPage = () => {
                         onSubmit={handleSubmit(onSubmit)}
                         noValidate
                     >
+                        {errors.root && (
+                            <Alert severity="error" className="register-alert">
+                                {errors.root.message}
+                            </Alert>
+                        )}
+
                         <TextField
                             fullWidth
                             margin="normal"

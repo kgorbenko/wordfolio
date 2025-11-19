@@ -8,6 +8,7 @@ import { useAuthStore } from "../stores/authStore";
 import { useLoginMutation } from "../mutations/useLoginMutation";
 import { createLoginSchema, LoginFormData } from "../schemas/authSchemas";
 import { useNotificationContext } from "../contexts/NotificationContext";
+import { parseApiError } from "../utils/errorHandling";
 import {
     Container,
     Typography,
@@ -41,15 +42,28 @@ export const LoginPage = () => {
             navigate({ to: "/" });
         },
         onError: (error: ApiError) => {
-            if (error.status === 401) {
-                setError("root", {
-                    type: "manual",
-                    message: "Invalid email or password",
+            const parsed = parseApiError(error, ["email", "password"]);
+
+            Object.entries(parsed.fieldErrors).forEach(([field, messages]) => {
+                setError(field as keyof LoginFormData, {
+                    type: "server",
+                    message: messages[0],
                 });
-            } else {
+            });
+
+            if (parsed.generalErrors.length > 0) {
                 setError("root", {
-                    type: "manual",
-                    message: "An error occurred. Please try again.",
+                    type: "server",
+                    message: parsed.generalErrors[0],
+                });
+            } else if (!error.errors) {
+                const fallbackMessage =
+                    error.status === 401
+                        ? "Invalid email or password"
+                        : "An error occurred. Please try again.";
+                setError("root", {
+                    type: "server",
+                    message: fallbackMessage,
                 });
             }
         },
@@ -83,6 +97,12 @@ export const LoginPage = () => {
                     onSubmit={handleSubmit(onSubmit)}
                     noValidate
                 >
+                    {errors.root && (
+                        <Alert severity="error" className="login-alert">
+                            {errors.root.message}
+                        </Alert>
+                    )}
+
                     <TextField
                         fullWidth
                         margin="normal"
@@ -106,12 +126,6 @@ export const LoginPage = () => {
                         helperText={errors.password?.message}
                         {...register("password")}
                     />
-
-                    {errors.root && (
-                        <Alert severity="error" className="login-alert">
-                            {errors.root.message}
-                        </Alert>
-                    )}
 
                     <Button
                         fullWidth
