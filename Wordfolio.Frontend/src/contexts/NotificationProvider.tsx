@@ -3,6 +3,8 @@ import { AlertColor, SnackbarCloseReason } from "@mui/material";
 import { Notification } from "../components/Notification";
 import { NotificationContext } from "./NotificationContext";
 
+const defaultAutoHideDuration = 6000;
+
 export interface BaseNotificationOptions {
     readonly autoHideDuration?: number;
     readonly canBeClosedByUser?: boolean;
@@ -13,7 +15,8 @@ export interface OpenNotificationOptions extends BaseNotificationOptions {
     readonly severity: AlertColor;
 }
 
-export interface OpenSuccessNotificationOptions extends BaseNotificationOptions {
+export interface OpenSuccessNotificationOptions
+    extends BaseNotificationOptions {
     readonly message?: string;
 }
 
@@ -32,7 +35,9 @@ interface NotificationProviderProps {
     readonly children: ReactNode;
 }
 
-export const NotificationProvider = ({ children }: NotificationProviderProps) => {
+export const NotificationProvider = ({
+    children,
+}: NotificationProviderProps) => {
     const [notification, setNotification] = useState<
         NotificationState | undefined
     >(undefined);
@@ -41,7 +46,8 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
         setNotification({
             message: options.message,
             severity: options.severity,
-            autoHideDuration: options.autoHideDuration,
+            autoHideDuration:
+                options.autoHideDuration ?? defaultAutoHideDuration,
             canBeClosedByUser: options.canBeClosedByUser ?? true,
         });
     }, []);
@@ -51,7 +57,8 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
             setNotification({
                 message: options?.message ?? "Operation completed successfully",
                 severity: "success",
-                autoHideDuration: options?.autoHideDuration ?? 6000,
+                autoHideDuration:
+                    options?.autoHideDuration ?? defaultAutoHideDuration,
                 canBeClosedByUser: options?.canBeClosedByUser ?? true,
             });
         },
@@ -62,8 +69,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
         (options?: OpenErrorNotificationOptions) => {
             setNotification({
                 message:
-                    options?.message ??
-                    "An error occurred. Please try again.",
+                    options?.message ?? "An error occurred. Please try again.",
                 severity: "error",
                 autoHideDuration: options?.autoHideDuration,
                 canBeClosedByUser: options?.canBeClosedByUser ?? true,
@@ -95,15 +101,17 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
             }}
         >
             {children}
-            <Notification
-                isOpen={notification !== undefined}
-                message={notification?.message ?? ""}
-                severity={notification?.severity ?? "info"}
-                autoHideDuration={notification?.autoHideDuration}
-                canBeClosedByUser={notification?.canBeClosedByUser ?? true}
-                onSnackbarClose={handleSnackbarClose}
-                onAlertClose={handleAlertClose}
-            />
+            {notification && (
+                <Notification
+                    isOpen={true}
+                    message={notification.message}
+                    severity={notification.severity}
+                    autoHideDuration={notification.autoHideDuration}
+                    canBeClosedByUser={notification.canBeClosedByUser}
+                    onSnackbarClose={handleSnackbarClose}
+                    onAlertClose={handleAlertClose}
+                />
+            )}
         </NotificationContext.Provider>
     );
 };

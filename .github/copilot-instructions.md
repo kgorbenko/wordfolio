@@ -25,7 +25,9 @@ Follow these concise rules when generating code or suggestions for this reposito
   - Format: `dotnet fantomas .`
   - Frontend build: `cd Wordfolio.Frontend && npm run build`
   - Frontend lint: `cd Wordfolio.Frontend && npm run lint`
+  - Frontend format: `cd Wordfolio.Frontend && npm run format`
   - Frontend test: `cd Wordfolio.Frontend && npm test`
+  - Before committing, run build, test, lint and format commands to verify results.
 
 - Formatting
   - Run: `dotnet fantomas .` to format generated F# code.

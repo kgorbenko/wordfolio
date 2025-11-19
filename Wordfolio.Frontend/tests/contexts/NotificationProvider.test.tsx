@@ -1,15 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotificationProvider } from "../../src/contexts/NotificationProvider";
 import { useNotificationContext } from "../../src/contexts/NotificationContext";
 
 const TestComponent = () => {
-    const {
-        openNotification,
-        openSuccessNotification,
-        openErrorNotification,
-    } = useNotificationContext();
+    const { openNotification, openSuccessNotification, openErrorNotification } =
+        useNotificationContext();
 
     return (
         <div>
@@ -33,9 +30,7 @@ const TestComponent = () => {
             >
                 Open Custom Success
             </button>
-            <button onClick={() => openErrorNotification()}>
-                Open Error
-            </button>
+            <button onClick={() => openErrorNotification()}>Open Error</button>
             <button
                 onClick={() =>
                     openErrorNotification({ message: "Custom error" })
@@ -73,7 +68,10 @@ describe("NotificationProvider", () => {
         await userEvent.click(button);
 
         await waitFor(() => {
-            expect(screen.getByText("Custom notification")).toBeInTheDocument();
+            const alert = screen.getByTestId("notification-alert");
+            expect(
+                within(alert).getByText("Custom notification")
+            ).toBeInTheDocument();
         });
     });
 
@@ -88,8 +86,9 @@ describe("NotificationProvider", () => {
         await userEvent.click(button);
 
         await waitFor(() => {
+            const alert = screen.getByTestId("notification-alert");
             expect(
-                screen.getByText("Operation completed successfully")
+                within(alert).getByText("Operation completed successfully")
             ).toBeInTheDocument();
         });
     });
@@ -105,7 +104,10 @@ describe("NotificationProvider", () => {
         await userEvent.click(button);
 
         await waitFor(() => {
-            expect(screen.getByText("Custom success")).toBeInTheDocument();
+            const alert = screen.getByTestId("notification-alert");
+            expect(
+                within(alert).getByText("Custom success")
+            ).toBeInTheDocument();
         });
     });
 
@@ -120,8 +122,9 @@ describe("NotificationProvider", () => {
         await userEvent.click(button);
 
         await waitFor(() => {
+            const alert = screen.getByTestId("notification-alert");
             expect(
-                screen.getByText("An error occurred. Please try again.")
+                within(alert).getByText("An error occurred. Please try again.")
             ).toBeInTheDocument();
         });
     });
@@ -137,7 +140,8 @@ describe("NotificationProvider", () => {
         await userEvent.click(button);
 
         await waitFor(() => {
-            expect(screen.getByText("Custom error")).toBeInTheDocument();
+            const alert = screen.getByTestId("notification-alert");
+            expect(within(alert).getByText("Custom error")).toBeInTheDocument();
         });
     });
 
@@ -152,7 +156,10 @@ describe("NotificationProvider", () => {
         await userEvent.click(openButton);
 
         await waitFor(() => {
-            expect(screen.getByText("Custom notification")).toBeInTheDocument();
+            const alert = screen.getByTestId("notification-alert");
+            expect(
+                within(alert).getByText("Custom notification")
+            ).toBeInTheDocument();
         });
 
         const closeButton = screen.getByRole("button", { name: /close/i });
@@ -160,7 +167,7 @@ describe("NotificationProvider", () => {
 
         await waitFor(() => {
             expect(
-                screen.queryByText("Custom notification")
+                screen.queryByTestId("notification-alert")
             ).not.toBeInTheDocument();
         });
     });
