@@ -7,7 +7,7 @@ import { ApiError } from "../api/authApi";
 import { useAuthStore } from "../stores/authStore";
 import { useLoginMutation } from "../mutations/useLoginMutation";
 import { createLoginSchema, LoginFormData } from "../schemas/authSchemas";
-import { useNotification } from "../hooks/useNotification";
+import { useNotificationContext } from "../contexts/NotificationContext";
 import {
     Container,
     Typography,
@@ -24,7 +24,7 @@ export const LoginPage = () => {
     const navigate = useNavigate();
     const search = useSearch({ from: "/login" });
     const setTokens = useAuthStore((state) => state.setTokens);
-    const { Notification, openNotification } = useNotification();
+    const { openNotification } = useNotificationContext();
 
     const {
         register,
@@ -67,7 +67,6 @@ export const LoginPage = () => {
 
     return (
         <div className="centered-page-container">
-            {Notification}
             <Container maxWidth="sm" className="login-container">
                 <Typography
                     className="page-header"
