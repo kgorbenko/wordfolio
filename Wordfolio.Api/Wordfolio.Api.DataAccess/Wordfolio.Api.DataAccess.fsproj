@@ -15,6 +15,8 @@
     <Compile Include="Database.fs" />
     <Compile Include="Schema.fs" />
     <Compile Include="Users.fs" />
+    <Compile Include="Collections.fs" />
+    <Compile Include="Vocabularies.fs" />
   </ItemGroup>
 
   <ItemGroup>
