@@ -67,6 +67,27 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
         collections.Property(_.Id).ValueGeneratedOnAdd()
         |> ignore
 
+        collections.Property(_.UserId).IsRequired()
+        |> ignore
+
+        collections.Property(_.Name).IsRequired().HasMaxLength(255)
+        |> ignore
+
+        collections.Property(_.Description).IsRequired(false)
+        |> ignore
+
+        collections.Property(_.CreatedAtDateTime).IsRequired()
+        |> ignore
+
+        collections.Property(_.CreatedAtOffset).IsRequired()
+        |> ignore
+
+        collections.Property(_.UpdatedAtDateTime).IsRequired()
+        |> ignore
+
+        collections.Property(_.UpdatedAtOffset).IsRequired()
+        |> ignore
+
         let vocabularies =
             modelBuilder.Entity<VocabularyEntity>()
 
@@ -76,6 +97,27 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
         |> ignore
 
         vocabularies.Property(_.Id).ValueGeneratedOnAdd()
+        |> ignore
+
+        vocabularies.Property(_.CollectionId).IsRequired()
+        |> ignore
+
+        vocabularies.Property(_.Name).IsRequired().HasMaxLength(255)
+        |> ignore
+
+        vocabularies.Property(_.Description).IsRequired(false)
+        |> ignore
+
+        vocabularies.Property(_.CreatedAtDateTime).IsRequired()
+        |> ignore
+
+        vocabularies.Property(_.CreatedAtOffset).IsRequired()
+        |> ignore
+
+        vocabularies.Property(_.UpdatedAtDateTime).IsRequired()
+        |> ignore
+
+        vocabularies.Property(_.UpdatedAtOffset).IsRequired()
         |> ignore
 
         base.OnModelCreating(modelBuilder)
@@ -128,13 +170,8 @@ module Seeder =
 
     let getCollectionByIdAsync (id: int) (seeder: WordfolioSeeder) : Task<CollectionEntity option> =
         task {
-            let! collection = seeder.DbContext.Collections.FindAsync(id).AsTask()
-
-            return
-                if isNull(box collection) then
-                    None
-                else
-                    Some collection
+            let! collection = seeder.DbContext.Collections.FindAsync(id)
+            return collection |> Option.ofObj
         }
 
     let addVocabularies (vocabularies: VocabularyEntity list) (seeder: WordfolioSeeder) =

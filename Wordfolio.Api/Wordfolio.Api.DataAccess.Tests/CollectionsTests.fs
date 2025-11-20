@@ -12,22 +12,18 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
     interface IClassFixture<WordfolioTestFixture>
 
     [<Fact>]
-    member _.``CRUD operations work``() =
+    member _.``createCollectionAsync inserts a collection``() =
         task {
             do! fixture.ResetDatabaseAsync()
 
             let createdAt =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.FromHours(0.0))
 
-            let updatedAt =
-                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.FromHours(0.0))
-
             do!
                 fixture.Seeder
                 |> Seeder.addUsers [ { Id = 100 } ]
                 |> Seeder.saveChangesAsync
 
-            // Create
             let collectionId = 1
 
             do!
@@ -39,7 +35,6 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                       CreatedAt = createdAt }
                 |> fixture.WithConnectionAsync
 
-            // Read by ID
             let! collection =
                 Collections.getCollectionByIdAsync collectionId
                 |> fixture.WithConnectionAsync
@@ -47,8 +42,47 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
             Assert.True(collection.IsSome)
             Assert.Equal("My Collection", collection.Value.Name)
             Assert.Equal(Some "Test collection", collection.Value.Description)
+        }
 
-            // Update
+    [<Fact>]
+    member _.``getCollectionByIdAsync returns None when collection does not exist``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let! collection =
+                Collections.getCollectionByIdAsync 999
+                |> fixture.WithConnectionAsync
+
+            Assert.True(collection.IsNone)
+        }
+
+    [<Fact>]
+    member _.``updateCollectionAsync updates an existing collection``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.FromHours(0.0))
+
+            let updatedAt =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.FromHours(0.0))
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ { Id = 101 } ]
+                |> Seeder.saveChangesAsync
+
+            let collectionId = 2
+
+            do!
+                Collections.createCollectionAsync
+                    { Id = collectionId
+                      UserId = 101
+                      Name = "Original Name"
+                      Description = Some "Original Description"
+                      CreatedAt = createdAt }
+                |> fixture.WithConnectionAsync
+
             let! affectedRows =
                 Collections.updateCollectionAsync
                     { Id = collectionId
@@ -59,22 +93,44 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 
             Assert.Equal(1, affectedRows)
 
-            // Read updated
             let! updatedCollection =
                 Collections.getCollectionByIdAsync collectionId
                 |> fixture.WithConnectionAsync
 
             Assert.Equal("Updated Name", updatedCollection.Value.Name)
             Assert.Equal(Some "Updated Description", updatedCollection.Value.Description)
+        }
 
-            // Delete
-            let! deleteAffectedRows =
+    [<Fact>]
+    member _.``deleteCollectionAsync deletes an existing collection``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.FromHours(0.0))
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ { Id = 102 } ]
+                |> Seeder.saveChangesAsync
+
+            let collectionId = 3
+
+            do!
+                Collections.createCollectionAsync
+                    { Id = collectionId
+                      UserId = 102
+                      Name = "Collection to delete"
+                      Description = None
+                      CreatedAt = createdAt }
+                |> fixture.WithConnectionAsync
+
+            let! affectedRows =
                 Collections.deleteCollectionAsync collectionId
                 |> fixture.WithConnectionAsync
 
-            Assert.Equal(1, deleteAffectedRows)
+            Assert.Equal(1, affectedRows)
 
-            // Verify deleted
             let! deletedCollection =
                 Collections.getCollectionByIdAsync collectionId
                 |> fixture.WithConnectionAsync
