@@ -15,6 +15,7 @@ type CreateCollectionsTable() =
             .WithColumn(CollectionsTable.IdColumn)
             .AsInt32()
             .PrimaryKey()
+            .Identity()
             .WithColumn(CollectionsTable.UserIdColumn)
             .AsInt32()
             .NotNullable()
@@ -29,7 +30,7 @@ type CreateCollectionsTable() =
             .NotNullable()
             .WithColumn(CollectionsTable.UpdatedAtColumn)
             .AsDateTimeOffset()
-            .NotNullable()
+            .Nullable()
         |> ignore
 
         base.Create

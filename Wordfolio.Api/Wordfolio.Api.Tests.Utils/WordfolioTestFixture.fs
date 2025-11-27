@@ -9,37 +9,49 @@ open Xunit.Sdk
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
-type WordfolioTestFixture(messageSink: IMessageSink) =
+type WordfolioTestFixture(messageSink: IMessageSink) as this =
     inherit BaseDatabaseTestFixture(messageSink)
 
-    let mutable state: {| Seeder: WordfolioSeeder |} option =
+    let mutable seeder: WordfolioSeeder option =
         None
 
-    override this.RunMigrations(connectionString: string) = MigrationRunner.run connectionString
+    override _.RunMigrations(connectionString: string) = MigrationRunner.run connectionString
 
-    member private this.EnsureInitialized() =
-        match state with
-        | None ->
-            let seeder = Seeder.create this.Connection
-
-            state <- Some {| Seeder = seeder |}
+    member private _.EnsureInitialized() =
+        match seeder with
+        | None -> seeder <- Some(Seeder.create this.Connection)
         | Some _ -> ()
+
+    member private _.RecreateSeeder() =
+        match seeder with
+        | Some existingSeeder ->
+            (existingSeeder :> IDisposable).Dispose()
+            seeder <- Some(Seeder.create this.Connection)
+        | None -> ()
 
     override this.InitializeAsync() : ValueTask =
         do base.InitializeAsync().GetAwaiter().GetResult()
         this.EnsureInitialized()
         ValueTask.CompletedTask
 
-    member this.Seeder: WordfolioSeeder =
-        state.Value.Seeder
+    member _.Seeder: WordfolioSeeder = seeder.Value
+
+    member this.ResetDatabaseAsync() : Task =
+        let baseReset =
+            (this :> BaseDatabaseTestFixture).ResetDatabaseAsync
+
+        task {
+            do! baseReset()
+            this.RecreateSeeder()
+        }
 
     member this.WithConnectionAsync
         (callback: System.Data.IDbConnection -> System.Data.IDbTransaction -> CancellationToken -> Task<'a>)
         : Task<'a> =
-        base.WithConnectionAsync callback
+        (this :> BaseDatabaseTestFixture).WithConnectionAsync callback
 
     interface IDisposable with
-        member this.Dispose() : unit =
-            match state with
+        member _.Dispose() : unit =
+            match seeder with
             | None -> ()
-            | Some state -> (state.Seeder :> IDisposable).Dispose()
+            | Some s -> (s :> IDisposable).Dispose()

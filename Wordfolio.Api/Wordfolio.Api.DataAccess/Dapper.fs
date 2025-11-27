@@ -29,7 +29,7 @@ let selectAsync
         return result |> List.ofSeq
     }
 
-let selectAsyncOption
+let trySelectFirstAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)

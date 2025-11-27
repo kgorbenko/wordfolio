@@ -19,7 +19,7 @@ type CollectionEntity =
       Name: string
       Description: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset }
+      UpdatedAt: Nullable<DateTimeOffset> }
 
 [<CLIMutable>]
 type VocabularyEntity =
@@ -28,7 +28,7 @@ type VocabularyEntity =
       Name: string
       Description: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset }
+      UpdatedAt: Nullable<DateTimeOffset> }
 
 type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
     inherit DbContext(options)
@@ -60,10 +60,13 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
             .HasKey(fun x -> x.Id :> obj)
         |> ignore
 
-        collections.Property(_.Id).ValueGeneratedNever()
+        collections.Property(_.Id).ValueGeneratedOnAdd()
         |> ignore
 
-        collections.Property(_.UserId).IsRequired()
+        collections
+            .HasOne<UserEntity>()
+            .WithMany()
+            .HasForeignKey(fun c -> c.UserId :> obj)
         |> ignore
 
         collections.Property(_.Name).IsRequired().HasMaxLength(255)
@@ -75,7 +78,7 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
         collections.Property(_.CreatedAt).IsRequired()
         |> ignore
 
-        collections.Property(_.UpdatedAt).IsRequired()
+        collections.Property(_.UpdatedAt).IsRequired(false)
         |> ignore
 
         let vocabularies =
@@ -86,10 +89,13 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
             .HasKey(fun x -> x.Id :> obj)
         |> ignore
 
-        vocabularies.Property(_.Id).ValueGeneratedNever()
+        vocabularies.Property(_.Id).ValueGeneratedOnAdd()
         |> ignore
 
-        vocabularies.Property(_.CollectionId).IsRequired()
+        vocabularies
+            .HasOne<CollectionEntity>()
+            .WithMany()
+            .HasForeignKey(fun v -> v.CollectionId :> obj)
         |> ignore
 
         vocabularies.Property(_.Name).IsRequired().HasMaxLength(255)
@@ -101,7 +107,7 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
         vocabularies.Property(_.CreatedAt).IsRequired()
         |> ignore
 
-        vocabularies.Property(_.UpdatedAt).IsRequired()
+        vocabularies.Property(_.UpdatedAt).IsRequired(false)
         |> ignore
 
         base.OnModelCreating(modelBuilder)
@@ -138,7 +144,7 @@ module Seeder =
 
     let getAllUsersAsync(seeder: WordfolioSeeder) : Task<UserEntity list> =
         task {
-            let! users = seeder.DbContext.Users.ToArrayAsync()
+            let! users = seeder.DbContext.Users.AsNoTracking().ToArrayAsync()
             return users |> List.ofSeq
         }
 
@@ -148,7 +154,7 @@ module Seeder =
 
     let getAllCollectionsAsync(seeder: WordfolioSeeder) : Task<CollectionEntity list> =
         task {
-            let! collections = seeder.DbContext.Collections.ToArrayAsync()
+            let! collections = seeder.DbContext.Collections.AsNoTracking().ToArrayAsync()
             return collections |> List.ofSeq
         }
 
@@ -164,6 +170,6 @@ module Seeder =
 
     let getAllVocabulariesAsync(seeder: WordfolioSeeder) : Task<VocabularyEntity list> =
         task {
-            let! vocabularies = seeder.DbContext.Vocabularies.ToArrayAsync()
+            let! vocabularies = seeder.DbContext.Vocabularies.AsNoTracking().ToArrayAsync()
             return vocabularies |> List.ofSeq
         }

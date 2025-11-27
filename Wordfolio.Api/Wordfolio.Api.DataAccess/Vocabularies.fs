@@ -17,7 +17,7 @@ type internal VocabularyRecord =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset }
+      UpdatedAt: Nullable<DateTimeOffset> }
 
 type Vocabulary =
     { Id: int
@@ -25,7 +25,7 @@ type Vocabulary =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset }
+      UpdatedAt: DateTimeOffset option }
 
 type VocabularyCreationParameters =
     { CollectionId: int
@@ -45,38 +45,31 @@ let private fromRecord(record: VocabularyRecord) : Vocabulary =
       Name = record.Name
       Description = record.Description
       CreatedAt = record.CreatedAt
-      UpdatedAt = record.UpdatedAt }
+      UpdatedAt =
+        if record.UpdatedAt.HasValue then
+            Some record.UpdatedAt.Value
+        else
+            None }
 
 let internal vocabulariesTable =
     table'<VocabularyRecord> Schema.VocabulariesTable.Name
     |> inSchema Schema.Name
 
-type VocabularyCreationParametersWithId =
-    { Id: int
-      CollectionId: int
-      Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset }
+let internal vocabulariesInsertTable =
+    table'<VocabularyCreationParameters> Schema.VocabulariesTable.Name
+    |> inSchema Schema.Name
 
 let createVocabularyAsync
-    (parameters: VocabularyCreationParametersWithId)
+    (parameters: VocabularyCreationParameters)
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
     : Task<unit> =
     task {
-        let vocabularyToInsert: VocabularyRecord =
-            { Id = parameters.Id
-              CollectionId = parameters.CollectionId
-              Name = parameters.Name
-              Description = parameters.Description
-              CreatedAt = parameters.CreatedAt
-              UpdatedAt = parameters.CreatedAt }
-
         do!
             insert {
-                into vocabulariesTable
-                values [ vocabularyToInsert ]
+                into vocabulariesInsertTable
+                values [ parameters ]
             }
             |> insertAsync connection transaction cancellationToken
             |> Task.ignore
@@ -94,7 +87,7 @@ let getVocabularyByIdAsync
                 for v in vocabulariesTable do
                     where(v.Id = id)
             }
-            |> selectAsyncOption connection transaction cancellationToken
+            |> trySelectFirstAsync connection transaction cancellationToken
 
         return result |> Option.map fromRecord
     }
@@ -123,31 +116,17 @@ let updateVocabularyAsync
     (cancellationToken: CancellationToken)
     : Task<int> =
     task {
-        let! existing =
-            select {
+        let! affectedRows =
+            update {
                 for v in vocabulariesTable do
+                    setColumn v.Name parameters.Name
+                    setColumn v.Description parameters.Description
+                    setColumn v.UpdatedAt (Nullable parameters.UpdatedAt)
                     where(v.Id = parameters.Id)
             }
-            |> selectAsyncOption connection transaction cancellationToken
+            |> updateAsync connection transaction cancellationToken
 
-        match existing with
-        | None -> return 0
-        | Some record ->
-            let updatedRecord: VocabularyRecord =
-                { record with
-                    Name = parameters.Name
-                    Description = parameters.Description
-                    UpdatedAt = parameters.UpdatedAt }
-
-            let! affectedRows =
-                update {
-                    for v in vocabulariesTable do
-                        set updatedRecord
-                        where(v.Id = parameters.Id)
-                }
-                |> updateAsync connection transaction cancellationToken
-
-            return affectedRows
+        return affectedRows
     }
 
 let deleteVocabularyAsync

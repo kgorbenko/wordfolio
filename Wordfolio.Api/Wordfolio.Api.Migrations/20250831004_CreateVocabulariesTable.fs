@@ -15,6 +15,7 @@ type CreateVocabulariesTable() =
             .WithColumn(VocabulariesTable.IdColumn)
             .AsInt32()
             .PrimaryKey()
+            .Identity()
             .WithColumn(VocabulariesTable.CollectionIdColumn)
             .AsInt32()
             .NotNullable()
@@ -29,7 +30,7 @@ type CreateVocabulariesTable() =
             .NotNullable()
             .WithColumn(VocabulariesTable.UpdatedAtColumn)
             .AsDateTimeOffset()
-            .NotNullable()
+            .Nullable()
         |> ignore
 
         base.Create
