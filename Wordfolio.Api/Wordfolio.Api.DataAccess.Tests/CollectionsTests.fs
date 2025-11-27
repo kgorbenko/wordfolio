@@ -35,13 +35,19 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                       CreatedAt = createdAt }
                 |> fixture.WithConnectionAsync
 
-            let! collection =
-                Collections.getCollectionByIdAsync collectionId
-                |> fixture.WithConnectionAsync
+            let! actual =
+                fixture.Seeder
+                |> Seeder.getAllCollectionsAsync
 
-            Assert.True(collection.IsSome)
-            Assert.Equal("My Collection", collection.Value.Name)
-            Assert.Equal(Some "Test collection", collection.Value.Description)
+            let expected: CollectionEntity list =
+                [ { Id = collectionId
+                    UserId = 100
+                    Name = "My Collection"
+                    Description = "Test collection"
+                    CreatedAt = createdAt
+                    UpdatedAt = createdAt } ]
+
+            Assert.Equivalent(expected, actual)
         }
 
     [<Fact>]
@@ -93,12 +99,19 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 
             Assert.Equal(1, affectedRows)
 
-            let! updatedCollection =
-                Collections.getCollectionByIdAsync collectionId
-                |> fixture.WithConnectionAsync
+            let! actual =
+                fixture.Seeder
+                |> Seeder.getAllCollectionsAsync
 
-            Assert.Equal("Updated Name", updatedCollection.Value.Name)
-            Assert.Equal(Some "Updated Description", updatedCollection.Value.Description)
+            let expected: CollectionEntity list =
+                [ { Id = collectionId
+                    UserId = 101
+                    Name = "Updated Name"
+                    Description = "Updated Description"
+                    CreatedAt = createdAt
+                    UpdatedAt = updatedAt } ]
+
+            Assert.Equivalent(expected, actual)
         }
 
     [<Fact>]
@@ -131,9 +144,9 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 
             Assert.Equal(1, affectedRows)
 
-            let! deletedCollection =
-                Collections.getCollectionByIdAsync collectionId
-                |> fixture.WithConnectionAsync
+            let! actual =
+                fixture.Seeder
+                |> Seeder.getAllCollectionsAsync
 
-            Assert.True(deletedCollection.IsNone)
+            Assert.Empty(actual)
         }

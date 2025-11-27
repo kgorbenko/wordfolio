@@ -18,10 +18,8 @@ type CollectionEntity =
       UserId: int
       Name: string
       Description: string
-      CreatedAtDateTime: DateTimeOffset
-      CreatedAtOffset: int16
-      UpdatedAtDateTime: DateTimeOffset
-      UpdatedAtOffset: int16 }
+      CreatedAt: DateTimeOffset
+      UpdatedAt: DateTimeOffset }
 
 [<CLIMutable>]
 type VocabularyEntity =
@@ -29,10 +27,8 @@ type VocabularyEntity =
       CollectionId: int
       Name: string
       Description: string
-      CreatedAtDateTime: DateTimeOffset
-      CreatedAtOffset: int16
-      UpdatedAtDateTime: DateTimeOffset
-      UpdatedAtOffset: int16 }
+      CreatedAt: DateTimeOffset
+      UpdatedAt: DateTimeOffset }
 
 type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
     inherit DbContext(options)
@@ -64,7 +60,7 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
             .HasKey(fun x -> x.Id :> obj)
         |> ignore
 
-        collections.Property(_.Id).ValueGeneratedOnAdd()
+        collections.Property(_.Id).ValueGeneratedNever()
         |> ignore
 
         collections.Property(_.UserId).IsRequired()
@@ -76,16 +72,10 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
         collections.Property(_.Description).IsRequired(false)
         |> ignore
 
-        collections.Property(_.CreatedAtDateTime).IsRequired()
+        collections.Property(_.CreatedAt).IsRequired()
         |> ignore
 
-        collections.Property(_.CreatedAtOffset).IsRequired()
-        |> ignore
-
-        collections.Property(_.UpdatedAtDateTime).IsRequired()
-        |> ignore
-
-        collections.Property(_.UpdatedAtOffset).IsRequired()
+        collections.Property(_.UpdatedAt).IsRequired()
         |> ignore
 
         let vocabularies =
@@ -96,7 +86,7 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
             .HasKey(fun x -> x.Id :> obj)
         |> ignore
 
-        vocabularies.Property(_.Id).ValueGeneratedOnAdd()
+        vocabularies.Property(_.Id).ValueGeneratedNever()
         |> ignore
 
         vocabularies.Property(_.CollectionId).IsRequired()
@@ -108,16 +98,10 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
         vocabularies.Property(_.Description).IsRequired(false)
         |> ignore
 
-        vocabularies.Property(_.CreatedAtDateTime).IsRequired()
+        vocabularies.Property(_.CreatedAt).IsRequired()
         |> ignore
 
-        vocabularies.Property(_.CreatedAtOffset).IsRequired()
-        |> ignore
-
-        vocabularies.Property(_.UpdatedAtDateTime).IsRequired()
-        |> ignore
-
-        vocabularies.Property(_.UpdatedAtOffset).IsRequired()
+        vocabularies.Property(_.UpdatedAt).IsRequired()
         |> ignore
 
         base.OnModelCreating(modelBuilder)

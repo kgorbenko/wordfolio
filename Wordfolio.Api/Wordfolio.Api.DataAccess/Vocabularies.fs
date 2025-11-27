@@ -16,10 +16,8 @@ type internal VocabularyRecord =
       CollectionId: int
       Name: string
       Description: string option
-      CreatedAtDateTime: DateTimeOffset
-      CreatedAtOffset: int16
-      UpdatedAtDateTime: DateTimeOffset
-      UpdatedAtOffset: int16 }
+      CreatedAt: DateTimeOffset
+      UpdatedAt: DateTimeOffset }
 
 type Vocabulary =
     { Id: int
@@ -41,23 +39,13 @@ type VocabularyUpdateParameters =
       Description: string option
       UpdatedAt: DateTimeOffset }
 
-let private toRecord(vocabulary: Vocabulary) : VocabularyRecord =
-    { Id = vocabulary.Id
-      CollectionId = vocabulary.CollectionId
-      Name = vocabulary.Name
-      Description = vocabulary.Description
-      CreatedAtDateTime = vocabulary.CreatedAt
-      CreatedAtOffset = int16 vocabulary.CreatedAt.Offset.TotalMinutes
-      UpdatedAtDateTime = vocabulary.UpdatedAt
-      UpdatedAtOffset = int16 vocabulary.UpdatedAt.Offset.TotalMinutes }
-
 let private fromRecord(record: VocabularyRecord) : Vocabulary =
     { Id = record.Id
       CollectionId = record.CollectionId
       Name = record.Name
       Description = record.Description
-      CreatedAt = DateTimeOffset(record.CreatedAtDateTime.DateTime, TimeSpan.FromMinutes(float record.CreatedAtOffset))
-      UpdatedAt = DateTimeOffset(record.UpdatedAtDateTime.DateTime, TimeSpan.FromMinutes(float record.UpdatedAtOffset)) }
+      CreatedAt = record.CreatedAt
+      UpdatedAt = record.UpdatedAt }
 
 let internal vocabulariesTable =
     table'<VocabularyRecord> Schema.VocabulariesTable.Name
@@ -82,10 +70,8 @@ let createVocabularyAsync
               CollectionId = parameters.CollectionId
               Name = parameters.Name
               Description = parameters.Description
-              CreatedAtDateTime = parameters.CreatedAt
-              CreatedAtOffset = int16 parameters.CreatedAt.Offset.TotalMinutes
-              UpdatedAtDateTime = parameters.CreatedAt
-              UpdatedAtOffset = int16 parameters.CreatedAt.Offset.TotalMinutes }
+              CreatedAt = parameters.CreatedAt
+              UpdatedAt = parameters.CreatedAt }
 
         do!
             insert {
@@ -147,12 +133,11 @@ let updateVocabularyAsync
         match existing with
         | None -> return 0
         | Some record ->
-            let updatedRecord =
+            let updatedRecord: VocabularyRecord =
                 { record with
                     Name = parameters.Name
                     Description = parameters.Description
-                    UpdatedAtDateTime = parameters.UpdatedAt
-                    UpdatedAtOffset = int16 parameters.UpdatedAt.Offset.TotalMinutes }
+                    UpdatedAt = parameters.UpdatedAt }
 
             let! affectedRows =
                 update {

@@ -16,10 +16,8 @@ type internal CollectionRecord =
       UserId: int
       Name: string
       Description: string option
-      CreatedAtDateTime: DateTimeOffset
-      CreatedAtOffset: int16
-      UpdatedAtDateTime: DateTimeOffset
-      UpdatedAtOffset: int16 }
+      CreatedAt: DateTimeOffset
+      UpdatedAt: DateTimeOffset }
 
 type Collection =
     { Id: int
@@ -41,23 +39,13 @@ type CollectionUpdateParameters =
       Description: string option
       UpdatedAt: DateTimeOffset }
 
-let private toRecord(collection: Collection) : CollectionRecord =
-    { Id = collection.Id
-      UserId = collection.UserId
-      Name = collection.Name
-      Description = collection.Description
-      CreatedAtDateTime = collection.CreatedAt
-      CreatedAtOffset = int16 collection.CreatedAt.Offset.TotalMinutes
-      UpdatedAtDateTime = collection.UpdatedAt
-      UpdatedAtOffset = int16 collection.UpdatedAt.Offset.TotalMinutes }
-
 let private fromRecord(record: CollectionRecord) : Collection =
     { Id = record.Id
       UserId = record.UserId
       Name = record.Name
       Description = record.Description
-      CreatedAt = DateTimeOffset(record.CreatedAtDateTime.DateTime, TimeSpan.FromMinutes(float record.CreatedAtOffset))
-      UpdatedAt = DateTimeOffset(record.UpdatedAtDateTime.DateTime, TimeSpan.FromMinutes(float record.UpdatedAtOffset)) }
+      CreatedAt = record.CreatedAt
+      UpdatedAt = record.UpdatedAt }
 
 let internal collectionsTable =
     table'<CollectionRecord> Schema.CollectionsTable.Name
@@ -82,10 +70,8 @@ let createCollectionAsync
               UserId = parameters.UserId
               Name = parameters.Name
               Description = parameters.Description
-              CreatedAtDateTime = parameters.CreatedAt
-              CreatedAtOffset = int16 parameters.CreatedAt.Offset.TotalMinutes
-              UpdatedAtDateTime = parameters.CreatedAt
-              UpdatedAtOffset = int16 parameters.CreatedAt.Offset.TotalMinutes }
+              CreatedAt = parameters.CreatedAt
+              UpdatedAt = parameters.CreatedAt }
 
         do!
             insert {
@@ -147,12 +133,11 @@ let updateCollectionAsync
         match existing with
         | None -> return 0
         | Some record ->
-            let updatedRecord =
+            let updatedRecord: CollectionRecord =
                 { record with
                     Name = parameters.Name
                     Description = parameters.Description
-                    UpdatedAtDateTime = parameters.UpdatedAt
-                    UpdatedAtOffset = int16 parameters.UpdatedAt.Offset.TotalMinutes }
+                    UpdatedAt = parameters.UpdatedAt }
 
             let! affectedRows =
                 update {

@@ -24,20 +24,10 @@ module CollectionsTable =
     let DescriptionColumn = "Description"
 
     [<Literal>]
-    let CreatedAtDateTimeColumn =
-        "CreatedAtDateTime"
+    let CreatedAtColumn = "CreatedAt"
 
     [<Literal>]
-    let CreatedAtOffsetColumn =
-        "CreatedAtOffset"
-
-    [<Literal>]
-    let UpdatedAtDateTimeColumn =
-        "UpdatedAtDateTime"
-
-    [<Literal>]
-    let UpdatedAtOffsetColumn =
-        "UpdatedAtOffset"
+    let UpdatedAtColumn = "UpdatedAt"
 
 module VocabulariesTable =
     [<Literal>]
@@ -56,17 +46,7 @@ module VocabulariesTable =
     let DescriptionColumn = "Description"
 
     [<Literal>]
-    let CreatedAtDateTimeColumn =
-        "CreatedAtDateTime"
+    let CreatedAtColumn = "CreatedAt"
 
     [<Literal>]
-    let CreatedAtOffsetColumn =
-        "CreatedAtOffset"
-
-    [<Literal>]
-    let UpdatedAtDateTimeColumn =
-        "UpdatedAtDateTime"
-
-    [<Literal>]
-    let UpdatedAtOffsetColumn =
-        "UpdatedAtOffset"
+    let UpdatedAtColumn = "UpdatedAt"
