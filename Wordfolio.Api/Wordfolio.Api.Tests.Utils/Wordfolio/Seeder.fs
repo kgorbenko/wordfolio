@@ -1,6 +1,7 @@
 ﻿namespace Wordfolio.Api.Tests.Utils.Wordfolio
 
 open System
+open System.Collections.Generic
 open System.Data.Common
 open System.Threading.Tasks
 
@@ -10,25 +11,28 @@ open Wordfolio.Api.DataAccess
 open Wordfolio.Common
 
 [<CLIMutable>]
-type UserEntity = { Id: int }
-
-[<CLIMutable>]
-type CollectionEntity =
+type UserEntity =
     { Id: int
+      mutable Collections: ResizeArray<CollectionEntity> }
+
+and [<CLIMutable>] CollectionEntity =
+    { mutable Id: int
       UserId: int
       Name: string
       Description: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset> }
+      UpdatedAt: Nullable<DateTimeOffset>
+      mutable User: UserEntity
+      mutable Vocabularies: ResizeArray<VocabularyEntity> }
 
-[<CLIMutable>]
-type VocabularyEntity =
-    { Id: int
+and [<CLIMutable>] VocabularyEntity =
+    { mutable Id: int
       CollectionId: int
       Name: string
       Description: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset> }
+      UpdatedAt: Nullable<DateTimeOffset>
+      mutable Collection: CollectionEntity }
 
 type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
     inherit DbContext(options)
@@ -52,6 +56,12 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
         users.Property(_.Id).ValueGeneratedNever()
         |> ignore
 
+        users
+            .HasMany(fun u -> u.Collections :> IEnumerable<CollectionEntity>)
+            .WithOne(fun c -> c.User)
+            .HasForeignKey(fun c -> c.UserId :> obj)
+        |> ignore
+
         let collections =
             modelBuilder.Entity<CollectionEntity>()
 
@@ -67,9 +77,9 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
         |> ignore
 
         collections
-            .HasOne<UserEntity>()
-            .WithMany()
-            .HasForeignKey(fun c -> c.UserId :> obj)
+            .HasMany(fun c -> c.Vocabularies :> IEnumerable<VocabularyEntity>)
+            .WithOne(fun v -> v.Collection)
+            .HasForeignKey(fun v -> v.CollectionId :> obj)
         |> ignore
 
         collections.Property(_.Name).IsRequired().HasMaxLength(255)
@@ -96,12 +106,6 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
         |> ignore
 
         vocabularies.Property(_.CollectionId).IsRequired()
-        |> ignore
-
-        vocabularies
-            .HasOne<CollectionEntity>()
-            .WithMany()
-            .HasForeignKey(fun v -> v.CollectionId :> obj)
         |> ignore
 
         vocabularies.Property(_.Name).IsRequired().HasMaxLength(255)
@@ -167,12 +171,6 @@ module Seeder =
         task {
             let! collections = seeder.DbContext.Collections.ToArrayAsync()
             return collections |> List.ofSeq
-        }
-
-    let getCollectionByIdAsync (id: int) (seeder: WordfolioSeeder) : Task<CollectionEntity option> =
-        task {
-            let! collection = seeder.DbContext.Collections.FindAsync(id)
-            return collection |> Option.ofObj
         }
 
     let addVocabularies (vocabularies: VocabularyEntity list) (seeder: WordfolioSeeder) =
