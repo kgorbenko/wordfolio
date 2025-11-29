@@ -106,15 +106,15 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                 Vocabularies.getVocabularyByIdAsync vocabularyId
                 |> fixture.WithConnectionAsync
 
-            Assert.True(actual.IsSome)
+            let expected: Vocabularies.Vocabulary =
+                { Id = vocabularyId
+                  CollectionId = collectionId
+                  Name = "My Vocabulary"
+                  Description = Some "Test vocabulary"
+                  CreatedAt = createdAt
+                  UpdatedAt = None }
 
-            let vocabulary = actual.Value
-            Assert.Equal(vocabularyId, vocabulary.Id)
-            Assert.Equal(collectionId, vocabulary.CollectionId)
-            Assert.Equal("My Vocabulary", vocabulary.Name)
-            Assert.Equal(Some "Test vocabulary", vocabulary.Description)
-            Assert.Equal(createdAt, vocabulary.CreatedAt)
-            Assert.True(vocabulary.UpdatedAt.IsNone)
+            Assert.Equivalent(Some expected, actual)
         }
 
     [<Fact>]
@@ -122,11 +122,11 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let! vocabulary =
+            let! actual =
                 Vocabularies.getVocabularyByIdAsync 999
                 |> fixture.WithConnectionAsync
 
-            Assert.True(vocabulary.IsNone)
+            Assert.True(actual.IsNone)
         }
 
     [<Fact>]

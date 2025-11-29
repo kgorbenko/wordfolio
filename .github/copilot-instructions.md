@@ -74,6 +74,13 @@ Follow these concise rules when generating code or suggestions for this reposito
   - Test files should use the `.test.ts` or `.test.tsx` extension.
   - Import source files using relative paths from the tests directory (e.g., `../../src/components/MyComponent`).
 
+- Database Testing
+  - Perform all initial database seeding via database seeder only.
+  - Do not use functions from tested modules for database seeding or for making assertions.
+  - Preferably, only one single call of the tested function should be made per test for isolation.
+  - Query the database for making assertions using database seeder only.
+  - Use tested records for assertions instead of asserting properties one at a time.
+
 - General
   - Keep changes minimal and focused.
   - Follow repository conventions when suggesting edits.

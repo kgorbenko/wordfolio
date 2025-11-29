@@ -76,15 +76,15 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                 Collections.getCollectionByIdAsync collectionId
                 |> fixture.WithConnectionAsync
 
-            Assert.True(actual.IsSome)
+            let expected: Collections.Collection =
+                { Id = collectionId
+                  UserId = 100
+                  Name = "My Collection"
+                  Description = Some "Test collection"
+                  CreatedAt = createdAt
+                  UpdatedAt = None }
 
-            let collection = actual.Value
-            Assert.Equal(collectionId, collection.Id)
-            Assert.Equal(100, collection.UserId)
-            Assert.Equal("My Collection", collection.Name)
-            Assert.Equal(Some "Test collection", collection.Description)
-            Assert.Equal(createdAt, collection.CreatedAt)
-            Assert.True(collection.UpdatedAt.IsNone)
+            Assert.Equivalent(Some expected, actual)
         }
 
     [<Fact>]
@@ -92,11 +92,11 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let! collection =
+            let! actual =
                 Collections.getCollectionByIdAsync 999
                 |> fixture.WithConnectionAsync
 
-            Assert.True(collection.IsNone)
+            Assert.True(actual.IsNone)
         }
 
     [<Fact>]

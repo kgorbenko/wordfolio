@@ -63,6 +63,9 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
         collections.Property(_.Id).ValueGeneratedOnAdd()
         |> ignore
 
+        collections.Property(_.UserId).IsRequired()
+        |> ignore
+
         collections
             .HasOne<UserEntity>()
             .WithMany()
@@ -90,6 +93,9 @@ type WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
         |> ignore
 
         vocabularies.Property(_.Id).ValueGeneratedOnAdd()
+        |> ignore
+
+        vocabularies.Property(_.CollectionId).IsRequired()
         |> ignore
 
         vocabularies
@@ -124,7 +130,10 @@ module Seeder =
         let builder =
             DbContextOptionsBuilder<WordfolioTestDbContext>()
 
-        builder.UseNpgsql(connection) |> ignore
+        builder
+            .UseNpgsql(connection)
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+        |> ignore
 
         let context =
             new WordfolioTestDbContext(builder.Options)
@@ -140,11 +149,13 @@ module Seeder =
             do!
                 seeder.DbContext.SaveChangesAsync()
                 |> Task.ignore
+
+            seeder.DbContext.ChangeTracker.Clear()
         }
 
     let getAllUsersAsync(seeder: WordfolioSeeder) : Task<UserEntity list> =
         task {
-            let! users = seeder.DbContext.Users.AsNoTracking().ToArrayAsync()
+            let! users = seeder.DbContext.Users.ToArrayAsync()
             return users |> List.ofSeq
         }
 
@@ -154,7 +165,7 @@ module Seeder =
 
     let getAllCollectionsAsync(seeder: WordfolioSeeder) : Task<CollectionEntity list> =
         task {
-            let! collections = seeder.DbContext.Collections.AsNoTracking().ToArrayAsync()
+            let! collections = seeder.DbContext.Collections.ToArrayAsync()
             return collections |> List.ofSeq
         }
 
@@ -170,6 +181,6 @@ module Seeder =
 
     let getAllVocabulariesAsync(seeder: WordfolioSeeder) : Task<VocabularyEntity list> =
         task {
-            let! vocabularies = seeder.DbContext.Vocabularies.AsNoTracking().ToArrayAsync()
+            let! vocabularies = seeder.DbContext.Vocabularies.ToArrayAsync()
             return vocabularies |> List.ofSeq
         }
