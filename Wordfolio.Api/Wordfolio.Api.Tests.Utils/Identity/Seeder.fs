@@ -9,6 +9,11 @@ open Microsoft.EntityFrameworkCore
 open Wordfolio.Api.Identity
 open Wordfolio.Common
 
+type User =
+    { Id: int
+      UserName: string option
+      Email: string option }
+
 type IdentitySeeder(context: IdentityDbContext) =
     member _.DbContext = context
 
@@ -18,18 +23,23 @@ type IdentitySeeder(context: IdentityDbContext) =
 
 [<RequireQualifiedAccess>]
 module Seeder =
+    let private toUser(entity: Wordfolio.Api.Identity.User) : User =
+        { Id = entity.Id
+          UserName = Option.ofObj entity.UserName
+          Email = Option.ofObj entity.Email }
+
     let create(connection: DbConnection) : IdentitySeeder =
         let builder =
             DbContextOptionsBuilder<IdentityDbContext>()
-
-        builder.UseNpgsql(connection) |> ignore
+                .UseNpgsql(connection)
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
 
         let context =
             new IdentityDbContext(builder.Options)
 
         new IdentitySeeder(context)
 
-    let addUsers (users: User list) (seeder: IdentitySeeder) =
+    let addUsers (users: Wordfolio.Api.Identity.User list) (seeder: IdentitySeeder) =
         seeder.DbContext.Users.AddRange(users)
         seeder
 
@@ -38,10 +48,12 @@ module Seeder =
             do!
                 seeder.DbContext.SaveChangesAsync()
                 |> Task.ignore
+
+            seeder.DbContext.ChangeTracker.Clear()
         }
 
     let getAllUsersAsync(seeder: IdentitySeeder) : Task<User list> =
         task {
-            let! users = seeder.DbContext.Users.AsNoTracking().ToArrayAsync()
-            return users |> List.ofSeq
+            let! users = seeder.DbContext.Users.ToArrayAsync()
+            return users |> Seq.map toUser |> Seq.toList
         }
