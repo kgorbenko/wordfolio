@@ -92,7 +92,6 @@ wordfolio/
 ├── Wordfolio.Api/          # Backend API projects
 │   ├── Wordfolio.Api/      # Main API service (F#)
 │   │   ├── Handlers/       # HTTP endpoint handlers
-│   │   │   └── Auth.fs     # Authentication endpoints
 │   │   ├── IdentityIntegration.fs  # DI setup for auth
 │   │   └── Program.fs      # Entry point, service composition
 │   │
@@ -117,76 +116,30 @@ wordfolio/
 │   │   └── 20250831004_CreateVocabulariesTable.fs
 │   │
 │   ├── Wordfolio.Api.Tests/       # Integration tests (F#)
-│   │   ├── AuthTests.fs           # End-to-end auth tests
-│   │   └── WebApplicationFactory.fs
-│   │
 │   ├── Wordfolio.Api.DataAccess.Tests/  # Data layer unit tests (F#)
-│   │   ├── CollectionsTests.fs
-│   │   ├── VocabulariesTests.fs
-│   │   └── UsersTests.fs
-│   │
 │   └── Wordfolio.Api.Tests.Utils/ # Test utilities (F#)
-│       ├── BaseDatabaseTestFixture.fs
-│       ├── WordfolioTestFixture.fs
-│       └── WordfolioIdentityTestFixture.fs
 │
 ├── Wordfolio.Frontend/     # React SPA
 │   ├── src/
 │   │   ├── routes/         # TanStack Router file-based routes
-│   │   │   ├── __root.tsx  # Root layout
-│   │   │   ├── index.tsx   # Home page
-│   │   │   ├── login.tsx   # Login route
-│   │   │   └── register.tsx
-│   │   │
 │   │   ├── pages/          # Page components
-│   │   │   ├── HomePage.tsx
-│   │   │   ├── LoginPage.tsx
-│   │   │   └── RegisterPage.tsx
-│   │   │
 │   │   ├── components/     # Reusable UI components
 │   │   ├── api/           # API client modules
-│   │   │   └── authApi.ts
-│   │   │
 │   │   ├── stores/        # Zustand state stores
-│   │   │   └── authStore.ts
-│   │   │
 │   │   ├── queries/       # React Query queries
 │   │   ├── mutations/     # React Query mutations
-│   │   │   ├── useLoginMutation.ts
-│   │   │   ├── useRegisterMutation.ts
-│   │   │   └── useRefreshMutation.ts
-│   │   │
 │   │   ├── hooks/         # Custom React hooks
-│   │   │   └── useTokenRefresh.ts
-│   │   │
 │   │   ├── schemas/       # Zod validation schemas
-│   │   │   └── authSchemas.ts
-│   │   │
 │   │   ├── contexts/      # React contexts
 │   │   └── utils/         # Utility functions
-│   │       ├── errorHandling.ts
-│   │       └── passwordValidation.ts
-│   │
 │   ├── tests/             # Test files
 │   └── package.json
 │
 ├── Wordfolio.AppHost/      # .NET Aspire orchestration (C#)
-│   ├── AppHost.cs          # Service configuration
-│   └── Configuration.cs    # Database options
-│
 ├── Wordfolio.ServiceDefaults/  # Shared infrastructure (F#)
-│   ├── Builder.fs          # Service registration helpers
-│   ├── HealthCheck.fs      # Custom health checks
-│   ├── OpenApi.fs          # Swagger configuration
-│   └── Status.fs           # Status endpoint
-│
 ├── Wordfolio.Common/       # Shared utilities (F#)
-│   └── Task.fs             # Task computation expression
-│
 ├── .editorconfig           # Code style rules
 ├── fantomas-config.json    # F# formatting (Microsoft profile)
-├── .config/
-│   └── dotnet-tools.json   # .NET local tools manifest
 ├── Wordfolio.sln           # Solution file
 └── README.md               # Setup instructions
 ```
@@ -216,44 +169,30 @@ dotnet user-secrets set Parameters:postgres-username myuser
 dotnet user-secrets set Parameters:postgres-password mypassword
 cd ..
 
-# 3. Run Aspire AppHost (starts everything)
+# 3. Run Aspire AppHost (starts PostgreSQL, API, and frontend)
 dotnet run --project Wordfolio.AppHost
 ```
 
 This will:
 - Start PostgreSQL in a container
-- Run database migrations automatically
 - Start the API service
 - Start the frontend dev server
 - Open the Aspire dashboard
 
-### Manual Setup (without Aspire)
+**After starting Aspire, run database migrations manually:**
 
 ```bash
-# 1. Install dependencies
-dotnet restore
-cd Wordfolio.Frontend && npm install && cd ..
-
-# 2. Start PostgreSQL manually (ensure it's running on port 5432)
-
-# 3. Run Identity migrations
+# Run Identity migrations (EF Core)
 dotnet ef database update \
   --startup-project ./Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj \
   --connection "Host=localhost;Port=5432;Database=wordfoliodb;User ID=myuser;Password=mypassword"
 
-# 4. Run Wordfolio migrations
+# Run Wordfolio migrations (FluentMigrator)
+dotnet build Wordfolio.Api/Wordfolio.Api.Migrations
 dotnet fm migrate \
   -p PostgreSQL15_0 \
   -a "./Wordfolio.Api/Wordfolio.Api.Migrations/bin/Debug/net9.0/Wordfolio.Api.Migrations.dll" \
   -c "Host=localhost;Port=5432;Database=wordfoliodb;User ID=myuser;Password=mypassword"
-
-# 5. Run backend
-cd Wordfolio.Api/Wordfolio.Api
-dotnet run
-
-# 6. Run frontend (in separate terminal)
-cd Wordfolio.Frontend
-npm run dev
 ```
 
 ### Running Tests
@@ -293,27 +232,9 @@ npm test run          # Single run
 - **Constants:** PascalCase
 - **Parameters:** camelCase
 
-```fsharp
-module Collections  // Matches Collections.fs
+#### Formatting
 
-type Collection = { Id: int; Name: string }
-
-let getCollectionByIdAsync id connection transaction cancellationToken = ...
-```
-
-#### Formatting (Fantomas - Microsoft Profile)
-
-- **Line length:** 120 characters max
-- **Indentation:** 4 spaces (no tabs)
-- **Brace style:** Stroustrup
-- **Pipeline alignment:** Disabled (no vertical alignment on `|>`)
-- **Line endings:** LF (Unix-style)
-
-**Run formatter:**
-```bash
-dotnet fantomas .           # Format all files
-dotnet fantomas --check .   # Check without modifying
-```
+Run formatter: `dotnet fantomas .` (fix) or `dotnet fantomas --check .` (check only)
 
 #### Import Organization
 
@@ -325,57 +246,15 @@ F# modules should organize `open` statements in three groups, separated by blank
 
 Within each group, sort imports alphabetically. Remove unused `open` statements.
 
-**Example:**
-```fsharp
-open System
-open System.Threading
-
-open Dapper.FSharp.PostgreSQL
-open Npgsql
-
-open Wordfolio.Api.DataAccess.Schema
-```
-
 #### Function Signatures (Data Access Pattern)
 
 All data access functions follow this parameter order:
 
-```fsharp
-let functionNameAsync
-    (businessParam1: Type1)
-    (businessParam2: Type2)
-    (connection: IDbConnection)
-    (transaction: IDbTransaction)
-    (cancellationToken: CancellationToken)
-    : Task<'ReturnType> =
-    task {
-        // Implementation
-    }
-```
-
-**Key points:**
 - Business parameters first
 - Infrastructure parameters last (connection, transaction, cancellationToken)
 - Always suffix async functions with `Async`
 - Always return `Task<'T>` for async operations
 - Use `task { }` computation expression
-
-#### Handler Registration Pattern
-
-```fsharp
-let mapEndpointsAsync (app: IEndpointRouteBuilder) =
-    app
-        .MapGet("/path", handler)
-        .AllowAnonymous()
-    |> ignore
-
-    app
-        .MapPost("/path", handler)
-        .RequireAuthorization()
-    |> ignore
-
-    app  // Return app for composition
-```
 
 ### C# Conventions
 
@@ -388,15 +267,7 @@ let mapEndpointsAsync (app: IEndpointRouteBuilder) =
 
 #### Formatting
 
-- **Indentation:** 4 spaces
-- **Line endings:** LF
-- **Braces:** Next line (Allman style for C#)
-
-**Run formatter:**
-```bash
-dotnet format --verify-no-changes  # Check
-dotnet format                      # Fix
-```
+Run formatter: `dotnet format` (fix) or `dotnet format --verify-no-changes` (check only)
 
 ### TypeScript/React Conventions
 
@@ -407,17 +278,6 @@ dotnet format                      # Fix
 - **Utilities:** camelCase (files and functions)
 - **Types/Interfaces:** PascalCase
 - **Constants:** UPPER_SNAKE_CASE
-
-```typescript
-// Component (use arrow functions)
-export const LoginPage = () => { ... }
-
-// Hook
-export function useTokenRefresh() { ... }
-
-// Constant
-const API_BASE_URL = '/api';
-```
 
 #### File Structure
 
@@ -444,43 +304,17 @@ export function MyComponent() {
 
 #### Import Organization
 
-Organize imports with CSS imports after JavaScript/TypeScript imports, separated by a blank line:
+Organize imports with CSS imports after JavaScript/TypeScript imports, separated by a blank line.
 
-```typescript
-// JavaScript/TypeScript imports
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Button } from '@mui/material';
+#### Formatting
 
-// CSS imports (one blank line above)
-import './MyComponent.css';
-```
+Run formatter: `npm run format` (fix) or `npm run format:check` (check only)
 
-#### Formatting (Prettier)
+#### Linting
 
-- **Print width:** 80 characters
-- **Tab width:** 4 spaces
-- **Trailing commas:** ES5
-- **Semicolons:** Yes
-- **Single quotes:** Yes
+Run linter: `npm run lint`
 
-**Run formatter:**
-```bash
-npm run format        # Fix all files
-npm run format:check  # Check only
-```
-
-#### Linting (ESLint)
-
-- **Indentation:** 4 spaces
-- **Max warnings:** 0 (strict)
-- **React Hooks:** Rules enforced
-- **TypeScript:** Strict rules enabled
-
-**Run linter:**
-```bash
-npm run lint
-```
+Max warnings: 0 (strict enforcement)
 
 ### Database Conventions
 
@@ -494,74 +328,27 @@ npm run lint
 
 #### Timestamp Handling
 
-- **Always use `DateTimeOffset`** for timestamps (timezone-aware)
+- **Always use `DateTimeOffset`** for timestamps (timezone-aware), never `DateTime`
 - Database stores UTC
 - Columns: `CreatedAt`, `UpdatedAt` (PascalCase)
 - Nullable in database, represented as `Option<DateTimeOffset>` in F#
-
-```fsharp
-// Database record (nullable)
-[<CLIMutable>]
-type CollectionRecord = {
-    CreatedAt: DateTimeOffset
-    UpdatedAt: Nullable<DateTimeOffset>
-}
-
-// Domain model (option)
-type Collection = {
-    CreatedAt: DateTimeOffset
-    UpdatedAt: Option<DateTimeOffset>
-}
-
-// Conversion
-let fromRecord (record: CollectionRecord) : Collection =
-    { CreatedAt = record.CreatedAt
-      UpdatedAt = Option.ofNullable record.UpdatedAt }
-```
+- Convert using `Option.ofNullable` (DB → Domain) and `Option.toNullable` (Domain → DB)
 
 ### Project File Conventions
 
-#### .csproj and .fsproj Files
-
-- **Indentation:** Use 2 spaces (not 4) for indentation in project files
+- **Indentation:** Use 2 spaces (not 4) for indentation in `.csproj` and `.fsproj` files
 - **Blank lines:** Separate `PropertyGroup` and `ItemGroup` sections with blank lines
 - **Consistency:** Follow existing patterns in the project files
 
-**Example:**
-```xml
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Dapper.FSharp" Version="4.8.0" />
-  </ItemGroup>
-
-</Project>
-```
-
 ### Dependency Management
-
-#### Package Versions
 
 **Use strict version numbers** without `^` or `~` prefixes in `package.json`:
 
 ```json
-// ✅ Correct
 {
   "dependencies": {
     "react": "19.1.1",
     "react-dom": "19.1.1"
-  }
-}
-
-// ❌ Wrong
-{
-  "dependencies": {
-    "react": "^19.1.1",
-    "react-dom": "~19.1.1"
   }
 }
 ```
@@ -592,125 +379,25 @@ HTTP Request → Handler (Wordfolio.Api/Handlers)
 
 #### 2. Dependency Injection via Parameters
 
-F# doesn't use constructor injection heavily. Instead:
-
-```fsharp
-// In Program.fs
-let app = builder.Build()
-
-// Get services explicitly
-let dataSource = app.Services.GetRequiredService<NpgsqlDataSource>()
-
-// Pass to handlers
-app |> mapEndpoints dataSource |> ignore
-```
-
-Handlers receive dependencies as parameters:
-
-```fsharp
-let mapEndpoints (dataSource: NpgsqlDataSource) (app: IEndpointRouteBuilder) =
-    app.MapGet("/users/{id}", fun (id: int) ->
-        task {
-            use connection = dataSource.CreateConnection()
-            let! user = Users.getByIdAsync id connection null CancellationToken.None
-            return Results.Ok(user)
-        })
-    |> ignore
-```
+F# doesn't use constructor injection heavily. Instead, services are retrieved explicitly from `app.Services` in `Program.fs` and passed to handlers as parameters.
 
 #### 3. Dapper.FSharp Query Composition
 
-```fsharp
-// SELECT with WHERE
-select {
-    for c in collectionsTable do
-        where (c.Id = id)
-}
-|> trySelectFirstAsync connection transaction cancellationToken
-
-// INSERT
-insert {
-    into collectionsTable
-    value newRecord
-}
-|> insertAsync connection transaction cancellationToken
-
-// UPDATE
-update {
-    for c in collectionsTable do
-        set updateRecord
-        where (c.Id = id)
-}
-|> updateAsync connection transaction cancellationToken
-
-// DELETE
-delete {
-    for c in collectionsTable do
-        where (c.Id = id)
-}
-|> deleteAsync connection transaction cancellationToken
-```
+Use Dapper.FSharp computation expressions: `select { }`, `insert { }`, `update { }`, `delete { }`
 
 #### 4. Transaction Management
 
-Connections and transactions are managed explicitly:
-
-```fsharp
-// No transaction (null is acceptable)
-let! result = queryAsync connection null cancellationToken
-
-// With transaction
-use! connection = dataSource.OpenConnectionAsync(cancellationToken)
-use transaction = connection.BeginTransaction()
-try
-    let! result1 = query1Async connection transaction cancellationToken
-    let! result2 = query2Async connection transaction cancellationToken
-    transaction.Commit()
-    return result2
-with ex ->
-    transaction.Rollback()
-    reraise()
-```
+Connections and transactions are managed explicitly. Pass `null` for transaction parameter when no transaction is needed.
 
 #### 5. Identity Integration
 
-The custom `UserStore` coordinates between two databases:
-
-1. **Create user in Identity DB** (via EF Core)
-2. **Trigger side effect** (via `IUserStoreExtension`)
-3. **Create corresponding record in Wordfolio DB** (via Dapper)
-
-```fsharp
-// IUserStoreExtension interface
-type IUserStoreExtension =
-    abstract member AfterCreateAsync: User -> CancellationToken -> Task
-```
-
-This ensures both databases stay in sync during user registration.
+The custom `UserStore` coordinates between two databases using `IUserStoreExtension` interface to trigger side effects when users are created, ensuring both Identity and Wordfolio databases stay in sync.
 
 ### Frontend Patterns
 
 #### 1. File-Based Routing (TanStack Router)
 
-Routes are auto-generated from `src/routes/` directory structure:
-
-```
-routes/
-├── __root.tsx       → Root layout (all pages)
-├── index.tsx        → / (home)
-├── login.tsx        → /login
-└── register.tsx     → /register
-```
-
-Each route file exports a `Route` using `createFileRoute`:
-
-```typescript
-import { createFileRoute } from '@tanstack/react-router';
-
-export const Route = createFileRoute('/login')({
-    component: LoginPage,
-});
-```
+Routes are auto-generated from `src/routes/` directory structure. Each route file exports a `Route` using `createFileRoute`.
 
 #### 2. State Management Strategy
 
@@ -721,108 +408,17 @@ export const Route = createFileRoute('/login')({
 | **Form State** | React Hook Form | Form inputs, validation |
 | **URL State** | TanStack Router | Route params, search params |
 
-**Example: Auth Store (Zustand)**
-
-```typescript
-interface AuthState {
-    accessToken: string | null;
-    refreshToken: string | null;
-    setTokens: (access: string, refresh: string) => void;
-    clearTokens: () => void;
-}
-
-export const useAuthStore = create<AuthState>()(
-    persist(
-        (set) => ({
-            accessToken: null,
-            refreshToken: null,
-            setTokens: (access, refresh) =>
-                set({ accessToken: access, refreshToken: refresh }),
-            clearTokens: () =>
-                set({ accessToken: null, refreshToken: null }),
-        }),
-        { name: 'auth-storage' }  // localStorage key
-    )
-);
-```
-
 #### 3. API Client Pattern
 
-Centralized API modules with typed requests/responses:
-
-```typescript
-// api/authApi.ts
-export interface LoginRequest {
-    email: string;
-    password: string;
-}
-
-export interface LoginResponse {
-    accessToken: string;
-    refreshToken: string;
-}
-
-export const login = async (data: LoginRequest): Promise<LoginResponse> => {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-        throw await parseApiError(response);
-    }
-
-    return response.json();
-};
-```
+Centralized API modules with typed requests/responses.
 
 #### 4. React Query Mutations
 
-```typescript
-// mutations/useLoginMutation.ts
-export function useLoginMutation() {
-    const navigate = useNavigate();
-    const { setTokens } = useAuthStore();
-
-    return useMutation({
-        mutationFn: login,
-        onSuccess: (data) => {
-            setTokens(data.accessToken, data.refreshToken);
-            navigate({ to: '/' });
-        },
-    });
-}
-
-// Usage in component
-const loginMutation = useLoginMutation();
-loginMutation.mutate({ email, password });
-```
+Always invalidate relevant queries in `onSuccess` callback to ensure fresh data.
 
 #### 5. Form Handling (React Hook Form + Zod)
 
-```typescript
-// schemas/authSchemas.ts
-export const loginSchema = z.object({
-    email: z.string().email('Invalid email'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-});
-
-export type LoginFormData = z.infer<typeof loginSchema>;
-
-// Component
-const {
-    register,
-    handleSubmit,
-    formState: { errors },
-} = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-});
-
-const onSubmit = (data: LoginFormData) => {
-    loginMutation.mutate(data);
-};
-```
+Use `zodResolver` to integrate Zod schemas with React Hook Form for type-safe validation.
 
 ---
 
@@ -837,57 +433,11 @@ const onSubmit = (data: LoginFormData) => {
 - **Database:** Real PostgreSQL (via test containers or local instance)
 - **Scope:** End-to-end API tests with database assertions
 
-**Example:**
-
-```fsharp
-[<Fact>]
-member _.``Register endpoint creates user in both databases``() =
-    task {
-        // Arrange
-        let request = { Email = "test@example.com"; Password = "SecurePass123!" }
-
-        // Act
-        let! response = client.PostAsJsonAsync("/auth/register", request)
-
-        // Assert
-        response.EnsureSuccessStatusCode() |> ignore
-
-        // Verify in Identity database
-        let! identityUser = identityContext.Users.FirstOrDefaultAsync(fun u -> u.Email = request.Email)
-        Assert.NotNull(identityUser)
-
-        // Verify in Wordfolio database
-        let! wordfolioUser = Users.getByEmailAsync request.Email connection null CancellationToken.None
-        Assert.True(wordfolioUser.IsSome)
-    }
-```
-
 #### Data Access Tests (Wordfolio.Api.DataAccess.Tests)
 
 - **Framework:** XUnit
 - **Fixtures:** Custom test fixtures with database reset
 - **Scope:** Unit tests for data access functions
-
-**Example:**
-
-```fsharp
-type CollectionsTests(fixture: WordfolioTestFixture) =
-    interface IClassFixture<WordfolioTestFixture>
-
-    [<Fact>]
-    member _.``getCollectionByIdAsync returns Some when collection exists``() =
-        task {
-            // Arrange
-            let! seededCollection = DatabaseSeeder.seedCollectionAsync fixture.Connection
-
-            // Act
-            let! result = Collections.getCollectionByIdAsync seededCollection.Id fixture.Connection null CancellationToken.None
-
-            // Assert
-            Assert.True(result.IsSome)
-            Assert.Equal(seededCollection.Id, result.Value.Id)
-        }
-```
 
 #### Database Testing Best Practices
 
@@ -898,29 +448,6 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 3. **Test Isolation:** Preferably make only ONE call to the tested function per test
 4. **Assertions via Seeder:** Query the database for assertions using `DatabaseSeeder` only
 5. **Compare Full Records:** Use tested records for assertions instead of asserting properties one at a time
-
-**Example of correct approach:**
-
-```fsharp
-[<Fact>]
-member _.``updateCollectionAsync updates collection correctly``() =
-    task {
-        // ✅ Seed via DatabaseSeeder
-        let! seededCollection = DatabaseSeeder.seedCollectionAsync fixture.Connection
-
-        let updatedName = "New Name"
-
-        // ✅ Single call to tested function
-        let! _ = Collections.updateCollectionAsync seededCollection.Id updatedName fixture.Connection null CancellationToken.None
-
-        // ✅ Query via DatabaseSeeder for assertion
-        let! result = DatabaseSeeder.getCollectionByIdAsync seededCollection.Id fixture.Connection
-
-        // ✅ Assert full record
-        Assert.Equal(updatedName, result.Name)
-        Assert.Equal(seededCollection.Id, result.Id)
-    }
-```
 
 ### Frontend Tests
 
@@ -934,62 +461,9 @@ member _.``updateCollectionAsync updates collection correctly``() =
 - **File Extension:** Use `.test.ts` or `.test.tsx`
 - **Imports:** Use relative paths from tests directory (e.g., `../../src/components/MyComponent`)
 
-**Example:**
-
-```typescript
-// utils/errorHandling.test.ts
-import { describe, it, expect } from 'vitest';
-import { parseApiError } from './errorHandling';
-
-describe('parseApiError', () => {
-    it('parses error message from response', async () => {
-        const response = new Response(
-            JSON.stringify({ message: 'Invalid credentials' }),
-            { status: 401 }
-        );
-
-        const error = await parseApiError(response);
-
-        expect(error.message).toBe('Invalid credentials');
-        expect(error.status).toBe(401);
-    });
-});
-```
-
-**Component Test:**
-
-```typescript
-// components/Notification.test.tsx
-import { render, screen } from '@testing-library/react';
-import { Notification } from './Notification';
-
-it('displays error message', () => {
-    render(<Notification message="Error occurred" severity="error" />);
-
-    expect(screen.getByText('Error occurred')).toBeInTheDocument();
-});
-```
-
 ### Test Fixtures
 
 **WordfolioTestFixture:** Manages Wordfolio database lifecycle
-
-```fsharp
-type WordfolioTestFixture() =
-    let dataSource = createDataSource()
-    let connection = dataSource.CreateConnection()
-
-    do
-        runMigrationsAsync() |> Async.AwaitTask |> Async.RunSynchronously
-        resetDatabaseAsync() |> Async.AwaitTask |> Async.RunSynchronously
-
-    member _.Connection = connection
-
-    interface IDisposable with
-        member _.Dispose() =
-            connection.Dispose()
-            dataSource.Dispose()
-```
 
 **WordfolioIdentityTestFixture:** Manages both databases for auth tests
 
@@ -1002,91 +476,44 @@ type WordfolioTestFixture() =
 #### Backend
 
 ```bash
-# Restore tools
-dotnet tool restore
-
-# Restore dependencies
-dotnet restore
-
-# Build
+dotnet tool restore         # Restore tools
+dotnet restore              # Restore dependencies
 dotnet build --configuration Release
-
-# Test
 dotnet test --configuration Release
-
-# Format check
-dotnet fantomas --check .     # F#
-dotnet format --verify-no-changes  # C#
-
-# Format fix
-dotnet fantomas .
-dotnet format
+dotnet fantomas --check .   # F# format check
+dotnet format --verify-no-changes  # C# format check
+dotnet fantomas .           # F# format fix
+dotnet format               # C# format fix
 ```
 
 #### Frontend
 
 ```bash
-# Install
-npm ci  # Clean install (CI)
-npm install  # Regular install
-
-# Build
+npm ci                      # Clean install (CI)
+npm install                 # Regular install
 npm run build
-
-# Test
-npm test        # Watch mode
-npm test run    # Single run
-
-# Lint
+npm test                    # Watch mode
+npm test run                # Single run
 npm run lint
-
-# Format
-npm run format:check  # Check
-npm run format        # Fix
+npm run format:check        # Check
+npm run format              # Fix
 ```
 
 ### GitHub Actions CI/CD
 
 #### Backend CI (.github/workflows/backend.yml)
 
-**Triggers:**
-- Pull requests to `main` branch
-- Changes in:
-  - `Wordfolio.Api/**`
-  - `Wordfolio.AppHost/**`
-  - `Wordfolio.Common/**`
-  - `Wordfolio.ServiceDefaults/**`
-  - `*.sln`, `*.props`, `*.targets`
-  - Workflow file itself
+**Triggers:** Pull requests to `main` branch with changes in backend code
 
-**Steps:**
-1. Checkout code
-2. Setup .NET 9.0
-3. Restore .NET tools (`dotnet tool restore`)
-4. Restore dependencies
-5. Build (Release configuration)
-6. Run tests
-7. Check F# formatting (Fantomas)
-8. Check C# formatting (dotnet format)
+**Steps:** Checkout → Setup .NET → Restore tools → Restore deps → Build → Test → Format checks
 
 **Success criteria:** All steps pass, zero warnings
 
 #### Frontend CI (.github/workflows/frontend.yml)
 
-**Triggers:**
-- Pull requests to `main` branch
-- Changes in:
-  - `Wordfolio.Frontend/**`
-  - Workflow file
+**Triggers:** Pull requests to `main` branch with changes in frontend code
 
-**Steps:**
-1. Checkout code
-2. Setup Node.js 20 (with npm cache)
-3. Install dependencies (`npm ci`)
-4. Check formatting (Prettier)
-5. Run linter (ESLint)
-6. Run tests (Vitest)
-7. Build (TypeScript + Vite)
+**Steps:** Checkout → Setup Node.js → Install deps → Format check → Lint → Test → Build
 
 **Success criteria:** All steps pass, zero lint warnings
 
@@ -1133,25 +560,18 @@ Wordfolio uses a **single PostgreSQL database** with **two schemas**:
 
 #### Identity Migrations (EF Core)
 
-**Create new migration:**
-
 ```bash
+# Create new migration
 dotnet ef migrations add MigrationName \
   --project Wordfolio.Api/Wordfolio.Api.Identity \
   --startup-project Wordfolio.Api/Wordfolio.Api
-```
 
-**Apply migrations:**
-
-```bash
+# Apply migrations
 dotnet ef database update \
   --startup-project Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj \
   --connection "Host=localhost;Port=5432;Database=wordfoliodb;User ID=user;Password=pass"
-```
 
-**Rollback:**
-
-```bash
+# Rollback
 dotnet ef database update PreviousMigrationName \
   --startup-project Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj
 ```
@@ -1162,30 +582,14 @@ dotnet ef database update PreviousMigrationName \
 
 1. Add new file in `Wordfolio.Api.Migrations/`
 2. Use naming: `YYYYMMDDNNN_Description.fs`
-3. Implement migration class:
-
-```fsharp
-[<Migration(20251206001L)>]
-type CreateItemsTable() =
-    inherit AutoReversingMigration()
-
-    override this.Up() =
-        base.Create
-            .Table("Items")
-            .InSchema(Constants.Schema)
-            .WithColumn("Id").AsInt32().PrimaryKey().Identity()
-            .WithColumn("Name").AsString(200).NotNullable()
-            .WithColumn("CreatedAt").AsDateTimeOffset().NotNullable()
-        |> ignore
-```
+3. Implement migration class inheriting from `AutoReversingMigration()`
+4. Add file to `.fsproj`
 
 **Apply migrations:**
 
 ```bash
-# Build migrations project first
 dotnet build Wordfolio.Api/Wordfolio.Api.Migrations
 
-# Run migrations
 dotnet fm migrate \
   -p PostgreSQL15_0 \
   -a "./Wordfolio.Api/Wordfolio.Api.Migrations/bin/Debug/net9.0/Wordfolio.Api.Migrations.dll" \
@@ -1204,51 +608,7 @@ dotnet fm rollback \
 
 ### Schema Constants
 
-Always use `Schema.fs` for type-safe column references:
-
-```fsharp
-// Schema.fs
-module rec Schema
-
-open Dapper.FSharp.PostgreSQL
-
-let collectionsTable = table'<CollectionRecord> "Collections" |> inSchema Constants.Schema
-
-// Usage in queries
-select {
-    for c in collectionsTable do
-        where (c.Id = id)
-}
-```
-
-### DateTimeOffset Handling
-
-**CRITICAL:** Always use `DateTimeOffset` for timestamps, never `DateTime`.
-
-```fsharp
-// ✅ Correct
-CreatedAt = DateTimeOffset.UtcNow
-UpdatedAt = Some DateTimeOffset.UtcNow
-
-// ❌ Wrong
-CreatedAt = DateTime.UtcNow  // Don't use DateTime
-```
-
-**Conversion between database and domain:**
-
-```fsharp
-// Database → Domain
-let fromRecord (record: CollectionRecord) : Collection =
-    { Id = record.Id
-      CreatedAt = record.CreatedAt
-      UpdatedAt = Option.ofNullable record.UpdatedAt }
-
-// Domain → Database
-let toRecord (collection: Collection) : CollectionRecord =
-    { Id = collection.Id
-      CreatedAt = collection.CreatedAt
-      UpdatedAt = collection.UpdatedAt |> Option.toNullable }
-```
+Always use `Schema.fs` for type-safe column references. Define tables using `table'<RecordType> "TableName" |> inSchema Constants.Schema`.
 
 ---
 
@@ -1257,250 +617,29 @@ let toRecord (collection: Collection) : CollectionRecord =
 ### Adding a New API Endpoint
 
 1. **Define handler function** in `Wordfolio.Api/Handlers/`
-
-```fsharp
-// Handlers/Collections.fs
-let getCollectionHandler (dataSource: NpgsqlDataSource) (id: int) =
-    task {
-        use! connection = dataSource.OpenConnectionAsync(CancellationToken.None)
-        let! collection = Collections.getCollectionByIdAsync id connection null CancellationToken.None
-
-        return
-            match collection with
-            | Some c -> Results.Ok(c)
-            | None -> Results.NotFound()
-    }
-
-let mapCollectionEndpoints (dataSource: NpgsqlDataSource) (app: IEndpointRouteBuilder) =
-    app
-        .MapGet("/collections/{id}", fun (id: int) -> getCollectionHandler dataSource id)
-        .RequireAuthorization()
-    |> ignore
-
-    app
-```
-
-2. **Register in Program.fs**
-
-```fsharp
-app
-    |> mapHealthChecks
-    |> mapStatusEndpoint
-    |> mapAuthEndpoints
-    |> mapCollectionEndpoints dataSource  // Add this
-    |> ignore
-```
-
+2. **Register in Program.fs** by adding to the endpoint mapping chain
 3. **Add data access function** (if needed) in `Wordfolio.Api.DataAccess/`
-
-```fsharp
-// DataAccess/Collections.fs
-let getCollectionByIdAsync (id: int) (connection) (transaction) (cancellationToken) =
-    task {
-        let! result =
-            select {
-                for c in collectionsTable do
-                    where (c.Id = id)
-            }
-            |> trySelectFirstAsync connection transaction cancellationToken
-        return result |> Option.map fromRecord
-    }
-```
-
-4. **Add tests**
-
-```fsharp
-// Api.Tests/CollectionsTests.fs
-[<Fact>]
-member _.``GET /collections/{id} returns 200 when collection exists``() =
-    task {
-        let! collection = DatabaseSeeder.seedCollectionAsync connection
-
-        let! response = client.GetAsync($"/collections/{collection.Id}")
-
-        response.EnsureSuccessStatusCode() |> ignore
-        let! result = response.Content.ReadFromJsonAsync<Collection>()
-        Assert.Equal(collection.Id, result.Id)
-    }
-```
+4. **Add tests** in `Wordfolio.Api.Tests/` or `Wordfolio.Api.DataAccess.Tests/`
 
 ### Adding a New Database Table
 
-1. **Create migration** in `Wordfolio.Api.Migrations/`
-
-```fsharp
-[<Migration(20251206001L)>]
-type CreateItemsTable() =
-    inherit AutoReversingMigration()
-
-    override this.Up() =
-        base.Create
-            .Table("Items")
-            .InSchema(Constants.Schema)
-            .WithColumn("Id").AsInt32().PrimaryKey().Identity()
-            .WithColumn("Name").AsString(200).NotNullable()
-            .WithColumn("UserId").AsInt32().NotNullable()
-                .ForeignKey("FK_Items_Users_UserId", Constants.Schema, "Users", "Id")
-            .WithColumn("CreatedAt").AsDateTimeOffset().NotNullable()
-            .WithColumn("UpdatedAt").AsDateTimeOffset().Nullable()
-        |> ignore
-
-        base.Create
-            .Index("IX_Items_UserId")
-            .OnTable("Items")
-            .InSchema(Constants.Schema)
-            .OnColumn("UserId")
-        |> ignore
-```
-
-2. **Define records** in `Wordfolio.Api.DataAccess/Items.fs`
-
-```fsharp
-[<CLIMutable>]
-type ItemRecord = {
-    Id: int
-    Name: string
-    UserId: int
-    CreatedAt: DateTimeOffset
-    UpdatedAt: Nullable<DateTimeOffset>
-}
-
-type Item = {
-    Id: int
-    Name: string
-    UserId: int
-    CreatedAt: DateTimeOffset
-    UpdatedAt: Option<DateTimeOffset>
-}
-
-let fromRecord (record: ItemRecord) : Item = ...
-let toRecord (item: Item) : ItemRecord = ...
-```
-
-3. **Add to Schema.fs**
-
-```fsharp
-let itemsTable = table'<ItemRecord> "Items" |> inSchema Constants.Schema
-```
-
-4. **Run migration**
-
-```bash
-dotnet build Wordfolio.Api/Wordfolio.Api.Migrations
-dotnet fm migrate -p PostgreSQL15_0 -a "..." -c "..."
-```
+1. **Create migration** in `Wordfolio.Api.Migrations/` with naming `YYYYMMDDNNN_Description.fs`
+2. **Define records** in `Wordfolio.Api.DataAccess/` (CLIMutable record for DB, domain type for business logic)
+3. **Add to Schema.fs** with table definition
+4. **Add migration to .fsproj** file
+5. **Run migration** using `dotnet fm migrate`
 
 ### Adding a Frontend Route
 
-1. **Create route file** in `src/routes/`
-
-```typescript
-// src/routes/collections.tsx
-import { createFileRoute } from '@tanstack/react-router';
-import { CollectionsPage } from '../pages/CollectionsPage';
-
-export const Route = createFileRoute('/collections')({
-    component: CollectionsPage,
-});
-```
-
+1. **Create route file** in `src/routes/` using `createFileRoute`
 2. **Create page component** in `src/pages/`
-
-```typescript
-// src/pages/CollectionsPage.tsx
-export function CollectionsPage() {
-    return (
-        <div>
-            <h1>Collections</h1>
-            {/* Page content */}
-        </div>
-    );
-}
-```
-
-3. **Add navigation** (if needed)
-
-```typescript
-import { Link } from '@tanstack/react-router';
-
-<Link to="/collections">Collections</Link>
-```
+3. **Add navigation** (if needed) using TanStack Router's `Link` component
 
 ### Adding a React Query Mutation
 
-1. **Add API function** in `src/api/`
-
-```typescript
-// api/collectionsApi.ts
-export interface CreateCollectionRequest {
-    name: string;
-    description?: string;
-}
-
-export interface Collection {
-    id: number;
-    name: string;
-    description: string | null;
-    createdAt: string;
-    updatedAt: string | null;
-}
-
-export const createCollection = async (
-    data: CreateCollectionRequest
-): Promise<Collection> => {
-    const response = await fetch(`${API_BASE_URL}/collections`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${getAccessToken()}`,
-        },
-        body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-        throw await parseApiError(response);
-    }
-
-    return response.json();
-};
-```
-
-2. **Create mutation hook** in `src/mutations/`
-
-```typescript
-// mutations/useCreateCollectionMutation.ts
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createCollection } from '../api/collectionsApi';
-
-export function useCreateCollectionMutation() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: createCollection,
-        onSuccess: () => {
-            // Invalidate collections query to refetch
-            queryClient.invalidateQueries({ queryKey: ['collections'] });
-        },
-    });
-}
-```
-
-3. **Use in component**
-
-```typescript
-const createMutation = useCreateCollectionMutation();
-
-const onSubmit = (data: CreateCollectionFormData) => {
-    createMutation.mutate(data, {
-        onSuccess: () => {
-            showNotification('Collection created!', 'success');
-        },
-        onError: (error) => {
-            showNotification(error.message, 'error');
-        },
-    });
-};
-```
+1. **Add API function** in `src/api/` with typed request/response interfaces
+2. **Create mutation hook** in `src/mutations/` with `useMutation` and invalidate queries in `onSuccess`
+3. **Use in component** by calling the mutation hook and using `mutate` method
 
 ---
 
@@ -1545,73 +684,14 @@ const onSubmit = (data: CreateCollectionFormData) => {
 
 #### Backend
 
-**Pitfall:** Forgetting to add new migration to project file
-
-```xml
-<!-- Wordfolio.Api.Migrations.fsproj -->
-<ItemGroup>
-  <Compile Include="20251206001_CreateItemsTable.fs" />  <!-- Add this -->
-</ItemGroup>
-```
-
-**Pitfall:** Using `DateTime` instead of `DateTimeOffset`
-
-```fsharp
-// ❌ Wrong
-CreatedAt = DateTime.UtcNow
-
-// ✅ Correct
-CreatedAt = DateTimeOffset.UtcNow
-```
-
-**Pitfall:** Not handling `Option` types correctly
-
-```fsharp
-// ❌ Wrong - crashes if None
-let name = collection.UpdatedAt.Value
-
-// ✅ Correct
-let name =
-    match collection.UpdatedAt with
-    | Some date -> date.ToString()
-    | None -> "N/A"
-```
+- Forgetting to add new migration to project file
+- Using `DateTime` instead of `DateTimeOffset`
+- Not handling `Option` types correctly (accessing `.Value` without checking)
 
 #### Frontend
 
-**Pitfall:** Not invalidating queries after mutations
-
-```typescript
-// ❌ Wrong - stale data
-useMutation({
-    mutationFn: createCollection,
-    // No onSuccess
-});
-
-// ✅ Correct - refetches data
-useMutation({
-    mutationFn: createCollection,
-    onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['collections'] });
-    },
-});
-```
-
-**Pitfall:** Storing server state in Zustand instead of React Query
-
-```typescript
-// ❌ Wrong - use React Query for API data
-const useCollectionsStore = create((set) => ({
-    collections: [],
-    fetchCollections: async () => { /* ... */ },
-}));
-
-// ✅ Correct - React Query handles server state
-const { data: collections } = useQuery({
-    queryKey: ['collections'],
-    queryFn: fetchCollections,
-});
-```
+- Not invalidating queries after mutations (leads to stale data)
+- Storing server state in Zustand instead of React Query
 
 ### File Organization Tips
 
@@ -1664,6 +744,8 @@ const { data: collections } = useQuery({
 |------|---------|
 | 2025-12-06 | Initial version - Comprehensive codebase analysis and documentation |
 | 2025-12-06 | Updated with guidelines from `.github/copilot-instructions.md`: import organization, component declaration style, project file formatting, dependency management, database testing best practices, and enhanced pre-commit checklist |
+| 2025-12-06 | Optimized for size: Added migration commands to Quick Start, removed Manual Setup section, removed verbose formatting rules and code snippets |
+| 2025-12-06 | Fixed Quick Start section: Clarified that migrations must always be run manually after starting Aspire, not automatically |
 
 ---
 
