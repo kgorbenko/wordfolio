@@ -38,10 +38,10 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                 fixture.Seeder
                 |> Seeder.getAllCollectionsAsync
 
-            Assert.Single(actual) |> ignore
+            let collectionId = actual[0].Id
 
             let expected: Collection list =
-                [ { Id = actual.[0].Id
+                [ { Id = collectionId
                     UserId = user.Id
                     Name = "My Collection"
                     Description = Some "Test collection"
@@ -73,15 +73,16 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                 Collections.getCollectionByIdAsync collection.Id
                 |> fixture.WithConnectionAsync
 
-            let expected: Collections.Collection =
-                { Id = collection.Id
-                  UserId = user.Id
-                  Name = "My Collection"
-                  Description = Some "Test collection"
-                  CreatedAt = createdAt
-                  UpdatedAt = None }
+            let expected: Collections.Collection option =
+                Some
+                    { Id = collection.Id
+                      UserId = user.Id
+                      Name = "My Collection"
+                      Description = Some "Test collection"
+                      CreatedAt = createdAt
+                      UpdatedAt = None }
 
-            Assert.Equivalent(Some expected, actual)
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -93,7 +94,7 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                 Collections.getCollectionByIdAsync 999
                 |> fixture.WithConnectionAsync
 
-            Assert.True(actual.IsNone)
+            Assert.Equal(None, actual)
         }
 
     [<Fact>]
@@ -194,15 +195,16 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 
             let! actual = Seeder.getCollectionByIdAsync collection.Id fixture.Seeder
 
-            let expected: Collection =
-                { Id = collection.Id
-                  UserId = user.Id
-                  Name = "Updated Name"
-                  Description = Some "Updated Description"
-                  CreatedAt = createdAt
-                  UpdatedAt = Some updatedAt }
+            let expected: Collection option =
+                Some
+                    { Id = collection.Id
+                      UserId = user.Id
+                      Name = "Updated Name"
+                      Description = Some "Updated Description"
+                      CreatedAt = createdAt
+                      UpdatedAt = Some updatedAt }
 
-            Assert.Equal(Some expected, actual)
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
