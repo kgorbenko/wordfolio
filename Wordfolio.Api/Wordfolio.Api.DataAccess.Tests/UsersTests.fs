@@ -23,13 +23,9 @@ type UsersTests(fixture: WordfolioTestFixture) =
                 Users.createUserAsync { Id = 123 }
                 |> fixture.WithConnectionAsync
 
-            let! actual =
-                fixture.Seeder
-                |> Seeder.getAllUsersAsync
+            let! actual = fixture.Seeder |> Seeder.getAllUsersAsync
 
-            let expected: UserEntity list =
-                [ { Id = 123
-                    Collections = Unchecked.defaultof<ResizeArray<CollectionEntity>> } ]
+            let expected: User list = [ { Id = 123 } ]
 
             Assert.Equivalent(expected, actual)
         }

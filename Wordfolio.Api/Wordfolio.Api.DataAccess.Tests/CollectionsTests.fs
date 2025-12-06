@@ -9,14 +9,6 @@ open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
 type CollectionsTests(fixture: WordfolioTestFixture) =
-    let assertCollectionEquivalent (expected: CollectionEntity) (actual: CollectionEntity) =
-        Assert.Equal(expected.Id, actual.Id)
-        Assert.Equal(expected.UserId, actual.UserId)
-        Assert.Equal(expected.Name, actual.Name)
-        Assert.Equal(expected.Description, actual.Description)
-        Assert.Equal(expected.CreatedAt, actual.CreatedAt)
-        Assert.Equal(expected.UpdatedAt, actual.UpdatedAt)
-
     interface IClassFixture<WordfolioTestFixture>
 
     [<Fact>]
@@ -27,40 +19,32 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
             let createdAt =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.FromHours(0.0))
 
-            let user: UserEntity =
-                { Id = 100
-                  Collections = ResizeArray() }
-
-            do!
+            let! _ =
                 fixture.Seeder
-                |> Seeder.addUsers [ user ]
+                |> Seeder.addUsers [ { Id = 100 } ]
                 |> Seeder.saveChangesAsync
 
             do!
                 Collections.createCollectionAsync
-                    { UserId = user.Id
+                    { UserId = 100
                       Name = "My Collection"
                       Description = Some "Test collection"
                       CreatedAt = createdAt }
                 |> fixture.WithConnectionAsync
 
-            let! actual =
-                fixture.Seeder
-                |> Seeder.getAllCollectionsAsync
+            let! actual = fixture.Seeder |> Seeder.getAllCollectionsAsync
 
             Assert.Single(actual) |> ignore
 
-            let expected: CollectionEntity =
+            let expected: Collection =
                 { Id = actual.[0].Id
-                  UserId = user.Id
+                  UserId = 100
                   Name = "My Collection"
-                  Description = "Test collection"
+                  Description = Some "Test collection"
                   CreatedAt = createdAt
-                  UpdatedAt = Nullable()
-                  User = Unchecked.defaultof<UserEntity>
-                  Vocabularies = Unchecked.defaultof<ResizeArray<VocabularyEntity>> }
+                  UpdatedAt = None }
 
-            assertCollectionEquivalent expected actual.[0]
+            Assert.Equivalent(expected, actual.[0])
         }
 
     [<Fact>]
@@ -71,26 +55,19 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
             let createdAt =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.FromHours(0.0))
 
-            let user: UserEntity =
-                { Id = 100
-                  Collections = ResizeArray() }
-
-            let collection: CollectionEntity =
-                { Id = 0
-                  UserId = user.Id
-                  Name = "My Collection"
-                  Description = "Test collection"
-                  CreatedAt = createdAt
-                  UpdatedAt = Nullable()
-                  User = Unchecked.defaultof<UserEntity>
-                  Vocabularies = ResizeArray() }
-
-            user.Collections.Add(collection)
-
-            do!
+            let! seeded =
                 fixture.Seeder
-                |> Seeder.addUsers [ user ]
+                |> Seeder.addUsers [ { Id = 100 } ]
+                |> Seeder.addCollections
+                    [ { UserId = 100
+                        Name = "My Collection"
+                        Description = Some "Test collection"
+                        CreatedAt = createdAt
+                        UpdatedAt = None
+                        Vocabularies = [] } ]
                 |> Seeder.saveChangesAsync
+
+            let collection = seeded.Collections.[0]
 
             let! actual =
                 Collections.getCollectionByIdAsync collection.Id
@@ -98,7 +75,7 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 
             let expected: Collections.Collection =
                 { Id = collection.Id
-                  UserId = user.Id
+                  UserId = 100
                   Name = "My Collection"
                   Description = Some "Test collection"
                   CreatedAt = createdAt
@@ -127,65 +104,43 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
             let createdAt =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.FromHours(0.0))
 
-            let user1: UserEntity =
-                { Id = 100
-                  Collections = ResizeArray() }
-
-            let user2: UserEntity =
-                { Id = 101
-                  Collections = ResizeArray() }
-
-            let collection1: CollectionEntity =
-                { Id = 0
-                  UserId = user1.Id
-                  Name = "Collection 1"
-                  Description = null
-                  CreatedAt = createdAt
-                  UpdatedAt = Nullable()
-                  User = Unchecked.defaultof<UserEntity>
-                  Vocabularies = ResizeArray() }
-
-            let collection2: CollectionEntity =
-                { Id = 0
-                  UserId = user1.Id
-                  Name = "Collection 2"
-                  Description = null
-                  CreatedAt = createdAt
-                  UpdatedAt = Nullable()
-                  User = Unchecked.defaultof<UserEntity>
-                  Vocabularies = ResizeArray() }
-
-            let collection3: CollectionEntity =
-                { Id = 0
-                  UserId = user2.Id
-                  Name = "Collection 3"
-                  Description = null
-                  CreatedAt = createdAt
-                  UpdatedAt = Nullable()
-                  User = Unchecked.defaultof<UserEntity>
-                  Vocabularies = ResizeArray() }
-
-            user1.Collections.AddRange([ collection1; collection2 ])
-            user2.Collections.Add(collection3)
-
-            do!
+            let! seeded =
                 fixture.Seeder
-                |> Seeder.addUsers [ user1; user2 ]
+                |> Seeder.addUsers [ { Id = 100 }; { Id = 101 } ]
+                |> Seeder.addCollections
+                    [ { UserId = 100
+                        Name = "Collection 1"
+                        Description = None
+                        CreatedAt = createdAt
+                        UpdatedAt = None
+                        Vocabularies = [] }
+                      { UserId = 100
+                        Name = "Collection 2"
+                        Description = None
+                        CreatedAt = createdAt
+                        UpdatedAt = None
+                        Vocabularies = [] }
+                      { UserId = 101
+                        Name = "Collection 3"
+                        Description = None
+                        CreatedAt = createdAt
+                        UpdatedAt = None
+                        Vocabularies = [] } ]
                 |> Seeder.saveChangesAsync
 
             let! actual =
-                Collections.getCollectionsByUserIdAsync user1.Id
+                Collections.getCollectionsByUserIdAsync 100
                 |> fixture.WithConnectionAsync
 
             let expected: Collections.Collection list =
-                [ { Id = collection1.Id
-                    UserId = user1.Id
+                [ { Id = seeded.Collections.[0].Id
+                    UserId = 100
                     Name = "Collection 1"
                     Description = None
                     CreatedAt = createdAt
                     UpdatedAt = None }
-                  { Id = collection2.Id
-                    UserId = user1.Id
+                  { Id = seeded.Collections.[1].Id
+                    UserId = 100
                     Name = "Collection 2"
                     Description = None
                     CreatedAt = createdAt
@@ -199,17 +154,13 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let user: UserEntity =
-                { Id = 100
-                  Collections = ResizeArray() }
-
-            do!
+            let! _ =
                 fixture.Seeder
-                |> Seeder.addUsers [ user ]
+                |> Seeder.addUsers [ { Id = 100 } ]
                 |> Seeder.saveChangesAsync
 
             let! actual =
-                Collections.getCollectionsByUserIdAsync user.Id
+                Collections.getCollectionsByUserIdAsync 100
                 |> fixture.WithConnectionAsync
 
             Assert.Empty(actual)
@@ -226,26 +177,19 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
             let updatedAt =
                 DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.FromHours(0.0))
 
-            let user: UserEntity =
-                { Id = 101
-                  Collections = ResizeArray() }
-
-            let collection: CollectionEntity =
-                { Id = 0
-                  UserId = user.Id
-                  Name = "Original Name"
-                  Description = "Original Description"
-                  CreatedAt = createdAt
-                  UpdatedAt = Nullable()
-                  User = Unchecked.defaultof<UserEntity>
-                  Vocabularies = ResizeArray() }
-
-            user.Collections.Add(collection)
-
-            do!
+            let! seeded =
                 fixture.Seeder
-                |> Seeder.addUsers [ user ]
+                |> Seeder.addUsers [ { Id = 101 } ]
+                |> Seeder.addCollections
+                    [ { UserId = 101
+                        Name = "Original Name"
+                        Description = Some "Original Description"
+                        CreatedAt = createdAt
+                        UpdatedAt = None
+                        Vocabularies = [] } ]
                 |> Seeder.saveChangesAsync
+
+            let collection = seeded.Collections.[0]
 
             let! affectedRows =
                 Collections.updateCollectionAsync
@@ -257,23 +201,19 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 
             Assert.Equal(1, affectedRows)
 
-            let! actual =
-                fixture.Seeder
-                |> Seeder.getAllCollectionsAsync
+            let! actual = fixture.Seeder |> Seeder.getAllCollectionsAsync
 
             Assert.Single(actual) |> ignore
 
-            let expected: CollectionEntity =
+            let expected: Collection =
                 { Id = collection.Id
-                  UserId = user.Id
+                  UserId = 101
                   Name = "Updated Name"
-                  Description = "Updated Description"
+                  Description = Some "Updated Description"
                   CreatedAt = createdAt
-                  UpdatedAt = Nullable(updatedAt)
-                  User = Unchecked.defaultof<UserEntity>
-                  Vocabularies = Unchecked.defaultof<ResizeArray<VocabularyEntity>> }
+                  UpdatedAt = Some updatedAt }
 
-            assertCollectionEquivalent expected actual.[0]
+            Assert.Equivalent(expected, actual.[0])
         }
 
     [<Fact>]
@@ -303,26 +243,19 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
             let createdAt =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.FromHours(0.0))
 
-            let user: UserEntity =
-                { Id = 102
-                  Collections = ResizeArray() }
-
-            let collection: CollectionEntity =
-                { Id = 0
-                  UserId = user.Id
-                  Name = "Collection to delete"
-                  Description = null
-                  CreatedAt = createdAt
-                  UpdatedAt = Nullable()
-                  User = Unchecked.defaultof<UserEntity>
-                  Vocabularies = ResizeArray() }
-
-            user.Collections.Add(collection)
-
-            do!
+            let! seeded =
                 fixture.Seeder
-                |> Seeder.addUsers [ user ]
+                |> Seeder.addUsers [ { Id = 102 } ]
+                |> Seeder.addCollections
+                    [ { UserId = 102
+                        Name = "Collection to delete"
+                        Description = None
+                        CreatedAt = createdAt
+                        UpdatedAt = None
+                        Vocabularies = [] } ]
                 |> Seeder.saveChangesAsync
+
+            let collection = seeded.Collections.[0]
 
             let! affectedRows =
                 Collections.deleteCollectionAsync collection.Id
@@ -330,9 +263,7 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 
             Assert.Equal(1, affectedRows)
 
-            let! actual =
-                fixture.Seeder
-                |> Seeder.getAllCollectionsAsync
+            let! actual = fixture.Seeder |> Seeder.getAllCollectionsAsync
 
             Assert.Empty(actual)
         }
