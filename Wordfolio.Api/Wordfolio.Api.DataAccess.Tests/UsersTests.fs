@@ -23,7 +23,9 @@ type UsersTests(fixture: WordfolioTestFixture) =
                 Users.createUserAsync { Id = 123 }
                 |> fixture.WithConnectionAsync
 
-            let! actual = fixture.Seeder |> Seeder.getAllUsersAsync
+            let! actual =
+                fixture.Seeder
+                |> Seeder.getAllUsersAsync
 
             let expected: User list = [ { Id = 123 } ]
 
