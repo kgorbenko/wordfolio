@@ -7,6 +7,7 @@ open Microsoft.Extensions.Hosting
 
 open Wordfolio.Api.Handlers.Auth
 open Wordfolio.Api.IdentityIntegration
+open Wordfolio.Api.MigrationRunner
 open Wordfolio.ServiceDefaults.Builder
 open Wordfolio.ServiceDefaults.HealthCheck
 open Wordfolio.ServiceDefaults.OpenApi
@@ -36,6 +37,9 @@ let main args =
     builder.AddNpgsqlDataSource("wordfoliodb")
 
     let app = builder.Build()
+
+    // Run migrations on startup
+    runMigrations app
 
     app |> mapOpenApi |> ignore
 

@@ -13,3 +13,7 @@ type WebApplicationFactory(connectionString: string) =
 
         builder.UseSetting("ConnectionStrings:wordfoliodb", connectionString)
         |> ignore
+
+        // Disable automatic migrations in tests - migrations are handled by test fixtures
+        builder.UseSetting("RunMigrationsOnStartup", "false")
+        |> ignore
