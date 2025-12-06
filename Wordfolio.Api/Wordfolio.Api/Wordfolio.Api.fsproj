@@ -6,13 +6,17 @@
 
   <ItemGroup>
     <Compile Include="IdentityIntegration.fs" />
+    <Compile Include="Infrastructure\Repositories.fs" />
     <Compile Include="Handlers\Auth.fs" />
+    <Compile Include="Handlers\Collections.fs" />
+    <Compile Include="Handlers\Vocabularies.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Wordfolio.ServiceDefaults\Wordfolio.ServiceDefaults.fsproj" />
     <ProjectReference Include="..\Wordfolio.Api.DataAccess\Wordfolio.Api.DataAccess.fsproj" />
+    <ProjectReference Include="..\Wordfolio.Api.Domain\Wordfolio.Api.Domain.fsproj" />
     <ProjectReference Include="..\Wordfolio.Api.Identity\Wordfolio.Api.Identity.csproj" />
   </ItemGroup>
 

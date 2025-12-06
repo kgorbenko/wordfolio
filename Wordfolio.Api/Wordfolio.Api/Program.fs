@@ -1,12 +1,15 @@
 open System
 
 open Microsoft.AspNetCore.Builder
-open Microsoft.AspNetCore.Http
-open Microsoft.AspNetCore.Routing
+open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 
+open Wordfolio.Api.Domain
 open Wordfolio.Api.Handlers.Auth
+open Wordfolio.Api.Handlers.Collections
+open Wordfolio.Api.Handlers.Vocabularies
 open Wordfolio.Api.IdentityIntegration
+open Wordfolio.Api.Infrastructure.Repositories
 open Wordfolio.ServiceDefaults.Builder
 open Wordfolio.ServiceDefaults.HealthCheck
 open Wordfolio.ServiceDefaults.OpenApi
@@ -16,10 +19,14 @@ type Program() =
     class
     end
 
-type WeatherForecast =
-    { Date: DateOnly
-      TemperatureC: int
-      Summary: string option }
+let addRepositories<'TBuilder when 'TBuilder :> IHostApplicationBuilder>(builder: 'TBuilder) =
+    builder.Services.AddScoped<ICollectionRepository, CollectionRepository>()
+    |> ignore
+
+    builder.Services.AddScoped<IVocabularyRepository, VocabularyRepository>()
+    |> ignore
+
+    builder
 
 [<EntryPoint>]
 let main args =
@@ -27,6 +34,7 @@ let main args =
         WebApplication.CreateBuilder(args)
         |> addIdentity
         |> addAuthentication
+        |> addRepositories
         |> configureOpenTelemetry
         |> addDefaultHealthChecks
         |> addServiceDiscovery
@@ -46,18 +54,8 @@ let main args =
     |> mapHealthChecks
     |> mapStatusEndpoint
     |> mapAuthEndpoints
-    |> ignore
-
-    app.MapGet(
-        "/weatherforecast",
-        Func<WeatherForecast[]>(fun source ->
-            [ 1..5 ]
-            |> Seq.map(fun index ->
-                { Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index))
-                  TemperatureC = Random.Shared.Next(-20, 55)
-                  Summary = Some "Hot" })
-            |> Array.ofSeq)
-    )
+    |> mapCollectionsEndpoints
+    |> mapVocabulariesEndpoints
     |> ignore
 
     app.Run()
