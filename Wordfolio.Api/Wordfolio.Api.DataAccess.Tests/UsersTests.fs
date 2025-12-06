@@ -28,7 +28,8 @@ type UsersTests(fixture: WordfolioTestFixture) =
                 |> Seeder.getAllUsersAsync
 
             let expected: UserEntity list =
-                [ { Id = 123 } ]
+                [ { Id = 123
+                    Collections = Unchecked.defaultof<ResizeArray<CollectionEntity>> } ]
 
             Assert.Equivalent(expected, actual)
         }
