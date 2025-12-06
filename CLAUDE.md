@@ -279,6 +279,9 @@ npm test run          # Single run
 3. **Functional Composition:** Use pipeline operators (`|>`) and function composition
 4. **Explicit Over Implicit:** Clear naming, no magic strings/numbers
 5. **Zero Warnings:** CI fails on any compiler/linter warnings
+6. **No Comments:** Prefer self-explanatory names and clear code structure over comments
+7. **Minimal Changes:** Keep changes focused and atomic; split independent changes into separate commits
+8. **Descriptive Naming:** Use descriptive variable and type names; avoid abbreviations
 
 ### F# Conventions
 
@@ -310,6 +313,27 @@ let getCollectionByIdAsync id connection transaction cancellationToken = ...
 ```bash
 dotnet fantomas .           # Format all files
 dotnet fantomas --check .   # Check without modifying
+```
+
+#### Import Organization
+
+F# modules should organize `open` statements in three groups, separated by blank lines:
+
+1. **System imports** (e.g., `System.*`, `Microsoft.*`)
+2. **Third-party imports** (e.g., `Dapper.*`, `Npgsql.*`)
+3. **Local imports** (e.g., `Wordfolio.*`)
+
+Within each group, sort imports alphabetically. Remove unused `open` statements.
+
+**Example:**
+```fsharp
+open System
+open System.Threading
+
+open Dapper.FSharp.PostgreSQL
+open Npgsql
+
+open Wordfolio.Api.DataAccess.Schema
 ```
 
 #### Function Signatures (Data Access Pattern)
@@ -385,8 +409,8 @@ dotnet format                      # Fix
 - **Constants:** UPPER_SNAKE_CASE
 
 ```typescript
-// Component
-export function LoginPage() { ... }
+// Component (use arrow functions)
+export const LoginPage = () => { ... }
 
 // Hook
 export function useTokenRefresh() { ... }
@@ -401,6 +425,36 @@ const API_BASE_URL = '/api';
 - **Hook files:** `useHookName.ts`
 - **Utility files:** `utilityName.ts`
 - **Test files:** `fileName.test.tsx` or `fileName.test.ts`
+
+#### Component Declaration Style
+
+**Always use arrow function expressions** for component declarations:
+
+```typescript
+// ✅ Correct
+export const MyComponent = () => {
+    return <div>Hello</div>;
+};
+
+// ❌ Wrong
+export function MyComponent() {
+    return <div>Hello</div>;
+}
+```
+
+#### Import Organization
+
+Organize imports with CSS imports after JavaScript/TypeScript imports, separated by a blank line:
+
+```typescript
+// JavaScript/TypeScript imports
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Button } from '@mui/material';
+
+// CSS imports (one blank line above)
+import './MyComponent.css';
+```
 
 #### Formatting (Prettier)
 
@@ -464,6 +518,55 @@ let fromRecord (record: CollectionRecord) : Collection =
     { CreatedAt = record.CreatedAt
       UpdatedAt = Option.ofNullable record.UpdatedAt }
 ```
+
+### Project File Conventions
+
+#### .csproj and .fsproj Files
+
+- **Indentation:** Use 2 spaces (not 4) for indentation in project files
+- **Blank lines:** Separate `PropertyGroup` and `ItemGroup` sections with blank lines
+- **Consistency:** Follow existing patterns in the project files
+
+**Example:**
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper.FSharp" Version="4.8.0" />
+  </ItemGroup>
+
+</Project>
+```
+
+### Dependency Management
+
+#### Package Versions
+
+**Use strict version numbers** without `^` or `~` prefixes in `package.json`:
+
+```json
+// ✅ Correct
+{
+  "dependencies": {
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  }
+}
+
+// ❌ Wrong
+{
+  "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "~19.1.1"
+  }
+}
+```
+
+This ensures reproducible builds and prevents unexpected updates.
 
 ---
 
@@ -786,6 +889,39 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         }
 ```
 
+#### Database Testing Best Practices
+
+**CRITICAL RULES for database tests:**
+
+1. **Seeding:** Perform all initial database seeding via `DatabaseSeeder` only
+2. **No Tested Functions in Setup:** Do NOT use functions from tested modules for database seeding or assertions
+3. **Test Isolation:** Preferably make only ONE call to the tested function per test
+4. **Assertions via Seeder:** Query the database for assertions using `DatabaseSeeder` only
+5. **Compare Full Records:** Use tested records for assertions instead of asserting properties one at a time
+
+**Example of correct approach:**
+
+```fsharp
+[<Fact>]
+member _.``updateCollectionAsync updates collection correctly``() =
+    task {
+        // ✅ Seed via DatabaseSeeder
+        let! seededCollection = DatabaseSeeder.seedCollectionAsync fixture.Connection
+
+        let updatedName = "New Name"
+
+        // ✅ Single call to tested function
+        let! _ = Collections.updateCollectionAsync seededCollection.Id updatedName fixture.Connection null CancellationToken.None
+
+        // ✅ Query via DatabaseSeeder for assertion
+        let! result = DatabaseSeeder.getCollectionByIdAsync seededCollection.Id fixture.Connection
+
+        // ✅ Assert full record
+        Assert.Equal(updatedName, result.Name)
+        Assert.Equal(seededCollection.Id, result.Id)
+    }
+```
+
 ### Frontend Tests
 
 #### Unit/Component Tests (Vitest)
@@ -793,7 +929,10 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 - **Framework:** Vitest
 - **Library:** React Testing Library
 - **Environment:** happy-dom (lightweight)
-- **Location:** `tests/` directory or co-located
+- **Location:** All tests MUST be in `Wordfolio.Frontend/tests/` directory
+- **Structure:** Mirror source directory structure (e.g., `tests/components/`, `tests/utils/`, `tests/contexts/`)
+- **File Extension:** Use `.test.ts` or `.test.tsx`
+- **Imports:** Use relative paths from tests directory (e.g., `../../src/components/MyComponent`)
 
 **Example:**
 
@@ -953,14 +1092,24 @@ npm run format        # Fix
 
 ### Pre-Commit Checklist
 
-Before committing changes, ensure:
+Before committing changes, **run ALL verification commands**:
 
-- [ ] Code builds without warnings
-- [ ] All tests pass
-- [ ] Code is formatted (run formatters)
-- [ ] No linter warnings
+**Backend:**
+- [ ] `dotnet build` - Code builds without warnings
+- [ ] `dotnet test` - All tests pass
+- [ ] `dotnet fantomas --check .` - F# code is formatted
+- [ ] `dotnet format --verify-no-changes` - C# code is formatted
+
+**Frontend:**
+- [ ] `cd Wordfolio.Frontend && npm run build` - TypeScript compiles and Vite builds
+- [ ] `npm test` - All tests pass
+- [ ] `npm run lint` - No ESLint warnings (max warnings = 0)
+- [ ] `npm run format:check` - Code is formatted with Prettier
+
+**General:**
 - [ ] New code has tests (if applicable)
 - [ ] Commit message is clear and descriptive
+- [ ] Changes are minimal and focused (split large changes into separate commits)
 
 ---
 
@@ -1364,11 +1513,15 @@ const onSubmit = (data: CreateCollectionFormData) => {
 3. **Maintain type safety** - Leverage F#/TypeScript types, avoid `any` or untyped code
 4. **Run formatters after changes** - Use `dotnet fantomas .` and `npm run format`
 5. **Update tests** - Add/modify tests when changing functionality
-6. **Use consistent naming** - Follow conventions for the language (F# = camelCase, C# = PascalCase, etc.)
+6. **Use consistent naming** - Use descriptive names, avoid abbreviations; follow language conventions (F# = camelCase, C# = PascalCase, etc.)
 7. **Handle nullability correctly** - Use `Option<'T>` in F#, proper null checks in TypeScript
 8. **Use DateTimeOffset** - Never use `DateTime` for timestamps
 9. **Follow parameter order** - Business params → connection → transaction → cancellationToken
 10. **Compose functions** - Use F# pipeline operators (`|>`) for readability
+11. **Organize imports** - Group and sort imports (System → Third-party → Local)
+12. **Use arrow functions for React components** - `export const MyComponent = () => { ... }`
+13. **Keep commits atomic** - Split independent changes into separate commits
+14. **Avoid comments** - Write self-explanatory code instead
 
 ### What to Avoid
 
@@ -1382,6 +1535,11 @@ const onSubmit = (data: CreateCollectionFormData) => {
 8. **❌ Don't forget transactions** - Coordinate writes across databases carefully
 9. **❌ Don't use `any` in TypeScript** - Provide proper types
 10. **❌ Don't skip tests** - New features need test coverage
+11. **❌ Don't add comments** - Write clear, self-explanatory code instead
+12. **❌ Don't use function declarations for React components** - Use arrow functions
+13. **❌ Don't use `^` or `~` in package.json versions** - Use strict versions only
+14. **❌ Don't use tested functions in database test seeding** - Use DatabaseSeeder only
+15. **❌ Don't make large, unfocused commits** - Keep changes minimal and atomic
 
 ### Common Pitfalls
 
@@ -1491,9 +1649,12 @@ const { data: collections } = useQuery({
 ### Project-Specific Files
 
 - **Setup:** `README.md`
+- **AI Guidelines:** `.github/copilot-instructions.md` (concise version for GitHub Copilot)
 - **Code Style:** `.editorconfig`, `fantomas-config.json`
 - **Tools:** `.config/dotnet-tools.json`
 - **CI/CD:** `.github/workflows/`
+
+**Note:** This CLAUDE.md file is the comprehensive guide for AI assistants. The `.github/copilot-instructions.md` file contains a condensed version of these rules optimized for GitHub Copilot. Both should be kept in sync.
 
 ---
 
@@ -1502,6 +1663,7 @@ const { data: collections } = useQuery({
 | Date | Changes |
 |------|---------|
 | 2025-12-06 | Initial version - Comprehensive codebase analysis and documentation |
+| 2025-12-06 | Updated with guidelines from `.github/copilot-instructions.md`: import organization, component declaration style, project file formatting, dependency management, database testing best practices, and enhanced pre-commit checklist |
 
 ---
 
