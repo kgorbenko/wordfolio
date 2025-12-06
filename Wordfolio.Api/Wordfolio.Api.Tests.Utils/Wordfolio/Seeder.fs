@@ -1,38 +1,12 @@
 namespace Wordfolio.Api.Tests.Utils.Wordfolio
 
 open System
-open System.Collections.Generic
 open System.Data.Common
 open System.Threading.Tasks
 
 open Microsoft.EntityFrameworkCore
 
-open Wordfolio.Api.DataAccess
 open Wordfolio.Common
-
-[<CLIMutable>]
-type UserEntity =
-    { Id: int
-      mutable Collections: ResizeArray<CollectionEntity> }
-
-and [<CLIMutable>] CollectionEntity =
-    { mutable Id: int
-      UserId: int
-      Name: string
-      Description: string
-      CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
-      mutable User: UserEntity
-      mutable Vocabularies: ResizeArray<VocabularyEntity> }
-
-and [<CLIMutable>] VocabularyEntity =
-    { mutable Id: int
-      CollectionId: int
-      Name: string
-      Description: string
-      CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
-      mutable Collection: CollectionEntity }
 
 type User = { Id: int }
 
@@ -54,17 +28,17 @@ type Vocabulary =
 
 [<RequireQualifiedAccess>]
 module Entities =
-    let makeUser id : UserEntity =
+    let makeUser id : Mapping.User =
         { Id = id; Collections = ResizeArray() }
 
     let makeCollection
-        (user: UserEntity)
+        (user: Mapping.User)
         (name: string)
         (description: string option)
         (createdAt: DateTimeOffset)
         (updatedAt: DateTimeOffset option)
-        : CollectionEntity =
-        let collection =
+        : Mapping.Collection =
+        let collection: Mapping.Collection =
             { Id = 0
               UserId = user.Id
               Name = name
@@ -78,13 +52,13 @@ module Entities =
         collection
 
     let makeVocabulary
-        (collection: CollectionEntity)
+        (collection: Mapping.Collection)
         (name: string)
         (description: string option)
         (createdAt: DateTimeOffset)
         (updatedAt: DateTimeOffset option)
-        : VocabularyEntity =
-        let vocabulary =
+        : Mapping.Vocabulary =
+        let vocabulary: Mapping.Vocabulary =
             { Id = 0
               CollectionId = 0
               Name = name
@@ -96,95 +70,7 @@ module Entities =
         collection.Vocabularies.Add(vocabulary)
         vocabulary
 
-type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
-    inherit DbContext(options)
-
-    member this.Users: DbSet<UserEntity> =
-        base.Set<UserEntity>()
-
-    member this.Collections: DbSet<CollectionEntity> =
-        base.Set<CollectionEntity>()
-
-    member this.Vocabularies: DbSet<VocabularyEntity> =
-        base.Set<VocabularyEntity>()
-
-    override _.OnModelCreating(modelBuilder: ModelBuilder) =
-        let users =
-            modelBuilder.Entity<UserEntity>()
-
-        users.ToTable(Schema.UsersTable.Name, Schema.Name).HasKey(fun x -> x.Id :> obj)
-        |> ignore
-
-        users.Property(_.Id).ValueGeneratedNever()
-        |> ignore
-
-        users
-            .HasMany(fun u -> u.Collections :> IEnumerable<CollectionEntity>)
-            .WithOne(fun c -> c.User)
-            .HasForeignKey(fun c -> c.UserId :> obj)
-        |> ignore
-
-        let collections =
-            modelBuilder.Entity<CollectionEntity>()
-
-        collections
-            .ToTable(Schema.CollectionsTable.Name, Schema.Name)
-            .HasKey(fun x -> x.Id :> obj)
-        |> ignore
-
-        collections.Property(_.Id).ValueGeneratedOnAdd()
-        |> ignore
-
-        collections.Property(_.UserId).IsRequired()
-        |> ignore
-
-        collections
-            .HasMany(fun c -> c.Vocabularies :> IEnumerable<VocabularyEntity>)
-            .WithOne(fun v -> v.Collection)
-            .HasForeignKey(fun v -> v.CollectionId :> obj)
-        |> ignore
-
-        collections.Property(_.Name).IsRequired().HasMaxLength(255)
-        |> ignore
-
-        collections.Property(_.Description).IsRequired(false)
-        |> ignore
-
-        collections.Property(_.CreatedAt).IsRequired()
-        |> ignore
-
-        collections.Property(_.UpdatedAt).IsRequired(false)
-        |> ignore
-
-        let vocabularies =
-            modelBuilder.Entity<VocabularyEntity>()
-
-        vocabularies
-            .ToTable(Schema.VocabulariesTable.Name, Schema.Name)
-            .HasKey(fun x -> x.Id :> obj)
-        |> ignore
-
-        vocabularies.Property(_.Id).ValueGeneratedOnAdd()
-        |> ignore
-
-        vocabularies.Property(_.CollectionId).IsRequired()
-        |> ignore
-
-        vocabularies.Property(_.Name).IsRequired().HasMaxLength(255)
-        |> ignore
-
-        vocabularies.Property(_.Description).IsRequired(false)
-        |> ignore
-
-        vocabularies.Property(_.CreatedAt).IsRequired()
-        |> ignore
-
-        vocabularies.Property(_.UpdatedAt).IsRequired(false)
-        |> ignore
-
-        base.OnModelCreating(modelBuilder)
-
-type WordfolioSeeder internal (context: WordfolioTestDbContext) =
+type WordfolioSeeder internal (context: Mapping.WordfolioTestDbContext) =
     member internal _.Context = context
 
     interface IDisposable with
@@ -192,9 +78,9 @@ type WordfolioSeeder internal (context: WordfolioTestDbContext) =
 
 [<RequireQualifiedAccess>]
 module Seeder =
-    let private toUser(entity: UserEntity) : User = { Id = entity.Id }
+    let private toUser(entity: Mapping.User) : User = { Id = entity.Id }
 
-    let private toCollection(entity: CollectionEntity) : Collection =
+    let private toCollection(entity: Mapping.Collection) : Collection =
         { Id = entity.Id
           UserId = entity.UserId
           Name = entity.Name
@@ -202,7 +88,7 @@ module Seeder =
           CreatedAt = entity.CreatedAt
           UpdatedAt = Option.ofNullable entity.UpdatedAt }
 
-    let private toVocabulary(entity: VocabularyEntity) : Vocabulary =
+    let private toVocabulary(entity: Mapping.Vocabulary) : Vocabulary =
         { Id = entity.Id
           CollectionId = entity.CollectionId
           Name = entity.Name
@@ -212,19 +98,16 @@ module Seeder =
 
     let create(connection: DbConnection) : WordfolioSeeder =
         let builder =
-            DbContextOptionsBuilder<WordfolioTestDbContext>()
-
-        builder
-            .UseNpgsql(connection)
-            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-        |> ignore
+            DbContextOptionsBuilder<Mapping.WordfolioTestDbContext>()
+                .UseNpgsql(connection)
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
 
         let context =
-            new WordfolioTestDbContext(builder.Options)
+            new Mapping.WordfolioTestDbContext(builder.Options)
 
         new WordfolioSeeder(context)
 
-    let addUsers (users: UserEntity list) (seeder: WordfolioSeeder) : WordfolioSeeder =
+    let addUsers (users: Mapping.User list) (seeder: WordfolioSeeder) : WordfolioSeeder =
         seeder.Context.Users.AddRange(users)
         seeder
 
@@ -271,10 +154,9 @@ module Seeder =
                     .FirstOrDefaultAsync(fun c -> c.Id = id)
 
             return
-                if isNull(box collection) then
-                    None
-                else
-                    Some(toCollection collection)
+                collection
+                |> Option.ofObj
+                |> Option.map toCollection
         }
 
     let getVocabularyByIdAsync (id: int) (seeder: WordfolioSeeder) : Task<Vocabulary option> =
@@ -285,8 +167,7 @@ module Seeder =
                     .FirstOrDefaultAsync(fun v -> v.Id = id)
 
             return
-                if isNull(box vocabulary) then
-                    None
-                else
-                    Some(toVocabulary vocabulary)
+                vocabulary
+                |> Option.ofObj
+                |> Option.map toVocabulary
         }
