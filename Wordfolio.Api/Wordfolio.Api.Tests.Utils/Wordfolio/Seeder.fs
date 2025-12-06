@@ -10,25 +10,29 @@ open Microsoft.EntityFrameworkCore
 open Wordfolio.Api.DataAccess
 open Wordfolio.Common
 
-// ===== Seed Input Types (what tests provide for seeding) =====
+[<CLIMutable>]
+type UserEntity =
+    { Id: int
+      mutable Collections: ResizeArray<CollectionEntity> }
 
-type UserSeed = { Id: int }
-
-type VocabularySeed =
-    { Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
-
-type CollectionSeed =
-    { UserId: int
+and [<CLIMutable>] CollectionEntity =
+    { mutable Id: int
+      UserId: int
       Name: string
-      Description: string option
+      Description: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
-      Vocabularies: VocabularySeed list }
+      UpdatedAt: Nullable<DateTimeOffset>
+      mutable User: UserEntity
+      mutable Vocabularies: ResizeArray<VocabularyEntity> }
 
-// ===== Query/Result Types (what tests use for assertions) =====
+and [<CLIMutable>] VocabularyEntity =
+    { mutable Id: int
+      CollectionId: int
+      Name: string
+      Description: string
+      CreatedAt: DateTimeOffset
+      UpdatedAt: Nullable<DateTimeOffset>
+      mutable Collection: CollectionEntity }
 
 type User = { Id: int }
 
@@ -48,38 +52,48 @@ type Vocabulary =
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option }
 
-type SeededData =
-    { Users: User list
-      Collections: Collection list
-      Vocabularies: Vocabulary list }
+[<RequireQualifiedAccess>]
+module Entities =
+    let makeUser id : UserEntity = { Id = id; Collections = ResizeArray() }
 
-// ===== Internal EF Entities (for EF relationships) =====
+    let makeCollection
+        (user: UserEntity)
+        (name: string)
+        (description: string option)
+        (createdAt: DateTimeOffset)
+        (updatedAt: DateTimeOffset option)
+        : CollectionEntity =
+        let collection =
+            { Id = 0
+              UserId = user.Id
+              Name = name
+              Description = description |> Option.toObj
+              CreatedAt = createdAt
+              UpdatedAt = updatedAt |> Option.toNullable
+              User = user
+              Vocabularies = ResizeArray() }
 
-[<CLIMutable>]
-type internal UserEntity =
-    { Id: int
-      mutable Collections: ResizeArray<CollectionEntity> }
+        user.Collections.Add(collection)
+        collection
 
-and [<CLIMutable>] internal CollectionEntity =
-    { mutable Id: int
-      UserId: int
-      Name: string
-      Description: string
-      CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
-      mutable User: UserEntity
-      mutable Vocabularies: ResizeArray<VocabularyEntity> }
+    let makeVocabulary
+        (collection: CollectionEntity)
+        (name: string)
+        (description: string option)
+        (createdAt: DateTimeOffset)
+        (updatedAt: DateTimeOffset option)
+        : VocabularyEntity =
+        let vocabulary =
+            { Id = 0
+              CollectionId = 0
+              Name = name
+              Description = description |> Option.toObj
+              CreatedAt = createdAt
+              UpdatedAt = updatedAt |> Option.toNullable
+              Collection = collection }
 
-and [<CLIMutable>] internal VocabularyEntity =
-    { mutable Id: int
-      CollectionId: int
-      Name: string
-      Description: string
-      CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
-      mutable Collection: CollectionEntity }
-
-// ===== Internal DbContext =====
+        collection.Vocabularies.Add(vocabulary)
+        vocabulary
 
 type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
     inherit DbContext(options)
@@ -150,56 +164,14 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
 
         base.OnModelCreating(modelBuilder)
 
-// ===== Seeder Type =====
-
-type WordfolioSeeder =
-    internal
-        { Context: WordfolioTestDbContext
-          mutable PendingUsers: UserEntity list
-          mutable PendingCollections: CollectionEntity list }
+type WordfolioSeeder internal (context: WordfolioTestDbContext) =
+    member internal _.Context = context
 
     interface IDisposable with
         member this.Dispose() : unit = this.Context.Dispose()
 
-// ===== Seeder Module =====
-
 [<RequireQualifiedAccess>]
 module Seeder =
-
-    // ===== Private Conversion Functions =====
-
-    let private toUserEntity (seed: UserSeed) : UserEntity =
-        { Id = seed.Id
-          Collections = ResizeArray() }
-
-    let private toCollectionEntity (seed: CollectionSeed) : CollectionEntity * VocabularyEntity list =
-        let collection: CollectionEntity =
-            { Id = 0
-              UserId = seed.UserId
-              Name = seed.Name
-              Description = seed.Description |> Option.toObj
-              CreatedAt = seed.CreatedAt
-              UpdatedAt = seed.UpdatedAt |> Option.toNullable
-              User = Unchecked.defaultof<UserEntity>
-              Vocabularies = ResizeArray() }
-
-        let vocabularies =
-            seed.Vocabularies
-            |> List.map (fun v ->
-                let vocab: VocabularyEntity =
-                    { Id = 0
-                      CollectionId = 0
-                      Name = v.Name
-                      Description = v.Description |> Option.toObj
-                      CreatedAt = v.CreatedAt
-                      UpdatedAt = v.UpdatedAt |> Option.toNullable
-                      Collection = Unchecked.defaultof<CollectionEntity> }
-
-                collection.Vocabularies.Add(vocab)
-                vocab)
-
-        (collection, vocabularies)
-
     let private toUser (entity: UserEntity) : User = { Id = entity.Id }
 
     let private toCollection (entity: CollectionEntity) : Collection =
@@ -218,8 +190,6 @@ module Seeder =
           CreatedAt = entity.CreatedAt
           UpdatedAt = Option.ofNullable entity.UpdatedAt }
 
-    // ===== Create =====
-
     let create (connection: DbConnection) : WordfolioSeeder =
         let builder = DbContextOptionsBuilder<WordfolioTestDbContext>()
 
@@ -229,64 +199,17 @@ module Seeder =
         |> ignore
 
         let context = new WordfolioTestDbContext(builder.Options)
+        new WordfolioSeeder(context)
 
-        { Context = context
-          PendingUsers = []
-          PendingCollections = [] }
-
-    // ===== Add Functions (fluent API) =====
-
-    let addUsers (users: UserSeed list) (seeder: WordfolioSeeder) : WordfolioSeeder =
-        let entities = users |> List.map toUserEntity
-        seeder.PendingUsers <- seeder.PendingUsers @ entities
+    let addUsers (users: UserEntity list) (seeder: WordfolioSeeder) : WordfolioSeeder =
+        seeder.Context.Users.AddRange(users)
         seeder
 
-    let addCollections (collections: CollectionSeed list) (seeder: WordfolioSeeder) : WordfolioSeeder =
-        let entities =
-            collections
-            |> List.map (fun seed ->
-                let (collectionEntity, _) = toCollectionEntity seed
-
-                let userEntity =
-                    seeder.PendingUsers |> List.tryFind (fun u -> u.Id = seed.UserId)
-
-                match userEntity with
-                | Some user -> user.Collections.Add(collectionEntity)
-                | None -> ()
-
-                collectionEntity)
-
-        seeder.PendingCollections <- seeder.PendingCollections @ entities
-        seeder
-
-    // ===== Save =====
-
-    let saveChangesAsync (seeder: WordfolioSeeder) : Task<SeededData> =
+    let saveChangesAsync (seeder: WordfolioSeeder) : Task =
         task {
-            seeder.Context.Users.AddRange(seeder.PendingUsers)
-
             do! seeder.Context.SaveChangesAsync() |> Task.ignore
-
-            let users = seeder.PendingUsers |> List.map toUser
-
-            let collections = seeder.PendingCollections |> List.map toCollection
-
-            let vocabularies =
-                seeder.PendingCollections
-                |> List.collect (fun c -> c.Vocabularies |> Seq.toList)
-                |> List.map toVocabulary
-
             seeder.Context.ChangeTracker.Clear()
-            seeder.PendingUsers <- []
-            seeder.PendingCollections <- []
-
-            return
-                { Users = users
-                  Collections = collections
-                  Vocabularies = vocabularies }
         }
-
-    // ===== Query Functions =====
 
     let getAllUsersAsync (seeder: WordfolioSeeder) : Task<User list> =
         task {
