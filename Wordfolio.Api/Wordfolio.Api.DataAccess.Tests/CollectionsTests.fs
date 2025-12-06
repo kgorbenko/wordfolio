@@ -16,17 +16,18 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let createdAt =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.FromHours(0.0))
+            let createdAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
-            let! _ =
+            let user = Entities.makeUser 100
+
+            do!
                 fixture.Seeder
-                |> Seeder.addUsers [ { Id = 100 } ]
+                |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
             do!
                 Collections.createCollectionAsync
-                    { UserId = 100
+                    { UserId = user.Id
                       Name = "My Collection"
                       Description = Some "Test collection"
                       CreatedAt = createdAt }
@@ -36,15 +37,15 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 
             Assert.Single(actual) |> ignore
 
-            let expected: Collection =
-                { Id = actual.[0].Id
-                  UserId = 100
-                  Name = "My Collection"
-                  Description = Some "Test collection"
-                  CreatedAt = createdAt
-                  UpdatedAt = None }
+            let expected: Collection list =
+                [ { Id = actual.[0].Id
+                    UserId = user.Id
+                    Name = "My Collection"
+                    Description = Some "Test collection"
+                    CreatedAt = createdAt
+                    UpdatedAt = None } ]
 
-            Assert.Equivalent(expected, actual.[0])
+            Assert.Equivalent(expected, actual)
         }
 
     [<Fact>]
@@ -52,22 +53,15 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let createdAt =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.FromHours(0.0))
+            let createdAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
-            let! seeded =
+            let user = Entities.makeUser 100
+            let collection = Entities.makeCollection user "My Collection" (Some "Test collection") createdAt None
+
+            do!
                 fixture.Seeder
-                |> Seeder.addUsers [ { Id = 100 } ]
-                |> Seeder.addCollections
-                    [ { UserId = 100
-                        Name = "My Collection"
-                        Description = Some "Test collection"
-                        CreatedAt = createdAt
-                        UpdatedAt = None
-                        Vocabularies = [] } ]
+                |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
-
-            let collection = seeded.Collections.[0]
 
             let! actual =
                 Collections.getCollectionByIdAsync collection.Id
@@ -75,7 +69,7 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 
             let expected: Collections.Collection =
                 { Id = collection.Id
-                  UserId = 100
+                  UserId = user.Id
                   Name = "My Collection"
                   Description = Some "Test collection"
                   CreatedAt = createdAt
@@ -101,46 +95,32 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let createdAt =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.FromHours(0.0))
+            let createdAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
-            let! seeded =
+            let user1 = Entities.makeUser 100
+            let user2 = Entities.makeUser 101
+            let collection1 = Entities.makeCollection user1 "Collection 1" None createdAt None
+            let collection2 = Entities.makeCollection user1 "Collection 2" None createdAt None
+            let _ = Entities.makeCollection user2 "Collection 3" None createdAt None
+
+            do!
                 fixture.Seeder
-                |> Seeder.addUsers [ { Id = 100 }; { Id = 101 } ]
-                |> Seeder.addCollections
-                    [ { UserId = 100
-                        Name = "Collection 1"
-                        Description = None
-                        CreatedAt = createdAt
-                        UpdatedAt = None
-                        Vocabularies = [] }
-                      { UserId = 100
-                        Name = "Collection 2"
-                        Description = None
-                        CreatedAt = createdAt
-                        UpdatedAt = None
-                        Vocabularies = [] }
-                      { UserId = 101
-                        Name = "Collection 3"
-                        Description = None
-                        CreatedAt = createdAt
-                        UpdatedAt = None
-                        Vocabularies = [] } ]
+                |> Seeder.addUsers [ user1; user2 ]
                 |> Seeder.saveChangesAsync
 
             let! actual =
-                Collections.getCollectionsByUserIdAsync 100
+                Collections.getCollectionsByUserIdAsync user1.Id
                 |> fixture.WithConnectionAsync
 
             let expected: Collections.Collection list =
-                [ { Id = seeded.Collections.[0].Id
-                    UserId = 100
+                [ { Id = collection1.Id
+                    UserId = user1.Id
                     Name = "Collection 1"
                     Description = None
                     CreatedAt = createdAt
                     UpdatedAt = None }
-                  { Id = seeded.Collections.[1].Id
-                    UserId = 100
+                  { Id = collection2.Id
+                    UserId = user1.Id
                     Name = "Collection 2"
                     Description = None
                     CreatedAt = createdAt
@@ -154,13 +134,15 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let! _ =
+            let user = Entities.makeUser 100
+
+            do!
                 fixture.Seeder
-                |> Seeder.addUsers [ { Id = 100 } ]
+                |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
             let! actual =
-                Collections.getCollectionsByUserIdAsync 100
+                Collections.getCollectionsByUserIdAsync user.Id
                 |> fixture.WithConnectionAsync
 
             Assert.Empty(actual)
@@ -171,25 +153,16 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let createdAt =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.FromHours(0.0))
+            let createdAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            let updatedAt = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
 
-            let updatedAt =
-                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.FromHours(0.0))
+            let user = Entities.makeUser 101
+            let collection = Entities.makeCollection user "Original Name" (Some "Original Description") createdAt None
 
-            let! seeded =
+            do!
                 fixture.Seeder
-                |> Seeder.addUsers [ { Id = 101 } ]
-                |> Seeder.addCollections
-                    [ { UserId = 101
-                        Name = "Original Name"
-                        Description = Some "Original Description"
-                        CreatedAt = createdAt
-                        UpdatedAt = None
-                        Vocabularies = [] } ]
+                |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
-
-            let collection = seeded.Collections.[0]
 
             let! affectedRows =
                 Collections.updateCollectionAsync
@@ -201,19 +174,17 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 
             Assert.Equal(1, affectedRows)
 
-            let! actual = fixture.Seeder |> Seeder.getAllCollectionsAsync
-
-            Assert.Single(actual) |> ignore
+            let! actual = Seeder.getCollectionByIdAsync collection.Id fixture.Seeder
 
             let expected: Collection =
                 { Id = collection.Id
-                  UserId = 101
+                  UserId = user.Id
                   Name = "Updated Name"
                   Description = Some "Updated Description"
                   CreatedAt = createdAt
                   UpdatedAt = Some updatedAt }
 
-            Assert.Equivalent(expected, actual.[0])
+            Assert.Equal(Some expected, actual)
         }
 
     [<Fact>]
@@ -221,8 +192,7 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let updatedAt =
-                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.FromHours(0.0))
+            let updatedAt = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
 
             let! affectedRows =
                 Collections.updateCollectionAsync
@@ -240,22 +210,15 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let createdAt =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.FromHours(0.0))
+            let createdAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
-            let! seeded =
+            let user = Entities.makeUser 102
+            let collection = Entities.makeCollection user "Collection to delete" None createdAt None
+
+            do!
                 fixture.Seeder
-                |> Seeder.addUsers [ { Id = 102 } ]
-                |> Seeder.addCollections
-                    [ { UserId = 102
-                        Name = "Collection to delete"
-                        Description = None
-                        CreatedAt = createdAt
-                        UpdatedAt = None
-                        Vocabularies = [] } ]
+                |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
-
-            let collection = seeded.Collections.[0]
 
             let! affectedRows =
                 Collections.deleteCollectionAsync collection.Id
