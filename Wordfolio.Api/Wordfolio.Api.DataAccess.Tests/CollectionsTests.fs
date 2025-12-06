@@ -16,7 +16,8 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let createdAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let user = Entities.makeUser 100
 
@@ -33,7 +34,9 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                       CreatedAt = createdAt }
                 |> fixture.WithConnectionAsync
 
-            let! actual = fixture.Seeder |> Seeder.getAllCollectionsAsync
+            let! actual =
+                fixture.Seeder
+                |> Seeder.getAllCollectionsAsync
 
             Assert.Single(actual) |> ignore
 
@@ -53,10 +56,13 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let createdAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let user = Entities.makeUser 100
-            let collection = Entities.makeCollection user "My Collection" (Some "Test collection") createdAt None
+
+            let collection =
+                Entities.makeCollection user "My Collection" (Some "Test collection") createdAt None
 
             do!
                 fixture.Seeder
@@ -95,13 +101,20 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let createdAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let user1 = Entities.makeUser 100
             let user2 = Entities.makeUser 101
-            let collection1 = Entities.makeCollection user1 "Collection 1" None createdAt None
-            let collection2 = Entities.makeCollection user1 "Collection 2" None createdAt None
-            let _ = Entities.makeCollection user2 "Collection 3" None createdAt None
+
+            let collection1 =
+                Entities.makeCollection user1 "Collection 1" None createdAt None
+
+            let collection2 =
+                Entities.makeCollection user1 "Collection 2" None createdAt None
+
+            let _ =
+                Entities.makeCollection user2 "Collection 3" None createdAt None
 
             do!
                 fixture.Seeder
@@ -153,11 +166,16 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let createdAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-            let updatedAt = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let updatedAt =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
 
             let user = Entities.makeUser 101
-            let collection = Entities.makeCollection user "Original Name" (Some "Original Description") createdAt None
+
+            let collection =
+                Entities.makeCollection user "Original Name" (Some "Original Description") createdAt None
 
             do!
                 fixture.Seeder
@@ -192,7 +210,8 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let updatedAt = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+            let updatedAt =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
 
             let! affectedRows =
                 Collections.updateCollectionAsync
@@ -210,10 +229,13 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
-            let createdAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let user = Entities.makeUser 102
-            let collection = Entities.makeCollection user "Collection to delete" None createdAt None
+
+            let collection =
+                Entities.makeCollection user "Collection to delete" None createdAt None
 
             do!
                 fixture.Seeder
@@ -226,7 +248,9 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 
             Assert.Equal(1, affectedRows)
 
-            let! actual = fixture.Seeder |> Seeder.getAllCollectionsAsync
+            let! actual =
+                fixture.Seeder
+                |> Seeder.getAllCollectionsAsync
 
             Assert.Empty(actual)
         }
