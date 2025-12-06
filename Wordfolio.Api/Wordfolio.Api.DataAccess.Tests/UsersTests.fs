@@ -37,9 +37,12 @@ type UsersTests(fixture: WordfolioTestFixture) =
         task {
             do! fixture.ResetDatabaseAsync()
 
+            let user = Entities.makeUser 5
+
             do!
-                Users.createUserAsync { Id = 5 }
-                |> fixture.WithConnectionAsync
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
 
             let! ex =
                 Assert.ThrowsAsync<PostgresException>(fun () ->
