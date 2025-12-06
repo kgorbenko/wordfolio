@@ -80,7 +80,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             let identityUser =
                 Assert.Single(actualIdentityUsers)
 
-            Assert.Equal(Some request.Email, identityUser.Email)
+            Assert.Equal(request.Email, identityUser.Email)
             Assert.Equal(wordfolioUser.Id, identityUser.Id)
         }
 
