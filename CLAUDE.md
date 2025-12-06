@@ -169,27 +169,25 @@ dotnet user-secrets set Parameters:postgres-username myuser
 dotnet user-secrets set Parameters:postgres-password mypassword
 cd ..
 
-# 3. Run Aspire AppHost (starts everything)
+# 3. Run Aspire AppHost (starts PostgreSQL, API, and frontend)
 dotnet run --project Wordfolio.AppHost
 ```
 
 This will:
 - Start PostgreSQL in a container
-- Run Identity migrations (EF Core) automatically
-- Run Wordfolio migrations (FluentMigrator) automatically
 - Start the API service
 - Start the frontend dev server
 - Open the Aspire dashboard
 
-**Manual migration commands (if needed):**
+**After starting Aspire, run database migrations manually:**
 
 ```bash
-# Run Identity migrations manually
+# Run Identity migrations (EF Core)
 dotnet ef database update \
   --startup-project ./Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj \
   --connection "Host=localhost;Port=5432;Database=wordfoliodb;User ID=myuser;Password=mypassword"
 
-# Run Wordfolio migrations manually
+# Run Wordfolio migrations (FluentMigrator)
 dotnet build Wordfolio.Api/Wordfolio.Api.Migrations
 dotnet fm migrate \
   -p PostgreSQL15_0 \
@@ -747,6 +745,7 @@ Always use `Schema.fs` for type-safe column references. Define tables using `tab
 | 2025-12-06 | Initial version - Comprehensive codebase analysis and documentation |
 | 2025-12-06 | Updated with guidelines from `.github/copilot-instructions.md`: import organization, component declaration style, project file formatting, dependency management, database testing best practices, and enhanced pre-commit checklist |
 | 2025-12-06 | Optimized for size: Added migration commands to Quick Start, removed Manual Setup section, removed verbose formatting rules and code snippets |
+| 2025-12-06 | Fixed Quick Start section: Clarified that migrations must always be run manually after starting Aspire, not automatically |
 
 ---
 
