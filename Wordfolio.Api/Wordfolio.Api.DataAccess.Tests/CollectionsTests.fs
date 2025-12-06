@@ -52,6 +52,67 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
         }
 
     [<Fact>]
+    member _.``createCollectionAsync inserts a collection with None description``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 103
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            do!
+                Collections.createCollectionAsync
+                    { UserId = user.Id
+                      Name = "My Collection"
+                      Description = None
+                      CreatedAt = createdAt }
+                |> fixture.WithConnectionAsync
+
+            let! actual =
+                fixture.Seeder
+                |> Seeder.getAllCollectionsAsync
+
+            let collectionId = actual[0].Id
+
+            let expected: Collection list =
+                [ { Id = collectionId
+                    UserId = user.Id
+                    Name = "My Collection"
+                    Description = None
+                    CreatedAt = createdAt
+                    UpdatedAt = None } ]
+
+            Assert.Equivalent(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``createCollectionAsync fails with foreign key violation for non-existent user``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let! ex =
+                Assert.ThrowsAsync<Npgsql.PostgresException>(fun () ->
+                    (Collections.createCollectionAsync
+                        { UserId = 999
+                          Name = "My Collection"
+                          Description = Some "Test collection"
+                          CreatedAt = createdAt }
+                     |> fixture.WithConnectionAsync
+                    :> System.Threading.Tasks.Task))
+
+            Assert.Equal("23503", ex.SqlState)
+        }
+
+    [<Fact>]
     member _.``getCollectionByIdAsync returns collection when it exists``() =
         task {
             do! fixture.ResetDatabaseAsync()
@@ -201,6 +262,51 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                       UserId = user.Id
                       Name = "Updated Name"
                       Description = Some "Updated Description"
+                      CreatedAt = createdAt
+                      UpdatedAt = Some updatedAt }
+
+            Assert.Equal(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``updateCollectionAsync can clear description by setting it to None``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let updatedAt =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 104
+
+            let collection =
+                Entities.makeCollection user "Collection Name" (Some "Original Description") createdAt None
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            let! affectedRows =
+                Collections.updateCollectionAsync
+                    { Id = collection.Id
+                      Name = "Collection Name"
+                      Description = None
+                      UpdatedAt = updatedAt }
+                |> fixture.WithConnectionAsync
+
+            Assert.Equal(1, affectedRows)
+
+            let! actual = Seeder.getCollectionByIdAsync collection.Id fixture.Seeder
+
+            let expected: Collection option =
+                Some
+                    { Id = collection.Id
+                      UserId = user.Id
+                      Name = "Collection Name"
+                      Description = None
                       CreatedAt = createdAt
                       UpdatedAt = Some updatedAt }
 

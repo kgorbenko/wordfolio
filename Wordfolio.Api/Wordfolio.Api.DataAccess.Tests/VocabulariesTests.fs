@@ -55,6 +55,70 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
         }
 
     [<Fact>]
+    member _.``createVocabularyAsync inserts a vocabulary with None description``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 203
+
+            let collection =
+                Entities.makeCollection user "Collection 1" None createdAt None
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            do!
+                Vocabularies.createVocabularyAsync
+                    { CollectionId = collection.Id
+                      Name = "My Vocabulary"
+                      Description = None
+                      CreatedAt = createdAt }
+                |> fixture.WithConnectionAsync
+
+            let! actual =
+                fixture.Seeder
+                |> Seeder.getAllVocabulariesAsync
+
+            let vocabularyId = actual[0].Id
+
+            let expected: Vocabulary list =
+                [ { Id = vocabularyId
+                    CollectionId = collection.Id
+                    Name = "My Vocabulary"
+                    Description = None
+                    CreatedAt = createdAt
+                    UpdatedAt = None } ]
+
+            Assert.Equivalent(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``createVocabularyAsync fails with foreign key violation for non-existent collection``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let! ex =
+                Assert.ThrowsAsync<Npgsql.PostgresException>(fun () ->
+                    (Vocabularies.createVocabularyAsync
+                        { CollectionId = 999
+                          Name = "My Vocabulary"
+                          Description = Some "Test vocabulary"
+                          CreatedAt = createdAt }
+                     |> fixture.WithConnectionAsync
+                    :> System.Threading.Tasks.Task))
+
+            Assert.Equal("23503", ex.SqlState)
+        }
+
+    [<Fact>]
     member _.``getVocabularyByIdAsync returns vocabulary when it exists``() =
         task {
             do! fixture.ResetDatabaseAsync()
@@ -221,6 +285,54 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                       CollectionId = collection.Id
                       Name = "Updated Name"
                       Description = Some "Updated Description"
+                      CreatedAt = createdAt
+                      UpdatedAt = Some updatedAt }
+
+            Assert.Equal(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``updateVocabularyAsync can clear description by setting it to None``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let updatedAt =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 204
+
+            let collection =
+                Entities.makeCollection user "Collection 4" None createdAt None
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Vocabulary Name" (Some "Original Description") createdAt None
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            let! affectedRows =
+                Vocabularies.updateVocabularyAsync
+                    { Id = vocabulary.Id
+                      Name = "Vocabulary Name"
+                      Description = None
+                      UpdatedAt = updatedAt }
+                |> fixture.WithConnectionAsync
+
+            Assert.Equal(1, affectedRows)
+
+            let! actual = Seeder.getVocabularyByIdAsync vocabulary.Id fixture.Seeder
+
+            let expected: Vocabulary option =
+                Some
+                    { Id = vocabulary.Id
+                      CollectionId = collection.Id
+                      Name = "Vocabulary Name"
+                      Description = None
                       CreatedAt = createdAt
                       UpdatedAt = Some updatedAt }
 
