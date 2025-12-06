@@ -41,8 +41,10 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                 fixture.Seeder
                 |> Seeder.getAllVocabulariesAsync
 
+            let vocabularyId = actual[0].Id
+
             let expected: Vocabulary list =
-                [ { Id = actual.[0].Id
+                [ { Id = vocabularyId
                     CollectionId = collection.Id
                     Name = "My Vocabulary"
                     Description = Some "Test vocabulary"
@@ -77,15 +79,16 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                 Vocabularies.getVocabularyByIdAsync vocabulary.Id
                 |> fixture.WithConnectionAsync
 
-            let expected: Vocabularies.Vocabulary =
-                { Id = vocabulary.Id
-                  CollectionId = collection.Id
-                  Name = "My Vocabulary"
-                  Description = Some "Test vocabulary"
-                  CreatedAt = createdAt
-                  UpdatedAt = None }
+            let expected: Vocabularies.Vocabulary option =
+                Some
+                    { Id = vocabulary.Id
+                      CollectionId = collection.Id
+                      Name = "My Vocabulary"
+                      Description = Some "Test vocabulary"
+                      CreatedAt = createdAt
+                      UpdatedAt = None }
 
-            Assert.Equivalent(Some expected, actual)
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -97,7 +100,7 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                 Vocabularies.getVocabularyByIdAsync 999
                 |> fixture.WithConnectionAsync
 
-            Assert.True(actual.IsNone)
+            Assert.Equal(None, actual)
         }
 
     [<Fact>]
@@ -212,15 +215,16 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
 
             let! actual = Seeder.getVocabularyByIdAsync vocabulary.Id fixture.Seeder
 
-            let expected: Vocabulary =
-                { Id = vocabulary.Id
-                  CollectionId = collection.Id
-                  Name = "Updated Name"
-                  Description = Some "Updated Description"
-                  CreatedAt = createdAt
-                  UpdatedAt = Some updatedAt }
+            let expected: Vocabulary option =
+                Some
+                    { Id = vocabulary.Id
+                      CollectionId = collection.Id
+                      Name = "Updated Name"
+                      Description = Some "Updated Description"
+                      CreatedAt = createdAt
+                      UpdatedAt = Some updatedAt }
 
-            Assert.Equal(Some expected, actual)
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
