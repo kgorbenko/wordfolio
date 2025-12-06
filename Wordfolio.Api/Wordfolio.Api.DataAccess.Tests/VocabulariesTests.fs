@@ -1,6 +1,7 @@
 namespace Wordfolio.Api.DataAccess.Tests
 
 open System
+open System.Threading.Tasks
 
 open Xunit
 
@@ -113,7 +114,7 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                           Description = Some "Test vocabulary"
                           CreatedAt = createdAt }
                      |> fixture.WithConnectionAsync
-                    :> System.Threading.Tasks.Task))
+                    :> Task))
 
             Assert.Equal("23503", ex.SqlState)
         }
