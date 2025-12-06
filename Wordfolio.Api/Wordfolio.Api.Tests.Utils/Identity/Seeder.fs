@@ -11,8 +11,8 @@ open Wordfolio.Common
 
 type User =
     { Id: int
-      UserName: string option
-      Email: string option }
+      UserName: string
+      Email: string }
 
 type IdentitySeeder(context: IdentityDbContext) =
     member _.DbContext = context
@@ -25,8 +25,8 @@ type IdentitySeeder(context: IdentityDbContext) =
 module Seeder =
     let private toUser(entity: Wordfolio.Api.Identity.User) : User =
         { Id = entity.Id
-          UserName = Option.ofObj entity.UserName
-          Email = Option.ofObj entity.Email }
+          UserName = entity.UserName
+          Email = entity.Email }
 
     let create(connection: DbConnection) : IdentitySeeder =
         let builder =
