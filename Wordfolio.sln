@@ -22,6 +22,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Wordfolio.Common", "Wordfol
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Wordfolio.Api.Tests.Utils", "Wordfolio.Api\Wordfolio.Api.Tests.Utils\Wordfolio.Api.Tests.Utils.fsproj", "{DB1D82F6-5AFC-4BD9-AB0A-3EF83C397AFA}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Wordfolio.MigrationRunner", "Wordfolio.MigrationRunner\Wordfolio.MigrationRunner.fsproj", "{C1FA4C41-DE03-4198-BF3B-189D3B897FCE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -68,6 +70,10 @@ Global
 		{DB1D82F6-5AFC-4BD9-AB0A-3EF83C397AFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB1D82F6-5AFC-4BD9-AB0A-3EF83C397AFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB1D82F6-5AFC-4BD9-AB0A-3EF83C397AFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1FA4C41-DE03-4198-BF3B-189D3B897FCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1FA4C41-DE03-4198-BF3B-189D3B897FCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1FA4C41-DE03-4198-BF3B-189D3B897FCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1FA4C41-DE03-4198-BF3B-189D3B897FCE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6A6B59A8-CF79-4AC2-8896-C6E211F0742C} = {4EF4DA0E-5E0F-4F24-B988-73BD9CE59E80}
