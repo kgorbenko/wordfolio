@@ -39,7 +39,7 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                 fixture.Seeder
                 |> Seeder.getAllCollectionsAsync
 
-            let collectionId = actual[0].Id
+            let collectionId = Assert.Single(actual).Id
 
             let expected: Collection list =
                 [ { Id = collectionId
@@ -79,7 +79,7 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                 fixture.Seeder
                 |> Seeder.getAllCollectionsAsync
 
-            let collectionId = actual[0].Id
+            let collectionId = Assert.Single(actual).Id
 
             let expected: Collection list =
                 [ { Id = collectionId

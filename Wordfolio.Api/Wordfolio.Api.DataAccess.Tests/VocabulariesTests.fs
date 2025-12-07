@@ -42,7 +42,7 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                 fixture.Seeder
                 |> Seeder.getAllVocabulariesAsync
 
-            let vocabularyId = actual[0].Id
+            let vocabularyId = Assert.Single(actual).Id
 
             let expected: Vocabulary list =
                 [ { Id = vocabularyId
@@ -85,7 +85,7 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                 fixture.Seeder
                 |> Seeder.getAllVocabulariesAsync
 
-            let vocabularyId = actual[0].Id
+            let vocabularyId = Assert.Single(actual).Id
 
             let expected: Vocabulary list =
                 [ { Id = vocabularyId
