@@ -21,9 +21,13 @@ var postgres =
 
 var postgresDatabase = postgres.AddDatabase(databaseName);
 
+var migrationService = builder.AddProject<Projects.Wordfolio_MigrationRunner>("migrationservice")
+    .WithReference(postgresDatabase)
+    .WaitFor(postgresDatabase);
+
 var api = builder.AddProject<Projects.Wordfolio_Api>("apiservice")
     .WithReference(postgresDatabase)
-    .WaitFor(postgresDatabase)
+    .WaitFor(migrationService)
     .WithHttpHealthCheck("/health");
 
 builder.AddNpmApp("frontend", "../Wordfolio.Frontend")

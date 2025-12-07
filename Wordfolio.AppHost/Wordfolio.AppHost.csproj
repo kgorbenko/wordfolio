@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Wordfolio.Api\Wordfolio.Api\Wordfolio.Api.fsproj" />
+    <ProjectReference Include="..\Wordfolio.MigrationRunner\Wordfolio.MigrationRunner.fsproj" />
   </ItemGroup>
 
   <Target Name="RestoreNpm" BeforeTargets="Build" Condition=" '$(DesignTimeBuild)' != 'true' ">
