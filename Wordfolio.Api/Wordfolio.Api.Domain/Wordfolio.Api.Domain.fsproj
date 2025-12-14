@@ -9,6 +9,7 @@
     <Compile Include="Ids.fs" />
     <Compile Include="Errors.fs" />
     <Compile Include="Repositories.fs" />
+    <Compile Include="UnitOfWork.fs" />
     <Compile Include="Collections.fs" />
     <Compile Include="Vocabularies.fs" />
   </ItemGroup>

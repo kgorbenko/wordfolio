@@ -26,6 +26,9 @@ let addRepositories<'TBuilder when 'TBuilder :> IHostApplicationBuilder>(builder
     builder.Services.AddScoped<IVocabularyRepository, VocabularyRepository>()
     |> ignore
 
+    builder.Services.AddScoped<IUnitOfWorkFactory, UnitOfWorkFactory>()
+    |> ignore
+
     builder
 
 [<EntryPoint>]

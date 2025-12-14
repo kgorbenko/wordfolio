@@ -148,3 +148,25 @@ let makeVocabularyData
       Description = description
       CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
       UpdatedAt = None }
+
+type MockUnitOfWork
+    (collectionRepository: MockCollectionRepository, vocabularyRepository: MockVocabularyRepository) =
+    let mutable committed = false
+
+    member _.IsCommitted = committed
+
+    interface IUnitOfWork with
+        member _.CollectionRepository = collectionRepository
+        member _.VocabularyRepository = vocabularyRepository
+
+        member _.CommitAsync(_cancellationToken) =
+            committed <- true
+            Task.CompletedTask
+
+        member _.DisposeAsync() = ValueTask.CompletedTask
+
+type MockUnitOfWorkFactory
+    (collectionRepository: MockCollectionRepository, vocabularyRepository: MockVocabularyRepository) =
+    interface IUnitOfWorkFactory with
+        member _.CreateAsync(_cancellationToken) =
+            Task.FromResult(MockUnitOfWork(collectionRepository, vocabularyRepository) :> IUnitOfWork)
