@@ -1,5 +1,7 @@
 open Microsoft.AspNetCore.Builder
 
+open Microsoft.Extensions.Hosting
+
 open Wordfolio.Api.Handlers.Auth
 open Wordfolio.Api.Handlers.Collections
 open Wordfolio.Api.Handlers.Vocabularies
