@@ -14,7 +14,7 @@ let private validateName(name: string) : Result<string, VocabularyError> =
     elif name.Length > MaxNameLength then
         Error(VocabularyNameTooLong MaxNameLength)
     else
-        Ok(name.Trim())
+        Ok name
 
 let private checkCollectionOwnership env userId collectionId =
     task {
@@ -66,8 +66,18 @@ let create env userId collectionId name description now =
             match validateName name with
             | Error error -> return Error error
             | Ok validName ->
-                let! vocabulary = createVocabulary env collectionId validName description now
-                return Ok vocabulary
+                do! createVocabulary env collectionId validName description now
+
+                let! vocabularies = getVocabulariesByCollectionId env collectionId
+
+                let created =
+                    vocabularies
+                    |> List.filter(fun v -> v.Name = validName && v.CreatedAt = now)
+                    |> List.tryHead
+
+                match created with
+                | Some vocabulary -> return Ok vocabulary
+                | None -> return Error VocabularyNameRequired
     }
 
 let update env userId vocabularyId name description now =

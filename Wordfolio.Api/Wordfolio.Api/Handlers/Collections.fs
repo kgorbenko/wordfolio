@@ -15,13 +15,6 @@ open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.Collections.Operations
 open Wordfolio.Api.Infrastructure.Environment
 
-module Urls =
-    [<Literal>]
-    let Collections = "/collections"
-
-    [<Literal>]
-    let CollectionById = "/collections/{id:int}"
-
 type CollectionResponse =
     { Id: int
       Name: string
@@ -64,148 +57,132 @@ let private toErrorResponse(error: CollectionError) : IResult =
         Results.BadRequest({| error = $"Name must be at most {maxLength} characters" |})
 
 let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
-    app
-        .MapGet(
-            Urls.Collections,
-            Func<ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun user dataSource cancellationToken ->
+    let group = app.MapGroup("/collections")
+
+    group.MapGet(
+        "/",
+        Func<ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun user dataSource cancellationToken ->
+            task {
+                match getUserId user with
+                | None -> return Results.Unauthorized()
+                | Some userId ->
+                    let env =
+                        TransactionalEnv(dataSource, cancellationToken)
+
+                    let! collections =
+                        Transactions.runInTransaction env (fun appEnv ->
+                            task {
+                                let! result = getByUserId appEnv (UserId userId)
+                                return Ok result
+                            })
+
+                    match collections with
+                    | Ok result ->
+                        let response = result |> List.map toResponse
+                        return Results.Ok(response)
+                    | Error _ -> return Results.StatusCode(500)
+            })
+    )
+    |> ignore
+
+    group.MapGet(
+        "/{id:int}",
+        Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun id user dataSource cancellationToken ->
+            task {
+                match getUserId user with
+                | None -> return Results.Unauthorized()
+                | Some userId ->
+                    let env =
+                        TransactionalEnv(dataSource, cancellationToken)
+
+                    let! result =
+                        Transactions.runInTransaction env (fun appEnv ->
+                            getById appEnv (UserId userId) (CollectionId id))
+
+                    return
+                        match result with
+                        | Ok collection -> Results.Ok(toResponse collection)
+                        | Error error -> toErrorResponse error
+            })
+    )
+    |> ignore
+
+    group.MapPost(
+        "/",
+        Func<CreateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+            (fun request user dataSource cancellationToken ->
                 task {
                     match getUserId user with
-                    | None -> return Results.Unauthorized() :> IResult
+                    | None -> return Results.Unauthorized()
                     | Some userId ->
                         let env =
-                            NonTransactionalEnv(dataSource, cancellationToken)
+                            TransactionalEnv(dataSource, cancellationToken)
 
-                        let! collections =
+                        let! result =
                             Transactions.runInTransaction env (fun appEnv ->
-                                task {
-                                    let! result = getByUserId appEnv (UserId userId)
-                                    return Ok result
-                                })
+                                create appEnv (UserId userId) request.Name request.Description DateTimeOffset.UtcNow)
 
-                        match collections with
-                        | Ok result ->
-                            let response = result |> List.map toResponse
-                            return Results.Ok(response) :> IResult
-                        | Error _ -> return Results.StatusCode(500) :> IResult
+                        return
+                            match result with
+                            | Ok collection ->
+                                Results.Created(
+                                    $"/collections/{CollectionId.value collection.Id}",
+                                    toResponse collection
+                                )
+                            | Error error -> toErrorResponse error
                 })
-        )
-        .RequireAuthorization()
+    )
     |> ignore
 
-    app
-        .MapGet(
-            Urls.CollectionById,
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id user dataSource cancellationToken ->
-                    task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized() :> IResult
-                        | Some userId ->
-                            let env =
-                                NonTransactionalEnv(dataSource, cancellationToken)
+    group.MapPut(
+        "/{id:int}",
+        Func<int, UpdateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+            (fun id request user dataSource cancellationToken ->
+                task {
+                    match getUserId user with
+                    | None -> return Results.Unauthorized()
+                    | Some userId ->
+                        let env =
+                            TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result =
-                                Transactions.runInTransaction env (fun appEnv ->
-                                    getById appEnv (UserId userId) (CollectionId id))
+                        let! result =
+                            Transactions.runInTransaction env (fun appEnv ->
+                                update
+                                    appEnv
+                                    (UserId userId)
+                                    (CollectionId id)
+                                    request.Name
+                                    request.Description
+                                    DateTimeOffset.UtcNow)
 
-                            return
-                                match result with
-                                | Ok collection -> Results.Ok(toResponse collection) :> IResult
-                                | Error error -> toErrorResponse error
-                    })
-        )
-        .RequireAuthorization()
+                        return
+                            match result with
+                            | Ok collection -> Results.Ok(toResponse collection)
+                            | Error error -> toErrorResponse error
+                })
+    )
     |> ignore
 
-    app
-        .MapPost(
-            Urls.Collections,
-            Func<CreateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun request user dataSource cancellationToken ->
-                    task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized() :> IResult
-                        | Some userId ->
-                            let env =
-                                TransactionalEnv(dataSource, cancellationToken)
+    group.MapDelete(
+        "/{id:int}",
+        Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun id user dataSource cancellationToken ->
+            task {
+                match getUserId user with
+                | None -> return Results.Unauthorized()
+                | Some userId ->
+                    let env =
+                        TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result =
-                                Transactions.runInTransaction env (fun appEnv ->
-                                    create
-                                        appEnv
-                                        (UserId userId)
-                                        request.Name
-                                        request.Description
-                                        DateTimeOffset.UtcNow)
+                    let! result =
+                        Transactions.runInTransaction env (fun appEnv ->
+                            delete appEnv (UserId userId) (CollectionId id))
 
-                            return
-                                match result with
-                                | Ok collection ->
-                                    Results.Created(
-                                        $"/collections/{CollectionId.value collection.Id}",
-                                        toResponse collection
-                                    )
-                                    :> IResult
-                                | Error error -> toErrorResponse error
-                    })
-        )
-        .RequireAuthorization()
-    |> ignore
-
-    app
-        .MapPut(
-            Urls.CollectionById,
-            Func<int, UpdateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id request user dataSource cancellationToken ->
-                    task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized() :> IResult
-                        | Some userId ->
-                            let env =
-                                TransactionalEnv(dataSource, cancellationToken)
-
-                            let! result =
-                                Transactions.runInTransaction env (fun appEnv ->
-                                    update
-                                        appEnv
-                                        (UserId userId)
-                                        (CollectionId id)
-                                        request.Name
-                                        request.Description
-                                        DateTimeOffset.UtcNow)
-
-                            return
-                                match result with
-                                | Ok collection -> Results.Ok(toResponse collection) :> IResult
-                                | Error error -> toErrorResponse error
-                    })
-        )
-        .RequireAuthorization()
-    |> ignore
-
-    app
-        .MapDelete(
-            Urls.CollectionById,
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id user dataSource cancellationToken ->
-                    task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized() :> IResult
-                        | Some userId ->
-                            let env =
-                                TransactionalEnv(dataSource, cancellationToken)
-
-                            let! result =
-                                Transactions.runInTransaction env (fun appEnv ->
-                                    delete appEnv (UserId userId) (CollectionId id))
-
-                            return
-                                match result with
-                                | Ok() -> Results.NoContent() :> IResult
-                                | Error error -> toErrorResponse error
-                    })
-        )
-        .RequireAuthorization()
+                    return
+                        match result with
+                        | Ok() -> Results.NoContent()
+                        | Error error -> toErrorResponse error
+            })
+    )
     |> ignore
 
     app

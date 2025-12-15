@@ -15,15 +15,6 @@ open Wordfolio.Api.Domain.Vocabularies
 open Wordfolio.Api.Domain.Vocabularies.Operations
 open Wordfolio.Api.Infrastructure.Environment
 
-module Urls =
-    [<Literal>]
-    let VocabulariesByCollection =
-        "/collections/{collectionId:int}/vocabularies"
-
-    [<Literal>]
-    let VocabularyById =
-        "/vocabularies/{id:int}"
-
 type VocabularyResponse =
     { Id: int
       CollectionId: int
@@ -69,150 +60,143 @@ let private toErrorResponse(error: VocabularyError) : IResult =
     | VocabularyCollectionNotFound _ -> Results.NotFound({| error = "Collection not found" |})
 
 let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
-    app
-        .MapGet(
-            Urls.VocabulariesByCollection,
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun collectionId user dataSource cancellationToken ->
-                    task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized() :> IResult
-                        | Some userId ->
-                            let env =
-                                NonTransactionalEnv(dataSource, cancellationToken)
+    let collectionsGroup =
+        app.MapGroup("/collections")
 
-                            let! result =
-                                Transactions.runInTransaction env (fun appEnv ->
-                                    getByCollectionId appEnv (UserId userId) (CollectionId collectionId))
+    let vocabulariesGroup =
+        app.MapGroup("/vocabularies")
 
-                            return
-                                match result with
-                                | Ok vocabularies ->
-                                    let response =
-                                        vocabularies |> List.map toResponse
+    collectionsGroup.MapGet(
+        "/{collectionId:int}/vocabularies",
+        Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+            (fun collectionId user dataSource cancellationToken ->
+                task {
+                    match getUserId user with
+                    | None -> return Results.Unauthorized()
+                    | Some userId ->
+                        let env =
+                            TransactionalEnv(dataSource, cancellationToken)
 
-                                    Results.Ok(response) :> IResult
-                                | Error error -> toErrorResponse error
-                    })
-        )
-        .RequireAuthorization()
+                        let! result =
+                            Transactions.runInTransaction env (fun appEnv ->
+                                getByCollectionId appEnv (UserId userId) (CollectionId collectionId))
+
+                        return
+                            match result with
+                            | Ok vocabularies ->
+                                let response =
+                                    vocabularies |> List.map toResponse
+
+                                Results.Ok(response)
+                            | Error error -> toErrorResponse error
+                })
+    )
     |> ignore
 
-    app
-        .MapGet(
-            Urls.VocabularyById,
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id user dataSource cancellationToken ->
-                    task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized() :> IResult
-                        | Some userId ->
-                            let env =
-                                NonTransactionalEnv(dataSource, cancellationToken)
+    collectionsGroup.MapPost(
+        "/{collectionId:int}/vocabularies",
+        Func<int, CreateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+            (fun collectionId request user dataSource cancellationToken ->
+                task {
+                    match getUserId user with
+                    | None -> return Results.Unauthorized()
+                    | Some userId ->
+                        let env =
+                            TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result =
-                                Transactions.runInTransaction env (fun appEnv ->
-                                    getById appEnv (UserId userId) (VocabularyId id))
+                        let! result =
+                            Transactions.runInTransaction env (fun appEnv ->
+                                create
+                                    appEnv
+                                    (UserId userId)
+                                    (CollectionId collectionId)
+                                    request.Name
+                                    request.Description
+                                    DateTimeOffset.UtcNow)
 
-                            return
-                                match result with
-                                | Ok vocabulary -> Results.Ok(toResponse vocabulary) :> IResult
-                                | Error error -> toErrorResponse error
-                    })
-        )
-        .RequireAuthorization()
+                        return
+                            match result with
+                            | Ok vocabulary ->
+                                Results.Created(
+                                    $"/vocabularies/{VocabularyId.value vocabulary.Id}",
+                                    toResponse vocabulary
+                                )
+                            | Error error -> toErrorResponse error
+                })
+    )
     |> ignore
 
-    app
-        .MapPost(
-            Urls.VocabulariesByCollection,
-            Func<int, CreateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun collectionId request user dataSource cancellationToken ->
-                    task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized() :> IResult
-                        | Some userId ->
-                            let env =
-                                TransactionalEnv(dataSource, cancellationToken)
+    vocabulariesGroup.MapGet(
+        "/{id:int}",
+        Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun id user dataSource cancellationToken ->
+            task {
+                match getUserId user with
+                | None -> return Results.Unauthorized()
+                | Some userId ->
+                    let env =
+                        TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result =
-                                Transactions.runInTransaction env (fun appEnv ->
-                                    create
-                                        appEnv
-                                        (UserId userId)
-                                        (CollectionId collectionId)
-                                        request.Name
-                                        request.Description
-                                        DateTimeOffset.UtcNow)
+                    let! result =
+                        Transactions.runInTransaction env (fun appEnv ->
+                            getById appEnv (UserId userId) (VocabularyId id))
 
-                            return
-                                match result with
-                                | Ok vocabulary ->
-                                    Results.Created(
-                                        $"/vocabularies/{VocabularyId.value vocabulary.Id}",
-                                        toResponse vocabulary
-                                    )
-                                    :> IResult
-                                | Error error -> toErrorResponse error
-                    })
-        )
-        .RequireAuthorization()
+                    return
+                        match result with
+                        | Ok vocabulary -> Results.Ok(toResponse vocabulary)
+                        | Error error -> toErrorResponse error
+            })
+    )
     |> ignore
 
-    app
-        .MapPut(
-            Urls.VocabularyById,
-            Func<int, UpdateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id request user dataSource cancellationToken ->
-                    task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized() :> IResult
-                        | Some userId ->
-                            let env =
-                                TransactionalEnv(dataSource, cancellationToken)
+    vocabulariesGroup.MapPut(
+        "/{id:int}",
+        Func<int, UpdateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+            (fun id request user dataSource cancellationToken ->
+                task {
+                    match getUserId user with
+                    | None -> return Results.Unauthorized()
+                    | Some userId ->
+                        let env =
+                            TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result =
-                                Transactions.runInTransaction env (fun appEnv ->
-                                    update
-                                        appEnv
-                                        (UserId userId)
-                                        (VocabularyId id)
-                                        request.Name
-                                        request.Description
-                                        DateTimeOffset.UtcNow)
+                        let! result =
+                            Transactions.runInTransaction env (fun appEnv ->
+                                update
+                                    appEnv
+                                    (UserId userId)
+                                    (VocabularyId id)
+                                    request.Name
+                                    request.Description
+                                    DateTimeOffset.UtcNow)
 
-                            return
-                                match result with
-                                | Ok vocabulary -> Results.Ok(toResponse vocabulary) :> IResult
-                                | Error error -> toErrorResponse error
-                    })
-        )
-        .RequireAuthorization()
+                        return
+                            match result with
+                            | Ok vocabulary -> Results.Ok(toResponse vocabulary)
+                            | Error error -> toErrorResponse error
+                })
+    )
     |> ignore
 
-    app
-        .MapDelete(
-            Urls.VocabularyById,
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id user dataSource cancellationToken ->
-                    task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized() :> IResult
-                        | Some userId ->
-                            let env =
-                                TransactionalEnv(dataSource, cancellationToken)
+    vocabulariesGroup.MapDelete(
+        "/{id:int}",
+        Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun id user dataSource cancellationToken ->
+            task {
+                match getUserId user with
+                | None -> return Results.Unauthorized()
+                | Some userId ->
+                    let env =
+                        TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result =
-                                Transactions.runInTransaction env (fun appEnv ->
-                                    delete appEnv (UserId userId) (VocabularyId id))
+                    let! result =
+                        Transactions.runInTransaction env (fun appEnv ->
+                            delete appEnv (UserId userId) (VocabularyId id))
 
-                            return
-                                match result with
-                                | Ok() -> Results.NoContent() :> IResult
-                                | Error error -> toErrorResponse error
-                    })
-        )
-        .RequireAuthorization()
+                    return
+                        match result with
+                        | Ok() -> Results.NoContent()
+                        | Error error -> toErrorResponse error
+            })
+    )
     |> ignore
 
     app

@@ -12,7 +12,7 @@ type IGetCollectionsByUserId =
     abstract GetCollectionsByUserId: UserId -> Task<Collection list>
 
 type ICreateCollection =
-    abstract CreateCollection: UserId * string * string option * DateTimeOffset -> Task<Collection>
+    abstract CreateCollection: UserId * string * string option * DateTimeOffset -> Task<unit>
 
 type IUpdateCollection =
     abstract UpdateCollection: CollectionId * string * string option * DateTimeOffset -> Task<bool>

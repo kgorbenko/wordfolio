@@ -282,30 +282,6 @@ type VocabulariesTests() =
         }
 
     [<Fact>]
-    member _.``create trims name whitespace``() =
-        task {
-            let collection =
-                makeCollection 1 1 "Collection" None
-
-            let collections =
-                ref(Map.ofList [ 1, collection ])
-
-            let vocabularies = ref Map.empty
-
-            let env =
-                TestVocabulariesEnv(collections, vocabularies)
-
-            let now =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-
-            let! result = create env (UserId 1) (CollectionId 1) "  Trimmed Name  " None now
-
-            match result with
-            | Error _ -> Assert.Fail("Expected Ok result")
-            | Ok vocabulary -> Assert.Equal("Trimmed Name", vocabulary.Name)
-        }
-
-    [<Fact>]
     member _.``update updates vocabulary when user owns parent collection``() =
         task {
             let collection =
