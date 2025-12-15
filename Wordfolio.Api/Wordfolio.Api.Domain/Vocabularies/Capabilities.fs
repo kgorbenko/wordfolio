@@ -13,7 +13,7 @@ type IGetVocabulariesByCollectionId =
     abstract GetVocabulariesByCollectionId: CollectionId -> Task<Vocabulary list>
 
 type ICreateVocabulary =
-    abstract CreateVocabulary: CollectionId * string * string option * DateTimeOffset -> Task<Vocabulary>
+    abstract CreateVocabulary: CollectionId * string * string option * DateTimeOffset -> Task<unit>
 
 type IUpdateVocabulary =
     abstract UpdateVocabulary: VocabularyId * string * string option * DateTimeOffset -> Task<bool>

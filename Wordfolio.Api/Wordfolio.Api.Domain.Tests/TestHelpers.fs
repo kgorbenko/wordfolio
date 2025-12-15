@@ -43,7 +43,7 @@ type TestCollectionsEnv(collections: Map<int, Collection> ref) =
                 collections.Value
                 |> Map.add nextId collection
 
-            Task.FromResult(collection)
+            Task.FromResult(())
 
     interface IUpdateCollection with
         member _.UpdateCollection(CollectionId id, name, description, updatedAt) =
@@ -109,7 +109,7 @@ type TestVocabulariesEnv(collections: Map<int, Collection> ref, vocabularies: Ma
                 vocabularies.Value
                 |> Map.add nextId vocabulary
 
-            Task.FromResult(vocabulary)
+            Task.FromResult(())
 
     interface IUpdateVocabulary with
         member _.UpdateVocabulary(VocabularyId id, name, description, updatedAt) =

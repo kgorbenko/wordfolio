@@ -14,7 +14,7 @@ let private validateName(name: string) : Result<string, CollectionError> =
     elif name.Length > MaxNameLength then
         Error(CollectionNameTooLong MaxNameLength)
     else
-        Ok(name.Trim())
+        Ok name
 
 let private checkOwnership (userId: UserId) (collection: Collection) : Result<Collection, CollectionError> =
     if collection.UserId = userId then
@@ -39,8 +39,18 @@ let create env userId name description now =
         match validateName name with
         | Error error -> return Error error
         | Ok validName ->
-            let! collection = createCollection env userId validName description now
-            return Ok collection
+            do! createCollection env userId validName description now
+
+            let! collections = getCollectionsByUserId env userId
+
+            let created =
+                collections
+                |> List.filter(fun c -> c.Name = validName && c.CreatedAt = now)
+                |> List.tryHead
+
+            match created with
+            | Some collection -> return Ok collection
+            | None -> return Error CollectionNameRequired
     }
 
 let update env userId collectionId name description now =

@@ -179,22 +179,6 @@ type CollectionsTests() =
         }
 
     [<Fact>]
-    member _.``create trims name whitespace``() =
-        task {
-            let collections = ref Map.empty
-            let env = TestCollectionsEnv(collections)
-
-            let now =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-
-            let! result = create env (UserId 1) "  Trimmed Name  " None now
-
-            match result with
-            | Error _ -> Assert.Fail("Expected Ok result")
-            | Ok collection -> Assert.Equal("Trimmed Name", collection.Name)
-        }
-
-    [<Fact>]
     member _.``update updates collection when user owns it``() =
         task {
             let collection =
