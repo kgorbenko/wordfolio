@@ -8,8 +8,12 @@ open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Routing
 
+open Npgsql
+
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Vocabularies
+open Wordfolio.Api.Domain.Vocabularies.Operations
+open Wordfolio.Api.Infrastructure.Environment
 
 module Urls =
     [<Literal>]
@@ -39,8 +43,7 @@ let private toResponse(vocabulary: Vocabulary) : VocabularyResponse =
       UpdatedAt = vocabulary.UpdatedAt }
 
 let private getUserId(user: ClaimsPrincipal) : int option =
-    let claim =
-        user.FindFirst(ClaimTypes.NameIdentifier)
+    let claim = user.FindFirst(ClaimTypes.NameIdentifier)
 
     match claim with
     | null -> None
@@ -62,19 +65,17 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
     app
         .MapGet(
             Urls.VocabulariesByCollection,
-            Func<int, ClaimsPrincipal, IVocabularyRepository, ICollectionRepository, CancellationToken, _>
-                (fun collectionId user vocabularyRepo collectionRepo cancellationToken ->
+            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
+                            let env = NonTransactionalEnv(dataSource, cancellationToken)
+
                             let! result =
-                                getByCollectionIdAsync
-                                    vocabularyRepo
-                                    collectionRepo
-                                    (UserId userId)
-                                    (CollectionId collectionId)
-                                    cancellationToken
+                                Transactions.runInTransaction env (fun appEnv ->
+                                    getByCollectionId appEnv (UserId userId) (CollectionId collectionId))
 
                             return
                                 match result with
@@ -90,19 +91,17 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
     app
         .MapGet(
             Urls.VocabularyById,
-            Func<int, ClaimsPrincipal, IVocabularyRepository, ICollectionRepository, CancellationToken, _>
-                (fun id user vocabularyRepo collectionRepo cancellationToken ->
+            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
+                            let env = NonTransactionalEnv(dataSource, cancellationToken)
+
                             let! result =
-                                getByIdAsync
-                                    vocabularyRepo
-                                    collectionRepo
-                                    (UserId userId)
-                                    (VocabularyId id)
-                                    cancellationToken
+                                Transactions.runInTransaction env (fun appEnv ->
+                                    getById appEnv (UserId userId) (VocabularyId id))
 
                             return
                                 match result with
@@ -116,20 +115,23 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
     app
         .MapPost(
             Urls.VocabulariesByCollection,
-            Func<int, CreateVocabularyRequest, ClaimsPrincipal, IVocabularyRepository, ICollectionRepository, CancellationToken, _>
-                (fun collectionId request user vocabularyRepo collectionRepo cancellationToken ->
+            Func<int, CreateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId request user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let command: CreateVocabularyCommand =
-                                { UserId = UserId userId
-                                  CollectionId = CollectionId collectionId
-                                  Name = request.Name
-                                  Description = request.Description }
+                            let env = TransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
-                                createAsync vocabularyRepo collectionRepo command DateTimeOffset.UtcNow cancellationToken
+                                Transactions.runInTransaction env (fun appEnv ->
+                                    create
+                                        appEnv
+                                        (UserId userId)
+                                        (CollectionId collectionId)
+                                        request.Name
+                                        request.Description
+                                        DateTimeOffset.UtcNow)
 
                             return
                                 match result with
@@ -148,20 +150,23 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
     app
         .MapPut(
             Urls.VocabularyById,
-            Func<int, UpdateVocabularyRequest, ClaimsPrincipal, IVocabularyRepository, ICollectionRepository, CancellationToken, _>
-                (fun id request user vocabularyRepo collectionRepo cancellationToken ->
+            Func<int, UpdateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id request user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let command: UpdateVocabularyCommand =
-                                { UserId = UserId userId
-                                  VocabularyId = VocabularyId id
-                                  Name = request.Name
-                                  Description = request.Description }
+                            let env = TransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
-                                updateAsync vocabularyRepo collectionRepo command DateTimeOffset.UtcNow cancellationToken
+                                Transactions.runInTransaction env (fun appEnv ->
+                                    update
+                                        appEnv
+                                        (UserId userId)
+                                        (VocabularyId id)
+                                        request.Name
+                                        request.Description
+                                        DateTimeOffset.UtcNow)
 
                             return
                                 match result with
@@ -175,18 +180,17 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
     app
         .MapDelete(
             Urls.VocabularyById,
-            Func<int, ClaimsPrincipal, IVocabularyRepository, ICollectionRepository, CancellationToken, _>
-                (fun id user vocabularyRepo collectionRepo cancellationToken ->
+            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let command: DeleteVocabularyCommand =
-                                { UserId = UserId userId
-                                  VocabularyId = VocabularyId id }
+                            let env = TransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
-                                deleteAsync vocabularyRepo collectionRepo command cancellationToken
+                                Transactions.runInTransaction env (fun appEnv ->
+                                    delete appEnv (UserId userId) (VocabularyId id))
 
                             return
                                 match result with

@@ -1,10 +1,6 @@
-namespace Wordfolio.Api.Domain
+namespace Wordfolio.Api.Domain.Vocabularies
 
-type CollectionError =
-    | CollectionNotFound of CollectionId
-    | CollectionAccessDenied of CollectionId
-    | CollectionNameRequired
-    | CollectionNameTooLong of maxLength: int
+open Wordfolio.Api.Domain
 
 type VocabularyError =
     | VocabularyNotFound of VocabularyId

@@ -8,8 +8,12 @@ open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Routing
 
+open Npgsql
+
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
+open Wordfolio.Api.Domain.Collections.Operations
+open Wordfolio.Api.Infrastructure.Environment
 
 module Urls =
     [<Literal>]
@@ -37,8 +41,7 @@ let private toResponse(collection: Collection) : CollectionResponse =
       UpdatedAt = collection.UpdatedAt }
 
 let private getUserId(user: ClaimsPrincipal) : int option =
-    let claim =
-        user.FindFirst(ClaimTypes.NameIdentifier)
+    let claim = user.FindFirst(ClaimTypes.NameIdentifier)
 
     match claim with
     | null -> None
@@ -59,16 +62,25 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
     app
         .MapGet(
             Urls.Collections,
-            Func<ClaimsPrincipal, ICollectionRepository, CancellationToken, _>(fun user repository cancellationToken ->
+            Func<ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun user dataSource cancellationToken ->
                 task {
                     match getUserId user with
                     | None -> return Results.Unauthorized() :> IResult
                     | Some userId ->
-                        let! collections =
-                            getByUserIdAsync repository (UserId userId) cancellationToken
+                        let env = NonTransactionalEnv(dataSource, cancellationToken)
 
-                        let response = collections |> List.map toResponse
-                        return Results.Ok(response) :> IResult
+                        let! collections =
+                            Transactions.runInTransaction env (fun appEnv ->
+                                task {
+                                    let! result = getByUserId appEnv (UserId userId)
+                                    return Ok result
+                                })
+
+                        match collections with
+                        | Ok result ->
+                            let response = result |> List.map toResponse
+                            return Results.Ok(response) :> IResult
+                        | Error _ -> return Results.StatusCode(500) :> IResult
                 })
         )
         .RequireAuthorization()
@@ -77,14 +89,17 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
     app
         .MapGet(
             Urls.CollectionById,
-            Func<int, ClaimsPrincipal, ICollectionRepository, CancellationToken, _>
-                (fun id user repository cancellationToken ->
+            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
+                            let env = NonTransactionalEnv(dataSource, cancellationToken)
+
                             let! result =
-                                getByIdAsync repository (UserId userId) (CollectionId id) cancellationToken
+                                Transactions.runInTransaction env (fun appEnv ->
+                                    getById appEnv (UserId userId) (CollectionId id))
 
                             return
                                 match result with
@@ -98,23 +113,31 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
     app
         .MapPost(
             Urls.Collections,
-            Func<CreateCollectionRequest, ClaimsPrincipal, ICollectionRepository, CancellationToken, _>
-                (fun request user repository cancellationToken ->
+            Func<CreateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun request user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let command: CreateCollectionCommand =
-                                { UserId = UserId userId
-                                  Name = request.Name
-                                  Description = request.Description }
+                            let env = TransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
-                                createAsync repository command DateTimeOffset.UtcNow cancellationToken
+                                Transactions.runInTransaction env (fun appEnv ->
+                                    create
+                                        appEnv
+                                        (UserId userId)
+                                        request.Name
+                                        request.Description
+                                        DateTimeOffset.UtcNow)
 
                             return
                                 match result with
-                                | Ok collection -> Results.Created($"/collections/{CollectionId.value collection.Id}", toResponse collection) :> IResult
+                                | Ok collection ->
+                                    Results.Created(
+                                        $"/collections/{CollectionId.value collection.Id}",
+                                        toResponse collection
+                                    )
+                                    :> IResult
                                 | Error error -> toErrorResponse error
                     })
         )
@@ -124,20 +147,23 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
     app
         .MapPut(
             Urls.CollectionById,
-            Func<int, UpdateCollectionRequest, ClaimsPrincipal, ICollectionRepository, CancellationToken, _>
-                (fun id request user repository cancellationToken ->
+            Func<int, UpdateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id request user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let command: UpdateCollectionCommand =
-                                { CollectionId = CollectionId id
-                                  UserId = UserId userId
-                                  Name = request.Name
-                                  Description = request.Description }
+                            let env = TransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
-                                updateAsync repository command DateTimeOffset.UtcNow cancellationToken
+                                Transactions.runInTransaction env (fun appEnv ->
+                                    update
+                                        appEnv
+                                        (UserId userId)
+                                        (CollectionId id)
+                                        request.Name
+                                        request.Description
+                                        DateTimeOffset.UtcNow)
 
                             return
                                 match result with
@@ -151,17 +177,17 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
     app
         .MapDelete(
             Urls.CollectionById,
-            Func<int, ClaimsPrincipal, ICollectionRepository, CancellationToken, _>
-                (fun id user repository cancellationToken ->
+            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let command: DeleteCollectionCommand =
-                                { CollectionId = CollectionId id
-                                  UserId = UserId userId }
+                            let env = TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result = deleteAsync repository command cancellationToken
+                            let! result =
+                                Transactions.runInTransaction env (fun appEnv ->
+                                    delete appEnv (UserId userId) (CollectionId id))
 
                             return
                                 match result with

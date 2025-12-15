@@ -7,11 +7,15 @@
 
   <ItemGroup>
     <Compile Include="Ids.fs" />
-    <Compile Include="Errors.fs" />
-    <Compile Include="Repositories.fs" />
-    <Compile Include="UnitOfWork.fs" />
-    <Compile Include="Collections.fs" />
-    <Compile Include="Vocabularies.fs" />
+    <Compile Include="Transactions.fs" />
+    <Compile Include="Collections\Collection.fs" />
+    <Compile Include="Collections\Errors.fs" />
+    <Compile Include="Collections\Capabilities.fs" />
+    <Compile Include="Collections\Operations.fs" />
+    <Compile Include="Vocabularies\Vocabulary.fs" />
+    <Compile Include="Vocabularies\Errors.fs" />
+    <Compile Include="Vocabularies\Capabilities.fs" />
+    <Compile Include="Vocabularies\Operations.fs" />
   </ItemGroup>
 
 </Project>

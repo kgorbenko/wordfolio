@@ -1,46 +1,41 @@
 namespace Wordfolio.Api.Domain.Tests
 
 open System
-open System.Threading
 
 open Xunit
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
+open Wordfolio.Api.Domain.Collections.Operations
 open Wordfolio.Api.Domain.Tests.TestHelpers
 
 type CollectionsTests() =
 
     [<Fact>]
-    member _.``getByIdAsync returns collection when user owns it``() =
+    member _.``getById returns collection when user owns it``() =
         task {
-            let repository = MockCollectionRepository()
-            let userId = UserId 1
-            let collectionId = CollectionId 1
-            let collectionData = makeCollectionData 1 1 "Test Collection" (Some "Description")
-            repository.AddCollection(collectionData)
+            let collection = makeCollection 1 1 "Test Collection" (Some "Description")
+            let collections = ref(Map.ofList [ 1, collection ])
+            let env = TestCollectionsEnv(collections)
 
-            let! result =
-                Collections.getByIdAsync repository userId collectionId CancellationToken.None
+            let! result = getById env (UserId 1) (CollectionId 1)
 
             match result with
             | Error _ -> Assert.Fail("Expected Ok result")
-            | Ok collection ->
-                Assert.Equal(collectionId, collection.Id)
-                Assert.Equal(userId, collection.UserId)
-                Assert.Equal("Test Collection", collection.Name)
-                Assert.Equal(Some "Description", collection.Description)
+            | Ok c ->
+                Assert.Equal(CollectionId 1, c.Id)
+                Assert.Equal(UserId 1, c.UserId)
+                Assert.Equal("Test Collection", c.Name)
+                Assert.Equal(Some "Description", c.Description)
         }
 
     [<Fact>]
-    member _.``getByIdAsync returns CollectionNotFound when collection does not exist``() =
+    member _.``getById returns CollectionNotFound when collection does not exist``() =
         task {
-            let repository = MockCollectionRepository()
-            let userId = UserId 1
-            let collectionId = CollectionId 999
+            let collections = ref Map.empty
+            let env = TestCollectionsEnv(collections)
 
-            let! result =
-                Collections.getByIdAsync repository userId collectionId CancellationToken.None
+            let! result = getById env (UserId 1) (CollectionId 999)
 
             match result with
             | Ok _ -> Assert.Fail("Expected Error result")
@@ -48,17 +43,13 @@ type CollectionsTests() =
         }
 
     [<Fact>]
-    member _.``getByIdAsync returns CollectionAccessDenied when user does not own collection``() =
+    member _.``getById returns CollectionAccessDenied when user does not own collection``() =
         task {
-            let repository = MockCollectionRepository()
-            let ownerId = UserId 1
-            let otherUserId = UserId 2
-            let collectionId = CollectionId 1
-            let collectionData = makeCollectionData 1 1 "Test Collection" None
-            repository.AddCollection(collectionData)
+            let collection = makeCollection 1 1 "Test Collection" None
+            let collections = ref(Map.ofList [ 1, collection ])
+            let env = TestCollectionsEnv(collections)
 
-            let! result =
-                Collections.getByIdAsync repository otherUserId collectionId CancellationToken.None
+            let! result = getById env (UserId 2) (CollectionId 1)
 
             match result with
             | Ok _ -> Assert.Fail("Expected Error result")
@@ -66,47 +57,43 @@ type CollectionsTests() =
         }
 
     [<Fact>]
-    member _.``getByUserIdAsync returns collections for user``() =
+    member _.``getByUserId returns collections for user``() =
         task {
-            let repository = MockCollectionRepository()
-            let userId = UserId 1
-            repository.AddCollection(makeCollectionData 1 1 "Collection 1" None)
-            repository.AddCollection(makeCollectionData 2 1 "Collection 2" None)
-            repository.AddCollection(makeCollectionData 3 2 "Other User Collection" None)
+            let collection1 = makeCollection 1 1 "Collection 1" None
+            let collection2 = makeCollection 2 1 "Collection 2" None
+            let collection3 = makeCollection 3 2 "Other User Collection" None
 
-            let! collections =
-                Collections.getByUserIdAsync repository userId CancellationToken.None
+            let collections =
+                ref(Map.ofList [ 1, collection1; 2, collection2; 3, collection3 ])
 
-            Assert.Equal(2, collections.Length)
-            Assert.True(collections |> List.exists(fun c -> c.Name = "Collection 1"))
-            Assert.True(collections |> List.exists(fun c -> c.Name = "Collection 2"))
+            let env = TestCollectionsEnv(collections)
+
+            let! result = getByUserId env (UserId 1)
+
+            Assert.Equal(2, result.Length)
+            Assert.True(result |> List.exists(fun c -> c.Name = "Collection 1"))
+            Assert.True(result |> List.exists(fun c -> c.Name = "Collection 2"))
         }
 
     [<Fact>]
-    member _.``getByUserIdAsync returns empty list when user has no collections``() =
+    member _.``getByUserId returns empty list when user has no collections``() =
         task {
-            let repository = MockCollectionRepository()
-            let userId = UserId 1
+            let collections = ref Map.empty
+            let env = TestCollectionsEnv(collections)
 
-            let! collections =
-                Collections.getByUserIdAsync repository userId CancellationToken.None
+            let! result = getByUserId env (UserId 1)
 
-            Assert.Empty(collections)
+            Assert.Empty(result)
         }
 
     [<Fact>]
-    member _.``createAsync creates collection with valid data``() =
+    member _.``create creates collection with valid data``() =
         task {
-            let repository = MockCollectionRepository()
+            let collections = ref Map.empty
+            let env = TestCollectionsEnv(collections)
             let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
-            let command =
-                { UserId = UserId 1
-                  Name = "New Collection"
-                  Description = Some "A new collection" }
-
-            let! result =
-                Collections.createAsync repository command now CancellationToken.None
+            let! result = create env (UserId 1) "New Collection" (Some "A new collection") now
 
             match result with
             | Error _ -> Assert.Fail("Expected Ok result")
@@ -119,18 +106,13 @@ type CollectionsTests() =
         }
 
     [<Fact>]
-    member _.``createAsync returns error when name is empty``() =
+    member _.``create returns error when name is empty``() =
         task {
-            let repository = MockCollectionRepository()
+            let collections = ref Map.empty
+            let env = TestCollectionsEnv(collections)
             let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
-            let command =
-                { UserId = UserId 1
-                  Name = ""
-                  Description = None }
-
-            let! result =
-                Collections.createAsync repository command now CancellationToken.None
+            let! result = create env (UserId 1) "" None now
 
             match result with
             | Ok _ -> Assert.Fail("Expected Error result")
@@ -138,18 +120,13 @@ type CollectionsTests() =
         }
 
     [<Fact>]
-    member _.``createAsync returns error when name is whitespace only``() =
+    member _.``create returns error when name is whitespace only``() =
         task {
-            let repository = MockCollectionRepository()
+            let collections = ref Map.empty
+            let env = TestCollectionsEnv(collections)
             let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
-            let command =
-                { UserId = UserId 1
-                  Name = "   "
-                  Description = None }
-
-            let! result =
-                Collections.createAsync repository command now CancellationToken.None
+            let! result = create env (UserId 1) "   " None now
 
             match result with
             | Ok _ -> Assert.Fail("Expected Error result")
@@ -157,19 +134,14 @@ type CollectionsTests() =
         }
 
     [<Fact>]
-    member _.``createAsync returns error when name exceeds max length``() =
+    member _.``create returns error when name exceeds max length``() =
         task {
-            let repository = MockCollectionRepository()
+            let collections = ref Map.empty
+            let env = TestCollectionsEnv(collections)
             let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
             let longName = String.replicate 256 "a"
 
-            let command =
-                { UserId = UserId 1
-                  Name = longName
-                  Description = None }
-
-            let! result =
-                Collections.createAsync repository command now CancellationToken.None
+            let! result = create env (UserId 1) longName None now
 
             match result with
             | Ok _ -> Assert.Fail("Expected Error result")
@@ -177,18 +149,13 @@ type CollectionsTests() =
         }
 
     [<Fact>]
-    member _.``createAsync trims name whitespace``() =
+    member _.``create trims name whitespace``() =
         task {
-            let repository = MockCollectionRepository()
+            let collections = ref Map.empty
+            let env = TestCollectionsEnv(collections)
             let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
-            let command =
-                { UserId = UserId 1
-                  Name = "  Trimmed Name  "
-                  Description = None }
-
-            let! result =
-                Collections.createAsync repository command now CancellationToken.None
+            let! result = create env (UserId 1) "  Trimmed Name  " None now
 
             match result with
             | Error _ -> Assert.Fail("Expected Ok result")
@@ -196,43 +163,32 @@ type CollectionsTests() =
         }
 
     [<Fact>]
-    member _.``updateAsync updates collection when user owns it``() =
+    member _.``update updates collection when user owns it``() =
         task {
-            let repository = MockCollectionRepository()
+            let collection = makeCollection 1 1 "Original Name" (Some "Original")
+            let collections = ref(Map.ofList [ 1, collection ])
+            let env = TestCollectionsEnv(collections)
             let now = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
-            repository.AddCollection(makeCollectionData 1 1 "Original Name" (Some "Original"))
-
-            let command =
-                { CollectionId = CollectionId 1
-                  UserId = UserId 1
-                  Name = "Updated Name"
-                  Description = Some "Updated Description" }
 
             let! result =
-                Collections.updateAsync repository command now CancellationToken.None
+                update env (UserId 1) (CollectionId 1) "Updated Name" (Some "Updated Description") now
 
             match result with
             | Error _ -> Assert.Fail("Expected Ok result")
-            | Ok collection ->
-                Assert.Equal("Updated Name", collection.Name)
-                Assert.Equal(Some "Updated Description", collection.Description)
-                Assert.Equal(Some now, collection.UpdatedAt)
+            | Ok c ->
+                Assert.Equal("Updated Name", c.Name)
+                Assert.Equal(Some "Updated Description", c.Description)
+                Assert.Equal(Some now, c.UpdatedAt)
         }
 
     [<Fact>]
-    member _.``updateAsync returns CollectionNotFound when collection does not exist``() =
+    member _.``update returns CollectionNotFound when collection does not exist``() =
         task {
-            let repository = MockCollectionRepository()
+            let collections = ref Map.empty
+            let env = TestCollectionsEnv(collections)
             let now = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
 
-            let command =
-                { CollectionId = CollectionId 999
-                  UserId = UserId 1
-                  Name = "Updated Name"
-                  Description = None }
-
-            let! result =
-                Collections.updateAsync repository command now CancellationToken.None
+            let! result = update env (UserId 1) (CollectionId 999) "Updated Name" None now
 
             match result with
             | Ok _ -> Assert.Fail("Expected Error result")
@@ -240,20 +196,14 @@ type CollectionsTests() =
         }
 
     [<Fact>]
-    member _.``updateAsync returns CollectionAccessDenied when user does not own collection``() =
+    member _.``update returns CollectionAccessDenied when user does not own collection``() =
         task {
-            let repository = MockCollectionRepository()
+            let collection = makeCollection 1 1 "Original Name" None
+            let collections = ref(Map.ofList [ 1, collection ])
+            let env = TestCollectionsEnv(collections)
             let now = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
-            repository.AddCollection(makeCollectionData 1 1 "Original Name" None)
 
-            let command =
-                { CollectionId = CollectionId 1
-                  UserId = UserId 2
-                  Name = "Updated Name"
-                  Description = None }
-
-            let! result =
-                Collections.updateAsync repository command now CancellationToken.None
+            let! result = update env (UserId 2) (CollectionId 1) "Updated Name" None now
 
             match result with
             | Ok _ -> Assert.Fail("Expected Error result")
@@ -261,20 +211,14 @@ type CollectionsTests() =
         }
 
     [<Fact>]
-    member _.``updateAsync returns error when name is empty``() =
+    member _.``update returns error when name is empty``() =
         task {
-            let repository = MockCollectionRepository()
+            let collection = makeCollection 1 1 "Original Name" None
+            let collections = ref(Map.ofList [ 1, collection ])
+            let env = TestCollectionsEnv(collections)
             let now = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
-            repository.AddCollection(makeCollectionData 1 1 "Original Name" None)
 
-            let command =
-                { CollectionId = CollectionId 1
-                  UserId = UserId 1
-                  Name = ""
-                  Description = None }
-
-            let! result =
-                Collections.updateAsync repository command now CancellationToken.None
+            let! result = update env (UserId 1) (CollectionId 1) "" None now
 
             match result with
             | Ok _ -> Assert.Fail("Expected Error result")
@@ -282,34 +226,26 @@ type CollectionsTests() =
         }
 
     [<Fact>]
-    member _.``deleteAsync deletes collection when user owns it``() =
+    member _.``delete deletes collection when user owns it``() =
         task {
-            let repository = MockCollectionRepository()
-            repository.AddCollection(makeCollectionData 1 1 "Collection to delete" None)
+            let collection = makeCollection 1 1 "Collection to delete" None
+            let collections = ref(Map.ofList [ 1, collection ])
+            let env = TestCollectionsEnv(collections)
 
-            let command =
-                { CollectionId = CollectionId 1
-                  UserId = UserId 1 }
-
-            let! result =
-                Collections.deleteAsync repository command CancellationToken.None
+            let! result = delete env (UserId 1) (CollectionId 1)
 
             match result with
             | Error _ -> Assert.Fail("Expected Ok result")
-            | Ok() -> Assert.Empty(repository.Collections)
+            | Ok() -> Assert.Empty(collections.Value)
         }
 
     [<Fact>]
-    member _.``deleteAsync returns CollectionNotFound when collection does not exist``() =
+    member _.``delete returns CollectionNotFound when collection does not exist``() =
         task {
-            let repository = MockCollectionRepository()
+            let collections = ref Map.empty
+            let env = TestCollectionsEnv(collections)
 
-            let command =
-                { CollectionId = CollectionId 999
-                  UserId = UserId 1 }
-
-            let! result =
-                Collections.deleteAsync repository command CancellationToken.None
+            let! result = delete env (UserId 1) (CollectionId 999)
 
             match result with
             | Ok _ -> Assert.Fail("Expected Error result")
@@ -317,17 +253,13 @@ type CollectionsTests() =
         }
 
     [<Fact>]
-    member _.``deleteAsync returns CollectionAccessDenied when user does not own collection``() =
+    member _.``delete returns CollectionAccessDenied when user does not own collection``() =
         task {
-            let repository = MockCollectionRepository()
-            repository.AddCollection(makeCollectionData 1 1 "Collection" None)
+            let collection = makeCollection 1 1 "Collection" None
+            let collections = ref(Map.ofList [ 1, collection ])
+            let env = TestCollectionsEnv(collections)
 
-            let command =
-                { CollectionId = CollectionId 1
-                  UserId = UserId 2 }
-
-            let! result =
-                Collections.deleteAsync repository command CancellationToken.None
+            let! result = delete env (UserId 2) (CollectionId 1)
 
             match result with
             | Ok _ -> Assert.Fail("Expected Error result")

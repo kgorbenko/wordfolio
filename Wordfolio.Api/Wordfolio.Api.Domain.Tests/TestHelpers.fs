@@ -1,54 +1,49 @@
 module Wordfolio.Api.Domain.Tests.TestHelpers
 
 open System
-open System.Threading
 open System.Threading.Tasks
 
 open Wordfolio.Api.Domain
+open Wordfolio.Api.Domain.Collections
+open Wordfolio.Api.Domain.Vocabularies
 
-type MockCollectionRepository() =
-    let mutable collections: Map<int, CollectionData> = Map.empty
-    let mutable nextId = 1
+type TestCollectionsEnv(collections: Map<int, Collection> ref) =
+    interface IGetCollectionById with
+        member _.GetCollectionById(CollectionId id) =
+            Task.FromResult(collections.Value |> Map.tryFind id)
 
-    member _.Collections = collections
-
-    member _.AddCollection(data: CollectionData) =
-        collections <- collections |> Map.add (CollectionId.value data.Id) data
-
-    member _.Clear() =
-        collections <- Map.empty
-        nextId <- 1
-
-    interface ICollectionRepository with
-        member _.GetByIdAsync(CollectionId id, _cancellationToken) =
-            Task.FromResult(collections |> Map.tryFind id)
-
-        member _.GetByUserIdAsync(UserId userId, _cancellationToken) =
+    interface IGetCollectionsByUserId with
+        member _.GetCollectionsByUserId(UserId userId) =
             let result =
-                collections
+                collections.Value
                 |> Map.toList
                 |> List.map snd
                 |> List.filter(fun c -> c.UserId = UserId userId)
 
             Task.FromResult(result)
 
-        member this.CreateAsync(userId, name, description, createdAt, _cancellationToken) =
-            let id = nextId
-            nextId <- nextId + 1
+    interface ICreateCollection with
+        member _.CreateCollection(userId, name, description, createdAt) =
+            let nextId =
+                if Map.isEmpty collections.Value then
+                    1
+                else
+                    (collections.Value |> Map.keys |> Seq.max) + 1
 
-            let data =
-                { Id = CollectionId id
+            let collection =
+                { Id = CollectionId nextId
                   UserId = userId
                   Name = name
                   Description = description
                   CreatedAt = createdAt
                   UpdatedAt = None }
 
-            collections <- collections |> Map.add id data
-            Task.FromResult(data)
+            collections.Value <- collections.Value |> Map.add nextId collection
+            Task.FromResult(collection)
 
-        member _.UpdateAsync(CollectionId id, name, description, updatedAt, _cancellationToken) =
-            match collections |> Map.tryFind id with
+    interface IUpdateCollection with
+        member _.UpdateCollection(CollectionId id, name, description, updatedAt) =
+            match collections.Value |> Map.tryFind id with
             | None -> Task.FromResult(false)
             | Some existing ->
                 let updated =
@@ -57,59 +52,58 @@ type MockCollectionRepository() =
                         Description = description
                         UpdatedAt = Some updatedAt }
 
-                collections <- collections |> Map.add id updated
+                collections.Value <- collections.Value |> Map.add id updated
                 Task.FromResult(true)
 
-        member _.DeleteAsync(CollectionId id, _cancellationToken) =
-            match collections |> Map.tryFind id with
+    interface IDeleteCollection with
+        member _.DeleteCollection(CollectionId id) =
+            match collections.Value |> Map.tryFind id with
             | None -> Task.FromResult(false)
             | Some _ ->
-                collections <- collections |> Map.remove id
+                collections.Value <- collections.Value |> Map.remove id
                 Task.FromResult(true)
 
-type MockVocabularyRepository() =
-    let mutable vocabularies: Map<int, VocabularyData> = Map.empty
-    let mutable nextId = 1
+type TestVocabulariesEnv(collections: Map<int, Collection> ref, vocabularies: Map<int, Vocabulary> ref) =
+    interface IGetCollectionById with
+        member _.GetCollectionById(CollectionId id) =
+            Task.FromResult(collections.Value |> Map.tryFind id)
 
-    member _.Vocabularies = vocabularies
+    interface IGetVocabularyById with
+        member _.GetVocabularyById(VocabularyId id) =
+            Task.FromResult(vocabularies.Value |> Map.tryFind id)
 
-    member _.AddVocabulary(data: VocabularyData) =
-        vocabularies <- vocabularies |> Map.add (VocabularyId.value data.Id) data
-
-    member _.Clear() =
-        vocabularies <- Map.empty
-        nextId <- 1
-
-    interface IVocabularyRepository with
-        member _.GetByIdAsync(VocabularyId id, _cancellationToken) =
-            Task.FromResult(vocabularies |> Map.tryFind id)
-
-        member _.GetByCollectionIdAsync(CollectionId collectionId, _cancellationToken) =
+    interface IGetVocabulariesByCollectionId with
+        member _.GetVocabulariesByCollectionId(CollectionId collectionId) =
             let result =
-                vocabularies
+                vocabularies.Value
                 |> Map.toList
                 |> List.map snd
                 |> List.filter(fun v -> v.CollectionId = CollectionId collectionId)
 
             Task.FromResult(result)
 
-        member this.CreateAsync(collectionId, name, description, createdAt, _cancellationToken) =
-            let id = nextId
-            nextId <- nextId + 1
+    interface ICreateVocabulary with
+        member _.CreateVocabulary(collectionId, name, description, createdAt) =
+            let nextId =
+                if Map.isEmpty vocabularies.Value then
+                    1
+                else
+                    (vocabularies.Value |> Map.keys |> Seq.max) + 1
 
-            let data =
-                { Id = VocabularyId id
+            let vocabulary =
+                { Id = VocabularyId nextId
                   CollectionId = collectionId
                   Name = name
                   Description = description
                   CreatedAt = createdAt
                   UpdatedAt = None }
 
-            vocabularies <- vocabularies |> Map.add id data
-            Task.FromResult(data)
+            vocabularies.Value <- vocabularies.Value |> Map.add nextId vocabulary
+            Task.FromResult(vocabulary)
 
-        member _.UpdateAsync(VocabularyId id, name, description, updatedAt, _cancellationToken) =
-            match vocabularies |> Map.tryFind id with
+    interface IUpdateVocabulary with
+        member _.UpdateVocabulary(VocabularyId id, name, description, updatedAt) =
+            match vocabularies.Value |> Map.tryFind id with
             | None -> Task.FromResult(false)
             | Some existing ->
                 let updated =
@@ -118,17 +112,37 @@ type MockVocabularyRepository() =
                         Description = description
                         UpdatedAt = Some updatedAt }
 
-                vocabularies <- vocabularies |> Map.add id updated
+                vocabularies.Value <- vocabularies.Value |> Map.add id updated
                 Task.FromResult(true)
 
-        member _.DeleteAsync(VocabularyId id, _cancellationToken) =
-            match vocabularies |> Map.tryFind id with
+    interface IDeleteVocabulary with
+        member _.DeleteVocabulary(VocabularyId id) =
+            match vocabularies.Value |> Map.tryFind id with
             | None -> Task.FromResult(false)
             | Some _ ->
-                vocabularies <- vocabularies |> Map.remove id
+                vocabularies.Value <- vocabularies.Value |> Map.remove id
                 Task.FromResult(true)
 
-let makeCollectionData (id: int) (userId: int) (name: string) (description: string option) : CollectionData =
+type TestTransactionalEnv<'env>(appEnv: 'env) =
+    let mutable committed = false
+    let mutable rolledBack = false
+
+    member _.WasCommitted = committed
+    member _.WasRolledBack = rolledBack
+
+    interface ITransactional<'env> with
+        member _.RunInTransaction(operation) =
+            task {
+                let! result = operation appEnv
+
+                match result with
+                | Ok _ -> committed <- true
+                | Error _ -> rolledBack <- true
+
+                return result
+            }
+
+let makeCollection (id: int) (userId: int) (name: string) (description: string option) : Collection =
     { Id = CollectionId id
       UserId = UserId userId
       Name = name
@@ -136,37 +150,10 @@ let makeCollectionData (id: int) (userId: int) (name: string) (description: stri
       CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
       UpdatedAt = None }
 
-let makeVocabularyData
-    (id: int)
-    (collectionId: int)
-    (name: string)
-    (description: string option)
-    : VocabularyData =
+let makeVocabulary (id: int) (collectionId: int) (name: string) (description: string option) : Vocabulary =
     { Id = VocabularyId id
       CollectionId = CollectionId collectionId
       Name = name
       Description = description
       CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
       UpdatedAt = None }
-
-type MockUnitOfWork
-    (collectionRepository: MockCollectionRepository, vocabularyRepository: MockVocabularyRepository) =
-    let mutable committed = false
-
-    member _.IsCommitted = committed
-
-    interface IUnitOfWork with
-        member _.CollectionRepository = collectionRepository
-        member _.VocabularyRepository = vocabularyRepository
-
-        member _.CommitAsync(_cancellationToken) =
-            committed <- true
-            Task.CompletedTask
-
-        member _.DisposeAsync() = ValueTask.CompletedTask
-
-type MockUnitOfWorkFactory
-    (collectionRepository: MockCollectionRepository, vocabularyRepository: MockVocabularyRepository) =
-    interface IUnitOfWorkFactory with
-        member _.CreateAsync(_cancellationToken) =
-            Task.FromResult(MockUnitOfWork(collectionRepository, vocabularyRepository) :> IUnitOfWork)
