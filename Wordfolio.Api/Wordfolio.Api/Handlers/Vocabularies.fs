@@ -17,10 +17,12 @@ open Wordfolio.Api.Infrastructure.Environment
 
 module Urls =
     [<Literal>]
-    let VocabulariesByCollection = "/collections/{collectionId:int}/vocabularies"
+    let VocabulariesByCollection =
+        "/collections/{collectionId:int}/vocabularies"
 
     [<Literal>]
-    let VocabularyById = "/vocabularies/{id:int}"
+    let VocabularyById =
+        "/vocabularies/{id:int}"
 
 type VocabularyResponse =
     { Id: int
@@ -30,9 +32,13 @@ type VocabularyResponse =
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option }
 
-type CreateVocabularyRequest = { Name: string; Description: string option }
+type CreateVocabularyRequest =
+    { Name: string
+      Description: string option }
 
-type UpdateVocabularyRequest = { Name: string; Description: string option }
+type UpdateVocabularyRequest =
+    { Name: string
+      Description: string option }
 
 let private toResponse(vocabulary: Vocabulary) : VocabularyResponse =
     { Id = VocabularyId.value vocabulary.Id
@@ -43,7 +49,8 @@ let private toResponse(vocabulary: Vocabulary) : VocabularyResponse =
       UpdatedAt = vocabulary.UpdatedAt }
 
 let private getUserId(user: ClaimsPrincipal) : int option =
-    let claim = user.FindFirst(ClaimTypes.NameIdentifier)
+    let claim =
+        user.FindFirst(ClaimTypes.NameIdentifier)
 
     match claim with
     | null -> None
@@ -71,7 +78,8 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let env = NonTransactionalEnv(dataSource, cancellationToken)
+                            let env =
+                                NonTransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
                                 Transactions.runInTransaction env (fun appEnv ->
@@ -80,7 +88,9 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
                             return
                                 match result with
                                 | Ok vocabularies ->
-                                    let response = vocabularies |> List.map toResponse
+                                    let response =
+                                        vocabularies |> List.map toResponse
+
                                     Results.Ok(response) :> IResult
                                 | Error error -> toErrorResponse error
                     })
@@ -97,7 +107,8 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let env = NonTransactionalEnv(dataSource, cancellationToken)
+                            let env =
+                                NonTransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
                                 Transactions.runInTransaction env (fun appEnv ->
@@ -121,7 +132,8 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let env = TransactionalEnv(dataSource, cancellationToken)
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
                                 Transactions.runInTransaction env (fun appEnv ->
@@ -156,7 +168,8 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let env = TransactionalEnv(dataSource, cancellationToken)
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
                                 Transactions.runInTransaction env (fun appEnv ->
@@ -186,7 +199,8 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let env = TransactionalEnv(dataSource, cancellationToken)
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
                                 Transactions.runInTransaction env (fun appEnv ->

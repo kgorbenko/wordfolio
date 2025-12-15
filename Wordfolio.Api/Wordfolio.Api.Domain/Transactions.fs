@@ -6,5 +6,4 @@ type ITransactional<'env> =
     abstract RunInTransaction<'a> : ('env -> Task<Result<'a, 'err>>) -> Task<Result<'a, 'err>>
 
 module Transactions =
-    let runInTransaction(env: #ITransactional<'env>) operation =
-        env.RunInTransaction(operation)
+    let runInTransaction (env: #ITransactional<'env>) operation = env.RunInTransaction(operation)

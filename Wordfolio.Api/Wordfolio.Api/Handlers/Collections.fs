@@ -29,9 +29,13 @@ type CollectionResponse =
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option }
 
-type CreateCollectionRequest = { Name: string; Description: string option }
+type CreateCollectionRequest =
+    { Name: string
+      Description: string option }
 
-type UpdateCollectionRequest = { Name: string; Description: string option }
+type UpdateCollectionRequest =
+    { Name: string
+      Description: string option }
 
 let private toResponse(collection: Collection) : CollectionResponse =
     { Id = CollectionId.value collection.Id
@@ -41,7 +45,8 @@ let private toResponse(collection: Collection) : CollectionResponse =
       UpdatedAt = collection.UpdatedAt }
 
 let private getUserId(user: ClaimsPrincipal) : int option =
-    let claim = user.FindFirst(ClaimTypes.NameIdentifier)
+    let claim =
+        user.FindFirst(ClaimTypes.NameIdentifier)
 
     match claim with
     | null -> None
@@ -67,7 +72,8 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
                     match getUserId user with
                     | None -> return Results.Unauthorized() :> IResult
                     | Some userId ->
-                        let env = NonTransactionalEnv(dataSource, cancellationToken)
+                        let env =
+                            NonTransactionalEnv(dataSource, cancellationToken)
 
                         let! collections =
                             Transactions.runInTransaction env (fun appEnv ->
@@ -95,7 +101,8 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let env = NonTransactionalEnv(dataSource, cancellationToken)
+                            let env =
+                                NonTransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
                                 Transactions.runInTransaction env (fun appEnv ->
@@ -119,7 +126,8 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let env = TransactionalEnv(dataSource, cancellationToken)
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
                                 Transactions.runInTransaction env (fun appEnv ->
@@ -153,7 +161,8 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let env = TransactionalEnv(dataSource, cancellationToken)
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
                                 Transactions.runInTransaction env (fun appEnv ->
@@ -183,7 +192,8 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
                         match getUserId user with
                         | None -> return Results.Unauthorized() :> IResult
                         | Some userId ->
-                            let env = TransactionalEnv(dataSource, cancellationToken)
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
                                 Transactions.runInTransaction env (fun appEnv ->

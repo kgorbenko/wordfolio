@@ -21,17 +21,14 @@ type IDeleteCollection =
     abstract DeleteCollection: CollectionId -> Task<bool>
 
 module Capabilities =
-    let getCollectionById(env: #IGetCollectionById) collectionId =
-        env.GetCollectionById(collectionId)
+    let getCollectionById (env: #IGetCollectionById) collectionId = env.GetCollectionById(collectionId)
 
-    let getCollectionsByUserId(env: #IGetCollectionsByUserId) userId =
-        env.GetCollectionsByUserId(userId)
+    let getCollectionsByUserId (env: #IGetCollectionsByUserId) userId = env.GetCollectionsByUserId(userId)
 
-    let createCollection(env: #ICreateCollection) userId name description createdAt =
+    let createCollection (env: #ICreateCollection) userId name description createdAt =
         env.CreateCollection(userId, name, description, createdAt)
 
-    let updateCollection(env: #IUpdateCollection) collectionId name description updatedAt =
+    let updateCollection (env: #IUpdateCollection) collectionId name description updatedAt =
         env.UpdateCollection(collectionId, name, description, updatedAt)
 
-    let deleteCollection(env: #IDeleteCollection) collectionId =
-        env.DeleteCollection(collectionId)
+    let deleteCollection (env: #IDeleteCollection) collectionId = env.DeleteCollection(collectionId)

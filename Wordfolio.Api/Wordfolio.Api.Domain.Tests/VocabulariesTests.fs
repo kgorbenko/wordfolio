@@ -15,11 +15,20 @@ type VocabulariesTests() =
     [<Fact>]
     member _.``getById returns vocabulary when user owns parent collection``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let vocabulary = makeVocabulary 1 1 "Vocabulary" (Some "Description")
-            let collections = ref(Map.ofList [ 1, collection ])
-            let vocabularies = ref(Map.ofList [ 1, vocabulary ])
-            let env = TestVocabulariesEnv(collections, vocabularies)
+            let collection =
+                makeCollection 1 1 "Collection" None
+
+            let vocabulary =
+                makeVocabulary 1 1 "Vocabulary" (Some "Description")
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
+            let vocabularies =
+                ref(Map.ofList [ 1, vocabulary ])
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
 
             let! result = getById env (UserId 1) (VocabularyId 1)
 
@@ -36,7 +45,9 @@ type VocabulariesTests() =
         task {
             let collections = ref Map.empty
             let vocabularies = ref Map.empty
-            let env = TestVocabulariesEnv(collections, vocabularies)
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
 
             let! result = getById env (UserId 1) (VocabularyId 999)
 
@@ -48,11 +59,20 @@ type VocabulariesTests() =
     [<Fact>]
     member _.``getById returns VocabularyAccessDenied when user does not own parent collection``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let vocabulary = makeVocabulary 1 1 "Vocabulary" None
-            let collections = ref(Map.ofList [ 1, collection ])
-            let vocabularies = ref(Map.ofList [ 1, vocabulary ])
-            let env = TestVocabulariesEnv(collections, vocabularies)
+            let collection =
+                makeCollection 1 1 "Collection" None
+
+            let vocabulary =
+                makeVocabulary 1 1 "Vocabulary" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
+            let vocabularies =
+                ref(Map.ofList [ 1, vocabulary ])
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
 
             let! result = getById env (UserId 2) (VocabularyId 1)
 
@@ -64,16 +84,26 @@ type VocabulariesTests() =
     [<Fact>]
     member _.``getByCollectionId returns vocabularies when user owns collection``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let vocabulary1 = makeVocabulary 1 1 "Vocabulary 1" None
-            let vocabulary2 = makeVocabulary 2 1 "Vocabulary 2" None
-            let vocabulary3 = makeVocabulary 3 2 "Other Collection Vocabulary" None
-            let collections = ref(Map.ofList [ 1, collection ])
+            let collection =
+                makeCollection 1 1 "Collection" None
+
+            let vocabulary1 =
+                makeVocabulary 1 1 "Vocabulary 1" None
+
+            let vocabulary2 =
+                makeVocabulary 2 1 "Vocabulary 2" None
+
+            let vocabulary3 =
+                makeVocabulary 3 2 "Other Collection Vocabulary" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
 
             let vocabularies =
                 ref(Map.ofList [ 1, vocabulary1; 2, vocabulary2; 3, vocabulary3 ])
 
-            let env = TestVocabulariesEnv(collections, vocabularies)
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
 
             let! result = getByCollectionId env (UserId 1) (CollectionId 1)
 
@@ -81,17 +111,31 @@ type VocabulariesTests() =
             | Error _ -> Assert.Fail("Expected Ok result")
             | Ok vs ->
                 Assert.Equal(2, vs.Length)
-                Assert.True(vs |> List.exists(fun v -> v.Name = "Vocabulary 1"))
-                Assert.True(vs |> List.exists(fun v -> v.Name = "Vocabulary 2"))
+
+                Assert.True(
+                    vs
+                    |> List.exists(fun v -> v.Name = "Vocabulary 1")
+                )
+
+                Assert.True(
+                    vs
+                    |> List.exists(fun v -> v.Name = "Vocabulary 2")
+                )
         }
 
     [<Fact>]
     member _.``getByCollectionId returns error when user does not own collection``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let collections = ref(Map.ofList [ 1, collection ])
+            let collection =
+                makeCollection 1 1 "Collection" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
             let vocabularies = ref Map.empty
-            let env = TestVocabulariesEnv(collections, vocabularies)
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
 
             let! result = getByCollectionId env (UserId 2) (CollectionId 1)
 
@@ -105,7 +149,9 @@ type VocabulariesTests() =
         task {
             let collections = ref Map.empty
             let vocabularies = ref Map.empty
-            let env = TestVocabulariesEnv(collections, vocabularies)
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
 
             let! result = getByCollectionId env (UserId 1) (CollectionId 999)
 
@@ -117,14 +163,21 @@ type VocabulariesTests() =
     [<Fact>]
     member _.``create creates vocabulary when user owns collection``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let collections = ref(Map.ofList [ 1, collection ])
-            let vocabularies = ref Map.empty
-            let env = TestVocabulariesEnv(collections, vocabularies)
-            let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            let collection =
+                makeCollection 1 1 "Collection" None
 
-            let! result =
-                create env (UserId 1) (CollectionId 1) "New Vocabulary" (Some "A new vocabulary") now
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
+            let vocabularies = ref Map.empty
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
+
+            let now =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let! result = create env (UserId 1) (CollectionId 1) "New Vocabulary" (Some "A new vocabulary") now
 
             match result with
             | Error _ -> Assert.Fail("Expected Ok result")
@@ -138,11 +191,19 @@ type VocabulariesTests() =
     [<Fact>]
     member _.``create returns error when user does not own collection``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let collections = ref(Map.ofList [ 1, collection ])
+            let collection =
+                makeCollection 1 1 "Collection" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
             let vocabularies = ref Map.empty
-            let env = TestVocabulariesEnv(collections, vocabularies)
-            let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
+
+            let now =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let! result = create env (UserId 2) (CollectionId 1) "New Vocabulary" None now
 
@@ -156,8 +217,12 @@ type VocabulariesTests() =
         task {
             let collections = ref Map.empty
             let vocabularies = ref Map.empty
-            let env = TestVocabulariesEnv(collections, vocabularies)
-            let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
+
+            let now =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let! result = create env (UserId 1) (CollectionId 999) "New Vocabulary" None now
 
@@ -169,11 +234,19 @@ type VocabulariesTests() =
     [<Fact>]
     member _.``create returns error when name is empty``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let collections = ref(Map.ofList [ 1, collection ])
+            let collection =
+                makeCollection 1 1 "Collection" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
             let vocabularies = ref Map.empty
-            let env = TestVocabulariesEnv(collections, vocabularies)
-            let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
+
+            let now =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let! result = create env (UserId 1) (CollectionId 1) "" None now
 
@@ -185,11 +258,20 @@ type VocabulariesTests() =
     [<Fact>]
     member _.``create returns error when name exceeds max length``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let collections = ref(Map.ofList [ 1, collection ])
+            let collection =
+                makeCollection 1 1 "Collection" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
             let vocabularies = ref Map.empty
-            let env = TestVocabulariesEnv(collections, vocabularies)
-            let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
+
+            let now =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
             let longName = String.replicate 256 "a"
 
             let! result = create env (UserId 1) (CollectionId 1) longName None now
@@ -202,11 +284,19 @@ type VocabulariesTests() =
     [<Fact>]
     member _.``create trims name whitespace``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let collections = ref(Map.ofList [ 1, collection ])
+            let collection =
+                makeCollection 1 1 "Collection" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
             let vocabularies = ref Map.empty
-            let env = TestVocabulariesEnv(collections, vocabularies)
-            let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
+
+            let now =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let! result = create env (UserId 1) (CollectionId 1) "  Trimmed Name  " None now
 
@@ -218,15 +308,25 @@ type VocabulariesTests() =
     [<Fact>]
     member _.``update updates vocabulary when user owns parent collection``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let vocabulary = makeVocabulary 1 1 "Original Name" None
-            let collections = ref(Map.ofList [ 1, collection ])
-            let vocabularies = ref(Map.ofList [ 1, vocabulary ])
-            let env = TestVocabulariesEnv(collections, vocabularies)
-            let now = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+            let collection =
+                makeCollection 1 1 "Collection" None
 
-            let! result =
-                update env (UserId 1) (VocabularyId 1) "Updated Name" (Some "Updated Description") now
+            let vocabulary =
+                makeVocabulary 1 1 "Original Name" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
+            let vocabularies =
+                ref(Map.ofList [ 1, vocabulary ])
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
+
+            let now =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+
+            let! result = update env (UserId 1) (VocabularyId 1) "Updated Name" (Some "Updated Description") now
 
             match result with
             | Error _ -> Assert.Fail("Expected Ok result")
@@ -241,8 +341,12 @@ type VocabulariesTests() =
         task {
             let collections = ref Map.empty
             let vocabularies = ref Map.empty
-            let env = TestVocabulariesEnv(collections, vocabularies)
-            let now = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
+
+            let now =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
 
             let! result = update env (UserId 1) (VocabularyId 999) "Updated Name" None now
 
@@ -254,12 +358,23 @@ type VocabulariesTests() =
     [<Fact>]
     member _.``update returns VocabularyAccessDenied when user does not own parent collection``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let vocabulary = makeVocabulary 1 1 "Original Name" None
-            let collections = ref(Map.ofList [ 1, collection ])
-            let vocabularies = ref(Map.ofList [ 1, vocabulary ])
-            let env = TestVocabulariesEnv(collections, vocabularies)
-            let now = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+            let collection =
+                makeCollection 1 1 "Collection" None
+
+            let vocabulary =
+                makeVocabulary 1 1 "Original Name" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
+            let vocabularies =
+                ref(Map.ofList [ 1, vocabulary ])
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
+
+            let now =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
 
             let! result = update env (UserId 2) (VocabularyId 1) "Updated Name" None now
 
@@ -271,12 +386,23 @@ type VocabulariesTests() =
     [<Fact>]
     member _.``update returns error when name is empty``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let vocabulary = makeVocabulary 1 1 "Original Name" None
-            let collections = ref(Map.ofList [ 1, collection ])
-            let vocabularies = ref(Map.ofList [ 1, vocabulary ])
-            let env = TestVocabulariesEnv(collections, vocabularies)
-            let now = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+            let collection =
+                makeCollection 1 1 "Collection" None
+
+            let vocabulary =
+                makeVocabulary 1 1 "Original Name" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
+            let vocabularies =
+                ref(Map.ofList [ 1, vocabulary ])
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
+
+            let now =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
 
             let! result = update env (UserId 1) (VocabularyId 1) "" None now
 
@@ -288,11 +414,20 @@ type VocabulariesTests() =
     [<Fact>]
     member _.``delete deletes vocabulary when user owns parent collection``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let vocabulary = makeVocabulary 1 1 "Vocabulary" None
-            let collections = ref(Map.ofList [ 1, collection ])
-            let vocabularies = ref(Map.ofList [ 1, vocabulary ])
-            let env = TestVocabulariesEnv(collections, vocabularies)
+            let collection =
+                makeCollection 1 1 "Collection" None
+
+            let vocabulary =
+                makeVocabulary 1 1 "Vocabulary" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
+            let vocabularies =
+                ref(Map.ofList [ 1, vocabulary ])
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
 
             let! result = delete env (UserId 1) (VocabularyId 1)
 
@@ -306,7 +441,9 @@ type VocabulariesTests() =
         task {
             let collections = ref Map.empty
             let vocabularies = ref Map.empty
-            let env = TestVocabulariesEnv(collections, vocabularies)
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
 
             let! result = delete env (UserId 1) (VocabularyId 999)
 
@@ -318,11 +455,20 @@ type VocabulariesTests() =
     [<Fact>]
     member _.``delete returns VocabularyAccessDenied when user does not own parent collection``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let vocabulary = makeVocabulary 1 1 "Vocabulary" None
-            let collections = ref(Map.ofList [ 1, collection ])
-            let vocabularies = ref(Map.ofList [ 1, vocabulary ])
-            let env = TestVocabulariesEnv(collections, vocabularies)
+            let collection =
+                makeCollection 1 1 "Collection" None
+
+            let vocabulary =
+                makeVocabulary 1 1 "Vocabulary" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
+            let vocabularies =
+                ref(Map.ofList [ 1, vocabulary ])
+
+            let env =
+                TestVocabulariesEnv(collections, vocabularies)
 
             let! result = delete env (UserId 2) (VocabularyId 1)
 

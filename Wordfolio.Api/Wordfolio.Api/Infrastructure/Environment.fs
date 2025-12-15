@@ -164,7 +164,9 @@ type TransactionalEnv(dataSource: NpgsqlDataSource, cancellationToken: Cancellat
                 use! connection = dataSource.OpenConnectionAsync(cancellationToken)
                 use! transaction = connection.BeginTransactionAsync(cancellationToken)
 
-                let env = AppEnv(connection, transaction, cancellationToken)
+                let env =
+                    AppEnv(connection, transaction, cancellationToken)
+
                 let! result = operation env
 
                 match result with
@@ -179,6 +181,9 @@ type NonTransactionalEnv(dataSource: NpgsqlDataSource, cancellationToken: Cancel
         member _.RunInTransaction(operation) =
             task {
                 use! connection = dataSource.OpenConnectionAsync(cancellationToken)
-                let env = AppEnv(connection, null, cancellationToken)
+
+                let env =
+                    AppEnv(connection, null, cancellationToken)
+
                 return! operation env
             }

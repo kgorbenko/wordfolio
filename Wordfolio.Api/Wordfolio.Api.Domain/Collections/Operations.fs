@@ -16,7 +16,7 @@ let private validateName(name: string) : Result<string, CollectionError> =
     else
         Ok(name.Trim())
 
-let private checkOwnership(userId: UserId) (collection: Collection) : Result<Collection, CollectionError> =
+let private checkOwnership (userId: UserId) (collection: Collection) : Result<Collection, CollectionError> =
     if collection.UserId = userId then
         Ok collection
     else
@@ -32,8 +32,7 @@ let getById env userId collectionId =
             | Some collection -> checkOwnership userId collection
     }
 
-let getByUserId env userId =
-    getCollectionsByUserId env userId
+let getByUserId env userId = getCollectionsByUserId env userId
 
 let create env userId name description now =
     task {

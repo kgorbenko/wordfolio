@@ -1,13 +1,13 @@
 namespace Wordfolio.Api.Domain
 
 [<Struct>]
-type UserId = UserId of int
+type UserId = | UserId of int
 
 [<Struct>]
-type CollectionId = CollectionId of int
+type CollectionId = | CollectionId of int
 
 [<Struct>]
-type VocabularyId = VocabularyId of int
+type VocabularyId = | VocabularyId of int
 
 module UserId =
     let value(UserId id) = id

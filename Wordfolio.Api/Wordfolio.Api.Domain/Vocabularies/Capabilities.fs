@@ -22,20 +22,17 @@ type IDeleteVocabulary =
     abstract DeleteVocabulary: VocabularyId -> Task<bool>
 
 module Capabilities =
-    let getVocabularyById(env: #IGetVocabularyById) vocabularyId =
-        env.GetVocabularyById(vocabularyId)
+    let getVocabularyById (env: #IGetVocabularyById) vocabularyId = env.GetVocabularyById(vocabularyId)
 
-    let getVocabulariesByCollectionId(env: #IGetVocabulariesByCollectionId) collectionId =
+    let getVocabulariesByCollectionId (env: #IGetVocabulariesByCollectionId) collectionId =
         env.GetVocabulariesByCollectionId(collectionId)
 
-    let createVocabulary(env: #ICreateVocabulary) collectionId name description createdAt =
+    let createVocabulary (env: #ICreateVocabulary) collectionId name description createdAt =
         env.CreateVocabulary(collectionId, name, description, createdAt)
 
-    let updateVocabulary(env: #IUpdateVocabulary) vocabularyId name description updatedAt =
+    let updateVocabulary (env: #IUpdateVocabulary) vocabularyId name description updatedAt =
         env.UpdateVocabulary(vocabularyId, name, description, updatedAt)
 
-    let deleteVocabulary(env: #IDeleteVocabulary) vocabularyId =
-        env.DeleteVocabulary(vocabularyId)
+    let deleteVocabulary (env: #IDeleteVocabulary) vocabularyId = env.DeleteVocabulary(vocabularyId)
 
-    let getCollectionById(env: #IGetCollectionById) collectionId =
-        env.GetCollectionById(collectionId)
+    let getCollectionById (env: #IGetCollectionById) collectionId = env.GetCollectionById(collectionId)

@@ -14,8 +14,12 @@ type CollectionsTests() =
     [<Fact>]
     member _.``getById returns collection when user owns it``() =
         task {
-            let collection = makeCollection 1 1 "Test Collection" (Some "Description")
-            let collections = ref(Map.ofList [ 1, collection ])
+            let collection =
+                makeCollection 1 1 "Test Collection" (Some "Description")
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
             let env = TestCollectionsEnv(collections)
 
             let! result = getById env (UserId 1) (CollectionId 1)
@@ -45,8 +49,12 @@ type CollectionsTests() =
     [<Fact>]
     member _.``getById returns CollectionAccessDenied when user does not own collection``() =
         task {
-            let collection = makeCollection 1 1 "Test Collection" None
-            let collections = ref(Map.ofList [ 1, collection ])
+            let collection =
+                makeCollection 1 1 "Test Collection" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
             let env = TestCollectionsEnv(collections)
 
             let! result = getById env (UserId 2) (CollectionId 1)
@@ -59,9 +67,14 @@ type CollectionsTests() =
     [<Fact>]
     member _.``getByUserId returns collections for user``() =
         task {
-            let collection1 = makeCollection 1 1 "Collection 1" None
-            let collection2 = makeCollection 2 1 "Collection 2" None
-            let collection3 = makeCollection 3 2 "Other User Collection" None
+            let collection1 =
+                makeCollection 1 1 "Collection 1" None
+
+            let collection2 =
+                makeCollection 2 1 "Collection 2" None
+
+            let collection3 =
+                makeCollection 3 2 "Other User Collection" None
 
             let collections =
                 ref(Map.ofList [ 1, collection1; 2, collection2; 3, collection3 ])
@@ -71,8 +84,16 @@ type CollectionsTests() =
             let! result = getByUserId env (UserId 1)
 
             Assert.Equal(2, result.Length)
-            Assert.True(result |> List.exists(fun c -> c.Name = "Collection 1"))
-            Assert.True(result |> List.exists(fun c -> c.Name = "Collection 2"))
+
+            Assert.True(
+                result
+                |> List.exists(fun c -> c.Name = "Collection 1")
+            )
+
+            Assert.True(
+                result
+                |> List.exists(fun c -> c.Name = "Collection 2")
+            )
         }
 
     [<Fact>]
@@ -91,7 +112,9 @@ type CollectionsTests() =
         task {
             let collections = ref Map.empty
             let env = TestCollectionsEnv(collections)
-            let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let now =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let! result = create env (UserId 1) "New Collection" (Some "A new collection") now
 
@@ -110,7 +133,9 @@ type CollectionsTests() =
         task {
             let collections = ref Map.empty
             let env = TestCollectionsEnv(collections)
-            let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let now =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let! result = create env (UserId 1) "" None now
 
@@ -124,7 +149,9 @@ type CollectionsTests() =
         task {
             let collections = ref Map.empty
             let env = TestCollectionsEnv(collections)
-            let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let now =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let! result = create env (UserId 1) "   " None now
 
@@ -138,7 +165,10 @@ type CollectionsTests() =
         task {
             let collections = ref Map.empty
             let env = TestCollectionsEnv(collections)
-            let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let now =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
             let longName = String.replicate 256 "a"
 
             let! result = create env (UserId 1) longName None now
@@ -153,7 +183,9 @@ type CollectionsTests() =
         task {
             let collections = ref Map.empty
             let env = TestCollectionsEnv(collections)
-            let now = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let now =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let! result = create env (UserId 1) "  Trimmed Name  " None now
 
@@ -165,13 +197,18 @@ type CollectionsTests() =
     [<Fact>]
     member _.``update updates collection when user owns it``() =
         task {
-            let collection = makeCollection 1 1 "Original Name" (Some "Original")
-            let collections = ref(Map.ofList [ 1, collection ])
-            let env = TestCollectionsEnv(collections)
-            let now = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+            let collection =
+                makeCollection 1 1 "Original Name" (Some "Original")
 
-            let! result =
-                update env (UserId 1) (CollectionId 1) "Updated Name" (Some "Updated Description") now
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
+            let env = TestCollectionsEnv(collections)
+
+            let now =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+
+            let! result = update env (UserId 1) (CollectionId 1) "Updated Name" (Some "Updated Description") now
 
             match result with
             | Error _ -> Assert.Fail("Expected Ok result")
@@ -186,7 +223,9 @@ type CollectionsTests() =
         task {
             let collections = ref Map.empty
             let env = TestCollectionsEnv(collections)
-            let now = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+
+            let now =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
 
             let! result = update env (UserId 1) (CollectionId 999) "Updated Name" None now
 
@@ -198,10 +237,16 @@ type CollectionsTests() =
     [<Fact>]
     member _.``update returns CollectionAccessDenied when user does not own collection``() =
         task {
-            let collection = makeCollection 1 1 "Original Name" None
-            let collections = ref(Map.ofList [ 1, collection ])
+            let collection =
+                makeCollection 1 1 "Original Name" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
             let env = TestCollectionsEnv(collections)
-            let now = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+
+            let now =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
 
             let! result = update env (UserId 2) (CollectionId 1) "Updated Name" None now
 
@@ -213,10 +258,16 @@ type CollectionsTests() =
     [<Fact>]
     member _.``update returns error when name is empty``() =
         task {
-            let collection = makeCollection 1 1 "Original Name" None
-            let collections = ref(Map.ofList [ 1, collection ])
+            let collection =
+                makeCollection 1 1 "Original Name" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
             let env = TestCollectionsEnv(collections)
-            let now = DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+
+            let now =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
 
             let! result = update env (UserId 1) (CollectionId 1) "" None now
 
@@ -228,8 +279,12 @@ type CollectionsTests() =
     [<Fact>]
     member _.``delete deletes collection when user owns it``() =
         task {
-            let collection = makeCollection 1 1 "Collection to delete" None
-            let collections = ref(Map.ofList [ 1, collection ])
+            let collection =
+                makeCollection 1 1 "Collection to delete" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
             let env = TestCollectionsEnv(collections)
 
             let! result = delete env (UserId 1) (CollectionId 1)
@@ -255,8 +310,12 @@ type CollectionsTests() =
     [<Fact>]
     member _.``delete returns CollectionAccessDenied when user does not own collection``() =
         task {
-            let collection = makeCollection 1 1 "Collection" None
-            let collections = ref(Map.ofList [ 1, collection ])
+            let collection =
+                makeCollection 1 1 "Collection" None
+
+            let collections =
+                ref(Map.ofList [ 1, collection ])
+
             let env = TestCollectionsEnv(collections)
 
             let! result = delete env (UserId 2) (CollectionId 1)

@@ -28,7 +28,8 @@ type TestCollectionsEnv(collections: Map<int, Collection> ref) =
                 if Map.isEmpty collections.Value then
                     1
                 else
-                    (collections.Value |> Map.keys |> Seq.max) + 1
+                    (collections.Value |> Map.keys |> Seq.max)
+                    + 1
 
             let collection =
                 { Id = CollectionId nextId
@@ -38,7 +39,10 @@ type TestCollectionsEnv(collections: Map<int, Collection> ref) =
                   CreatedAt = createdAt
                   UpdatedAt = None }
 
-            collections.Value <- collections.Value |> Map.add nextId collection
+            collections.Value <-
+                collections.Value
+                |> Map.add nextId collection
+
             Task.FromResult(collection)
 
     interface IUpdateCollection with
@@ -88,7 +92,10 @@ type TestVocabulariesEnv(collections: Map<int, Collection> ref, vocabularies: Ma
                 if Map.isEmpty vocabularies.Value then
                     1
                 else
-                    (vocabularies.Value |> Map.keys |> Seq.max) + 1
+                    (vocabularies.Value
+                     |> Map.keys
+                     |> Seq.max)
+                    + 1
 
             let vocabulary =
                 { Id = VocabularyId nextId
@@ -98,7 +105,10 @@ type TestVocabulariesEnv(collections: Map<int, Collection> ref, vocabularies: Ma
                   CreatedAt = createdAt
                   UpdatedAt = None }
 
-            vocabularies.Value <- vocabularies.Value |> Map.add nextId vocabulary
+            vocabularies.Value <-
+                vocabularies.Value
+                |> Map.add nextId vocabulary
+
             Task.FromResult(vocabulary)
 
     interface IUpdateVocabulary with
