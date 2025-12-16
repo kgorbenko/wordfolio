@@ -61,37 +61,37 @@ let makeCollection id userId name description =
 
 [<Fact>]
 let ``updates collection when owned by user``() =
-    let now = DateTimeOffset.UtcNow
-
-    let existingCollection =
-        makeCollection 1 1 "Old Name" None
-
-    let env =
-        TestEnv(
-            getCollectionById =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected id: {id}"
-
-                    Task.FromResult(Some existingCollection)),
-            updateCollection =
-                (fun (collectionId, name, description, updatedAt) ->
-                    if collectionId <> CollectionId 1 then
-                        failwith $"Unexpected collectionId: {collectionId}"
-
-                    if name <> "New Name" then
-                        failwith $"Unexpected name: {name}"
-
-                    if description <> Some "New Description" then
-                        failwith $"Unexpected description: {description}"
-
-                    if updatedAt <> now then
-                        failwith $"Unexpected updatedAt: {updatedAt}"
-
-                    Task.FromResult(1))
-        )
-
     task {
+        let now = DateTimeOffset.UtcNow
+
+        let existingCollection =
+            makeCollection 1 1 "Old Name" None
+
+        let env =
+            TestEnv(
+                getCollectionById =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected id: {id}"
+
+                        Task.FromResult(Some existingCollection)),
+                updateCollection =
+                    (fun (collectionId, name, description, updatedAt) ->
+                        if collectionId <> CollectionId 1 then
+                            failwith $"Unexpected collectionId: {collectionId}"
+
+                        if name <> "New Name" then
+                            failwith $"Unexpected name: {name}"
+
+                        if description <> Some "New Description" then
+                            failwith $"Unexpected description: {description}"
+
+                        if updatedAt <> now then
+                            failwith $"Unexpected updatedAt: {updatedAt}"
+
+                        Task.FromResult(1))
+            )
+
         let! result = update env (UserId 1) (CollectionId 1) "New Name" (Some "New Description") now
 
         match result with
@@ -107,23 +107,23 @@ let ``updates collection when owned by user``() =
 
 [<Fact>]
 let ``trims whitespace from name``() =
-    let now = DateTimeOffset.UtcNow
-
-    let existingCollection =
-        makeCollection 1 1 "Old Name" None
-
-    let env =
-        TestEnv(
-            getCollectionById = (fun _ -> Task.FromResult(Some existingCollection)),
-            updateCollection =
-                (fun (_, name, _, _) ->
-                    if name <> "New Name" then
-                        failwith $"Expected trimmed name 'New Name', got: '{name}'"
-
-                    Task.FromResult(1))
-        )
-
     task {
+        let now = DateTimeOffset.UtcNow
+
+        let existingCollection =
+            makeCollection 1 1 "Old Name" None
+
+        let env =
+            TestEnv(
+                getCollectionById = (fun _ -> Task.FromResult(Some existingCollection)),
+                updateCollection =
+                    (fun (_, name, _, _) ->
+                        if name <> "New Name" then
+                            failwith $"Expected trimmed name 'New Name', got: '{name}'"
+
+                        Task.FromResult(1))
+            )
+
         let! result = update env (UserId 1) (CollectionId 1) "  New Name  " None now
 
         Assert.True(Result.isOk result)
@@ -136,18 +136,18 @@ let ``trims whitespace from name``() =
 
 [<Fact>]
 let ``returns NotFound when collection does not exist``() =
-    let env =
-        TestEnv(
-            getCollectionById =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected id: {id}"
-
-                    Task.FromResult(None)),
-            updateCollection = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let env =
+            TestEnv(
+                getCollectionById =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected id: {id}"
+
+                        Task.FromResult(None)),
+                updateCollection = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = update env (UserId 1) (CollectionId 1) "New Name" None DateTimeOffset.UtcNow
 
         Assert.Equal(Error(CollectionNotFound(CollectionId 1)), result)
@@ -156,21 +156,21 @@ let ``returns NotFound when collection does not exist``() =
 
 [<Fact>]
 let ``returns AccessDenied when collection owned by different user``() =
-    let existingCollection =
-        makeCollection 1 2 "Test Collection" None
-
-    let env =
-        TestEnv(
-            getCollectionById =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected id: {id}"
-
-                    Task.FromResult(Some existingCollection)),
-            updateCollection = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let existingCollection =
+            makeCollection 1 2 "Test Collection" None
+
+        let env =
+            TestEnv(
+                getCollectionById =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected id: {id}"
+
+                        Task.FromResult(Some existingCollection)),
+                updateCollection = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = update env (UserId 1) (CollectionId 1) "New Name" None DateTimeOffset.UtcNow
 
         Assert.Equal(Error(CollectionAccessDenied(CollectionId 1)), result)
@@ -179,16 +179,16 @@ let ``returns AccessDenied when collection owned by different user``() =
 
 [<Fact>]
 let ``returns error when name is empty``() =
-    let existingCollection =
-        makeCollection 1 1 "Test Collection" None
-
-    let env =
-        TestEnv(
-            getCollectionById = (fun _ -> Task.FromResult(Some existingCollection)),
-            updateCollection = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let existingCollection =
+            makeCollection 1 1 "Test Collection" None
+
+        let env =
+            TestEnv(
+                getCollectionById = (fun _ -> Task.FromResult(Some existingCollection)),
+                updateCollection = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = update env (UserId 1) (CollectionId 1) "" None DateTimeOffset.UtcNow
 
         Assert.Equal(Error CollectionNameRequired, result)
@@ -197,18 +197,18 @@ let ``returns error when name is empty``() =
 
 [<Fact>]
 let ``returns error when name exceeds max length``() =
-    let existingCollection =
-        makeCollection 1 1 "Test Collection" None
-
-    let longName = String.replicate 256 "a"
-
-    let env =
-        TestEnv(
-            getCollectionById = (fun _ -> Task.FromResult(Some existingCollection)),
-            updateCollection = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let existingCollection =
+            makeCollection 1 1 "Test Collection" None
+
+        let longName = String.replicate 256 "a"
+
+        let env =
+            TestEnv(
+                getCollectionById = (fun _ -> Task.FromResult(Some existingCollection)),
+                updateCollection = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = update env (UserId 1) (CollectionId 1) longName None DateTimeOffset.UtcNow
 
         Assert.Equal(Error(CollectionNameTooLong MaxNameLength), result)

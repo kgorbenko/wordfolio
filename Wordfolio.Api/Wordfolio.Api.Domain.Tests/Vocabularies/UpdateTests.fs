@@ -82,45 +82,45 @@ let makeVocabulary id collectionId name description =
 
 [<Fact>]
 let ``updates vocabulary when collection owned by user``() =
-    let now = DateTimeOffset.UtcNow
-
-    let existingVocabulary =
-        makeVocabulary 1 1 "Old Name" None
-
-    let collection = makeCollection 1 1
-
-    let env =
-        TestEnv(
-            getVocabularyById =
-                (fun id ->
-                    if id <> VocabularyId 1 then
-                        failwith $"Unexpected vocabulary id: {id}"
-
-                    Task.FromResult(Some existingVocabulary)),
-            getCollectionById =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected collection id: {id}"
-
-                    Task.FromResult(Some collection)),
-            updateVocabulary =
-                (fun (vocabularyId, name, description, updatedAt) ->
-                    if vocabularyId <> VocabularyId 1 then
-                        failwith $"Unexpected vocabularyId: {vocabularyId}"
-
-                    if name <> "New Name" then
-                        failwith $"Unexpected name: {name}"
-
-                    if description <> Some "New Description" then
-                        failwith $"Unexpected description: {description}"
-
-                    if updatedAt <> now then
-                        failwith $"Unexpected updatedAt: {updatedAt}"
-
-                    Task.FromResult(1))
-        )
-
     task {
+        let now = DateTimeOffset.UtcNow
+
+        let existingVocabulary =
+            makeVocabulary 1 1 "Old Name" None
+
+        let collection = makeCollection 1 1
+
+        let env =
+            TestEnv(
+                getVocabularyById =
+                    (fun id ->
+                        if id <> VocabularyId 1 then
+                            failwith $"Unexpected vocabulary id: {id}"
+
+                        Task.FromResult(Some existingVocabulary)),
+                getCollectionById =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected collection id: {id}"
+
+                        Task.FromResult(Some collection)),
+                updateVocabulary =
+                    (fun (vocabularyId, name, description, updatedAt) ->
+                        if vocabularyId <> VocabularyId 1 then
+                            failwith $"Unexpected vocabularyId: {vocabularyId}"
+
+                        if name <> "New Name" then
+                            failwith $"Unexpected name: {name}"
+
+                        if description <> Some "New Description" then
+                            failwith $"Unexpected description: {description}"
+
+                        if updatedAt <> now then
+                            failwith $"Unexpected updatedAt: {updatedAt}"
+
+                        Task.FromResult(1))
+            )
+
         let! result = update env (UserId 1) (VocabularyId 1) "New Name" (Some "New Description") now
 
         match result with
@@ -137,26 +137,26 @@ let ``updates vocabulary when collection owned by user``() =
 
 [<Fact>]
 let ``trims whitespace from name``() =
-    let now = DateTimeOffset.UtcNow
-
-    let existingVocabulary =
-        makeVocabulary 1 1 "Old Name" None
-
-    let collection = makeCollection 1 1
-
-    let env =
-        TestEnv(
-            getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
-            getCollectionById = (fun _ -> Task.FromResult(Some collection)),
-            updateVocabulary =
-                (fun (_, name, _, _) ->
-                    if name <> "New Name" then
-                        failwith $"Expected trimmed name 'New Name', got: '{name}'"
-
-                    Task.FromResult(1))
-        )
-
     task {
+        let now = DateTimeOffset.UtcNow
+
+        let existingVocabulary =
+            makeVocabulary 1 1 "Old Name" None
+
+        let collection = makeCollection 1 1
+
+        let env =
+            TestEnv(
+                getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
+                getCollectionById = (fun _ -> Task.FromResult(Some collection)),
+                updateVocabulary =
+                    (fun (_, name, _, _) ->
+                        if name <> "New Name" then
+                            failwith $"Expected trimmed name 'New Name', got: '{name}'"
+
+                        Task.FromResult(1))
+            )
+
         let! result = update env (UserId 1) (VocabularyId 1) "  New Name  " None now
 
         Assert.True(Result.isOk result)
@@ -169,19 +169,19 @@ let ``trims whitespace from name``() =
 
 [<Fact>]
 let ``returns NotFound when vocabulary does not exist``() =
-    let env =
-        TestEnv(
-            getVocabularyById =
-                (fun id ->
-                    if id <> VocabularyId 1 then
-                        failwith $"Unexpected vocabulary id: {id}"
-
-                    Task.FromResult(None)),
-            getCollectionById = (fun _ -> failwith "Should not be called"),
-            updateVocabulary = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let env =
+            TestEnv(
+                getVocabularyById =
+                    (fun id ->
+                        if id <> VocabularyId 1 then
+                            failwith $"Unexpected vocabulary id: {id}"
+
+                        Task.FromResult(None)),
+                getCollectionById = (fun _ -> failwith "Should not be called"),
+                updateVocabulary = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = update env (UserId 1) (VocabularyId 1) "New Name" None DateTimeOffset.UtcNow
 
         Assert.Equal(Error(VocabularyNotFound(VocabularyId 1)), result)
@@ -190,19 +190,19 @@ let ``returns NotFound when vocabulary does not exist``() =
 
 [<Fact>]
 let ``returns AccessDenied when collection owned by different user``() =
-    let existingVocabulary =
-        makeVocabulary 1 1 "Test Vocabulary" None
-
-    let collection = makeCollection 1 2
-
-    let env =
-        TestEnv(
-            getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
-            getCollectionById = (fun _ -> Task.FromResult(Some collection)),
-            updateVocabulary = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let existingVocabulary =
+            makeVocabulary 1 1 "Test Vocabulary" None
+
+        let collection = makeCollection 1 2
+
+        let env =
+            TestEnv(
+                getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
+                getCollectionById = (fun _ -> Task.FromResult(Some collection)),
+                updateVocabulary = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = update env (UserId 1) (VocabularyId 1) "New Name" None DateTimeOffset.UtcNow
 
         Assert.Equal(Error(VocabularyAccessDenied(VocabularyId 1)), result)
@@ -211,17 +211,17 @@ let ``returns AccessDenied when collection owned by different user``() =
 
 [<Fact>]
 let ``returns AccessDenied when collection does not exist``() =
-    let existingVocabulary =
-        makeVocabulary 1 1 "Test Vocabulary" None
-
-    let env =
-        TestEnv(
-            getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
-            getCollectionById = (fun _ -> Task.FromResult(None)),
-            updateVocabulary = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let existingVocabulary =
+            makeVocabulary 1 1 "Test Vocabulary" None
+
+        let env =
+            TestEnv(
+                getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
+                getCollectionById = (fun _ -> Task.FromResult(None)),
+                updateVocabulary = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = update env (UserId 1) (VocabularyId 1) "New Name" None DateTimeOffset.UtcNow
 
         Assert.Equal(Error(VocabularyAccessDenied(VocabularyId 1)), result)
@@ -230,19 +230,19 @@ let ``returns AccessDenied when collection does not exist``() =
 
 [<Fact>]
 let ``returns error when name is empty``() =
-    let existingVocabulary =
-        makeVocabulary 1 1 "Test Vocabulary" None
-
-    let collection = makeCollection 1 1
-
-    let env =
-        TestEnv(
-            getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
-            getCollectionById = (fun _ -> Task.FromResult(Some collection)),
-            updateVocabulary = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let existingVocabulary =
+            makeVocabulary 1 1 "Test Vocabulary" None
+
+        let collection = makeCollection 1 1
+
+        let env =
+            TestEnv(
+                getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
+                getCollectionById = (fun _ -> Task.FromResult(Some collection)),
+                updateVocabulary = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = update env (UserId 1) (VocabularyId 1) "" None DateTimeOffset.UtcNow
 
         Assert.Equal(Error VocabularyNameRequired, result)
@@ -251,20 +251,20 @@ let ``returns error when name is empty``() =
 
 [<Fact>]
 let ``returns error when name exceeds max length``() =
-    let existingVocabulary =
-        makeVocabulary 1 1 "Test Vocabulary" None
-
-    let collection = makeCollection 1 1
-    let longName = String.replicate 256 "a"
-
-    let env =
-        TestEnv(
-            getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
-            getCollectionById = (fun _ -> Task.FromResult(Some collection)),
-            updateVocabulary = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let existingVocabulary =
+            makeVocabulary 1 1 "Test Vocabulary" None
+
+        let collection = makeCollection 1 1
+        let longName = String.replicate 256 "a"
+
+        let env =
+            TestEnv(
+                getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
+                getCollectionById = (fun _ -> Task.FromResult(Some collection)),
+                updateVocabulary = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = update env (UserId 1) (VocabularyId 1) longName None DateTimeOffset.UtcNow
 
         Assert.Equal(Error(VocabularyNameTooLong MaxNameLength), result)

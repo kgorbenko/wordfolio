@@ -35,17 +35,17 @@ let makeCollection id userId name =
 
 [<Fact>]
 let ``returns collections for user``() =
-    let collections =
-        [ makeCollection 1 1 "Collection 1"; makeCollection 2 1 "Collection 2" ]
-
-    let env =
-        TestEnv(fun userId ->
-            if userId <> UserId 1 then
-                failwith $"Unexpected userId: {userId}"
-
-            Task.FromResult(collections))
-
     task {
+        let collections =
+            [ makeCollection 1 1 "Collection 1"; makeCollection 2 1 "Collection 2" ]
+
+        let env =
+            TestEnv(fun userId ->
+                if userId <> UserId 1 then
+                    failwith $"Unexpected userId: {userId}"
+
+                Task.FromResult(collections))
+
         let! result = getByUserId env (UserId 1)
 
         Assert.Equal<Collection list>(collections, result)
@@ -54,14 +54,14 @@ let ``returns collections for user``() =
 
 [<Fact>]
 let ``returns empty list when user has no collections``() =
-    let env =
-        TestEnv(fun userId ->
-            if userId <> UserId 1 then
-                failwith $"Unexpected userId: {userId}"
-
-            Task.FromResult([]))
-
     task {
+        let env =
+            TestEnv(fun userId ->
+                if userId <> UserId 1 then
+                    failwith $"Unexpected userId: {userId}"
+
+                Task.FromResult([]))
+
         let! result = getByUserId env (UserId 1)
 
         Assert.Empty(result)

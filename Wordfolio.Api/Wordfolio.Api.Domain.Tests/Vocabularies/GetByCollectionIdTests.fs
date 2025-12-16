@@ -59,28 +59,28 @@ let makeVocabulary id collectionId name =
 
 [<Fact>]
 let ``returns vocabularies when collection owned by user``() =
-    let collection = makeCollection 1 1
-
-    let vocabularies =
-        [ makeVocabulary 1 1 "Vocabulary 1"; makeVocabulary 2 1 "Vocabulary 2" ]
-
-    let env =
-        TestEnv(
-            getCollectionById =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected collection id: {id}"
-
-                    Task.FromResult(Some collection)),
-            getVocabulariesByCollectionId =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected collection id: {id}"
-
-                    Task.FromResult(vocabularies))
-        )
-
     task {
+        let collection = makeCollection 1 1
+
+        let vocabularies =
+            [ makeVocabulary 1 1 "Vocabulary 1"; makeVocabulary 2 1 "Vocabulary 2" ]
+
+        let env =
+            TestEnv(
+                getCollectionById =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected collection id: {id}"
+
+                        Task.FromResult(Some collection)),
+                getVocabulariesByCollectionId =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected collection id: {id}"
+
+                        Task.FromResult(vocabularies))
+            )
+
         let! result = getByCollectionId env (UserId 1) (CollectionId 1)
 
         Assert.Equal(Ok vocabularies, result)
@@ -90,15 +90,15 @@ let ``returns vocabularies when collection owned by user``() =
 
 [<Fact>]
 let ``returns empty list when collection has no vocabularies``() =
-    let collection = makeCollection 1 1
-
-    let env =
-        TestEnv(
-            getCollectionById = (fun _ -> Task.FromResult(Some collection)),
-            getVocabulariesByCollectionId = (fun _ -> Task.FromResult([]))
-        )
-
     task {
+        let collection = makeCollection 1 1
+
+        let env =
+            TestEnv(
+                getCollectionById = (fun _ -> Task.FromResult(Some collection)),
+                getVocabulariesByCollectionId = (fun _ -> Task.FromResult([]))
+            )
+
         let! result = getByCollectionId env (UserId 1) (CollectionId 1)
 
         match result with
@@ -108,18 +108,18 @@ let ``returns empty list when collection has no vocabularies``() =
 
 [<Fact>]
 let ``returns CollectionNotFound when collection does not exist``() =
-    let env =
-        TestEnv(
-            getCollectionById =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected collection id: {id}"
-
-                    Task.FromResult(None)),
-            getVocabulariesByCollectionId = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let env =
+            TestEnv(
+                getCollectionById =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected collection id: {id}"
+
+                        Task.FromResult(None)),
+                getVocabulariesByCollectionId = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = getByCollectionId env (UserId 1) (CollectionId 1)
 
         Assert.Equal(Error(VocabularyCollectionNotFound(CollectionId 1)), result)
@@ -129,20 +129,20 @@ let ``returns CollectionNotFound when collection does not exist``() =
 
 [<Fact>]
 let ``returns CollectionNotFound when collection owned by different user``() =
-    let collection = makeCollection 1 2
-
-    let env =
-        TestEnv(
-            getCollectionById =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected collection id: {id}"
-
-                    Task.FromResult(Some collection)),
-            getVocabulariesByCollectionId = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let collection = makeCollection 1 2
+
+        let env =
+            TestEnv(
+                getCollectionById =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected collection id: {id}"
+
+                        Task.FromResult(Some collection)),
+                getVocabulariesByCollectionId = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = getByCollectionId env (UserId 1) (CollectionId 1)
 
         Assert.Equal(Error(VocabularyCollectionNotFound(CollectionId 1)), result)

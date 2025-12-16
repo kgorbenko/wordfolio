@@ -34,17 +34,17 @@ let makeCollection id userId name =
 
 [<Fact>]
 let ``returns collection when found and owned by user``() =
-    let collection =
-        makeCollection 1 1 "Test Collection"
-
-    let env =
-        TestEnv(fun id ->
-            if id <> CollectionId 1 then
-                failwith $"Unexpected id: {id}"
-
-            Task.FromResult(Some collection))
-
     task {
+        let collection =
+            makeCollection 1 1 "Test Collection"
+
+        let env =
+            TestEnv(fun id ->
+                if id <> CollectionId 1 then
+                    failwith $"Unexpected id: {id}"
+
+                Task.FromResult(Some collection))
+
         let! result = getById env (UserId 1) (CollectionId 1)
 
         Assert.Equal(Ok collection, result)
@@ -53,14 +53,14 @@ let ``returns collection when found and owned by user``() =
 
 [<Fact>]
 let ``returns NotFound when collection does not exist``() =
-    let env =
-        TestEnv(fun id ->
-            if id <> CollectionId 1 then
-                failwith $"Unexpected id: {id}"
-
-            Task.FromResult(None))
-
     task {
+        let env =
+            TestEnv(fun id ->
+                if id <> CollectionId 1 then
+                    failwith $"Unexpected id: {id}"
+
+                Task.FromResult(None))
+
         let! result = getById env (UserId 1) (CollectionId 1)
 
         Assert.Equal(Error(CollectionNotFound(CollectionId 1)), result)
@@ -69,17 +69,17 @@ let ``returns NotFound when collection does not exist``() =
 
 [<Fact>]
 let ``returns AccessDenied when collection owned by different user``() =
-    let collection =
-        makeCollection 1 2 "Test Collection"
-
-    let env =
-        TestEnv(fun id ->
-            if id <> CollectionId 1 then
-                failwith $"Unexpected id: {id}"
-
-            Task.FromResult(Some collection))
-
     task {
+        let collection =
+            makeCollection 1 2 "Test Collection"
+
+        let env =
+            TestEnv(fun id ->
+                if id <> CollectionId 1 then
+                    failwith $"Unexpected id: {id}"
+
+                Task.FromResult(Some collection))
+
         let! result = getById env (UserId 1) (CollectionId 1)
 
         Assert.Equal(Error(CollectionAccessDenied(CollectionId 1)), result)

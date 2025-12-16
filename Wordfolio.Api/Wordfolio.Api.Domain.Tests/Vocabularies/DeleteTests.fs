@@ -70,34 +70,34 @@ let makeVocabulary id collectionId name =
 
 [<Fact>]
 let ``deletes vocabulary when collection owned by user``() =
-    let existingVocabulary =
-        makeVocabulary 1 1 "Test Vocabulary"
-
-    let collection = makeCollection 1 1
-
-    let env =
-        TestEnv(
-            getVocabularyById =
-                (fun id ->
-                    if id <> VocabularyId 1 then
-                        failwith $"Unexpected vocabulary id: {id}"
-
-                    Task.FromResult(Some existingVocabulary)),
-            getCollectionById =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected collection id: {id}"
-
-                    Task.FromResult(Some collection)),
-            deleteVocabulary =
-                (fun id ->
-                    if id <> VocabularyId 1 then
-                        failwith $"Unexpected vocabulary id: {id}"
-
-                    Task.FromResult(1))
-        )
-
     task {
+        let existingVocabulary =
+            makeVocabulary 1 1 "Test Vocabulary"
+
+        let collection = makeCollection 1 1
+
+        let env =
+            TestEnv(
+                getVocabularyById =
+                    (fun id ->
+                        if id <> VocabularyId 1 then
+                            failwith $"Unexpected vocabulary id: {id}"
+
+                        Task.FromResult(Some existingVocabulary)),
+                getCollectionById =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected collection id: {id}"
+
+                        Task.FromResult(Some collection)),
+                deleteVocabulary =
+                    (fun id ->
+                        if id <> VocabularyId 1 then
+                            failwith $"Unexpected vocabulary id: {id}"
+
+                        Task.FromResult(1))
+            )
+
         let! result = delete env (UserId 1) (VocabularyId 1)
 
         Assert.Equal(Ok(), result)
@@ -108,19 +108,19 @@ let ``deletes vocabulary when collection owned by user``() =
 
 [<Fact>]
 let ``returns NotFound when vocabulary does not exist``() =
-    let env =
-        TestEnv(
-            getVocabularyById =
-                (fun id ->
-                    if id <> VocabularyId 1 then
-                        failwith $"Unexpected vocabulary id: {id}"
-
-                    Task.FromResult(None)),
-            getCollectionById = (fun _ -> failwith "Should not be called"),
-            deleteVocabulary = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let env =
+            TestEnv(
+                getVocabularyById =
+                    (fun id ->
+                        if id <> VocabularyId 1 then
+                            failwith $"Unexpected vocabulary id: {id}"
+
+                        Task.FromResult(None)),
+                getCollectionById = (fun _ -> failwith "Should not be called"),
+                deleteVocabulary = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = delete env (UserId 1) (VocabularyId 1)
 
         Assert.Equal(Error(VocabularyNotFound(VocabularyId 1)), result)
@@ -130,19 +130,19 @@ let ``returns NotFound when vocabulary does not exist``() =
 
 [<Fact>]
 let ``returns AccessDenied when collection owned by different user``() =
-    let existingVocabulary =
-        makeVocabulary 1 1 "Test Vocabulary"
-
-    let collection = makeCollection 1 2
-
-    let env =
-        TestEnv(
-            getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
-            getCollectionById = (fun _ -> Task.FromResult(Some collection)),
-            deleteVocabulary = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let existingVocabulary =
+            makeVocabulary 1 1 "Test Vocabulary"
+
+        let collection = makeCollection 1 2
+
+        let env =
+            TestEnv(
+                getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
+                getCollectionById = (fun _ -> Task.FromResult(Some collection)),
+                deleteVocabulary = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = delete env (UserId 1) (VocabularyId 1)
 
         Assert.Equal(Error(VocabularyAccessDenied(VocabularyId 1)), result)
@@ -151,17 +151,17 @@ let ``returns AccessDenied when collection owned by different user``() =
 
 [<Fact>]
 let ``returns AccessDenied when collection does not exist``() =
-    let existingVocabulary =
-        makeVocabulary 1 1 "Test Vocabulary"
-
-    let env =
-        TestEnv(
-            getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
-            getCollectionById = (fun _ -> Task.FromResult(None)),
-            deleteVocabulary = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let existingVocabulary =
+            makeVocabulary 1 1 "Test Vocabulary"
+
+        let env =
+            TestEnv(
+                getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
+                getCollectionById = (fun _ -> Task.FromResult(None)),
+                deleteVocabulary = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = delete env (UserId 1) (VocabularyId 1)
 
         Assert.Equal(Error(VocabularyAccessDenied(VocabularyId 1)), result)
@@ -170,19 +170,19 @@ let ``returns AccessDenied when collection does not exist``() =
 
 [<Fact>]
 let ``returns NotFound when delete affects no rows``() =
-    let existingVocabulary =
-        makeVocabulary 1 1 "Test Vocabulary"
-
-    let collection = makeCollection 1 1
-
-    let env =
-        TestEnv(
-            getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
-            getCollectionById = (fun _ -> Task.FromResult(Some collection)),
-            deleteVocabulary = (fun _ -> Task.FromResult(0))
-        )
-
     task {
+        let existingVocabulary =
+            makeVocabulary 1 1 "Test Vocabulary"
+
+        let collection = makeCollection 1 1
+
+        let env =
+            TestEnv(
+                getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
+                getCollectionById = (fun _ -> Task.FromResult(Some collection)),
+                deleteVocabulary = (fun _ -> Task.FromResult(0))
+            )
+
         let! result = delete env (UserId 1) (VocabularyId 1)
 
         Assert.Equal(Error(VocabularyNotFound(VocabularyId 1)), result)

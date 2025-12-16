@@ -61,37 +61,37 @@ let makeCollection id userId name description createdAt =
 
 [<Fact>]
 let ``creates collection with valid name``() =
-    let now = DateTimeOffset.UtcNow
-
-    let createdCollection =
-        makeCollection 1 1 "Test Collection" None now
-
-    let env =
-        TestEnv(
-            createCollection =
-                (fun (userId, name, description, createdAt) ->
-                    if userId <> UserId 1 then
-                        failwith $"Unexpected userId: {userId}"
-
-                    if name <> "Test Collection" then
-                        failwith $"Unexpected name: {name}"
-
-                    if description <> None then
-                        failwith $"Unexpected description: {description}"
-
-                    if createdAt <> now then
-                        failwith $"Unexpected createdAt: {createdAt}"
-
-                    Task.FromResult(CollectionId 1)),
-            getCollectionById =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected id: {id}"
-
-                    Task.FromResult(Some createdCollection))
-        )
-
     task {
+        let now = DateTimeOffset.UtcNow
+
+        let createdCollection =
+            makeCollection 1 1 "Test Collection" None now
+
+        let env =
+            TestEnv(
+                createCollection =
+                    (fun (userId, name, description, createdAt) ->
+                        if userId <> UserId 1 then
+                            failwith $"Unexpected userId: {userId}"
+
+                        if name <> "Test Collection" then
+                            failwith $"Unexpected name: {name}"
+
+                        if description <> None then
+                            failwith $"Unexpected description: {description}"
+
+                        if createdAt <> now then
+                            failwith $"Unexpected createdAt: {createdAt}"
+
+                        Task.FromResult(CollectionId 1)),
+                getCollectionById =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected id: {id}"
+
+                        Task.FromResult(Some createdCollection))
+            )
+
         let! result = create env (UserId 1) "Test Collection" None now
 
         Assert.Equal(Ok createdCollection, result)
@@ -101,24 +101,24 @@ let ``creates collection with valid name``() =
 
 [<Fact>]
 let ``creates collection with description``() =
-    let now = DateTimeOffset.UtcNow
-    let description = Some "A test description"
-
-    let createdCollection =
-        makeCollection 1 1 "Test Collection" description now
-
-    let env =
-        TestEnv(
-            createCollection =
-                (fun (userId, name, desc, createdAt) ->
-                    if desc <> description then
-                        failwith $"Unexpected description: {desc}"
-
-                    Task.FromResult(CollectionId 1)),
-            getCollectionById = (fun _ -> Task.FromResult(Some createdCollection))
-        )
-
     task {
+        let now = DateTimeOffset.UtcNow
+        let description = Some "A test description"
+
+        let createdCollection =
+            makeCollection 1 1 "Test Collection" description now
+
+        let env =
+            TestEnv(
+                createCollection =
+                    (fun (userId, name, desc, createdAt) ->
+                        if desc <> description then
+                            failwith $"Unexpected description: {desc}"
+
+                        Task.FromResult(CollectionId 1)),
+                getCollectionById = (fun _ -> Task.FromResult(Some createdCollection))
+            )
+
         let! result = create env (UserId 1) "Test Collection" description now
 
         Assert.Equal(Ok createdCollection, result)
@@ -126,23 +126,23 @@ let ``creates collection with description``() =
 
 [<Fact>]
 let ``trims whitespace from name``() =
-    let now = DateTimeOffset.UtcNow
-
-    let createdCollection =
-        makeCollection 1 1 "Test Collection" None now
-
-    let env =
-        TestEnv(
-            createCollection =
-                (fun (_, name, _, _) ->
-                    if name <> "Test Collection" then
-                        failwith $"Expected trimmed name 'Test Collection', got: '{name}'"
-
-                    Task.FromResult(CollectionId 1)),
-            getCollectionById = (fun _ -> Task.FromResult(Some createdCollection))
-        )
-
     task {
+        let now = DateTimeOffset.UtcNow
+
+        let createdCollection =
+            makeCollection 1 1 "Test Collection" None now
+
+        let env =
+            TestEnv(
+                createCollection =
+                    (fun (_, name, _, _) ->
+                        if name <> "Test Collection" then
+                            failwith $"Expected trimmed name 'Test Collection', got: '{name}'"
+
+                        Task.FromResult(CollectionId 1)),
+                getCollectionById = (fun _ -> Task.FromResult(Some createdCollection))
+            )
+
         let! result = create env (UserId 1) "  Test Collection  " None now
 
         Assert.True(Result.isOk result)
@@ -155,13 +155,13 @@ let ``trims whitespace from name``() =
 
 [<Fact>]
 let ``returns error when name is empty``() =
-    let env =
-        TestEnv(
-            createCollection = (fun _ -> failwith "Should not be called"),
-            getCollectionById = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let env =
+            TestEnv(
+                createCollection = (fun _ -> failwith "Should not be called"),
+                getCollectionById = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = create env (UserId 1) "" None DateTimeOffset.UtcNow
 
         Assert.Equal(Error CollectionNameRequired, result)
@@ -170,13 +170,13 @@ let ``returns error when name is empty``() =
 
 [<Fact>]
 let ``returns error when name is whitespace only``() =
-    let env =
-        TestEnv(
-            createCollection = (fun _ -> failwith "Should not be called"),
-            getCollectionById = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let env =
+            TestEnv(
+                createCollection = (fun _ -> failwith "Should not be called"),
+                getCollectionById = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = create env (UserId 1) "   " None DateTimeOffset.UtcNow
 
         Assert.Equal(Error CollectionNameRequired, result)
@@ -185,15 +185,15 @@ let ``returns error when name is whitespace only``() =
 
 [<Fact>]
 let ``returns error when name exceeds max length``() =
-    let longName = String.replicate 256 "a"
-
-    let env =
-        TestEnv(
-            createCollection = (fun _ -> failwith "Should not be called"),
-            getCollectionById = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let longName = String.replicate 256 "a"
+
+        let env =
+            TestEnv(
+                createCollection = (fun _ -> failwith "Should not be called"),
+                getCollectionById = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = create env (UserId 1) longName None DateTimeOffset.UtcNow
 
         Assert.Equal(Error(CollectionNameTooLong MaxNameLength), result)

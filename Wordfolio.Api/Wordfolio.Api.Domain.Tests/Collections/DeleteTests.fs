@@ -45,26 +45,26 @@ let makeCollection id userId name =
 
 [<Fact>]
 let ``deletes collection when owned by user``() =
-    let existingCollection =
-        makeCollection 1 1 "Test Collection"
-
-    let env =
-        TestEnv(
-            getCollectionById =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected id: {id}"
-
-                    Task.FromResult(Some existingCollection)),
-            deleteCollection =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected id: {id}"
-
-                    Task.FromResult(1))
-        )
-
     task {
+        let existingCollection =
+            makeCollection 1 1 "Test Collection"
+
+        let env =
+            TestEnv(
+                getCollectionById =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected id: {id}"
+
+                        Task.FromResult(Some existingCollection)),
+                deleteCollection =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected id: {id}"
+
+                        Task.FromResult(1))
+            )
+
         let! result = delete env (UserId 1) (CollectionId 1)
 
         Assert.Equal(Ok(), result)
@@ -74,18 +74,18 @@ let ``deletes collection when owned by user``() =
 
 [<Fact>]
 let ``returns NotFound when collection does not exist``() =
-    let env =
-        TestEnv(
-            getCollectionById =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected id: {id}"
-
-                    Task.FromResult(None)),
-            deleteCollection = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let env =
+            TestEnv(
+                getCollectionById =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected id: {id}"
+
+                        Task.FromResult(None)),
+                deleteCollection = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = delete env (UserId 1) (CollectionId 1)
 
         Assert.Equal(Error(CollectionNotFound(CollectionId 1)), result)
@@ -95,21 +95,21 @@ let ``returns NotFound when collection does not exist``() =
 
 [<Fact>]
 let ``returns AccessDenied when collection owned by different user``() =
-    let existingCollection =
-        makeCollection 1 2 "Test Collection"
-
-    let env =
-        TestEnv(
-            getCollectionById =
-                (fun id ->
-                    if id <> CollectionId 1 then
-                        failwith $"Unexpected id: {id}"
-
-                    Task.FromResult(Some existingCollection)),
-            deleteCollection = (fun _ -> failwith "Should not be called")
-        )
-
     task {
+        let existingCollection =
+            makeCollection 1 2 "Test Collection"
+
+        let env =
+            TestEnv(
+                getCollectionById =
+                    (fun id ->
+                        if id <> CollectionId 1 then
+                            failwith $"Unexpected id: {id}"
+
+                        Task.FromResult(Some existingCollection)),
+                deleteCollection = (fun _ -> failwith "Should not be called")
+            )
+
         let! result = delete env (UserId 1) (CollectionId 1)
 
         Assert.Equal(Error(CollectionAccessDenied(CollectionId 1)), result)
@@ -119,16 +119,16 @@ let ``returns AccessDenied when collection owned by different user``() =
 
 [<Fact>]
 let ``returns NotFound when delete affects no rows``() =
-    let existingCollection =
-        makeCollection 1 1 "Test Collection"
-
-    let env =
-        TestEnv(
-            getCollectionById = (fun _ -> Task.FromResult(Some existingCollection)),
-            deleteCollection = (fun _ -> Task.FromResult(0))
-        )
-
     task {
+        let existingCollection =
+            makeCollection 1 1 "Test Collection"
+
+        let env =
+            TestEnv(
+                getCollectionById = (fun _ -> Task.FromResult(Some existingCollection)),
+                deleteCollection = (fun _ -> Task.FromResult(0))
+            )
+
         let! result = delete env (UserId 1) (CollectionId 1)
 
         Assert.Equal(Error(CollectionNotFound(CollectionId 1)), result)
