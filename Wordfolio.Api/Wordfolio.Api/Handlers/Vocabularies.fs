@@ -112,7 +112,7 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder, collectionsGroup: IEndp
                             match result with
                             | Ok vocabulary ->
                                 Results.Created(
-                                    $"/vocabularies/{VocabularyId.value vocabulary.Id}",
+                                    $"/collections/{collectionId}/vocabularies/{VocabularyId.value vocabulary.Id}",
                                     toResponse vocabulary
                                 )
                             | Error error -> toErrorResponse error
@@ -120,12 +120,9 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder, collectionsGroup: IEndp
     )
     |> ignore
 
-    let vocabulariesByIdGroup =
-        app.MapGroup("/vocabularies")
-
-    vocabulariesByIdGroup.MapGet(
+    vocabulariesGroup.MapGet(
         "/{id:int}",
-        Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun id user dataSource cancellationToken ->
+        Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun collectionId id user dataSource cancellationToken ->
             task {
                 match getUserId user with
                 | None -> return Results.Unauthorized()
@@ -143,10 +140,10 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder, collectionsGroup: IEndp
     )
     |> ignore
 
-    vocabulariesByIdGroup.MapPut(
+    vocabulariesGroup.MapPut(
         "/{id:int}",
-        Func<int, UpdateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-            (fun id request user dataSource cancellationToken ->
+        Func<int, int, UpdateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+            (fun collectionId id request user dataSource cancellationToken ->
                 task {
                     match getUserId user with
                     | None -> return Results.Unauthorized()
@@ -171,9 +168,9 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder, collectionsGroup: IEndp
     )
     |> ignore
 
-    vocabulariesByIdGroup.MapDelete(
+    vocabulariesGroup.MapDelete(
         "/{id:int}",
-        Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun id user dataSource cancellationToken ->
+        Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun collectionId id user dataSource cancellationToken ->
             task {
                 match getUserId user with
                 | None -> return Results.Unauthorized()
