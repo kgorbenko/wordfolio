@@ -69,18 +69,9 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
                     let env =
                         TransactionalEnv(dataSource, cancellationToken)
 
-                    let! collections =
-                        Transactions.runInTransaction env (fun appEnv ->
-                            task {
-                                let! result = getByUserId appEnv (UserId userId)
-                                return Ok result
-                            })
-
-                    match collections with
-                    | Ok result ->
-                        let response = result |> List.map toResponse
-                        return Results.Ok(response)
-                    | Error _ -> return Results.StatusCode(500)
+                    let! result = getByUserId env (UserId userId)
+                    let response = result |> List.map toResponse
+                    return Results.Ok(response)
             })
     )
     |> ignore
@@ -95,9 +86,7 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
                     let env =
                         TransactionalEnv(dataSource, cancellationToken)
 
-                    let! result =
-                        Transactions.runInTransaction env (fun appEnv ->
-                            getById appEnv (UserId userId) (CollectionId id))
+                    let! result = getById env (UserId userId) (CollectionId id)
 
                     return
                         match result with
@@ -118,9 +107,7 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
                         let env =
                             TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result =
-                            Transactions.runInTransaction env (fun appEnv ->
-                                create appEnv (UserId userId) request.Name request.Description DateTimeOffset.UtcNow)
+                        let! result = create env (UserId userId) request.Name request.Description DateTimeOffset.UtcNow
 
                         return
                             match result with
@@ -146,14 +133,13 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
                             TransactionalEnv(dataSource, cancellationToken)
 
                         let! result =
-                            Transactions.runInTransaction env (fun appEnv ->
-                                update
-                                    appEnv
-                                    (UserId userId)
-                                    (CollectionId id)
-                                    request.Name
-                                    request.Description
-                                    DateTimeOffset.UtcNow)
+                            update
+                                env
+                                (UserId userId)
+                                (CollectionId id)
+                                request.Name
+                                request.Description
+                                DateTimeOffset.UtcNow
 
                         return
                             match result with
@@ -173,9 +159,7 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
                     let env =
                         TransactionalEnv(dataSource, cancellationToken)
 
-                    let! result =
-                        Transactions.runInTransaction env (fun appEnv ->
-                            delete appEnv (UserId userId) (CollectionId id))
+                    let! result = delete env (UserId userId) (CollectionId id)
 
                     return
                         match result with

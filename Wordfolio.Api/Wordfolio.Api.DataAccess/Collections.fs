@@ -5,6 +5,7 @@ open System.Data
 open System.Threading
 open System.Threading.Tasks
 
+open Dapper
 open Dapper.FSharp.PostgreSQL
 
 open Wordfolio.Api.DataAccess.Dapper
@@ -64,15 +65,18 @@ let createCollectionAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<unit> =
+    : Task<int> =
     task {
-        do!
-            insert {
-                into collectionsInsertTable
-                values [ parameters ]
-            }
-            |> insertAsync connection transaction cancellationToken
-            |> Task.ignore
+        let sql =
+            $"INSERT INTO \"{Schema.Name}\".\"{Schema.CollectionsTable.Name}\" 
+              (\"{Schema.CollectionsTable.UserIdColumn}\", \"{Schema.CollectionsTable.NameColumn}\", 
+               \"{Schema.CollectionsTable.DescriptionColumn}\", \"{Schema.CollectionsTable.CreatedAtColumn}\")
+              VALUES (@UserId, @Name, @Description, @CreatedAt)
+              RETURNING \"{Schema.CollectionsTable.IdColumn}\""
+
+        let! id = connection.QuerySingleAsync<int>(sql, parameters, transaction = transaction)
+
+        return id
     }
 
 let getCollectionByIdAsync

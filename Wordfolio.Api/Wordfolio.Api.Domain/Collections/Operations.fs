@@ -22,71 +22,91 @@ let private checkOwnership (userId: UserId) (collection: Collection) : Result<Co
     else
         Error(CollectionAccessDenied collection.Id)
 
-let getById env userId collectionId =
+let getById transactional userId collectionId =
+    Transactions.runInTransaction transactional (fun appEnv ->
+        task {
+            let! maybeCollection = getCollectionById appEnv collectionId
+
+            return
+                match maybeCollection with
+                | None -> Error(CollectionNotFound collectionId)
+                | Some collection -> checkOwnership userId collection
+        })
+
+let getByUserId transactional userId =
     task {
-        let! maybeCollection = getCollectionById env collectionId
+        let! result =
+            Transactions.runInTransaction transactional (fun appEnv ->
+                task {
+                    let! collections = getCollectionsByUserId appEnv userId
+                    return Ok collections
+                })
 
         return
+            match result with
+            | Ok collections -> collections
+            | Error _ -> []
+    }
+
+let create transactional userId name description now =
+    Transactions.runInTransaction transactional (fun appEnv ->
+        task {
+            match validateName name with
+            | Error error -> return Error error
+            | Ok validName ->
+                let trimmedName = validName.Trim()
+                let! collectionId = createCollection appEnv userId trimmedName description now
+                let! maybeCollection = getCollectionById appEnv collectionId
+
+                match maybeCollection with
+                | Some collection -> return Ok collection
+                | None -> return Error CollectionNameRequired
+        })
+
+let update transactional userId collectionId name description now =
+    Transactions.runInTransaction transactional (fun appEnv ->
+        task {
+            let! maybeCollection = getCollectionById appEnv collectionId
+
             match maybeCollection with
-            | None -> Error(CollectionNotFound collectionId)
-            | Some collection -> checkOwnership userId collection
-    }
-
-let getByUserId env userId = getCollectionsByUserId env userId
-
-let create env userId name description now =
-    task {
-        match validateName name with
-        | Error error -> return Error error
-        | Ok validName ->
-            do! createCollection env userId validName description now
-
-            let! collections = getCollectionsByUserId env userId
-
-            let created =
-                collections
-                |> List.filter(fun c -> c.Name = validName && c.CreatedAt = now)
-                |> List.tryHead
-
-            match created with
-            | Some collection -> return Ok collection
-            | None -> return Error CollectionNameRequired
-    }
-
-let update env userId collectionId name description now =
-    task {
-        let! maybeCollection = getCollectionById env collectionId
-
-        match maybeCollection with
-        | None -> return Error(CollectionNotFound collectionId)
-        | Some collection ->
-            match checkOwnership userId collection with
-            | Error error -> return Error error
-            | Ok _ ->
-                match validateName name with
+            | None -> return Error(CollectionNotFound collectionId)
+            | Some collection ->
+                match checkOwnership userId collection with
                 | Error error -> return Error error
-                | Ok validName ->
-                    let! _ = updateCollection env collectionId validName description now
+                | Ok _ ->
+                    match validateName name with
+                    | Error error -> return Error error
+                    | Ok validName ->
+                        let trimmedName = validName.Trim()
+                        let! affectedRows = updateCollection appEnv collectionId trimmedName description now
 
-                    let updated =
-                        { collection with
-                            Name = validName
-                            Description = description
-                            UpdatedAt = Some now }
+                        if affectedRows > 0 then
+                            let updated =
+                                { collection with
+                                    Name = trimmedName
+                                    Description = description
+                                    UpdatedAt = Some now }
 
-                    return Ok updated
-    }
+                            return Ok updated
+                        else
+                            return Error(CollectionNotFound collectionId)
+        })
 
-let delete env userId collectionId =
-    task {
-        let! maybeCollection = getCollectionById env collectionId
+let delete transactional userId collectionId =
+    Transactions.runInTransaction transactional (fun appEnv ->
+        task {
+            let! maybeCollection = getCollectionById appEnv collectionId
 
-        match maybeCollection with
-        | None -> return Error(CollectionNotFound collectionId)
-        | Some collection ->
-            match checkOwnership userId collection with
-            | Error error -> return Error error
-            | Ok _ ->
-                let! _ = deleteCollection env collectionId
-                return Ok()
-    }
+            match maybeCollection with
+            | None -> return Error(CollectionNotFound collectionId)
+            | Some collection ->
+                match checkOwnership userId collection with
+                | Error error -> return Error error
+                | Ok _ ->
+                    let! affectedRows = deleteCollection appEnv collectionId
+
+                    if affectedRows > 0 then
+                        return Ok()
+                    else
+                        return Error(CollectionNotFound collectionId)
+        })

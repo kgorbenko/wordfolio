@@ -27,7 +27,7 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            do!
+            let! createdId =
                 Collections.createCollectionAsync
                     { UserId = user.Id
                       Name = "My Collection"
@@ -67,7 +67,7 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            do!
+            let! createdId =
                 Collections.createCollectionAsync
                     { UserId = user.Id
                       Name = "My Collection"

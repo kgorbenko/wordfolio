@@ -27,8 +27,9 @@ type VocabulariesTests() =
             let vocabularies =
                 ref(Map.ofList [ 1, vocabulary ])
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = getById env (UserId 1) (VocabularyId 1)
 
@@ -46,8 +47,9 @@ type VocabulariesTests() =
             let collections = ref Map.empty
             let vocabularies = ref Map.empty
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = getById env (UserId 1) (VocabularyId 999)
 
@@ -71,8 +73,9 @@ type VocabulariesTests() =
             let vocabularies =
                 ref(Map.ofList [ 1, vocabulary ])
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = getById env (UserId 2) (VocabularyId 1)
 
@@ -102,8 +105,9 @@ type VocabulariesTests() =
             let vocabularies =
                 ref(Map.ofList [ 1, vocabulary1; 2, vocabulary2; 3, vocabulary3 ])
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = getByCollectionId env (UserId 1) (CollectionId 1)
 
@@ -134,8 +138,9 @@ type VocabulariesTests() =
 
             let vocabularies = ref Map.empty
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = getByCollectionId env (UserId 2) (CollectionId 1)
 
@@ -150,8 +155,9 @@ type VocabulariesTests() =
             let collections = ref Map.empty
             let vocabularies = ref Map.empty
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = getByCollectionId env (UserId 1) (CollectionId 999)
 
@@ -171,8 +177,9 @@ type VocabulariesTests() =
 
             let vocabularies = ref Map.empty
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
@@ -199,8 +206,9 @@ type VocabulariesTests() =
 
             let vocabularies = ref Map.empty
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
@@ -218,8 +226,9 @@ type VocabulariesTests() =
             let collections = ref Map.empty
             let vocabularies = ref Map.empty
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
@@ -242,8 +251,9 @@ type VocabulariesTests() =
 
             let vocabularies = ref Map.empty
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
@@ -266,8 +276,9 @@ type VocabulariesTests() =
 
             let vocabularies = ref Map.empty
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
@@ -296,8 +307,9 @@ type VocabulariesTests() =
             let vocabularies =
                 ref(Map.ofList [ 1, vocabulary ])
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
@@ -318,8 +330,9 @@ type VocabulariesTests() =
             let collections = ref Map.empty
             let vocabularies = ref Map.empty
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
@@ -346,8 +359,9 @@ type VocabulariesTests() =
             let vocabularies =
                 ref(Map.ofList [ 1, vocabulary ])
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
@@ -374,8 +388,9 @@ type VocabulariesTests() =
             let vocabularies =
                 ref(Map.ofList [ 1, vocabulary ])
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
@@ -402,8 +417,9 @@ type VocabulariesTests() =
             let vocabularies =
                 ref(Map.ofList [ 1, vocabulary ])
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = delete env (UserId 1) (VocabularyId 1)
 
@@ -418,8 +434,9 @@ type VocabulariesTests() =
             let collections = ref Map.empty
             let vocabularies = ref Map.empty
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = delete env (UserId 1) (VocabularyId 999)
 
@@ -443,8 +460,9 @@ type VocabulariesTests() =
             let vocabularies =
                 ref(Map.ofList [ 1, vocabulary ])
 
-            let env =
+            let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = delete env (UserId 2) (VocabularyId 1)
 

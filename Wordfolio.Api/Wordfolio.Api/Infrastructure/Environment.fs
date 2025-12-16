@@ -75,12 +75,14 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                       Description = description
                       CreatedAt = createdAt }
 
-                return!
+                let! id =
                     Wordfolio.Api.DataAccess.Collections.createCollectionAsync
                         parameters
                         connection
                         transaction
                         cancellationToken
+
+                return CollectionId id
             }
 
     interface IUpdateCollection with
@@ -92,27 +94,23 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                       Description = description
                       UpdatedAt = updatedAt }
 
-                let! affectedRows =
+                return!
                     Wordfolio.Api.DataAccess.Collections.updateCollectionAsync
                         parameters
                         connection
                         transaction
                         cancellationToken
-
-                return affectedRows > 0
             }
 
     interface IDeleteCollection with
         member _.DeleteCollection(CollectionId id) =
             task {
-                let! affectedRows =
+                return!
                     Wordfolio.Api.DataAccess.Collections.deleteCollectionAsync
                         id
                         connection
                         transaction
                         cancellationToken
-
-                return affectedRows > 0
             }
 
     interface IGetVocabularyById with
@@ -150,12 +148,14 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                       Description = description
                       CreatedAt = createdAt }
 
-                return!
+                let! id =
                     Wordfolio.Api.DataAccess.Vocabularies.createVocabularyAsync
                         parameters
                         connection
                         transaction
                         cancellationToken
+
+                return VocabularyId id
             }
 
     interface IUpdateVocabulary with
@@ -167,27 +167,23 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                       Description = description
                       UpdatedAt = updatedAt }
 
-                let! affectedRows =
+                return!
                     Wordfolio.Api.DataAccess.Vocabularies.updateVocabularyAsync
                         parameters
                         connection
                         transaction
                         cancellationToken
-
-                return affectedRows > 0
             }
 
     interface IDeleteVocabulary with
         member _.DeleteVocabulary(VocabularyId id) =
             task {
-                let! affectedRows =
+                return!
                     Wordfolio.Api.DataAccess.Vocabularies.deleteVocabularyAsync
                         id
                         connection
                         transaction
                         cancellationToken
-
-                return affectedRows > 0
             }
 
 type TransactionalEnv(dataSource: NpgsqlDataSource, cancellationToken: CancellationToken) =

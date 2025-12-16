@@ -30,94 +30,102 @@ let private checkCollectionOwnership env userId collectionId =
                     Error(VocabularyCollectionNotFound collectionId)
     }
 
-let getById env userId vocabularyId =
-    task {
-        let! maybeVocabulary = getVocabularyById env vocabularyId
+let getById transactional userId vocabularyId =
+    Transactions.runInTransaction transactional (fun appEnv ->
+        task {
+            let! maybeVocabulary = getVocabularyById appEnv vocabularyId
 
-        match maybeVocabulary with
-        | None -> return Error(VocabularyNotFound vocabularyId)
-        | Some vocabulary ->
-            let! ownershipResult = checkCollectionOwnership env userId vocabulary.CollectionId
+            match maybeVocabulary with
+            | None -> return Error(VocabularyNotFound vocabularyId)
+            | Some vocabulary ->
+                let! ownershipResult = checkCollectionOwnership appEnv userId vocabulary.CollectionId
 
-            return
-                match ownershipResult with
-                | Error _ -> Error(VocabularyAccessDenied vocabularyId)
-                | Ok _ -> Ok vocabulary
-    }
+                return
+                    match ownershipResult with
+                    | Error _ -> Error(VocabularyAccessDenied vocabularyId)
+                    | Ok _ -> Ok vocabulary
+        })
 
-let getByCollectionId env userId collectionId =
-    task {
-        let! ownershipResult = checkCollectionOwnership env userId collectionId
-
-        match ownershipResult with
-        | Error error -> return Error error
-        | Ok _ ->
-            let! vocabularies = getVocabulariesByCollectionId env collectionId
-            return Ok vocabularies
-    }
-
-let create env userId collectionId name description now =
-    task {
-        let! ownershipResult = checkCollectionOwnership env userId collectionId
-
-        match ownershipResult with
-        | Error error -> return Error error
-        | Ok _ ->
-            match validateName name with
-            | Error error -> return Error error
-            | Ok validName ->
-                do! createVocabulary env collectionId validName description now
-
-                let! vocabularies = getVocabulariesByCollectionId env collectionId
-
-                let created =
-                    vocabularies
-                    |> List.filter(fun v -> v.Name = validName && v.CreatedAt = now)
-                    |> List.tryHead
-
-                match created with
-                | Some vocabulary -> return Ok vocabulary
-                | None -> return Error VocabularyNameRequired
-    }
-
-let update env userId vocabularyId name description now =
-    task {
-        let! maybeVocabulary = getVocabularyById env vocabularyId
-
-        match maybeVocabulary with
-        | None -> return Error(VocabularyNotFound vocabularyId)
-        | Some vocabulary ->
-            let! ownershipResult = checkCollectionOwnership env userId vocabulary.CollectionId
+let getByCollectionId transactional userId collectionId =
+    Transactions.runInTransaction transactional (fun appEnv ->
+        task {
+            let! ownershipResult = checkCollectionOwnership appEnv userId collectionId
 
             match ownershipResult with
-            | Error _ -> return Error(VocabularyAccessDenied vocabularyId)
+            | Error error -> return Error error
+            | Ok _ ->
+                let! vocabularies = getVocabulariesByCollectionId appEnv collectionId
+                return Ok vocabularies
+        })
+
+let create transactional userId collectionId name description now =
+    Transactions.runInTransaction transactional (fun appEnv ->
+        task {
+            let! ownershipResult = checkCollectionOwnership appEnv userId collectionId
+
+            match ownershipResult with
+            | Error error -> return Error error
             | Ok _ ->
                 match validateName name with
                 | Error error -> return Error error
                 | Ok validName ->
-                    let! _ = updateVocabulary env vocabularyId validName description now
+                    let trimmedName = validName.Trim()
+                    let! vocabularyId = createVocabulary appEnv collectionId trimmedName description now
+                    let! maybeVocabulary = getVocabularyById appEnv vocabularyId
 
-                    let updated =
-                        { vocabulary with
-                            Name = validName
-                            Description = description
-                            UpdatedAt = Some now }
+                    match maybeVocabulary with
+                    | Some vocabulary -> return Ok vocabulary
+                    | None -> return Error VocabularyNameRequired
+        })
 
-                    return Ok updated
-    }
+let update transactional userId vocabularyId name description now =
+    Transactions.runInTransaction transactional (fun appEnv ->
+        task {
+            let! maybeVocabulary = getVocabularyById appEnv vocabularyId
 
-let delete env userId vocabularyId =
-    task {
-        let! maybeVocabulary = getVocabularyById env vocabularyId
+            match maybeVocabulary with
+            | None -> return Error(VocabularyNotFound vocabularyId)
+            | Some vocabulary ->
+                let! ownershipResult = checkCollectionOwnership appEnv userId vocabulary.CollectionId
 
-        match maybeVocabulary with
-        | None -> return Error(VocabularyNotFound vocabularyId)
-        | Some vocabulary ->
-            let! ownershipResult = checkCollectionOwnership env userId vocabulary.CollectionId
+                match ownershipResult with
+                | Error _ -> return Error(VocabularyAccessDenied vocabularyId)
+                | Ok _ ->
+                    match validateName name with
+                    | Error error -> return Error error
+                    | Ok validName ->
+                        let trimmedName = validName.Trim()
+                        let! affectedRows = updateVocabulary appEnv vocabularyId trimmedName description now
 
-            match ownershipResult with
-            | Error _ -> return Error(VocabularyAccessDenied vocabularyId)
-            | Ok _ ->
-                let! _ = deleteVocabulary env vocabularyId
-                return Ok()
-    }
+                        if affectedRows > 0 then
+                            let updated =
+                                { vocabulary with
+                                    Name = trimmedName
+                                    Description = description
+                                    UpdatedAt = Some now }
+
+                            return Ok updated
+                        else
+                            return Error(VocabularyNotFound vocabularyId)
+        })
+
+let delete transactional userId vocabularyId =
+    Transactions.runInTransaction transactional (fun appEnv ->
+        task {
+            let! maybeVocabulary = getVocabularyById appEnv vocabularyId
+
+            match maybeVocabulary with
+            | None -> return Error(VocabularyNotFound vocabularyId)
+            | Some vocabulary ->
+                let! ownershipResult = checkCollectionOwnership appEnv userId vocabulary.CollectionId
+
+                match ownershipResult with
+                | Error _ -> return Error(VocabularyAccessDenied vocabularyId)
+                | Ok _ ->
+                    let! affectedRows = deleteVocabulary appEnv vocabularyId
+
+                    if affectedRows > 0 then
+                        return Ok()
+                    else
+                        return Error(VocabularyNotFound vocabularyId)
+        })
