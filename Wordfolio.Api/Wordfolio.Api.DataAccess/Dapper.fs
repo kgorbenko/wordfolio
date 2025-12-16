@@ -23,7 +23,7 @@ let insertOutputAsync<'TInput, 'TOutput>
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
     (insertFunc: InsertQuery<'TInput>)
-    : Task<'TOutput> =
+    : Task<seq<'TOutput>> =
     task {
         let! results =
             connection.InsertOutputAsync<'TInput, 'TOutput>(
@@ -31,6 +31,19 @@ let insertOutputAsync<'TInput, 'TOutput>
                 trans = transaction,
                 cancellationToken = cancellationToken
             )
+
+        return results
+    }
+
+let insertOutputSingleAsync<'TInput, 'TOutput>
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    (insertFunc: InsertQuery<'TInput>)
+    : Task<'TOutput> =
+    task {
+        let! results =
+            insertOutputAsync<'TInput, 'TOutput> connection transaction cancellationToken insertFunc
 
         return
             results
