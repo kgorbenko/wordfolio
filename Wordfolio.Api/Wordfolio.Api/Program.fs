@@ -42,7 +42,7 @@ let main args =
     |> mapAuthEndpoints
     |> fun app ->
         let collectionsGroup = mapCollectionsEndpoints app
-        mapVocabulariesEndpoints(app, collectionsGroup)
+        mapVocabulariesEndpoints collectionsGroup
     |> ignore
 
     app.Run()
