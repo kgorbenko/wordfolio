@@ -64,15 +64,19 @@ let createVocabularyAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<unit> =
+    : Task<int> =
     task {
-        do!
+        let! record =
             insert {
                 into vocabulariesInsertTable
                 values [ parameters ]
             }
-            |> insertAsync connection transaction cancellationToken
-            |> Task.ignore
+            |> insertOutputSingleAsync<VocabularyCreationParameters, VocabularyRecord>
+                connection
+                transaction
+                cancellationToken
+
+        return record.Id
     }
 
 let getVocabularyByIdAsync

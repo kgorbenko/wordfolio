@@ -64,15 +64,19 @@ let createCollectionAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<unit> =
+    : Task<int> =
     task {
-        do!
+        let! record =
             insert {
                 into collectionsInsertTable
                 values [ parameters ]
             }
-            |> insertAsync connection transaction cancellationToken
-            |> Task.ignore
+            |> insertOutputSingleAsync<CollectionCreationParameters, CollectionRecord>
+                connection
+                transaction
+                cancellationToken
+
+        return record.Id
     }
 
 let getCollectionByIdAsync

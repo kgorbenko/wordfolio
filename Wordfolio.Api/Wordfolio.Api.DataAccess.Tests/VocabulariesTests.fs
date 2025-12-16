@@ -30,7 +30,7 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            do!
+            let! createdId =
                 Vocabularies.createVocabularyAsync
                     { CollectionId = collection.Id
                       Name = "My Vocabulary"
@@ -38,21 +38,20 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                       CreatedAt = createdAt }
                 |> fixture.WithConnectionAsync
 
-            let! actual =
+            let! actualVocabulary =
                 fixture.Seeder
-                |> Seeder.getAllVocabulariesAsync
+                |> Seeder.getVocabularyByIdAsync createdId
 
-            let vocabularyId = Assert.Single(actual).Id
+            let expected: Vocabulary option =
+                Some
+                    { Id = createdId
+                      CollectionId = collection.Id
+                      Name = "My Vocabulary"
+                      Description = Some "Test vocabulary"
+                      CreatedAt = createdAt
+                      UpdatedAt = None }
 
-            let expected: Vocabulary list =
-                [ { Id = vocabularyId
-                    CollectionId = collection.Id
-                    Name = "My Vocabulary"
-                    Description = Some "Test vocabulary"
-                    CreatedAt = createdAt
-                    UpdatedAt = None } ]
-
-            Assert.Equivalent(expected, actual)
+            Assert.Equivalent(expected, actualVocabulary)
         }
 
     [<Fact>]
@@ -73,7 +72,7 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            do!
+            let! createdId =
                 Vocabularies.createVocabularyAsync
                     { CollectionId = collection.Id
                       Name = "My Vocabulary"
@@ -81,21 +80,20 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                       CreatedAt = createdAt }
                 |> fixture.WithConnectionAsync
 
-            let! actual =
+            let! actualVocabulary =
                 fixture.Seeder
-                |> Seeder.getAllVocabulariesAsync
+                |> Seeder.getVocabularyByIdAsync createdId
 
-            let vocabularyId = Assert.Single(actual).Id
+            let expected: Vocabulary option =
+                Some
+                    { Id = createdId
+                      CollectionId = collection.Id
+                      Name = "My Vocabulary"
+                      Description = None
+                      CreatedAt = createdAt
+                      UpdatedAt = None }
 
-            let expected: Vocabulary list =
-                [ { Id = vocabularyId
-                    CollectionId = collection.Id
-                    Name = "My Vocabulary"
-                    Description = None
-                    CreatedAt = createdAt
-                    UpdatedAt = None } ]
-
-            Assert.Equivalent(expected, actual)
+            Assert.Equivalent(expected, actualVocabulary)
         }
 
     [<Fact>]

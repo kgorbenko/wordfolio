@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Ids.fs" />
+    <Compile Include="Transactions.fs" />
+    <Compile Include="Collections\Collection.fs" />
+    <Compile Include="Collections\Errors.fs" />
+    <Compile Include="Collections\Capabilities.fs" />
+    <Compile Include="Collections\Operations.fs" />
+    <Compile Include="Vocabularies\Vocabulary.fs" />
+    <Compile Include="Vocabularies\Errors.fs" />
+    <Compile Include="Vocabularies\Capabilities.fs" />
+    <Compile Include="Vocabularies\Operations.fs" />
+  </ItemGroup>
+
+</Project>

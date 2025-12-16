@@ -1,11 +1,10 @@
-open System
-
 open Microsoft.AspNetCore.Builder
-open Microsoft.AspNetCore.Http
-open Microsoft.AspNetCore.Routing
+
 open Microsoft.Extensions.Hosting
 
 open Wordfolio.Api.Handlers.Auth
+open Wordfolio.Api.Handlers.Collections
+open Wordfolio.Api.Handlers.Vocabularies
 open Wordfolio.Api.IdentityIntegration
 open Wordfolio.ServiceDefaults.Builder
 open Wordfolio.ServiceDefaults.HealthCheck
@@ -15,11 +14,6 @@ open Wordfolio.ServiceDefaults.Status
 type Program() =
     class
     end
-
-type WeatherForecast =
-    { Date: DateOnly
-      TemperatureC: int
-      Summary: string option }
 
 [<EntryPoint>]
 let main args =
@@ -46,18 +40,11 @@ let main args =
     |> mapHealthChecks
     |> mapStatusEndpoint
     |> mapAuthEndpoints
-    |> ignore
+    |> fun app ->
+        let collectionsGroup =
+            mapCollectionsEndpoints app
 
-    app.MapGet(
-        "/weatherforecast",
-        Func<WeatherForecast[]>(fun source ->
-            [ 1..5 ]
-            |> Seq.map(fun index ->
-                { Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index))
-                  TemperatureC = Random.Shared.Next(-20, 55)
-                  Summary = Some "Hot" })
-            |> Array.ofSeq)
-    )
+        mapVocabulariesEndpoints collectionsGroup
     |> ignore
 
     app.Run()
