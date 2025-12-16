@@ -70,20 +70,13 @@ let createVocabularyAsync
     (cancellationToken: CancellationToken)
     : Task<int> =
     task {
-        let query =
+        let! record =
             insert {
                 into vocabulariesInsertTable
                 values [ parameters ]
             }
+            |> insertOutputAsync<VocabularyCreationParameters, VocabularyRecord> connection transaction cancellationToken
 
-        let! records =
-            connection.InsertOutputAsync<VocabularyCreationParameters, VocabularyRecord>(
-                query,
-                trans = transaction,
-                cancellationToken = cancellationToken
-            )
-
-        let record = records |> Seq.head
         return record.Id
     }
 
