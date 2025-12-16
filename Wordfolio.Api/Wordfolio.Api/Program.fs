@@ -40,8 +40,9 @@ let main args =
     |> mapHealthChecks
     |> mapStatusEndpoint
     |> mapAuthEndpoints
-    |> mapCollectionsEndpoints
-    |> mapVocabulariesEndpoints
+    |> fun app ->
+        let collectionsGroup = mapCollectionsEndpoints app
+        mapVocabulariesEndpoints(app, collectionsGroup)
     |> ignore
 
     app.Run()

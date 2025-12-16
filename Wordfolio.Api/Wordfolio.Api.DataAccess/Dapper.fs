@@ -18,6 +18,22 @@ let insertAsync
     : Task<int> =
     task { return! connection.InsertAsync(insertFunc, trans = transaction, cancellationToken = cancellationToken) }
 
+let insertOutputAsync
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    (insertFunc: InsertQuery<'a>)
+    : Task<'a> =
+    task {
+        let! results =
+            connection.InsertOutputAsync(insertFunc, trans = transaction, cancellationToken = cancellationToken)
+
+        return
+            results
+            |> Seq.tryHead
+            |> Option.defaultWith(fun () -> failwith "Insert operation returned no results")
+    }
+
 let selectAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)

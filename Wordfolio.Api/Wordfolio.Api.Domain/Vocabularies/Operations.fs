@@ -4,6 +4,7 @@ open System
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Vocabularies.Capabilities
+open Wordfolio.Api.Domain.Transactions
 
 [<Literal>]
 let MaxNameLength = 255
@@ -30,8 +31,8 @@ let private checkCollectionOwnership env userId collectionId =
                     Error(VocabularyCollectionNotFound collectionId)
     }
 
-let getById transactional userId vocabularyId =
-    Transactions.runInTransaction transactional (fun appEnv ->
+let getById env userId vocabularyId =
+    runInTransaction env (fun appEnv ->
         task {
             let! maybeVocabulary = getVocabularyById appEnv vocabularyId
 
@@ -46,8 +47,8 @@ let getById transactional userId vocabularyId =
                     | Ok _ -> Ok vocabulary
         })
 
-let getByCollectionId transactional userId collectionId =
-    Transactions.runInTransaction transactional (fun appEnv ->
+let getByCollectionId env userId collectionId =
+    runInTransaction env (fun appEnv ->
         task {
             let! ownershipResult = checkCollectionOwnership appEnv userId collectionId
 
@@ -58,8 +59,8 @@ let getByCollectionId transactional userId collectionId =
                 return Ok vocabularies
         })
 
-let create transactional userId collectionId name description now =
-    Transactions.runInTransaction transactional (fun appEnv ->
+let create env userId collectionId name description now =
+    runInTransaction env (fun appEnv ->
         task {
             let! ownershipResult = checkCollectionOwnership appEnv userId collectionId
 
@@ -78,8 +79,8 @@ let create transactional userId collectionId name description now =
                     | None -> return Error VocabularyNameRequired
         })
 
-let update transactional userId vocabularyId name description now =
-    Transactions.runInTransaction transactional (fun appEnv ->
+let update env userId vocabularyId name description now =
+    runInTransaction env (fun appEnv ->
         task {
             let! maybeVocabulary = getVocabularyById appEnv vocabularyId
 
@@ -109,8 +110,8 @@ let update transactional userId vocabularyId name description now =
                             return Error(VocabularyNotFound vocabularyId)
         })
 
-let delete transactional userId vocabularyId =
-    Transactions.runInTransaction transactional (fun appEnv ->
+let delete env userId vocabularyId =
+    runInTransaction env (fun appEnv ->
         task {
             let! maybeVocabulary = getVocabularyById appEnv vocabularyId
 

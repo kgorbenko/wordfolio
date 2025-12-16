@@ -4,6 +4,7 @@ open System
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections.Capabilities
+open Wordfolio.Api.Domain.Transactions
 
 [<Literal>]
 let MaxNameLength = 255
@@ -22,8 +23,8 @@ let private checkOwnership (userId: UserId) (collection: Collection) : Result<Co
     else
         Error(CollectionAccessDenied collection.Id)
 
-let getById transactional userId collectionId =
-    Transactions.runInTransaction transactional (fun appEnv ->
+let getById env userId collectionId =
+    runInTransaction env (fun appEnv ->
         task {
             let! maybeCollection = getCollectionById appEnv collectionId
 
@@ -33,10 +34,10 @@ let getById transactional userId collectionId =
                 | Some collection -> checkOwnership userId collection
         })
 
-let getByUserId transactional userId =
+let getByUserId env userId =
     task {
         let! result =
-            Transactions.runInTransaction transactional (fun appEnv ->
+            runInTransaction env (fun appEnv ->
                 task {
                     let! collections = getCollectionsByUserId appEnv userId
                     return Ok collections
@@ -48,8 +49,8 @@ let getByUserId transactional userId =
             | Error _ -> []
     }
 
-let create transactional userId name description now =
-    Transactions.runInTransaction transactional (fun appEnv ->
+let create env userId name description now =
+    runInTransaction env (fun appEnv ->
         task {
             match validateName name with
             | Error error -> return Error error
@@ -63,8 +64,8 @@ let create transactional userId name description now =
                 | None -> return Error CollectionNameRequired
         })
 
-let update transactional userId collectionId name description now =
-    Transactions.runInTransaction transactional (fun appEnv ->
+let update env userId collectionId name description now =
+    runInTransaction env (fun appEnv ->
         task {
             let! maybeCollection = getCollectionById appEnv collectionId
 
@@ -92,8 +93,8 @@ let update transactional userId collectionId name description now =
                             return Error(CollectionNotFound collectionId)
         })
 
-let delete transactional userId collectionId =
-    Transactions.runInTransaction transactional (fun appEnv ->
+let delete env userId collectionId =
+    runInTransaction env (fun appEnv ->
         task {
             let! maybeCollection = getCollectionById appEnv collectionId
 
