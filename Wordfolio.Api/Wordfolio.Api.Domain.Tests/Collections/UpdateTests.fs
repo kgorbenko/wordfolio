@@ -20,11 +20,17 @@ type TestEnv
         getCollectionById: CollectionId -> Task<Collection option>,
         updateCollection: CollectionId * string * string option * DateTimeOffset -> Task<int>
     ) =
-    let getCollectionByIdCalls = ResizeArray<CollectionId>()
-    let updateCollectionCalls = ResizeArray<UpdateCollectionCall>()
+    let getCollectionByIdCalls =
+        ResizeArray<CollectionId>()
 
-    member _.GetCollectionByIdCalls = getCollectionByIdCalls |> Seq.toList
-    member _.UpdateCollectionCalls = updateCollectionCalls |> Seq.toList
+    let updateCollectionCalls =
+        ResizeArray<UpdateCollectionCall>()
+
+    member _.GetCollectionByIdCalls =
+        getCollectionByIdCalls |> Seq.toList
+
+    member _.UpdateCollectionCalls =
+        updateCollectionCalls |> Seq.toList
 
     interface IGetCollectionById with
         member _.GetCollectionById(id) =
@@ -40,7 +46,7 @@ type TestEnv
                   UpdatedAt = updatedAt }
             )
 
-            updateCollection (collectionId, name, description, updatedAt)
+            updateCollection(collectionId, name, description, updatedAt)
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -54,9 +60,11 @@ let makeCollection id userId name description =
       UpdatedAt = None }
 
 [<Fact>]
-let ``updates collection when owned by user`` () =
+let ``updates collection when owned by user``() =
     let now = DateTimeOffset.UtcNow
-    let existingCollection = makeCollection 1 1 "Old Name" None
+
+    let existingCollection =
+        makeCollection 1 1 "Old Name" None
 
     let env =
         TestEnv(
@@ -93,14 +101,16 @@ let ``updates collection when owned by user`` () =
             Assert.Equal(Some now, updated.UpdatedAt)
         | Error e -> failwith $"Expected Ok, got Error: {e}"
 
-        Assert.Equal([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Equal(1, env.UpdateCollectionCalls.Length)
     }
 
 [<Fact>]
-let ``trims whitespace from name`` () =
+let ``trims whitespace from name``() =
     let now = DateTimeOffset.UtcNow
-    let existingCollection = makeCollection 1 1 "Old Name" None
+
+    let existingCollection =
+        makeCollection 1 1 "Old Name" None
 
     let env =
         TestEnv(
@@ -118,12 +128,14 @@ let ``trims whitespace from name`` () =
 
         Assert.True(Result.isOk result)
 
-        let call = env.UpdateCollectionCalls |> List.head
+        let call =
+            env.UpdateCollectionCalls |> List.head
+
         Assert.Equal("New Name", call.Name)
     }
 
 [<Fact>]
-let ``returns NotFound when collection does not exist`` () =
+let ``returns NotFound when collection does not exist``() =
     let env =
         TestEnv(
             getCollectionById =
@@ -143,8 +155,9 @@ let ``returns NotFound when collection does not exist`` () =
     }
 
 [<Fact>]
-let ``returns AccessDenied when collection owned by different user`` () =
-    let existingCollection = makeCollection 1 2 "Test Collection" None
+let ``returns AccessDenied when collection owned by different user``() =
+    let existingCollection =
+        makeCollection 1 2 "Test Collection" None
 
     let env =
         TestEnv(
@@ -165,8 +178,9 @@ let ``returns AccessDenied when collection owned by different user`` () =
     }
 
 [<Fact>]
-let ``returns error when name is empty`` () =
-    let existingCollection = makeCollection 1 1 "Test Collection" None
+let ``returns error when name is empty``() =
+    let existingCollection =
+        makeCollection 1 1 "Test Collection" None
 
     let env =
         TestEnv(
@@ -182,8 +196,10 @@ let ``returns error when name is empty`` () =
     }
 
 [<Fact>]
-let ``returns error when name exceeds max length`` () =
-    let existingCollection = makeCollection 1 1 "Test Collection" None
+let ``returns error when name exceeds max length``() =
+    let existingCollection =
+        makeCollection 1 1 "Test Collection" None
+
     let longName = String.replicate 256 "a"
 
     let env =

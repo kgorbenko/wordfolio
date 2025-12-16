@@ -22,13 +22,23 @@ type TestEnv
         getCollectionById: CollectionId -> Task<Collection option>,
         updateVocabulary: VocabularyId * string * string option * DateTimeOffset -> Task<int>
     ) =
-    let getVocabularyByIdCalls = ResizeArray<VocabularyId>()
-    let getCollectionByIdCalls = ResizeArray<CollectionId>()
-    let updateVocabularyCalls = ResizeArray<UpdateVocabularyCall>()
+    let getVocabularyByIdCalls =
+        ResizeArray<VocabularyId>()
 
-    member _.GetVocabularyByIdCalls = getVocabularyByIdCalls |> Seq.toList
-    member _.GetCollectionByIdCalls = getCollectionByIdCalls |> Seq.toList
-    member _.UpdateVocabularyCalls = updateVocabularyCalls |> Seq.toList
+    let getCollectionByIdCalls =
+        ResizeArray<CollectionId>()
+
+    let updateVocabularyCalls =
+        ResizeArray<UpdateVocabularyCall>()
+
+    member _.GetVocabularyByIdCalls =
+        getVocabularyByIdCalls |> Seq.toList
+
+    member _.GetCollectionByIdCalls =
+        getCollectionByIdCalls |> Seq.toList
+
+    member _.UpdateVocabularyCalls =
+        updateVocabularyCalls |> Seq.toList
 
     interface IGetVocabularyById with
         member _.GetVocabularyById(id) =
@@ -49,7 +59,7 @@ type TestEnv
                   UpdatedAt = updatedAt }
             )
 
-            updateVocabulary (vocabularyId, name, description, updatedAt)
+            updateVocabulary(vocabularyId, name, description, updatedAt)
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -71,9 +81,12 @@ let makeVocabulary id collectionId name description =
       UpdatedAt = None }
 
 [<Fact>]
-let ``updates vocabulary when collection owned by user`` () =
+let ``updates vocabulary when collection owned by user``() =
     let now = DateTimeOffset.UtcNow
-    let existingVocabulary = makeVocabulary 1 1 "Old Name" None
+
+    let existingVocabulary =
+        makeVocabulary 1 1 "Old Name" None
+
     let collection = makeCollection 1 1
 
     let env =
@@ -117,15 +130,18 @@ let ``updates vocabulary when collection owned by user`` () =
             Assert.Equal(Some now, updated.UpdatedAt)
         | Error e -> failwith $"Expected Ok, got Error: {e}"
 
-        Assert.Equal([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
-        Assert.Equal([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Equal(1, env.UpdateVocabularyCalls.Length)
     }
 
 [<Fact>]
-let ``trims whitespace from name`` () =
+let ``trims whitespace from name``() =
     let now = DateTimeOffset.UtcNow
-    let existingVocabulary = makeVocabulary 1 1 "Old Name" None
+
+    let existingVocabulary =
+        makeVocabulary 1 1 "Old Name" None
+
     let collection = makeCollection 1 1
 
     let env =
@@ -145,12 +161,14 @@ let ``trims whitespace from name`` () =
 
         Assert.True(Result.isOk result)
 
-        let call = env.UpdateVocabularyCalls |> List.head
+        let call =
+            env.UpdateVocabularyCalls |> List.head
+
         Assert.Equal("New Name", call.Name)
     }
 
 [<Fact>]
-let ``returns NotFound when vocabulary does not exist`` () =
+let ``returns NotFound when vocabulary does not exist``() =
     let env =
         TestEnv(
             getVocabularyById =
@@ -171,8 +189,10 @@ let ``returns NotFound when vocabulary does not exist`` () =
     }
 
 [<Fact>]
-let ``returns AccessDenied when collection owned by different user`` () =
-    let existingVocabulary = makeVocabulary 1 1 "Test Vocabulary" None
+let ``returns AccessDenied when collection owned by different user``() =
+    let existingVocabulary =
+        makeVocabulary 1 1 "Test Vocabulary" None
+
     let collection = makeCollection 1 2
 
     let env =
@@ -190,8 +210,9 @@ let ``returns AccessDenied when collection owned by different user`` () =
     }
 
 [<Fact>]
-let ``returns AccessDenied when collection does not exist`` () =
-    let existingVocabulary = makeVocabulary 1 1 "Test Vocabulary" None
+let ``returns AccessDenied when collection does not exist``() =
+    let existingVocabulary =
+        makeVocabulary 1 1 "Test Vocabulary" None
 
     let env =
         TestEnv(
@@ -208,8 +229,10 @@ let ``returns AccessDenied when collection does not exist`` () =
     }
 
 [<Fact>]
-let ``returns error when name is empty`` () =
-    let existingVocabulary = makeVocabulary 1 1 "Test Vocabulary" None
+let ``returns error when name is empty``() =
+    let existingVocabulary =
+        makeVocabulary 1 1 "Test Vocabulary" None
+
     let collection = makeCollection 1 1
 
     let env =
@@ -227,8 +250,10 @@ let ``returns error when name is empty`` () =
     }
 
 [<Fact>]
-let ``returns error when name exceeds max length`` () =
-    let existingVocabulary = makeVocabulary 1 1 "Test Vocabulary" None
+let ``returns error when name exceeds max length``() =
+    let existingVocabulary =
+        makeVocabulary 1 1 "Test Vocabulary" None
+
     let collection = makeCollection 1 1
     let longName = String.replicate 256 "a"
 

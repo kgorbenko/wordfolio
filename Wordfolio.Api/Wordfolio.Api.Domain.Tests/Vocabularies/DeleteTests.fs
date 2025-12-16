@@ -16,13 +16,23 @@ type TestEnv
         getCollectionById: CollectionId -> Task<Collection option>,
         deleteVocabulary: VocabularyId -> Task<int>
     ) =
-    let getVocabularyByIdCalls = ResizeArray<VocabularyId>()
-    let getCollectionByIdCalls = ResizeArray<CollectionId>()
-    let deleteVocabularyCalls = ResizeArray<VocabularyId>()
+    let getVocabularyByIdCalls =
+        ResizeArray<VocabularyId>()
 
-    member _.GetVocabularyByIdCalls = getVocabularyByIdCalls |> Seq.toList
-    member _.GetCollectionByIdCalls = getCollectionByIdCalls |> Seq.toList
-    member _.DeleteVocabularyCalls = deleteVocabularyCalls |> Seq.toList
+    let getCollectionByIdCalls =
+        ResizeArray<CollectionId>()
+
+    let deleteVocabularyCalls =
+        ResizeArray<VocabularyId>()
+
+    member _.GetVocabularyByIdCalls =
+        getVocabularyByIdCalls |> Seq.toList
+
+    member _.GetCollectionByIdCalls =
+        getCollectionByIdCalls |> Seq.toList
+
+    member _.DeleteVocabularyCalls =
+        deleteVocabularyCalls |> Seq.toList
 
     interface IGetVocabularyById with
         member _.GetVocabularyById(id) =
@@ -59,8 +69,10 @@ let makeVocabulary id collectionId name =
       UpdatedAt = None }
 
 [<Fact>]
-let ``deletes vocabulary when collection owned by user`` () =
-    let existingVocabulary = makeVocabulary 1 1 "Test Vocabulary"
+let ``deletes vocabulary when collection owned by user``() =
+    let existingVocabulary =
+        makeVocabulary 1 1 "Test Vocabulary"
+
     let collection = makeCollection 1 1
 
     let env =
@@ -89,13 +101,13 @@ let ``deletes vocabulary when collection owned by user`` () =
         let! result = delete env (UserId 1) (VocabularyId 1)
 
         Assert.Equal(Ok(), result)
-        Assert.Equal([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
-        Assert.Equal([ CollectionId 1 ], env.GetCollectionByIdCalls)
-        Assert.Equal([ VocabularyId 1 ], env.DeleteVocabularyCalls)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.DeleteVocabularyCalls)
     }
 
 [<Fact>]
-let ``returns NotFound when vocabulary does not exist`` () =
+let ``returns NotFound when vocabulary does not exist``() =
     let env =
         TestEnv(
             getVocabularyById =
@@ -112,13 +124,15 @@ let ``returns NotFound when vocabulary does not exist`` () =
         let! result = delete env (UserId 1) (VocabularyId 1)
 
         Assert.Equal(Error(VocabularyNotFound(VocabularyId 1)), result)
-        Assert.Equal([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
         Assert.Empty(env.DeleteVocabularyCalls)
     }
 
 [<Fact>]
-let ``returns AccessDenied when collection owned by different user`` () =
-    let existingVocabulary = makeVocabulary 1 1 "Test Vocabulary"
+let ``returns AccessDenied when collection owned by different user``() =
+    let existingVocabulary =
+        makeVocabulary 1 1 "Test Vocabulary"
+
     let collection = makeCollection 1 2
 
     let env =
@@ -136,8 +150,9 @@ let ``returns AccessDenied when collection owned by different user`` () =
     }
 
 [<Fact>]
-let ``returns AccessDenied when collection does not exist`` () =
-    let existingVocabulary = makeVocabulary 1 1 "Test Vocabulary"
+let ``returns AccessDenied when collection does not exist``() =
+    let existingVocabulary =
+        makeVocabulary 1 1 "Test Vocabulary"
 
     let env =
         TestEnv(
@@ -154,8 +169,10 @@ let ``returns AccessDenied when collection does not exist`` () =
     }
 
 [<Fact>]
-let ``returns NotFound when delete affects no rows`` () =
-    let existingVocabulary = makeVocabulary 1 1 "Test Vocabulary"
+let ``returns NotFound when delete affects no rows``() =
+    let existingVocabulary =
+        makeVocabulary 1 1 "Test Vocabulary"
+
     let collection = makeCollection 1 1
 
     let env =
@@ -169,5 +186,5 @@ let ``returns NotFound when delete affects no rows`` () =
         let! result = delete env (UserId 1) (VocabularyId 1)
 
         Assert.Equal(Error(VocabularyNotFound(VocabularyId 1)), result)
-        Assert.Equal([ VocabularyId 1 ], env.DeleteVocabularyCalls)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.DeleteVocabularyCalls)
     }

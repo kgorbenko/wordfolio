@@ -10,9 +10,12 @@ open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.Collections.Operations
 
 type TestEnv(getCollectionsByUserId: UserId -> Task<Collection list>) =
-    let getCollectionsByUserIdCalls = ResizeArray<UserId>()
+    let getCollectionsByUserIdCalls =
+        ResizeArray<UserId>()
 
-    member _.GetCollectionsByUserIdCalls = getCollectionsByUserIdCalls |> Seq.toList
+    member _.GetCollectionsByUserIdCalls =
+        getCollectionsByUserIdCalls
+        |> Seq.toList
 
     interface IGetCollectionsByUserId with
         member _.GetCollectionsByUserId(userId) =
@@ -31,10 +34,9 @@ let makeCollection id userId name =
       UpdatedAt = None }
 
 [<Fact>]
-let ``returns collections for user`` () =
+let ``returns collections for user``() =
     let collections =
-        [ makeCollection 1 1 "Collection 1"
-          makeCollection 2 1 "Collection 2" ]
+        [ makeCollection 1 1 "Collection 1"; makeCollection 2 1 "Collection 2" ]
 
     let env =
         TestEnv(fun userId ->
@@ -47,11 +49,11 @@ let ``returns collections for user`` () =
         let! result = getByUserId env (UserId 1)
 
         Assert.Equal<Collection list>(collections, result)
-        Assert.Equal([ UserId 1 ], env.GetCollectionsByUserIdCalls)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsByUserIdCalls)
     }
 
 [<Fact>]
-let ``returns empty list when user has no collections`` () =
+let ``returns empty list when user has no collections``() =
     let env =
         TestEnv(fun userId ->
             if userId <> UserId 1 then
@@ -63,5 +65,5 @@ let ``returns empty list when user has no collections`` () =
         let! result = getByUserId env (UserId 1)
 
         Assert.Empty(result)
-        Assert.Equal([ UserId 1 ], env.GetCollectionsByUserIdCalls)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsByUserIdCalls)
     }

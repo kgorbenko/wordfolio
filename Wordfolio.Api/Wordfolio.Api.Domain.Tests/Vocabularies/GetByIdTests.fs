@@ -15,11 +15,17 @@ type TestEnv
         getVocabularyById: VocabularyId -> Task<Vocabulary option>,
         getCollectionById: CollectionId -> Task<Collection option>
     ) =
-    let getVocabularyByIdCalls = ResizeArray<VocabularyId>()
-    let getCollectionByIdCalls = ResizeArray<CollectionId>()
+    let getVocabularyByIdCalls =
+        ResizeArray<VocabularyId>()
 
-    member _.GetVocabularyByIdCalls = getVocabularyByIdCalls |> Seq.toList
-    member _.GetCollectionByIdCalls = getCollectionByIdCalls |> Seq.toList
+    let getCollectionByIdCalls =
+        ResizeArray<CollectionId>()
+
+    member _.GetVocabularyByIdCalls =
+        getVocabularyByIdCalls |> Seq.toList
+
+    member _.GetCollectionByIdCalls =
+        getCollectionByIdCalls |> Seq.toList
 
     interface IGetVocabularyById with
         member _.GetVocabularyById(id) =
@@ -51,8 +57,10 @@ let makeVocabulary id collectionId name =
       UpdatedAt = None }
 
 [<Fact>]
-let ``returns vocabulary when found and collection owned by user`` () =
-    let vocabulary = makeVocabulary 1 1 "Test Vocabulary"
+let ``returns vocabulary when found and collection owned by user``() =
+    let vocabulary =
+        makeVocabulary 1 1 "Test Vocabulary"
+
     let collection = makeCollection 1 1
 
     let env =
@@ -75,12 +83,12 @@ let ``returns vocabulary when found and collection owned by user`` () =
         let! result = getById env (UserId 1) (VocabularyId 1)
 
         Assert.Equal(Ok vocabulary, result)
-        Assert.Equal([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
-        Assert.Equal([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }
 
 [<Fact>]
-let ``returns NotFound when vocabulary does not exist`` () =
+let ``returns NotFound when vocabulary does not exist``() =
     let env =
         TestEnv(
             getVocabularyById =
@@ -96,13 +104,15 @@ let ``returns NotFound when vocabulary does not exist`` () =
         let! result = getById env (UserId 1) (VocabularyId 1)
 
         Assert.Equal(Error(VocabularyNotFound(VocabularyId 1)), result)
-        Assert.Equal([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
         Assert.Empty(env.GetCollectionByIdCalls)
     }
 
 [<Fact>]
-let ``returns AccessDenied when collection owned by different user`` () =
-    let vocabulary = makeVocabulary 1 1 "Test Vocabulary"
+let ``returns AccessDenied when collection owned by different user``() =
+    let vocabulary =
+        makeVocabulary 1 1 "Test Vocabulary"
+
     let collection = makeCollection 1 2
 
     let env =
@@ -128,8 +138,9 @@ let ``returns AccessDenied when collection owned by different user`` () =
     }
 
 [<Fact>]
-let ``returns AccessDenied when collection does not exist`` () =
-    let vocabulary = makeVocabulary 1 1 "Test Vocabulary"
+let ``returns AccessDenied when collection does not exist``() =
+    let vocabulary =
+        makeVocabulary 1 1 "Test Vocabulary"
 
     let env =
         TestEnv(

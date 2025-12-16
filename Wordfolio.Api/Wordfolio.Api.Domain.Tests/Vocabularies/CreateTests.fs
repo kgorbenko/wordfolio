@@ -22,13 +22,23 @@ type TestEnv
         createVocabulary: CollectionId * string * string option * DateTimeOffset -> Task<VocabularyId>,
         getVocabularyById: VocabularyId -> Task<Vocabulary option>
     ) =
-    let getCollectionByIdCalls = ResizeArray<CollectionId>()
-    let createVocabularyCalls = ResizeArray<CreateVocabularyCall>()
-    let getVocabularyByIdCalls = ResizeArray<VocabularyId>()
+    let getCollectionByIdCalls =
+        ResizeArray<CollectionId>()
 
-    member _.GetCollectionByIdCalls = getCollectionByIdCalls |> Seq.toList
-    member _.CreateVocabularyCalls = createVocabularyCalls |> Seq.toList
-    member _.GetVocabularyByIdCalls = getVocabularyByIdCalls |> Seq.toList
+    let createVocabularyCalls =
+        ResizeArray<CreateVocabularyCall>()
+
+    let getVocabularyByIdCalls =
+        ResizeArray<VocabularyId>()
+
+    member _.GetCollectionByIdCalls =
+        getCollectionByIdCalls |> Seq.toList
+
+    member _.CreateVocabularyCalls =
+        createVocabularyCalls |> Seq.toList
+
+    member _.GetVocabularyByIdCalls =
+        getVocabularyByIdCalls |> Seq.toList
 
     interface IGetCollectionById with
         member _.GetCollectionById(id) =
@@ -44,7 +54,7 @@ type TestEnv
                   CreatedAt = createdAt }
             )
 
-            createVocabulary (collectionId, name, description, createdAt)
+            createVocabulary(collectionId, name, description, createdAt)
 
     interface IGetVocabularyById with
         member _.GetVocabularyById(id) =
@@ -71,10 +81,12 @@ let makeVocabulary id collectionId name description createdAt =
       UpdatedAt = None }
 
 [<Fact>]
-let ``creates vocabulary with valid name`` () =
+let ``creates vocabulary with valid name``() =
     let now = DateTimeOffset.UtcNow
     let collection = makeCollection 1 1
-    let createdVocabulary = makeVocabulary 1 1 "Test Vocabulary" None now
+
+    let createdVocabulary =
+        makeVocabulary 1 1 "Test Vocabulary" None now
 
     let env =
         TestEnv(
@@ -111,17 +123,19 @@ let ``creates vocabulary with valid name`` () =
         let! result = create env (UserId 1) (CollectionId 1) "Test Vocabulary" None now
 
         Assert.Equal(Ok createdVocabulary, result)
-        Assert.Equal([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Equal(1, env.CreateVocabularyCalls.Length)
-        Assert.Equal([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
     }
 
 [<Fact>]
-let ``creates vocabulary with description`` () =
+let ``creates vocabulary with description``() =
     let now = DateTimeOffset.UtcNow
     let collection = makeCollection 1 1
     let description = Some "A test description"
-    let createdVocabulary = makeVocabulary 1 1 "Test Vocabulary" description now
+
+    let createdVocabulary =
+        makeVocabulary 1 1 "Test Vocabulary" description now
 
     let env =
         TestEnv(
@@ -142,10 +156,12 @@ let ``creates vocabulary with description`` () =
     }
 
 [<Fact>]
-let ``trims whitespace from name`` () =
+let ``trims whitespace from name``() =
     let now = DateTimeOffset.UtcNow
     let collection = makeCollection 1 1
-    let createdVocabulary = makeVocabulary 1 1 "Test Vocabulary" None now
+
+    let createdVocabulary =
+        makeVocabulary 1 1 "Test Vocabulary" None now
 
     let env =
         TestEnv(
@@ -164,12 +180,14 @@ let ``trims whitespace from name`` () =
 
         Assert.True(Result.isOk result)
 
-        let call = env.CreateVocabularyCalls |> List.head
+        let call =
+            env.CreateVocabularyCalls |> List.head
+
         Assert.Equal("Test Vocabulary", call.Name)
     }
 
 [<Fact>]
-let ``returns CollectionNotFound when collection does not exist`` () =
+let ``returns CollectionNotFound when collection does not exist``() =
     let env =
         TestEnv(
             getCollectionById =
@@ -190,7 +208,7 @@ let ``returns CollectionNotFound when collection does not exist`` () =
     }
 
 [<Fact>]
-let ``returns CollectionNotFound when collection owned by different user`` () =
+let ``returns CollectionNotFound when collection owned by different user``() =
     let collection = makeCollection 1 2
 
     let env =
@@ -208,7 +226,7 @@ let ``returns CollectionNotFound when collection owned by different user`` () =
     }
 
 [<Fact>]
-let ``returns error when name is empty`` () =
+let ``returns error when name is empty``() =
     let collection = makeCollection 1 1
 
     let env =
@@ -226,7 +244,7 @@ let ``returns error when name is empty`` () =
     }
 
 [<Fact>]
-let ``returns error when name is whitespace only`` () =
+let ``returns error when name is whitespace only``() =
     let collection = makeCollection 1 1
 
     let env =
@@ -244,7 +262,7 @@ let ``returns error when name is whitespace only`` () =
     }
 
 [<Fact>]
-let ``returns error when name exceeds max length`` () =
+let ``returns error when name exceeds max length``() =
     let collection = makeCollection 1 1
     let longName = String.replicate 256 "a"
 

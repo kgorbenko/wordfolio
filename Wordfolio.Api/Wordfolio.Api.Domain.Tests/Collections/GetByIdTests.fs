@@ -10,9 +10,11 @@ open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.Collections.Operations
 
 type TestEnv(getCollectionById: CollectionId -> Task<Collection option>) =
-    let getCollectionByIdCalls = ResizeArray<CollectionId>()
+    let getCollectionByIdCalls =
+        ResizeArray<CollectionId>()
 
-    member _.GetCollectionByIdCalls = getCollectionByIdCalls |> Seq.toList
+    member _.GetCollectionByIdCalls =
+        getCollectionByIdCalls |> Seq.toList
 
     interface IGetCollectionById with
         member _.GetCollectionById(id) =
@@ -31,8 +33,9 @@ let makeCollection id userId name =
       UpdatedAt = None }
 
 [<Fact>]
-let ``returns collection when found and owned by user`` () =
-    let collection = makeCollection 1 1 "Test Collection"
+let ``returns collection when found and owned by user``() =
+    let collection =
+        makeCollection 1 1 "Test Collection"
 
     let env =
         TestEnv(fun id ->
@@ -45,11 +48,11 @@ let ``returns collection when found and owned by user`` () =
         let! result = getById env (UserId 1) (CollectionId 1)
 
         Assert.Equal(Ok collection, result)
-        Assert.Equal([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }
 
 [<Fact>]
-let ``returns NotFound when collection does not exist`` () =
+let ``returns NotFound when collection does not exist``() =
     let env =
         TestEnv(fun id ->
             if id <> CollectionId 1 then
@@ -61,12 +64,13 @@ let ``returns NotFound when collection does not exist`` () =
         let! result = getById env (UserId 1) (CollectionId 1)
 
         Assert.Equal(Error(CollectionNotFound(CollectionId 1)), result)
-        Assert.Equal([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }
 
 [<Fact>]
-let ``returns AccessDenied when collection owned by different user`` () =
-    let collection = makeCollection 1 2 "Test Collection"
+let ``returns AccessDenied when collection owned by different user``() =
+    let collection =
+        makeCollection 1 2 "Test Collection"
 
     let env =
         TestEnv(fun id ->
@@ -79,5 +83,5 @@ let ``returns AccessDenied when collection owned by different user`` () =
         let! result = getById env (UserId 1) (CollectionId 1)
 
         Assert.Equal(Error(CollectionAccessDenied(CollectionId 1)), result)
-        Assert.Equal([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }

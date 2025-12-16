@@ -20,11 +20,17 @@ type TestEnv
         createCollection: UserId * string * string option * DateTimeOffset -> Task<CollectionId>,
         getCollectionById: CollectionId -> Task<Collection option>
     ) =
-    let createCollectionCalls = ResizeArray<CreateCollectionCall>()
-    let getCollectionByIdCalls = ResizeArray<CollectionId>()
+    let createCollectionCalls =
+        ResizeArray<CreateCollectionCall>()
 
-    member _.CreateCollectionCalls = createCollectionCalls |> Seq.toList
-    member _.GetCollectionByIdCalls = getCollectionByIdCalls |> Seq.toList
+    let getCollectionByIdCalls =
+        ResizeArray<CollectionId>()
+
+    member _.CreateCollectionCalls =
+        createCollectionCalls |> Seq.toList
+
+    member _.GetCollectionByIdCalls =
+        getCollectionByIdCalls |> Seq.toList
 
     interface ICreateCollection with
         member _.CreateCollection(userId, name, description, createdAt) =
@@ -35,7 +41,7 @@ type TestEnv
                   CreatedAt = createdAt }
             )
 
-            createCollection (userId, name, description, createdAt)
+            createCollection(userId, name, description, createdAt)
 
     interface IGetCollectionById with
         member _.GetCollectionById(id) =
@@ -54,9 +60,11 @@ let makeCollection id userId name description createdAt =
       UpdatedAt = None }
 
 [<Fact>]
-let ``creates collection with valid name`` () =
+let ``creates collection with valid name``() =
     let now = DateTimeOffset.UtcNow
-    let createdCollection = makeCollection 1 1 "Test Collection" None now
+
+    let createdCollection =
+        makeCollection 1 1 "Test Collection" None now
 
     let env =
         TestEnv(
@@ -88,14 +96,16 @@ let ``creates collection with valid name`` () =
 
         Assert.Equal(Ok createdCollection, result)
         Assert.Equal(1, env.CreateCollectionCalls.Length)
-        Assert.Equal([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }
 
 [<Fact>]
-let ``creates collection with description`` () =
+let ``creates collection with description``() =
     let now = DateTimeOffset.UtcNow
     let description = Some "A test description"
-    let createdCollection = makeCollection 1 1 "Test Collection" description now
+
+    let createdCollection =
+        makeCollection 1 1 "Test Collection" description now
 
     let env =
         TestEnv(
@@ -115,9 +125,11 @@ let ``creates collection with description`` () =
     }
 
 [<Fact>]
-let ``trims whitespace from name`` () =
+let ``trims whitespace from name``() =
     let now = DateTimeOffset.UtcNow
-    let createdCollection = makeCollection 1 1 "Test Collection" None now
+
+    let createdCollection =
+        makeCollection 1 1 "Test Collection" None now
 
     let env =
         TestEnv(
@@ -135,12 +147,14 @@ let ``trims whitespace from name`` () =
 
         Assert.True(Result.isOk result)
 
-        let call = env.CreateCollectionCalls |> List.head
+        let call =
+            env.CreateCollectionCalls |> List.head
+
         Assert.Equal("Test Collection", call.Name)
     }
 
 [<Fact>]
-let ``returns error when name is empty`` () =
+let ``returns error when name is empty``() =
     let env =
         TestEnv(
             createCollection = (fun _ -> failwith "Should not be called"),
@@ -155,7 +169,7 @@ let ``returns error when name is empty`` () =
     }
 
 [<Fact>]
-let ``returns error when name is whitespace only`` () =
+let ``returns error when name is whitespace only``() =
     let env =
         TestEnv(
             createCollection = (fun _ -> failwith "Should not be called"),
@@ -170,7 +184,7 @@ let ``returns error when name is whitespace only`` () =
     }
 
 [<Fact>]
-let ``returns error when name exceeds max length`` () =
+let ``returns error when name exceeds max length``() =
     let longName = String.replicate 256 "a"
 
     let env =
