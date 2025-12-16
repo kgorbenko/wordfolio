@@ -59,10 +59,6 @@ let internal vocabulariesInsertTable =
     table'<VocabularyCreationParameters> Schema.VocabulariesTable.Name
     |> inSchema Schema.Name
 
-let internal vocabulariesOutputTable =
-    table'<VocabularyRecord> Schema.VocabulariesTable.Name
-    |> inSchema Schema.Name
-
 let createVocabularyAsync
     (parameters: VocabularyCreationParameters)
     (connection: IDbConnection)
@@ -75,7 +71,7 @@ let createVocabularyAsync
                 into vocabulariesInsertTable
                 values [ parameters ]
             }
-            |> insertOutputAsync<VocabularyCreationParameters, VocabularyRecord> connection transaction cancellationToken
+            |> insertOutputSingleAsync<VocabularyCreationParameters, VocabularyRecord> connection transaction cancellationToken
 
         return record.Id
     }

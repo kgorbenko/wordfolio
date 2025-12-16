@@ -59,10 +59,6 @@ let internal collectionsInsertTable =
     table'<CollectionCreationParameters> Schema.CollectionsTable.Name
     |> inSchema Schema.Name
 
-let internal collectionsOutputTable =
-    table'<CollectionRecord> Schema.CollectionsTable.Name
-    |> inSchema Schema.Name
-
 let createCollectionAsync
     (parameters: CollectionCreationParameters)
     (connection: IDbConnection)
@@ -75,7 +71,7 @@ let createCollectionAsync
                 into collectionsInsertTable
                 values [ parameters ]
             }
-            |> insertOutputAsync<CollectionCreationParameters, CollectionRecord> connection transaction cancellationToken
+            |> insertOutputSingleAsync<CollectionCreationParameters, CollectionRecord> connection transaction cancellationToken
 
         return record.Id
     }
