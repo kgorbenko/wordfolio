@@ -70,20 +70,13 @@ let createCollectionAsync
     (cancellationToken: CancellationToken)
     : Task<int> =
     task {
-        let query =
+        let! record =
             insert {
                 into collectionsInsertTable
                 values [ parameters ]
             }
+            |> insertOutputAsync<CollectionCreationParameters, CollectionRecord> connection transaction cancellationToken
 
-        let! records =
-            connection.InsertOutputAsync<CollectionCreationParameters, CollectionRecord>(
-                query,
-                trans = transaction,
-                cancellationToken = cancellationToken
-            )
-
-        let record = records |> Seq.head
         return record.Id
     }
 
