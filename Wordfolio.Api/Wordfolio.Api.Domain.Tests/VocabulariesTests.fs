@@ -29,6 +29,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let! result = getById env (UserId 1) (VocabularyId 1)
@@ -49,6 +50,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let! result = getById env (UserId 1) (VocabularyId 999)
@@ -75,6 +77,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let! result = getById env (UserId 2) (VocabularyId 1)
@@ -107,6 +110,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let! result = getByCollectionId env (UserId 1) (CollectionId 1)
@@ -140,6 +144,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let! result = getByCollectionId env (UserId 2) (CollectionId 1)
@@ -157,6 +162,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let! result = getByCollectionId env (UserId 1) (CollectionId 999)
@@ -179,6 +185,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let now =
@@ -208,6 +215,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let now =
@@ -228,6 +236,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let now =
@@ -253,6 +262,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let now =
@@ -278,6 +288,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let now =
@@ -309,6 +320,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let now =
@@ -332,6 +344,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let now =
@@ -361,6 +374,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let now =
@@ -390,6 +404,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let now =
@@ -419,6 +434,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let! result = delete env (UserId 1) (VocabularyId 1)
@@ -436,6 +452,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let! result = delete env (UserId 1) (VocabularyId 999)
@@ -462,6 +479,7 @@ type VocabulariesTests() =
 
             let appEnv =
                 TestVocabulariesEnv(collections, vocabularies)
+
             let env = TestTransactionalEnv(appEnv)
 
             let! result = delete env (UserId 2) (VocabularyId 1)

@@ -169,4 +169,4 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
     )
     |> ignore
 
-    app
+    group

@@ -35,21 +35,20 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                       CreatedAt = createdAt }
                 |> fixture.WithConnectionAsync
 
-            let! actual =
+            let! actualCollection =
                 fixture.Seeder
-                |> Seeder.getAllCollectionsAsync
+                |> Seeder.getCollectionByIdAsync createdId
 
-            let collectionId = Assert.Single(actual).Id
+            let expected: Collection option =
+                Some
+                    { Id = createdId
+                      UserId = user.Id
+                      Name = "My Collection"
+                      Description = Some "Test collection"
+                      CreatedAt = createdAt
+                      UpdatedAt = None }
 
-            let expected: Collection list =
-                [ { Id = collectionId
-                    UserId = user.Id
-                    Name = "My Collection"
-                    Description = Some "Test collection"
-                    CreatedAt = createdAt
-                    UpdatedAt = None } ]
-
-            Assert.Equivalent(expected, actual)
+            Assert.Equivalent(expected, actualCollection)
         }
 
     [<Fact>]
@@ -75,21 +74,20 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                       CreatedAt = createdAt }
                 |> fixture.WithConnectionAsync
 
-            let! actual =
+            let! actualCollection =
                 fixture.Seeder
-                |> Seeder.getAllCollectionsAsync
+                |> Seeder.getCollectionByIdAsync createdId
 
-            let collectionId = Assert.Single(actual).Id
+            let expected: Collection option =
+                Some
+                    { Id = createdId
+                      UserId = user.Id
+                      Name = "My Collection"
+                      Description = None
+                      CreatedAt = createdAt
+                      UpdatedAt = None }
 
-            let expected: Collection list =
-                [ { Id = collectionId
-                    UserId = user.Id
-                    Name = "My Collection"
-                    Description = None
-                    CreatedAt = createdAt
-                    UpdatedAt = None } ]
-
-            Assert.Equivalent(expected, actual)
+            Assert.Equivalent(expected, actualCollection)
         }
 
     [<Fact>]
