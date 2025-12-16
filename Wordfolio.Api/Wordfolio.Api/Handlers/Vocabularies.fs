@@ -59,7 +59,7 @@ let private toErrorResponse(error: VocabularyError) : IResult =
         Results.BadRequest({| error = $"Name must be at most {maxLength} characters" |})
     | VocabularyCollectionNotFound _ -> Results.NotFound({| error = "Collection not found" |})
 
-let mapVocabulariesEndpoints(app: IEndpointRouteBuilder, collectionsGroup: IEndpointRouteBuilder) =
+let mapVocabulariesEndpoints(collectionsGroup: IEndpointRouteBuilder) =
     let vocabulariesGroup =
         collectionsGroup.MapGroup("/{collectionId:int}/vocabularies")
 
@@ -188,4 +188,4 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder, collectionsGroup: IEndp
     )
     |> ignore
 
-    app
+    collectionsGroup
