@@ -25,12 +25,12 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
             let collection =
                 Entities.makeCollection user "Collection 1" None createdAt None
 
-            do!
+            let! createdId =
                 fixture.Seeder
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            do!
+            let! createdId =
                 Vocabularies.createVocabularyAsync
                     { CollectionId = collection.Id
                       Name = "My Vocabulary"
@@ -68,12 +68,12 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
             let collection =
                 Entities.makeCollection user "Collection 1" None createdAt None
 
-            do!
+            let! createdId =
                 fixture.Seeder
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            do!
+            let! createdId =
                 Vocabularies.createVocabularyAsync
                     { CollectionId = collection.Id
                       Name = "My Vocabulary"
@@ -135,7 +135,7 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
             let vocabulary =
                 Entities.makeVocabulary collection "My Vocabulary" (Some "Test vocabulary") createdAt None
 
-            do!
+            let! createdId =
                 fixture.Seeder
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
@@ -193,7 +193,7 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
             let _ =
                 Entities.makeVocabulary collection2 "Vocab 3" None createdAt None
 
-            do!
+            let! createdId =
                 fixture.Seeder
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
@@ -232,7 +232,7 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
             let collection =
                 Entities.makeCollection user "Collection 1" None createdAt None
 
-            do!
+            let! createdId =
                 fixture.Seeder
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
@@ -263,7 +263,7 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
             let vocabulary =
                 Entities.makeVocabulary collection "Original Name" (Some "Original Description") createdAt None
 
-            do!
+            let! createdId =
                 fixture.Seeder
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
@@ -311,7 +311,7 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
             let vocabulary =
                 Entities.makeVocabulary collection "Vocabulary Name" (Some "Original Description") createdAt None
 
-            do!
+            let! createdId =
                 fixture.Seeder
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
@@ -375,7 +375,7 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
             let vocabulary =
                 Entities.makeVocabulary collection "Vocabulary to delete" None createdAt None
 
-            do!
+            let! createdId =
                 fixture.Seeder
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync

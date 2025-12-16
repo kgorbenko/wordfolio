@@ -64,10 +64,10 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
         app.MapGroup("/collections")
 
     let vocabulariesGroup =
-        app.MapGroup("/vocabularies")
+        collectionsGroup.MapGroup("/{collectionId:int}/vocabularies")
 
-    collectionsGroup.MapGet(
-        "/{collectionId:int}/vocabularies",
+    vocabulariesGroup.MapGet(
+        "/",
         Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
             (fun collectionId user dataSource cancellationToken ->
                 task {
@@ -77,9 +77,7 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
                         let env =
                             TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result =
-                            Transactions.runInTransaction env (fun appEnv ->
-                                getByCollectionId appEnv (UserId userId) (CollectionId collectionId))
+                        let! result = getByCollectionId env (UserId userId) (CollectionId collectionId)
 
                         return
                             match result with
@@ -93,8 +91,8 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
     )
     |> ignore
 
-    collectionsGroup.MapPost(
-        "/{collectionId:int}/vocabularies",
+    vocabulariesGroup.MapPost(
+        "/",
         Func<int, CreateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
             (fun collectionId request user dataSource cancellationToken ->
                 task {
@@ -105,14 +103,13 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
                             TransactionalEnv(dataSource, cancellationToken)
 
                         let! result =
-                            Transactions.runInTransaction env (fun appEnv ->
-                                create
-                                    appEnv
-                                    (UserId userId)
-                                    (CollectionId collectionId)
-                                    request.Name
-                                    request.Description
-                                    DateTimeOffset.UtcNow)
+                            create
+                                env
+                                (UserId userId)
+                                (CollectionId collectionId)
+                                request.Name
+                                request.Description
+                                DateTimeOffset.UtcNow
 
                         return
                             match result with
@@ -126,7 +123,10 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
     )
     |> ignore
 
-    vocabulariesGroup.MapGet(
+    let vocabulariesByIdGroup =
+        app.MapGroup("/vocabularies")
+
+    vocabulariesByIdGroup.MapGet(
         "/{id:int}",
         Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun id user dataSource cancellationToken ->
             task {
@@ -136,9 +136,7 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
                     let env =
                         TransactionalEnv(dataSource, cancellationToken)
 
-                    let! result =
-                        Transactions.runInTransaction env (fun appEnv ->
-                            getById appEnv (UserId userId) (VocabularyId id))
+                    let! result = getById env (UserId userId) (VocabularyId id)
 
                     return
                         match result with
@@ -148,7 +146,7 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
     )
     |> ignore
 
-    vocabulariesGroup.MapPut(
+    vocabulariesByIdGroup.MapPut(
         "/{id:int}",
         Func<int, UpdateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
             (fun id request user dataSource cancellationToken ->
@@ -160,14 +158,13 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
                             TransactionalEnv(dataSource, cancellationToken)
 
                         let! result =
-                            Transactions.runInTransaction env (fun appEnv ->
-                                update
-                                    appEnv
-                                    (UserId userId)
-                                    (VocabularyId id)
-                                    request.Name
-                                    request.Description
-                                    DateTimeOffset.UtcNow)
+                            update
+                                env
+                                (UserId userId)
+                                (VocabularyId id)
+                                request.Name
+                                request.Description
+                                DateTimeOffset.UtcNow
 
                         return
                             match result with
@@ -177,7 +174,7 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
     )
     |> ignore
 
-    vocabulariesGroup.MapDelete(
+    vocabulariesByIdGroup.MapDelete(
         "/{id:int}",
         Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun id user dataSource cancellationToken ->
             task {
@@ -187,9 +184,7 @@ let mapVocabulariesEndpoints(app: IEndpointRouteBuilder) =
                     let env =
                         TransactionalEnv(dataSource, cancellationToken)
 
-                    let! result =
-                        Transactions.runInTransaction env (fun appEnv ->
-                            delete appEnv (UserId userId) (VocabularyId id))
+                    let! result = delete env (UserId userId) (VocabularyId id)
 
                     return
                         match result with

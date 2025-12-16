@@ -12,13 +12,13 @@ type IGetCollectionsByUserId =
     abstract GetCollectionsByUserId: UserId -> Task<Collection list>
 
 type ICreateCollection =
-    abstract CreateCollection: UserId * string * string option * DateTimeOffset -> Task<unit>
+    abstract CreateCollection: UserId * string * string option * DateTimeOffset -> Task<CollectionId>
 
 type IUpdateCollection =
-    abstract UpdateCollection: CollectionId * string * string option * DateTimeOffset -> Task<bool>
+    abstract UpdateCollection: CollectionId * string * string option * DateTimeOffset -> Task<int>
 
 type IDeleteCollection =
-    abstract DeleteCollection: CollectionId -> Task<bool>
+    abstract DeleteCollection: CollectionId -> Task<int>
 
 module Capabilities =
     let getCollectionById (env: #IGetCollectionById) collectionId = env.GetCollectionById(collectionId)

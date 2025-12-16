@@ -5,6 +5,7 @@ open System.Data
 open System.Threading
 open System.Threading.Tasks
 
+open Dapper
 open Dapper.FSharp.PostgreSQL
 
 open Wordfolio.Api.DataAccess.Dapper
@@ -64,15 +65,18 @@ let createVocabularyAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<unit> =
+    : Task<int> =
     task {
-        do!
-            insert {
-                into vocabulariesInsertTable
-                values [ parameters ]
-            }
-            |> insertAsync connection transaction cancellationToken
-            |> Task.ignore
+        let sql =
+            $"INSERT INTO \"{Schema.Name}\".\"{Schema.VocabulariesTable.Name}\" 
+              (\"{Schema.VocabulariesTable.CollectionIdColumn}\", \"{Schema.VocabulariesTable.NameColumn}\", 
+               \"{Schema.VocabulariesTable.DescriptionColumn}\", \"{Schema.VocabulariesTable.CreatedAtColumn}\")
+              VALUES (@CollectionId, @Name, @Description, @CreatedAt)
+              RETURNING \"{Schema.VocabulariesTable.IdColumn}\""
+
+        let! id = connection.QuerySingleAsync<int>(sql, parameters, transaction = transaction)
+
+        return id
     }
 
 let getVocabularyByIdAsync

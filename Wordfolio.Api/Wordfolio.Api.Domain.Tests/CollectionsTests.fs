@@ -20,7 +20,8 @@ type CollectionsTests() =
             let collections =
                 ref(Map.ofList [ 1, collection ])
 
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = getById env (UserId 1) (CollectionId 1)
 
@@ -37,7 +38,8 @@ type CollectionsTests() =
     member _.``getById returns CollectionNotFound when collection does not exist``() =
         task {
             let collections = ref Map.empty
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = getById env (UserId 1) (CollectionId 999)
 
@@ -55,7 +57,8 @@ type CollectionsTests() =
             let collections =
                 ref(Map.ofList [ 1, collection ])
 
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = getById env (UserId 2) (CollectionId 1)
 
@@ -79,7 +82,8 @@ type CollectionsTests() =
             let collections =
                 ref(Map.ofList [ 1, collection1; 2, collection2; 3, collection3 ])
 
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = getByUserId env (UserId 1)
 
@@ -100,7 +104,8 @@ type CollectionsTests() =
     member _.``getByUserId returns empty list when user has no collections``() =
         task {
             let collections = ref Map.empty
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = getByUserId env (UserId 1)
 
@@ -111,7 +116,8 @@ type CollectionsTests() =
     member _.``create creates collection with valid data``() =
         task {
             let collections = ref Map.empty
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
@@ -132,7 +138,8 @@ type CollectionsTests() =
     member _.``create returns error when name is empty``() =
         task {
             let collections = ref Map.empty
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
@@ -148,7 +155,8 @@ type CollectionsTests() =
     member _.``create returns error when name is whitespace only``() =
         task {
             let collections = ref Map.empty
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
@@ -164,7 +172,8 @@ type CollectionsTests() =
     member _.``create returns error when name exceeds max length``() =
         task {
             let collections = ref Map.empty
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
@@ -187,7 +196,8 @@ type CollectionsTests() =
             let collections =
                 ref(Map.ofList [ 1, collection ])
 
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
@@ -206,7 +216,8 @@ type CollectionsTests() =
     member _.``update returns CollectionNotFound when collection does not exist``() =
         task {
             let collections = ref Map.empty
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
@@ -227,7 +238,8 @@ type CollectionsTests() =
             let collections =
                 ref(Map.ofList [ 1, collection ])
 
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
@@ -248,7 +260,8 @@ type CollectionsTests() =
             let collections =
                 ref(Map.ofList [ 1, collection ])
 
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let now =
                 DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
@@ -269,7 +282,8 @@ type CollectionsTests() =
             let collections =
                 ref(Map.ofList [ 1, collection ])
 
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = delete env (UserId 1) (CollectionId 1)
 
@@ -282,7 +296,8 @@ type CollectionsTests() =
     member _.``delete returns CollectionNotFound when collection does not exist``() =
         task {
             let collections = ref Map.empty
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = delete env (UserId 1) (CollectionId 999)
 
@@ -300,7 +315,8 @@ type CollectionsTests() =
             let collections =
                 ref(Map.ofList [ 1, collection ])
 
-            let env = TestCollectionsEnv(collections)
+            let appEnv = TestCollectionsEnv(collections)
+            let env = TestTransactionalEnv(appEnv)
 
             let! result = delete env (UserId 2) (CollectionId 1)
 

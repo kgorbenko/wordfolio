@@ -13,13 +13,13 @@ type IGetVocabulariesByCollectionId =
     abstract GetVocabulariesByCollectionId: CollectionId -> Task<Vocabulary list>
 
 type ICreateVocabulary =
-    abstract CreateVocabulary: CollectionId * string * string option * DateTimeOffset -> Task<unit>
+    abstract CreateVocabulary: CollectionId * string * string option * DateTimeOffset -> Task<VocabularyId>
 
 type IUpdateVocabulary =
-    abstract UpdateVocabulary: VocabularyId * string * string option * DateTimeOffset -> Task<bool>
+    abstract UpdateVocabulary: VocabularyId * string * string option * DateTimeOffset -> Task<int>
 
 type IDeleteVocabulary =
-    abstract DeleteVocabulary: VocabularyId -> Task<bool>
+    abstract DeleteVocabulary: VocabularyId -> Task<int>
 
 module Capabilities =
     let getVocabularyById (env: #IGetVocabularyById) vocabularyId = env.GetVocabularyById(vocabularyId)

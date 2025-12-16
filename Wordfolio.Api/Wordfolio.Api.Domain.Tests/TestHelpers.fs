@@ -43,12 +43,12 @@ type TestCollectionsEnv(collections: Map<int, Collection> ref) =
                 collections.Value
                 |> Map.add nextId collection
 
-            Task.FromResult(())
+            Task.FromResult(CollectionId nextId)
 
     interface IUpdateCollection with
         member _.UpdateCollection(CollectionId id, name, description, updatedAt) =
             match collections.Value |> Map.tryFind id with
-            | None -> Task.FromResult(false)
+            | None -> Task.FromResult(0)
             | Some existing ->
                 let updated =
                     { existing with
@@ -57,15 +57,15 @@ type TestCollectionsEnv(collections: Map<int, Collection> ref) =
                         UpdatedAt = Some updatedAt }
 
                 collections.Value <- collections.Value |> Map.add id updated
-                Task.FromResult(true)
+                Task.FromResult(1)
 
     interface IDeleteCollection with
         member _.DeleteCollection(CollectionId id) =
             match collections.Value |> Map.tryFind id with
-            | None -> Task.FromResult(false)
+            | None -> Task.FromResult(0)
             | Some _ ->
                 collections.Value <- collections.Value |> Map.remove id
-                Task.FromResult(true)
+                Task.FromResult(1)
 
 type TestVocabulariesEnv(collections: Map<int, Collection> ref, vocabularies: Map<int, Vocabulary> ref) =
     interface IGetCollectionById with
@@ -109,12 +109,12 @@ type TestVocabulariesEnv(collections: Map<int, Collection> ref, vocabularies: Ma
                 vocabularies.Value
                 |> Map.add nextId vocabulary
 
-            Task.FromResult(())
+            Task.FromResult(VocabularyId nextId)
 
     interface IUpdateVocabulary with
         member _.UpdateVocabulary(VocabularyId id, name, description, updatedAt) =
             match vocabularies.Value |> Map.tryFind id with
-            | None -> Task.FromResult(false)
+            | None -> Task.FromResult(0)
             | Some existing ->
                 let updated =
                     { existing with
@@ -123,15 +123,15 @@ type TestVocabulariesEnv(collections: Map<int, Collection> ref, vocabularies: Ma
                         UpdatedAt = Some updatedAt }
 
                 vocabularies.Value <- vocabularies.Value |> Map.add id updated
-                Task.FromResult(true)
+                Task.FromResult(1)
 
     interface IDeleteVocabulary with
         member _.DeleteVocabulary(VocabularyId id) =
             match vocabularies.Value |> Map.tryFind id with
-            | None -> Task.FromResult(false)
+            | None -> Task.FromResult(0)
             | Some _ ->
                 vocabularies.Value <- vocabularies.Value |> Map.remove id
-                Task.FromResult(true)
+                Task.FromResult(1)
 
 type TestTransactionalEnv<'env>(appEnv: 'env) =
     let mutable committed = false
