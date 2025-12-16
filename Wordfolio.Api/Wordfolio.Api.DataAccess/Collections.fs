@@ -71,7 +71,10 @@ let createCollectionAsync
                 into collectionsInsertTable
                 values [ parameters ]
             }
-            |> insertOutputSingleAsync<CollectionCreationParameters, CollectionRecord> connection transaction cancellationToken
+            |> insertOutputSingleAsync<CollectionCreationParameters, CollectionRecord>
+                connection
+                transaction
+                cancellationToken
 
         return record.Id
     }

@@ -42,8 +42,7 @@ let insertOutputSingleAsync<'TInput, 'TOutput>
     (insertFunc: InsertQuery<'TInput>)
     : Task<'TOutput> =
     task {
-        let! results =
-            insertOutputAsync<'TInput, 'TOutput> connection transaction cancellationToken insertFunc
+        let! results = insertOutputAsync<'TInput, 'TOutput> connection transaction cancellationToken insertFunc
 
         return
             results

@@ -41,7 +41,9 @@ let main args =
     |> mapStatusEndpoint
     |> mapAuthEndpoints
     |> fun app ->
-        let collectionsGroup = mapCollectionsEndpoints app
+        let collectionsGroup =
+            mapCollectionsEndpoints app
+
         mapVocabulariesEndpoints collectionsGroup
     |> ignore
 

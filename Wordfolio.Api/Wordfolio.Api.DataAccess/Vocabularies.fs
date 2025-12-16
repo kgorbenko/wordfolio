@@ -71,7 +71,10 @@ let createVocabularyAsync
                 into vocabulariesInsertTable
                 values [ parameters ]
             }
-            |> insertOutputSingleAsync<VocabularyCreationParameters, VocabularyRecord> connection transaction cancellationToken
+            |> insertOutputSingleAsync<VocabularyCreationParameters, VocabularyRecord>
+                connection
+                transaction
+                cancellationToken
 
         return record.Id
     }

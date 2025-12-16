@@ -122,21 +122,22 @@ let mapVocabulariesEndpoints(collectionsGroup: IEndpointRouteBuilder) =
 
     vocabulariesGroup.MapGet(
         "/{id:int}",
-        Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun collectionId id user dataSource cancellationToken ->
-            task {
-                match getUserId user with
-                | None -> return Results.Unauthorized()
-                | Some userId ->
-                    let env =
-                        TransactionalEnv(dataSource, cancellationToken)
+        Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+            (fun collectionId id user dataSource cancellationToken ->
+                task {
+                    match getUserId user with
+                    | None -> return Results.Unauthorized()
+                    | Some userId ->
+                        let env =
+                            TransactionalEnv(dataSource, cancellationToken)
 
-                    let! result = getById env (UserId userId) (VocabularyId id)
+                        let! result = getById env (UserId userId) (VocabularyId id)
 
-                    return
-                        match result with
-                        | Ok vocabulary -> Results.Ok(toResponse vocabulary)
-                        | Error error -> toErrorResponse error
-            })
+                        return
+                            match result with
+                            | Ok vocabulary -> Results.Ok(toResponse vocabulary)
+                            | Error error -> toErrorResponse error
+                })
     )
     |> ignore
 
@@ -170,21 +171,22 @@ let mapVocabulariesEndpoints(collectionsGroup: IEndpointRouteBuilder) =
 
     vocabulariesGroup.MapDelete(
         "/{id:int}",
-        Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun collectionId id user dataSource cancellationToken ->
-            task {
-                match getUserId user with
-                | None -> return Results.Unauthorized()
-                | Some userId ->
-                    let env =
-                        TransactionalEnv(dataSource, cancellationToken)
+        Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+            (fun collectionId id user dataSource cancellationToken ->
+                task {
+                    match getUserId user with
+                    | None -> return Results.Unauthorized()
+                    | Some userId ->
+                        let env =
+                            TransactionalEnv(dataSource, cancellationToken)
 
-                    let! result = delete env (UserId userId) (VocabularyId id)
+                        let! result = delete env (UserId userId) (VocabularyId id)
 
-                    return
-                        match result with
-                        | Ok() -> Results.NoContent()
-                        | Error error -> toErrorResponse error
-            })
+                        return
+                            match result with
+                            | Ok() -> Results.NoContent()
+                            | Error error -> toErrorResponse error
+                })
     )
     |> ignore
 
