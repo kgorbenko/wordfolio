@@ -19,9 +19,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="TestHelpers.fs" />
-    <Compile Include="CollectionsTests.fs" />
-    <Compile Include="VocabulariesTests.fs" />
+    <Compile Include="Collections\GetByIdTests.fs" />
+    <Compile Include="Collections\GetByUserIdTests.fs" />
+    <Compile Include="Collections\CreateTests.fs" />
+    <Compile Include="Collections\UpdateTests.fs" />
+    <Compile Include="Collections\DeleteTests.fs" />
+    <Compile Include="Vocabularies\GetByIdTests.fs" />
+    <Compile Include="Vocabularies\GetByCollectionIdTests.fs" />
+    <Compile Include="Vocabularies\CreateTests.fs" />
+    <Compile Include="Vocabularies\UpdateTests.fs" />
+    <Compile Include="Vocabularies\DeleteTests.fs" />
   </ItemGroup>
 
 </Project>
