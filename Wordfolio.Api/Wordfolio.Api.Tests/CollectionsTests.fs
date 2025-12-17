@@ -5,7 +5,6 @@ open System.Net
 open System.Net.Http
 open System.Net.Http.Headers
 open System.Net.Http.Json
-open System.Text.Json.Serialization
 open System.Threading.Tasks
 
 open Xunit
