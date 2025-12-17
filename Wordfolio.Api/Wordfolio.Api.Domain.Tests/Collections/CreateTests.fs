@@ -199,3 +199,48 @@ let ``returns error when name exceeds max length``() =
         Assert.Equal(Error(CollectionNameTooLong MaxNameLength), result)
         Assert.Empty(env.CreateCollectionCalls)
     }
+
+[<Fact>]
+let ``accepts name at exact max length``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+
+        let maxLengthName =
+            String.replicate MaxNameLength "a"
+
+        let createdCollection =
+            makeCollection 1 1 maxLengthName None now
+
+        let env =
+            TestEnv(
+                createCollection =
+                    (fun (_, name, _, _) ->
+                        if name <> maxLengthName then
+                            failwith $"Expected name with {MaxNameLength} characters"
+
+                        Task.FromResult(CollectionId 1)),
+                getCollectionById = (fun _ -> Task.FromResult(Some createdCollection))
+            )
+
+        let! result = create env (UserId 1) maxLengthName None now
+
+        Assert.Equal(Ok createdCollection, result)
+    }
+
+[<Fact>]
+let ``returns error when getCollectionById returns None after creation``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+
+        let env =
+            TestEnv(
+                createCollection = (fun _ -> Task.FromResult(CollectionId 1)),
+                getCollectionById = (fun _ -> Task.FromResult(None))
+            )
+
+        let! result = create env (UserId 1) "Test Collection" None now
+
+        Assert.Equal(Error CollectionNameRequired, result)
+        Assert.Equal(1, env.CreateCollectionCalls.Length)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+    }

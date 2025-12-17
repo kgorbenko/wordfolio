@@ -214,3 +214,66 @@ let ``returns error when name exceeds max length``() =
         Assert.Equal(Error(CollectionNameTooLong MaxNameLength), result)
         Assert.Empty(env.UpdateCollectionCalls)
     }
+
+[<Fact>]
+let ``returns error when name is whitespace only``() =
+    task {
+        let existingCollection =
+            makeCollection 1 1 "Test Collection" None
+
+        let env =
+            TestEnv(
+                getCollectionById = (fun _ -> Task.FromResult(Some existingCollection)),
+                updateCollection = (fun _ -> failwith "Should not be called")
+            )
+
+        let! result = update env (UserId 1) (CollectionId 1) "   " None DateTimeOffset.UtcNow
+
+        Assert.Equal(Error CollectionNameRequired, result)
+        Assert.Empty(env.UpdateCollectionCalls)
+    }
+
+[<Fact>]
+let ``accepts name at exact max length``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+
+        let existingCollection =
+            makeCollection 1 1 "Old Name" None
+
+        let maxLengthName =
+            String.replicate MaxNameLength "a"
+
+        let env =
+            TestEnv(
+                getCollectionById = (fun _ -> Task.FromResult(Some existingCollection)),
+                updateCollection =
+                    (fun (_, name, _, _) ->
+                        if name <> maxLengthName then
+                            failwith $"Expected name with {MaxNameLength} characters"
+
+                        Task.FromResult(1))
+            )
+
+        let! result = update env (UserId 1) (CollectionId 1) maxLengthName None now
+
+        Assert.True(Result.isOk result)
+    }
+
+[<Fact>]
+let ``returns NotFound when update affects no rows``() =
+    task {
+        let existingCollection =
+            makeCollection 1 1 "Test Collection" None
+
+        let env =
+            TestEnv(
+                getCollectionById = (fun _ -> Task.FromResult(Some existingCollection)),
+                updateCollection = (fun _ -> Task.FromResult(0))
+            )
+
+        let! result = update env (UserId 1) (CollectionId 1) "New Name" None DateTimeOffset.UtcNow
+
+        Assert.Equal(Error(CollectionNotFound(CollectionId 1)), result)
+        Assert.Equal(1, env.UpdateCollectionCalls.Length)
+    }

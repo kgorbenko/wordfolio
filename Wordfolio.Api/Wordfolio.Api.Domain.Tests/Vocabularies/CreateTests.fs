@@ -279,3 +279,52 @@ let ``returns error when name exceeds max length``() =
         Assert.Equal(Error(VocabularyNameTooLong MaxNameLength), result)
         Assert.Empty(env.CreateVocabularyCalls)
     }
+
+[<Fact>]
+let ``accepts name at exact max length``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+        let collection = makeCollection 1 1
+
+        let maxLengthName =
+            String.replicate MaxNameLength "a"
+
+        let createdVocabulary =
+            makeVocabulary 1 1 maxLengthName None now
+
+        let env =
+            TestEnv(
+                getCollectionById = (fun _ -> Task.FromResult(Some collection)),
+                createVocabulary =
+                    (fun (_, name, _, _) ->
+                        if name <> maxLengthName then
+                            failwith $"Expected name with {MaxNameLength} characters"
+
+                        Task.FromResult(VocabularyId 1)),
+                getVocabularyById = (fun _ -> Task.FromResult(Some createdVocabulary))
+            )
+
+        let! result = create env (UserId 1) (CollectionId 1) maxLengthName None now
+
+        Assert.Equal(Ok createdVocabulary, result)
+    }
+
+[<Fact>]
+let ``returns error when getVocabularyById returns None after creation``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+        let collection = makeCollection 1 1
+
+        let env =
+            TestEnv(
+                getCollectionById = (fun _ -> Task.FromResult(Some collection)),
+                createVocabulary = (fun _ -> Task.FromResult(VocabularyId 1)),
+                getVocabularyById = (fun _ -> Task.FromResult(None))
+            )
+
+        let! result = create env (UserId 1) (CollectionId 1) "Test Vocabulary" None now
+
+        Assert.Equal(Error VocabularyNameRequired, result)
+        Assert.Equal(1, env.CreateVocabularyCalls.Length)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+    }

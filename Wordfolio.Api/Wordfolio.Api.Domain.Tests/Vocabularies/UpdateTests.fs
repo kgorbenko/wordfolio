@@ -270,3 +270,75 @@ let ``returns error when name exceeds max length``() =
         Assert.Equal(Error(VocabularyNameTooLong MaxNameLength), result)
         Assert.Empty(env.UpdateVocabularyCalls)
     }
+
+[<Fact>]
+let ``returns error when name is whitespace only``() =
+    task {
+        let existingVocabulary =
+            makeVocabulary 1 1 "Test Vocabulary" None
+
+        let collection = makeCollection 1 1
+
+        let env =
+            TestEnv(
+                getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
+                getCollectionById = (fun _ -> Task.FromResult(Some collection)),
+                updateVocabulary = (fun _ -> failwith "Should not be called")
+            )
+
+        let! result = update env (UserId 1) (VocabularyId 1) "   " None DateTimeOffset.UtcNow
+
+        Assert.Equal(Error VocabularyNameRequired, result)
+        Assert.Empty(env.UpdateVocabularyCalls)
+    }
+
+[<Fact>]
+let ``accepts name at exact max length``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+
+        let existingVocabulary =
+            makeVocabulary 1 1 "Old Name" None
+
+        let collection = makeCollection 1 1
+
+        let maxLengthName =
+            String.replicate MaxNameLength "a"
+
+        let env =
+            TestEnv(
+                getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
+                getCollectionById = (fun _ -> Task.FromResult(Some collection)),
+                updateVocabulary =
+                    (fun (_, name, _, _) ->
+                        if name <> maxLengthName then
+                            failwith $"Expected name with {MaxNameLength} characters"
+
+                        Task.FromResult(1))
+            )
+
+        let! result = update env (UserId 1) (VocabularyId 1) maxLengthName None now
+
+        Assert.True(Result.isOk result)
+    }
+
+[<Fact>]
+let ``returns NotFound when update affects no rows``() =
+    task {
+        let existingVocabulary =
+            makeVocabulary 1 1 "Test Vocabulary" None
+
+        let collection = makeCollection 1 1
+
+        let env =
+            TestEnv(
+                getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
+                getCollectionById = (fun _ -> Task.FromResult(Some collection)),
+                updateVocabulary = (fun _ -> Task.FromResult(0))
+            )
+
+        let! result = update env (UserId 1) (VocabularyId 1) "New Name" None DateTimeOffset.UtcNow
+
+        Assert.Equal(Error(VocabularyNotFound(VocabularyId 1)), result)
+        Assert.Equal(1, env.UpdateVocabularyCalls.Length)
+    }
