@@ -58,29 +58,71 @@ module private TestHelpers =
     let setAuthToken (client: HttpClient) (token: string) : unit =
         client.DefaultRequestHeaders.Authorization <- AuthenticationHeaderValue("Bearer", token)
 
-    let seedUser (userId: int) (collections: (string * string option) list) (seeder: WordfolioSeeder) : Task<int list> =
+    let seedUserWithCollections
+        (userId: int)
+        (email: string)
+        (collections: (string * string option) list)
+        (fixture: WordfolioIdentityTestFixture)
+        : Task<int list> =
         task {
-            let! existingUsers = Seeder.getAllUsersAsync seeder
+            let identityUser =
+                Wordfolio.Api.Identity.User(Id = userId, UserName = email, Email = email)
 
-            let user =
-                existingUsers
-                |> List.tryFind(fun u -> u.Id = userId)
+            do!
+                fixture.IdentitySeeder
+                |> Identity.Seeder.addUsers [ identityUser ]
+                |> Identity.Seeder.saveChangesAsync
 
-            if user.IsNone then
-                failwith $"User {userId} not found. Cannot seed collections."
-
-            let userEntity = Entities.makeUser userId
+            let wordfolioUser = Entities.makeUser userId
 
             for (name, description) in collections do
-                Entities.makeCollection userEntity name description (DateTimeOffset.UtcNow) None
+                Entities.makeCollection wordfolioUser name description (DateTimeOffset.UtcNow) None
                 |> ignore
 
             do!
-                seeder
-                |> Seeder.addUsers [ userEntity ]
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
                 |> Seeder.saveChangesAsync
 
-            let! savedCollections = Seeder.getAllCollectionsAsync seeder
+            let! savedCollections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+
+            return
+                collections
+                |> List.map(fun (name, _) ->
+                    let col =
+                        savedCollections
+                        |> List.find(fun c -> c.Name = name && c.UserId = userId)
+
+                    col.Id)
+        }
+
+    let seedCollectionsForExistingUser
+        (userId: int)
+        (collections: (string * string option) list)
+        (fixture: WordfolioIdentityTestFixture)
+        : Task<int list> =
+        task {
+            let collectionsToAdd =
+                collections
+                |> List.map(fun (name, description) ->
+                    let collection: Mapping.Collection =
+                        { Id = 0
+                          UserId = userId
+                          Name = name
+                          Description = description |> Option.toObj
+                          CreatedAt = DateTimeOffset.UtcNow
+                          UpdatedAt = None |> Option.toNullable
+                          User = Unchecked.defaultof<_>
+                          Vocabularies = ResizeArray() }
+
+                    collection)
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addCollections collectionsToAdd
+                |> Seeder.saveChangesAsync
+
+            let! savedCollections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
 
             return
                 collections
@@ -228,7 +270,10 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             let user = Assert.Single(users)
 
             let! collectionIds =
-                TestHelpers.seedUser user.Id [ ("Test Collection", Some "Test Description") ] fixture.WordfolioSeeder
+                TestHelpers.seedCollectionsForExistingUser
+                    user.Id
+                    [ ("Test Collection", Some "Test Description") ]
+                    fixture
 
             let collectionId = collectionIds.[0]
 
@@ -295,7 +340,10 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             let user = Assert.Single(users)
 
             let! collectionIds =
-                TestHelpers.seedUser user.Id [ ("Original Name", Some "Original Description") ] fixture.WordfolioSeeder
+                TestHelpers.seedCollectionsForExistingUser
+                    user.Id
+                    [ ("Original Name", Some "Original Description") ]
+                    fixture
 
             let collectionId = collectionIds.[0]
 
@@ -360,7 +408,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
             let user = Assert.Single(users)
 
-            let! collectionIds = TestHelpers.seedUser user.Id [ ("Original Name", None) ] fixture.WordfolioSeeder
+            let! collectionIds = TestHelpers.seedCollectionsForExistingUser user.Id [ ("Original Name", None) ] fixture
 
             let collectionId = collectionIds.[0]
 
@@ -408,7 +456,8 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
             let user = Assert.Single(users)
 
-            let! collectionIds = TestHelpers.seedUser user.Id [ ("Test Collection", None) ] fixture.WordfolioSeeder
+            let! collectionIds =
+                TestHelpers.seedCollectionsForExistingUser user.Id [ ("Test Collection", None) ] fixture
 
             let collectionId = collectionIds.[0]
 
