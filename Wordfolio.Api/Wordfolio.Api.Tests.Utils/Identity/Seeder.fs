@@ -39,24 +39,6 @@ module Seeder =
 
         new IdentitySeeder(context)
 
-    let makeUser (id: int) (email: string) (password: string) : Wordfolio.Api.Identity.User =
-        let hasher =
-            Microsoft.AspNetCore.Identity.PasswordHasher<Wordfolio.Api.Identity.User>()
-
-        let user =
-            Wordfolio.Api.Identity.User(
-                Id = id,
-                UserName = email,
-                NormalizedUserName = email.ToUpperInvariant(),
-                Email = email,
-                NormalizedEmail = email.ToUpperInvariant(),
-                EmailConfirmed = true,
-                SecurityStamp = System.Guid.NewGuid().ToString()
-            )
-
-        user.PasswordHash <- hasher.HashPassword(user, password)
-        user
-
     let addUsers (users: Wordfolio.Api.Identity.User list) (seeder: IdentitySeeder) =
         seeder.DbContext.Users.AddRange(users)
         seeder

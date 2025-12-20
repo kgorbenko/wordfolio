@@ -7,6 +7,8 @@ open System.Net.Http.Headers
 open System.Net.Http.Json
 open System.Threading.Tasks
 
+open Microsoft.Extensions.DependencyInjection
+
 open Xunit
 
 open Wordfolio.Api.Handlers.Collections
@@ -28,6 +30,7 @@ type TestLoginResponse =
 
 module private TestHelpers =
     let createUserAndGetToken
+        (factory: WebApplicationFactory)
         (client: HttpClient)
         (fixture: WordfolioIdentityTestFixture)
         (userId: int)
@@ -35,20 +38,24 @@ module private TestHelpers =
         (password: string)
         : Task<string> =
         task {
+            use scope = factory.Services.CreateScope()
+
+            let userManager =
+                scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<Wordfolio.Api.Identity.User>>()
+
             let identityUser =
-                Identity.Seeder.makeUser userId email password
+                Wordfolio.Api.Identity.User(Id = userId, UserName = email, Email = email)
 
-            do!
-                fixture.IdentitySeeder
-                |> Identity.Seeder.addUsers [ identityUser ]
-                |> Identity.Seeder.saveChangesAsync
+            let! createResult = userManager.CreateAsync(identityUser, password)
 
-            let wordfolioUser = Entities.makeUser userId
+            if not createResult.Succeeded then
+                let errors =
+                    String.concat
+                        ", "
+                        (createResult.Errors
+                         |> Seq.map(fun e -> e.Description))
 
-            do!
-                fixture.WordfolioSeeder
-                |> Seeder.addUsers [ wordfolioUser ]
-                |> Seeder.saveChangesAsync
+                Assert.Fail($"User creation failed: {errors}")
 
             let loginRequest: TestLoginRequest =
                 { Email = email; Password = password }
@@ -81,7 +88,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.createUserAndGetToken client fixture 100 "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken factory client fixture 100 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let request: CreateCollectionRequest =
@@ -102,24 +109,24 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             let! collections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
             let collection = Assert.Single(collections)
 
-            let expected: CollectionResponse =
+            let expectedResponse: CollectionResponse =
                 { Id = result.Id
                   Name = "My Collection"
                   Description = Some "A test collection"
                   CreatedAt = result.CreatedAt
                   UpdatedAt = None }
 
-            Assert.Equivalent(expected, result)
+            Assert.Equal(expectedResponse, result)
 
-            Assert.Equivalent(
+            let expectedCollection: Wordfolio.Collection =
                 { Id = collection.Id
                   UserId = collection.UserId
                   Name = "My Collection"
                   Description = Some "A test collection"
                   CreatedAt = collection.CreatedAt
-                  UpdatedAt = None },
-                collection
-            )
+                  UpdatedAt = None }
+
+            Assert.Equal(expectedCollection, collection)
         }
 
     [<Fact>]
@@ -151,7 +158,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.createUserAndGetToken client fixture 101 "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken factory client fixture 101 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let request: CreateCollectionRequest =
@@ -173,7 +180,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.createUserAndGetToken client fixture 102 "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken factory client fixture 102 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! response = client.GetAsync(Urls.Collections)
@@ -212,7 +219,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.createUserAndGetToken client fixture 103 "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken factory client fixture 103 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
@@ -246,9 +253,15 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             let! result = response.Content.ReadFromJsonAsync<CollectionResponse>()
 
             Assert.NotNull(result)
-            Assert.Equal(savedCollection.Id, result.Id)
-            Assert.Equal("Test Collection", result.Name)
-            Assert.Equal(Some "Test Description", result.Description)
+
+            let expected: CollectionResponse =
+                { Id = savedCollection.Id
+                  Name = "Test Collection"
+                  Description = Some "Test Description"
+                  CreatedAt = result.CreatedAt
+                  UpdatedAt = None }
+
+            Assert.Equal(expected, result)
         }
 
     [<Fact>]
@@ -261,7 +274,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.createUserAndGetToken client fixture 104 "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken factory client fixture 104 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! response = client.GetAsync(Urls.CollectionById 999999)
@@ -294,7 +307,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.createUserAndGetToken client fixture 105 "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken factory client fixture 105 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
@@ -334,15 +347,29 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             let! result = response.Content.ReadFromJsonAsync<CollectionResponse>()
 
             Assert.NotNull(result)
-            Assert.Equal(savedCollection.Id, result.Id)
-            Assert.Equal("Updated Name", result.Name)
-            Assert.Equal(Some "Updated Description", result.Description)
             Assert.True(result.UpdatedAt.IsSome)
+
+            let expectedResponse: CollectionResponse =
+                { Id = savedCollection.Id
+                  Name = "Updated Name"
+                  Description = Some "Updated Description"
+                  CreatedAt = result.CreatedAt
+                  UpdatedAt = result.UpdatedAt }
+
+            Assert.Equal(expectedResponse, result)
 
             let! updatedCollection = Seeder.getCollectionByIdAsync savedCollection.Id fixture.WordfolioSeeder
             Assert.True(updatedCollection.IsSome)
-            Assert.Equal("Updated Name", updatedCollection.Value.Name)
-            Assert.Equal(Some "Updated Description", updatedCollection.Value.Description)
+
+            let expectedCollection: Wordfolio.Collection =
+                { Id = updatedCollection.Value.Id
+                  UserId = updatedCollection.Value.UserId
+                  Name = "Updated Name"
+                  Description = Some "Updated Description"
+                  CreatedAt = updatedCollection.Value.CreatedAt
+                  UpdatedAt = updatedCollection.Value.UpdatedAt }
+
+            Assert.Equal(expectedCollection, updatedCollection.Value)
         }
 
     [<Fact>]
@@ -355,7 +382,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.createUserAndGetToken client fixture 106 "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken factory client fixture 106 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let updateRequest: UpdateCollectionRequest =
@@ -377,7 +404,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.createUserAndGetToken client fixture 107 "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken factory client fixture 107 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
@@ -441,7 +468,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.createUserAndGetToken client fixture 108 "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken factory client fixture 108 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
@@ -487,7 +514,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.createUserAndGetToken client fixture 109 "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken factory client fixture 109 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! response = client.DeleteAsync(Urls.CollectionById 999999)
