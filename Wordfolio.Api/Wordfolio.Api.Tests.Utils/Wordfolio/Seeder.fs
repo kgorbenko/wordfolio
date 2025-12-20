@@ -111,6 +111,10 @@ module Seeder =
         seeder.Context.Users.AddRange(users)
         seeder
 
+    let addCollections (collections: Mapping.Collection list) (seeder: WordfolioSeeder) : WordfolioSeeder =
+        seeder.Context.Collections.AddRange(collections)
+        seeder
+
     let saveChangesAsync(seeder: WordfolioSeeder) : Task =
         task {
             do!

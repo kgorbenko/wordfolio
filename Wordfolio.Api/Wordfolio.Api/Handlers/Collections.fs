@@ -15,6 +15,12 @@ open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.Collections.Operations
 open Wordfolio.Api.Infrastructure.Environment
 
+module Urls =
+    [<Literal>]
+    let Collections = "/collections"
+
+    let CollectionById(id: int) = $"{Collections}/{id}"
+
 type CollectionResponse =
     { Id: int
       Name: string
@@ -57,7 +63,7 @@ let private toErrorResponse(error: CollectionError) : IResult =
         Results.BadRequest({| error = $"Name must be at most {maxLength} characters" |})
 
 let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
-    let group = app.MapGroup("/collections")
+    let group = app.MapGroup(Urls.Collections)
 
     group.MapGet(
         "/",
@@ -113,7 +119,7 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
                             match result with
                             | Ok collection ->
                                 Results.Created(
-                                    $"/collections/{CollectionId.value collection.Id}",
+                                    Urls.CollectionById(CollectionId.value collection.Id),
                                     toResponse collection
                                 )
                             | Error error -> toErrorResponse error
