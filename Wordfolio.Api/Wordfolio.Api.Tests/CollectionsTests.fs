@@ -27,18 +27,28 @@ type TestLoginResponse =
       RefreshToken: string }
 
 module private TestHelpers =
-    let getAuthToken (client: HttpClient) (email: string) (password: string) : Task<string> =
+    let createUserAndGetToken
+        (client: HttpClient)
+        (fixture: WordfolioIdentityTestFixture)
+        (userId: int)
+        (email: string)
+        (password: string)
+        : Task<string> =
         task {
-            let registerRequest: TestRegisterRequest =
-                { Email = email; Password = password }
+            let identityUser =
+                Identity.Seeder.makeUser userId email password
 
-            let! registerResponse = client.PostAsJsonAsync("/auth/register", registerRequest)
-            let! registerBody = registerResponse.Content.ReadAsStringAsync()
+            do!
+                fixture.IdentitySeeder
+                |> Identity.Seeder.addUsers [ identityUser ]
+                |> Identity.Seeder.saveChangesAsync
 
-            Assert.True(
-                registerResponse.IsSuccessStatusCode,
-                $"Register failed. Status: {registerResponse.StatusCode}. Body: {registerBody}"
-            )
+            let wordfolioUser = Entities.makeUser userId
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.saveChangesAsync
 
             let loginRequest: TestLoginRequest =
                 { Email = email; Password = password }
@@ -58,82 +68,6 @@ module private TestHelpers =
     let setAuthToken (client: HttpClient) (token: string) : unit =
         client.DefaultRequestHeaders.Authorization <- AuthenticationHeaderValue("Bearer", token)
 
-    let seedUserWithCollections
-        (userId: int)
-        (email: string)
-        (collections: (string * string option) list)
-        (fixture: WordfolioIdentityTestFixture)
-        : Task<int list> =
-        task {
-            let identityUser =
-                Wordfolio.Api.Identity.User(Id = userId, UserName = email, Email = email)
-
-            do!
-                fixture.IdentitySeeder
-                |> Identity.Seeder.addUsers [ identityUser ]
-                |> Identity.Seeder.saveChangesAsync
-
-            let wordfolioUser = Entities.makeUser userId
-
-            for (name, description) in collections do
-                Entities.makeCollection wordfolioUser name description (DateTimeOffset.UtcNow) None
-                |> ignore
-
-            do!
-                fixture.WordfolioSeeder
-                |> Seeder.addUsers [ wordfolioUser ]
-                |> Seeder.saveChangesAsync
-
-            let! savedCollections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
-
-            return
-                collections
-                |> List.map(fun (name, _) ->
-                    let col =
-                        savedCollections
-                        |> List.find(fun c -> c.Name = name && c.UserId = userId)
-
-                    col.Id)
-        }
-
-    let seedCollectionsForExistingUser
-        (userId: int)
-        (collections: (string * string option) list)
-        (fixture: WordfolioIdentityTestFixture)
-        : Task<int list> =
-        task {
-            let collectionsToAdd =
-                collections
-                |> List.map(fun (name, description) ->
-                    let collection: Mapping.Collection =
-                        { Id = 0
-                          UserId = userId
-                          Name = name
-                          Description = description |> Option.toObj
-                          CreatedAt = DateTimeOffset.UtcNow
-                          UpdatedAt = None |> Option.toNullable
-                          User = Unchecked.defaultof<_>
-                          Vocabularies = ResizeArray() }
-
-                    collection)
-
-            do!
-                fixture.WordfolioSeeder
-                |> Seeder.addCollections collectionsToAdd
-                |> Seeder.saveChangesAsync
-
-            let! savedCollections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
-
-            return
-                collections
-                |> List.map(fun (name, _) ->
-                    let col =
-                        savedCollections
-                        |> List.find(fun c -> c.Name = name && c.UserId = userId)
-
-                    col.Id)
-        }
-
 type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
     interface IClassFixture<WordfolioIdentityTestFixture>
 
@@ -147,7 +81,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.getAuthToken client "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken client fixture 100 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let request: CreateCollectionRequest =
@@ -164,13 +98,28 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.NotNull(result)
             Assert.True(result.Id > 0)
-            Assert.Equal("My Collection", result.Name)
-            Assert.Equal(Some "A test collection", result.Description)
 
             let! collections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
             let collection = Assert.Single(collections)
-            Assert.Equal(result.Id, collection.Id)
-            Assert.Equal(result.Name, collection.Name)
+
+            let expected: CollectionResponse =
+                { Id = result.Id
+                  Name = "My Collection"
+                  Description = Some "A test collection"
+                  CreatedAt = result.CreatedAt
+                  UpdatedAt = None }
+
+            Assert.Equivalent(expected, result)
+
+            Assert.Equivalent(
+                { Id = collection.Id
+                  UserId = collection.UserId
+                  Name = "My Collection"
+                  Description = Some "A test collection"
+                  CreatedAt = collection.CreatedAt
+                  UpdatedAt = None },
+                collection
+            )
         }
 
     [<Fact>]
@@ -202,7 +151,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.getAuthToken client "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken client fixture 101 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let request: CreateCollectionRequest =
@@ -224,7 +173,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.getAuthToken client "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken client fixture 102 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! response = client.GetAsync(Urls.Collections)
@@ -263,21 +212,33 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.getAuthToken client "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken client fixture 103 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
             let user = Assert.Single(users)
 
-            let! collectionIds =
-                TestHelpers.seedCollectionsForExistingUser
-                    user.Id
-                    [ ("Test Collection", Some "Test Description") ]
-                    fixture
+            let collection: Mapping.Collection =
+                { Id = 0
+                  UserId = user.Id
+                  Name = "Test Collection"
+                  Description = Some "Test Description" |> Option.toObj
+                  CreatedAt = DateTimeOffset.UtcNow
+                  UpdatedAt = None |> Option.toNullable
+                  User = Unchecked.defaultof<_>
+                  Vocabularies = ResizeArray() }
 
-            let collectionId = collectionIds.[0]
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.saveChangesAsync
 
-            let! response = client.GetAsync(Urls.CollectionById collectionId)
+            let! collections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+
+            let savedCollection =
+                Assert.Single(collections)
+
+            let! response = client.GetAsync(Urls.CollectionById savedCollection.Id)
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
@@ -285,7 +246,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             let! result = response.Content.ReadFromJsonAsync<CollectionResponse>()
 
             Assert.NotNull(result)
-            Assert.Equal(collectionId, result.Id)
+            Assert.Equal(savedCollection.Id, result.Id)
             Assert.Equal("Test Collection", result.Name)
             Assert.Equal(Some "Test Description", result.Description)
         }
@@ -300,7 +261,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.getAuthToken client "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken client fixture 104 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! response = client.GetAsync(Urls.CollectionById 999999)
@@ -333,25 +294,39 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.getAuthToken client "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken client fixture 105 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
             let user = Assert.Single(users)
 
-            let! collectionIds =
-                TestHelpers.seedCollectionsForExistingUser
-                    user.Id
-                    [ ("Original Name", Some "Original Description") ]
-                    fixture
+            let collection: Mapping.Collection =
+                { Id = 0
+                  UserId = user.Id
+                  Name = "Original Name"
+                  Description =
+                    Some "Original Description"
+                    |> Option.toObj
+                  CreatedAt = DateTimeOffset.UtcNow
+                  UpdatedAt = None |> Option.toNullable
+                  User = Unchecked.defaultof<_>
+                  Vocabularies = ResizeArray() }
 
-            let collectionId = collectionIds.[0]
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.saveChangesAsync
+
+            let! collections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+
+            let savedCollection =
+                Assert.Single(collections)
 
             let updateRequest: UpdateCollectionRequest =
                 { Name = "Updated Name"
                   Description = Some "Updated Description" }
 
-            let! response = client.PutAsJsonAsync(Urls.CollectionById collectionId, updateRequest)
+            let! response = client.PutAsJsonAsync(Urls.CollectionById savedCollection.Id, updateRequest)
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
@@ -359,12 +334,12 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             let! result = response.Content.ReadFromJsonAsync<CollectionResponse>()
 
             Assert.NotNull(result)
-            Assert.Equal(collectionId, result.Id)
+            Assert.Equal(savedCollection.Id, result.Id)
             Assert.Equal("Updated Name", result.Name)
             Assert.Equal(Some "Updated Description", result.Description)
             Assert.True(result.UpdatedAt.IsSome)
 
-            let! updatedCollection = Seeder.getCollectionByIdAsync collectionId fixture.WordfolioSeeder
+            let! updatedCollection = Seeder.getCollectionByIdAsync savedCollection.Id fixture.WordfolioSeeder
             Assert.True(updatedCollection.IsSome)
             Assert.Equal("Updated Name", updatedCollection.Value.Name)
             Assert.Equal(Some "Updated Description", updatedCollection.Value.Description)
@@ -380,7 +355,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.getAuthToken client "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken client fixture 106 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let updateRequest: UpdateCollectionRequest =
@@ -402,21 +377,37 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.getAuthToken client "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken client fixture 107 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
             let user = Assert.Single(users)
 
-            let! collectionIds = TestHelpers.seedCollectionsForExistingUser user.Id [ ("Original Name", None) ] fixture
+            let collection: Mapping.Collection =
+                { Id = 0
+                  UserId = user.Id
+                  Name = "Original Name"
+                  Description = None |> Option.toObj
+                  CreatedAt = DateTimeOffset.UtcNow
+                  UpdatedAt = None |> Option.toNullable
+                  User = Unchecked.defaultof<_>
+                  Vocabularies = ResizeArray() }
 
-            let collectionId = collectionIds.[0]
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.saveChangesAsync
+
+            let! collections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+
+            let savedCollection =
+                Assert.Single(collections)
 
             let updateRequest: UpdateCollectionRequest =
                 { Name = ""
                   Description = Some "Updated Description" }
 
-            let! response = client.PutAsJsonAsync(Urls.CollectionById collectionId, updateRequest)
+            let! response = client.PutAsJsonAsync(Urls.CollectionById savedCollection.Id, updateRequest)
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
         }
@@ -450,24 +441,39 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.getAuthToken client "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken client fixture 108 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
             let user = Assert.Single(users)
 
-            let! collectionIds =
-                TestHelpers.seedCollectionsForExistingUser user.Id [ ("Test Collection", None) ] fixture
+            let collection: Mapping.Collection =
+                { Id = 0
+                  UserId = user.Id
+                  Name = "Test Collection"
+                  Description = None |> Option.toObj
+                  CreatedAt = DateTimeOffset.UtcNow
+                  UpdatedAt = None |> Option.toNullable
+                  User = Unchecked.defaultof<_>
+                  Vocabularies = ResizeArray() }
 
-            let collectionId = collectionIds.[0]
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.saveChangesAsync
 
-            let! response = client.DeleteAsync(Urls.CollectionById collectionId)
+            let! collections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+
+            let savedCollection =
+                Assert.Single(collections)
+
+            let! response = client.DeleteAsync(Urls.CollectionById savedCollection.Id)
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode)
 
-            let! deletedCollection = Seeder.getCollectionByIdAsync collectionId fixture.WordfolioSeeder
+            let! deletedCollection = Seeder.getCollectionByIdAsync savedCollection.Id fixture.WordfolioSeeder
             Assert.True(deletedCollection.IsNone)
         }
 
@@ -481,7 +487,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! token = TestHelpers.getAuthToken client "user@example.com" "P@ssw0rd!"
+            let! token = TestHelpers.createUserAndGetToken client fixture 109 "user@example.com" "P@ssw0rd!"
             TestHelpers.setAuthToken client token
 
             let! response = client.DeleteAsync(Urls.CollectionById 999999)

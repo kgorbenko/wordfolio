@@ -19,7 +19,7 @@ module Urls =
     [<Literal>]
     let Collections = "/collections"
 
-    let CollectionById(id: int) = $"/collections/{id}"
+    let CollectionById(id: int) = $"{Collections}/{id}"
 
 type CollectionResponse =
     { Id: int
