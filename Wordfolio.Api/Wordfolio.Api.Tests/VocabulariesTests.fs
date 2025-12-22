@@ -22,7 +22,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
-            let! identityUser, wordfolioUser = factory.CreateUserAsync(100, "user@example.com", "P@ssw0rd!")
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(200, "user@example.com", "P@ssw0rd!")
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None
@@ -103,7 +103,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
-            let! identityUser, wordfolioUser = factory.CreateUserAsync(101, "user@example.com", "P@ssw0rd!")
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(201, "user@example.com", "P@ssw0rd!")
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None
@@ -136,7 +136,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
-            let! identityUser, wordfolioUser = factory.CreateUserAsync(102, "user@example.com", "P@ssw0rd!")
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(202, "user@example.com", "P@ssw0rd!")
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None
@@ -187,7 +187,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
-            let! identityUser, wordfolioUser = factory.CreateUserAsync(103, "user@example.com", "P@ssw0rd!")
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(203, "user@example.com", "P@ssw0rd!")
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None
@@ -240,7 +240,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
-            let! identityUser, wordfolioUser = factory.CreateUserAsync(104, "user@example.com", "P@ssw0rd!")
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(204, "user@example.com", "P@ssw0rd!")
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None
@@ -285,7 +285,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
-            let! identityUser, wordfolioUser = factory.CreateUserAsync(105, "user@example.com", "P@ssw0rd!")
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(205, "user@example.com", "P@ssw0rd!")
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None
@@ -346,7 +346,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
-            let! identityUser, wordfolioUser = factory.CreateUserAsync(106, "user@example.com", "P@ssw0rd!")
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(206, "user@example.com", "P@ssw0rd!")
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None
@@ -379,7 +379,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
-            let! identityUser, wordfolioUser = factory.CreateUserAsync(107, "user@example.com", "P@ssw0rd!")
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(207, "user@example.com", "P@ssw0rd!")
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None
@@ -436,7 +436,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
-            let! identityUser, wordfolioUser = factory.CreateUserAsync(108, "user@example.com", "P@ssw0rd!")
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(208, "user@example.com", "P@ssw0rd!")
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None
@@ -477,7 +477,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
-            let! identityUser, wordfolioUser = factory.CreateUserAsync(109, "user@example.com", "P@ssw0rd!")
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(209, "user@example.com", "P@ssw0rd!")
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None
