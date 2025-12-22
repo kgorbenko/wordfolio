@@ -49,6 +49,21 @@ type WordfolioIdentityTestFixture(messageSink: IMessageSink) =
         : Task<'a> =
         base.WithConnectionAsync callback
 
+    member this.CreateUserAsync
+        (user: Wordfolio.Api.Identity.User)
+        : Task<Wordfolio.Api.Identity.User * Wordfolio.Mapping.User> =
+        task {
+            do!
+                this.IdentitySeeder
+                |> Identity.Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            let wordfolioUser =
+                Entities.makeUser user.Id
+
+            return user, wordfolioUser
+        }
+
     interface IDisposable with
         member this.Dispose() : unit =
             match state with

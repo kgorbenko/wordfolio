@@ -58,7 +58,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             do! fixture.ResetDatabaseAsync()
 
             use factory =
-                new WebApplicationFactory(fixture.ConnectionString)
+                new WebApplicationFactory(fixture)
 
             use client = factory.CreateClient()
 
@@ -90,7 +90,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             do! fixture.ResetDatabaseAsync()
 
             use factory =
-                new WebApplicationFactory(fixture.ConnectionString)
+                new WebApplicationFactory(fixture)
 
             use client = factory.CreateClient()
 
@@ -116,7 +116,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             do! fixture.ResetDatabaseAsync()
 
             use factory =
-                new WebApplicationFactory(fixture.ConnectionString)
+                new WebApplicationFactory(fixture)
 
             use client = factory.CreateClient()
 
@@ -139,7 +139,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             do! fixture.ResetDatabaseAsync()
 
             use factory =
-                new WebApplicationFactory(fixture.ConnectionString)
+                new WebApplicationFactory(fixture)
 
             use client = factory.CreateClient()
 
@@ -174,7 +174,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             do! fixture.ResetDatabaseAsync()
 
             use factory =
-                new WebApplicationFactory(fixture.ConnectionString)
+                new WebApplicationFactory(fixture)
 
             use client = factory.CreateClient()
 
@@ -201,7 +201,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             do! fixture.ResetDatabaseAsync()
 
             use factory =
-                new WebApplicationFactory(fixture.ConnectionString)
+                new WebApplicationFactory(fixture)
 
             use client = factory.CreateClient()
 
@@ -221,7 +221,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             do! fixture.ResetDatabaseAsync()
 
             use factory =
-                new WebApplicationFactory(fixture.ConnectionString)
+                new WebApplicationFactory(fixture)
 
             use client = factory.CreateClient()
 
@@ -265,7 +265,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             do! fixture.ResetDatabaseAsync()
 
             use factory =
-                new WebApplicationFactory(fixture.ConnectionString)
+                new WebApplicationFactory(fixture)
 
             use client = factory.CreateClient()
 
@@ -284,7 +284,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             do! fixture.ResetDatabaseAsync()
 
             use factory =
-                new WebApplicationFactory(fixture.ConnectionString)
+                new WebApplicationFactory(fixture)
 
             use client = factory.CreateClient()
 

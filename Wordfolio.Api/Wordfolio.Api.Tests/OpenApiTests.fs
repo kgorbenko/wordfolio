@@ -17,7 +17,7 @@ type OpenApiTests(fixture: WordfolioIdentityTestFixture) =
             do! fixture.ResetDatabaseAsync()
 
             use factory =
-                new WebApplicationFactory(fixture.ConnectionString)
+                new WebApplicationFactory(fixture)
 
             use client = factory.CreateClient()
 
@@ -33,7 +33,7 @@ type OpenApiTests(fixture: WordfolioIdentityTestFixture) =
             do! fixture.ResetDatabaseAsync()
 
             use factory =
-                new WebApplicationFactory(fixture.ConnectionString)
+                new WebApplicationFactory(fixture)
 
             use client = factory.CreateClient()
 
