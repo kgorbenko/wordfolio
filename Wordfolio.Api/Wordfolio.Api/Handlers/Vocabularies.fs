@@ -15,6 +15,9 @@ open Wordfolio.Api.Domain.Vocabularies
 open Wordfolio.Api.Domain.Vocabularies.Operations
 open Wordfolio.Api.Infrastructure.Environment
 
+module UrlTokens = Wordfolio.Api.Urls
+module Urls = Wordfolio.Api.Urls.Vocabularies
+
 type VocabularyResponse =
     { Id: int
       CollectionId: int
@@ -59,12 +62,9 @@ let private toErrorResponse(error: VocabularyError) : IResult =
         Results.BadRequest({| error = $"Name must be at most {maxLength} characters" |})
     | VocabularyCollectionNotFound _ -> Results.NotFound({| error = "Collection not found" |})
 
-let mapVocabulariesEndpoints(collectionsGroup: IEndpointRouteBuilder) =
-    let vocabulariesGroup =
-        collectionsGroup.MapGroup("/{collectionId:int}/vocabularies")
-
-    vocabulariesGroup.MapGet(
-        "/",
+let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
+    group.MapGet(
+        UrlTokens.Root,
         Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
             (fun collectionId user dataSource cancellationToken ->
                 task {
@@ -88,8 +88,8 @@ let mapVocabulariesEndpoints(collectionsGroup: IEndpointRouteBuilder) =
     )
     |> ignore
 
-    vocabulariesGroup.MapPost(
-        "/",
+    group.MapPost(
+        UrlTokens.Root,
         Func<int, CreateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
             (fun collectionId request user dataSource cancellationToken ->
                 task {
@@ -112,7 +112,7 @@ let mapVocabulariesEndpoints(collectionsGroup: IEndpointRouteBuilder) =
                             match result with
                             | Ok vocabulary ->
                                 Results.Created(
-                                    $"/collections/{collectionId}/vocabularies/{VocabularyId.value vocabulary.Id}",
+                                    Urls.vocabularyById(collectionId, VocabularyId.value vocabulary.Id),
                                     toResponse vocabulary
                                 )
                             | Error error -> toErrorResponse error
@@ -120,8 +120,8 @@ let mapVocabulariesEndpoints(collectionsGroup: IEndpointRouteBuilder) =
     )
     |> ignore
 
-    vocabulariesGroup.MapGet(
-        "/{id:int}",
+    group.MapGet(
+        UrlTokens.ById,
         Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
             (fun collectionId id user dataSource cancellationToken ->
                 task {
@@ -141,8 +141,8 @@ let mapVocabulariesEndpoints(collectionsGroup: IEndpointRouteBuilder) =
     )
     |> ignore
 
-    vocabulariesGroup.MapPut(
-        "/{id:int}",
+    group.MapPut(
+        UrlTokens.ById,
         Func<int, int, UpdateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
             (fun collectionId id request user dataSource cancellationToken ->
                 task {
@@ -169,8 +169,8 @@ let mapVocabulariesEndpoints(collectionsGroup: IEndpointRouteBuilder) =
     )
     |> ignore
 
-    vocabulariesGroup.MapDelete(
-        "/{id:int}",
+    group.MapDelete(
+        UrlTokens.ById,
         Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
             (fun collectionId id user dataSource cancellationToken ->
                 task {
@@ -189,5 +189,3 @@ let mapVocabulariesEndpoints(collectionsGroup: IEndpointRouteBuilder) =
                 })
     )
     |> ignore
-
-    collectionsGroup

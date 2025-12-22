@@ -1,7 +1,9 @@
 open Microsoft.AspNetCore.Builder
+open Microsoft.AspNetCore.Routing
 
 open Microsoft.Extensions.Hosting
 
+open Wordfolio.Api
 open Wordfolio.Api.Handlers.Auth
 open Wordfolio.Api.Handlers.Collections
 open Wordfolio.Api.Handlers.Vocabularies
@@ -14,6 +16,15 @@ open Wordfolio.ServiceDefaults.Status
 type Program() =
     class
     end
+
+let mapEndpoints(app: IEndpointRouteBuilder) =
+    let collectionsGroup =
+        app.MapGroup(Urls.Collections.Path)
+
+    mapCollectionsEndpoints collectionsGroup
+
+    collectionsGroup.MapGroup(Urls.Vocabularies.Path)
+    |> mapVocabulariesEndpoints
 
 [<EntryPoint>]
 let main args =
@@ -40,12 +51,7 @@ let main args =
     |> mapHealthChecks
     |> mapStatusEndpoint
     |> mapAuthEndpoints
-    |> fun app ->
-        let collectionsGroup =
-            mapCollectionsEndpoints app
-
-        mapVocabulariesEndpoints collectionsGroup
-    |> ignore
+    |> mapEndpoints
 
     app.Run()
 
