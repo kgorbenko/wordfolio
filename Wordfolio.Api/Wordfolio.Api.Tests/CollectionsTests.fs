@@ -2,11 +2,10 @@ namespace Wordfolio.Api.Tests
 
 open System
 open System.Net
-open System.Net.Http
-open System.Net.Http.Headers
 open System.Net.Http.Json
 open System.Threading.Tasks
 
+open Microsoft.AspNetCore.Identity
 open Microsoft.Extensions.DependencyInjection
 
 open Xunit
@@ -15,26 +14,18 @@ open Wordfolio.Api.Handlers.Collections
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
-[<CLIMutable>]
-type TestRegisterRequest = { Email: string; Password: string }
-
-[<CLIMutable>]
-type TestLoginRequest = { Email: string; Password: string }
-
-[<CLIMutable>]
-type TestLoginResponse =
-    { TokenType: string
-      AccessToken: string
-      ExpiresIn: int
-      RefreshToken: string }
-
 module private TestHelpers =
-    let createUser (factory: WebApplicationFactory) (userId: int) (email: string) (password: string) : Task<unit> =
+    let createUserAsync
+        (factory: WebApplicationFactory)
+        (userId: int)
+        (email: string)
+        (password: string)
+        : Task<Wordfolio.Api.Identity.User> =
         task {
             use scope = factory.Services.CreateScope()
 
             let userManager =
-                scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<Wordfolio.Api.Identity.User>>()
+                scope.ServiceProvider.GetRequiredService<UserManager<Wordfolio.Api.Identity.User>>()
 
             let identityUser =
                 Wordfolio.Api.Identity.User(Id = userId, UserName = email, Email = email)
@@ -49,29 +40,9 @@ module private TestHelpers =
                          |> Seq.map(fun e -> e.Description))
 
                 Assert.Fail($"User creation failed: {errors}")
+
+            return identityUser
         }
-
-    let login (client: HttpClient) (email: string) (password: string) : Task<string> =
-        task {
-            let loginRequest: TestLoginRequest =
-                { Email = email; Password = password }
-
-            let! loginResponse = client.PostAsJsonAsync("/auth/login", loginRequest)
-            let! loginBody = loginResponse.Content.ReadAsStringAsync()
-
-            Assert.True(
-                loginResponse.IsSuccessStatusCode,
-                $"Login failed. Status: {loginResponse.StatusCode}. Body: {loginBody}"
-            )
-
-            let! loginResult = loginResponse.Content.ReadFromJsonAsync<TestLoginResponse>()
-            return loginResult.AccessToken
-        }
-
-    let createAuthenticatedClient (factory: WebApplicationFactory) (token: string) : HttpClient =
-        let client = factory.CreateClient()
-        client.DefaultRequestHeaders.Authorization <- AuthenticationHeaderValue("Bearer", token)
-        client
 
 type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
     interface IClassFixture<WordfolioIdentityTestFixture>
@@ -84,13 +55,8 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 
-            use client = factory.CreateClient()
-
-            do! TestHelpers.createUser factory 100 "user@example.com" "P@ssw0rd!"
-            let! token = TestHelpers.login client "user@example.com" "P@ssw0rd!"
-
-            use client =
-                TestHelpers.createAuthenticatedClient factory token
+            let! user = TestHelpers.createUserAsync factory 100 "user@example.com" "P@ssw0rd!"
+            use! client = factory.CreateAuthenticatedClientAsync(user)
 
             let request: CreateCollectionRequest =
                 { Name = "My Collection"
@@ -146,13 +112,8 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 
-            use client = factory.CreateClient()
-
-            do! TestHelpers.createUser factory 101 "user@example.com" "P@ssw0rd!"
-            let! token = TestHelpers.login client "user@example.com" "P@ssw0rd!"
-
-            use client =
-                TestHelpers.createAuthenticatedClient factory token
+            let! user = TestHelpers.createUserAsync factory 101 "user@example.com" "P@ssw0rd!"
+            use! client = factory.CreateAuthenticatedClientAsync(user)
 
             let request: CreateCollectionRequest =
                 { Name = ""
@@ -171,13 +132,8 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 
-            use client = factory.CreateClient()
-
-            do! TestHelpers.createUser factory 102 "user@example.com" "P@ssw0rd!"
-            let! token = TestHelpers.login client "user@example.com" "P@ssw0rd!"
-
-            use client =
-                TestHelpers.createAuthenticatedClient factory token
+            let! user = TestHelpers.createUserAsync factory 102 "user@example.com" "P@ssw0rd!"
+            use! client = factory.CreateAuthenticatedClientAsync(user)
 
             let! response = client.GetAsync(Urls.Collections)
             let! body = response.Content.ReadAsStringAsync()
@@ -213,20 +169,15 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 
-            use client = factory.CreateClient()
-
-            do! TestHelpers.createUser factory 103 "user@example.com" "P@ssw0rd!"
-            let! token = TestHelpers.login client "user@example.com" "P@ssw0rd!"
-
-            use client =
-                TestHelpers.createAuthenticatedClient factory token
+            let! user = TestHelpers.createUserAsync factory 103 "user@example.com" "P@ssw0rd!"
+            use! client = factory.CreateAuthenticatedClientAsync(user)
 
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
-            let user = Assert.Single(users)
+            let wordfolioUser = Assert.Single(users)
 
             let collection: Mapping.Collection =
                 { Id = 0
-                  UserId = user.Id
+                  UserId = wordfolioUser.Id
                   Name = "Test Collection"
                   Description = Some "Test Description" |> Option.toObj
                   CreatedAt = DateTimeOffset.UtcNow
@@ -271,13 +222,8 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 
-            use client = factory.CreateClient()
-
-            do! TestHelpers.createUser factory 104 "user@example.com" "P@ssw0rd!"
-            let! token = TestHelpers.login client "user@example.com" "P@ssw0rd!"
-
-            use client =
-                TestHelpers.createAuthenticatedClient factory token
+            let! user = TestHelpers.createUserAsync factory 104 "user@example.com" "P@ssw0rd!"
+            use! client = factory.CreateAuthenticatedClientAsync(user)
 
             let! response = client.GetAsync(Urls.CollectionById 999999)
 
@@ -307,20 +253,15 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 
-            use client = factory.CreateClient()
-
-            do! TestHelpers.createUser factory 105 "user@example.com" "P@ssw0rd!"
-            let! token = TestHelpers.login client "user@example.com" "P@ssw0rd!"
-
-            use client =
-                TestHelpers.createAuthenticatedClient factory token
+            let! user = TestHelpers.createUserAsync factory 105 "user@example.com" "P@ssw0rd!"
+            use! client = factory.CreateAuthenticatedClientAsync(user)
 
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
-            let user = Assert.Single(users)
+            let wordfolioUser = Assert.Single(users)
 
             let collection: Mapping.Collection =
                 { Id = 0
-                  UserId = user.Id
+                  UserId = wordfolioUser.Id
                   Name = "Original Name"
                   Description =
                     Some "Original Description"
@@ -376,13 +317,8 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 
-            use client = factory.CreateClient()
-
-            do! TestHelpers.createUser factory 106 "user@example.com" "P@ssw0rd!"
-            let! token = TestHelpers.login client "user@example.com" "P@ssw0rd!"
-
-            use client =
-                TestHelpers.createAuthenticatedClient factory token
+            let! user = TestHelpers.createUserAsync factory 106 "user@example.com" "P@ssw0rd!"
+            use! client = factory.CreateAuthenticatedClientAsync(user)
 
             let updateRequest: UpdateCollectionRequest =
                 { Name = "Updated Name"
@@ -401,20 +337,15 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 
-            use client = factory.CreateClient()
-
-            do! TestHelpers.createUser factory 107 "user@example.com" "P@ssw0rd!"
-            let! token = TestHelpers.login client "user@example.com" "P@ssw0rd!"
-
-            use client =
-                TestHelpers.createAuthenticatedClient factory token
+            let! user = TestHelpers.createUserAsync factory 107 "user@example.com" "P@ssw0rd!"
+            use! client = factory.CreateAuthenticatedClientAsync(user)
 
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
-            let user = Assert.Single(users)
+            let wordfolioUser = Assert.Single(users)
 
             let collection: Mapping.Collection =
                 { Id = 0
-                  UserId = user.Id
+                  UserId = wordfolioUser.Id
                   Name = "Original Name"
                   Description = None |> Option.toObj
                   CreatedAt = DateTimeOffset.UtcNow
@@ -468,20 +399,15 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 
-            use client = factory.CreateClient()
-
-            do! TestHelpers.createUser factory 108 "user@example.com" "P@ssw0rd!"
-            let! token = TestHelpers.login client "user@example.com" "P@ssw0rd!"
-
-            use client =
-                TestHelpers.createAuthenticatedClient factory token
+            let! identityUser = TestHelpers.createUserAsync factory 108 "user@example.com" "P@ssw0rd!"
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let! users = Seeder.getAllUsersAsync fixture.WordfolioSeeder
-            let user = Assert.Single(users)
+            let wordfolioUser = Assert.Single(users)
 
             let collection: Mapping.Collection =
                 { Id = 0
-                  UserId = user.Id
+                  UserId = wordfolioUser.Id
                   Name = "Test Collection"
                   Description = None |> Option.toObj
                   CreatedAt = DateTimeOffset.UtcNow
@@ -517,13 +443,8 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture.ConnectionString)
 
-            use client = factory.CreateClient()
-
-            do! TestHelpers.createUser factory 109 "user@example.com" "P@ssw0rd!"
-            let! token = TestHelpers.login client "user@example.com" "P@ssw0rd!"
-
-            use client =
-                TestHelpers.createAuthenticatedClient factory token
+            let! user = TestHelpers.createUserAsync factory 109 "user@example.com" "P@ssw0rd!"
+            use! client = factory.CreateAuthenticatedClientAsync(user)
 
             let! response = client.DeleteAsync(Urls.CollectionById 999999)
 
