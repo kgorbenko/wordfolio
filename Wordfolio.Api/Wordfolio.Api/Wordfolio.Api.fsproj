@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Urls.fs" />
     <Compile Include="IdentityIntegration.fs" />
     <Compile Include="Infrastructure\Environment.fs" />
     <Compile Include="Handlers\Auth.fs" />

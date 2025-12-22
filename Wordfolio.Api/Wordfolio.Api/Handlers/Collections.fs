@@ -15,11 +15,8 @@ open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.Collections.Operations
 open Wordfolio.Api.Infrastructure.Environment
 
-module Urls =
-    [<Literal>]
-    let Collections = "/collections"
-
-    let CollectionById(id: int) = $"{Collections}/{id}"
+module UrlTokens = Wordfolio.Api.Urls
+module Urls = Wordfolio.Api.Urls.Collections
 
 type CollectionResponse =
     { Id: int
@@ -62,11 +59,9 @@ let private toErrorResponse(error: CollectionError) : IResult =
     | CollectionNameTooLong maxLength ->
         Results.BadRequest({| error = $"Name must be at most {maxLength} characters" |})
 
-let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
-    let group = app.MapGroup(Urls.Collections)
-
+let mapCollectionsEndpoints(group: RouteGroupBuilder) =
     group.MapGet(
-        "/",
+        UrlTokens.Root,
         Func<ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun user dataSource cancellationToken ->
             task {
                 match getUserId user with
@@ -83,7 +78,7 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
     |> ignore
 
     group.MapGet(
-        "/{id:int}",
+        UrlTokens.ById,
         Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun id user dataSource cancellationToken ->
             task {
                 match getUserId user with
@@ -103,7 +98,7 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
     |> ignore
 
     group.MapPost(
-        "/",
+        UrlTokens.Root,
         Func<CreateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
             (fun request user dataSource cancellationToken ->
                 task {
@@ -119,7 +114,7 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
                             match result with
                             | Ok collection ->
                                 Results.Created(
-                                    Urls.CollectionById(CollectionId.value collection.Id),
+                                    Urls.collectionById(CollectionId.value collection.Id),
                                     toResponse collection
                                 )
                             | Error error -> toErrorResponse error
@@ -128,7 +123,7 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
     |> ignore
 
     group.MapPut(
-        "/{id:int}",
+        UrlTokens.ById,
         Func<int, UpdateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
             (fun id request user dataSource cancellationToken ->
                 task {
@@ -156,7 +151,7 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
     |> ignore
 
     group.MapDelete(
-        "/{id:int}",
+        UrlTokens.ById,
         Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun id user dataSource cancellationToken ->
             task {
                 match getUserId user with
@@ -174,5 +169,3 @@ let mapCollectionsEndpoints(app: IEndpointRouteBuilder) =
             })
     )
     |> ignore
-
-    group

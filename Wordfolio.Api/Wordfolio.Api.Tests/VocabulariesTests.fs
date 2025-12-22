@@ -11,6 +11,8 @@ open Wordfolio.Api.Handlers.Vocabularies
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
+module Urls = Wordfolio.Api.Urls
+
 type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
     interface IClassFixture<WordfolioIdentityTestFixture>
 
@@ -40,7 +42,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "A test vocabulary" }
 
             let url =
-                $"/collections/{collection.Id}/vocabularies"
+                Urls.Vocabularies.vocabulariesByCollection collection.Id
 
             let! response = client.PostAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -89,7 +91,9 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = "Test Vocabulary"
                   Description = Some "A test vocabulary" }
 
-            let url = "/collections/1/vocabularies"
+            let url =
+                Urls.Vocabularies.vocabulariesByCollection 1
+
             let! response = client.PostAsJsonAsync(url, request)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
@@ -121,7 +125,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "A test vocabulary" }
 
             let url =
-                $"/collections/{collection.Id}/vocabularies"
+                Urls.Vocabularies.vocabulariesByCollection collection.Id
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -150,7 +154,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                $"/collections/{collection.Id}/vocabularies"
+                Urls.Vocabularies.vocabulariesByCollection collection.Id
 
             let! response = client.GetAsync(url)
             let! body = response.Content.ReadAsStringAsync()
@@ -173,7 +177,9 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let url = "/collections/1/vocabularies"
+            let url =
+                Urls.Vocabularies.vocabulariesByCollection 1
+
             let! response = client.GetAsync(url)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
@@ -210,7 +216,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                $"/collections/{collection.Id}/vocabularies/{vocabulary.Id}"
+                Urls.Vocabularies.vocabularyById(collection.Id, vocabulary.Id)
 
             let! response = client.GetAsync(url)
             let! body = response.Content.ReadAsStringAsync()
@@ -254,7 +260,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                $"/collections/{collection.Id}/vocabularies/999999"
+                Urls.Vocabularies.vocabularyById(collection.Id, 999999)
 
             let! response = client.GetAsync(url)
 
@@ -271,7 +277,9 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let url = "/collections/1/vocabularies/1"
+            let url =
+                Urls.Vocabularies.vocabularyById(1, 1)
+
             let! response = client.GetAsync(url)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
@@ -312,7 +320,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "Updated Description" }
 
             let url =
-                $"/collections/{collection.Id}/vocabularies/{vocabulary.Id}"
+                Urls.Vocabularies.vocabularyById(collection.Id, vocabulary.Id)
 
             let! response = client.PutAsJsonAsync(url, updateRequest)
             let! body = response.Content.ReadAsStringAsync()
@@ -364,7 +372,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "Updated Description" }
 
             let url =
-                $"/collections/{collection.Id}/vocabularies/999999"
+                Urls.Vocabularies.vocabularyById(collection.Id, 999999)
 
             let! response = client.PutAsJsonAsync(url, updateRequest)
 
@@ -401,7 +409,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "Updated Description" }
 
             let url =
-                $"/collections/{collection.Id}/vocabularies/{vocabulary.Id}"
+                Urls.Vocabularies.vocabularyById(collection.Id, vocabulary.Id)
 
             let! response = client.PutAsJsonAsync(url, updateRequest)
 
@@ -422,7 +430,9 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = "Updated Name"
                   Description = Some "Updated Description" }
 
-            let url = "/collections/1/vocabularies/1"
+            let url =
+                Urls.Vocabularies.vocabularyById(1, 1)
+
             let! response = client.PutAsJsonAsync(url, updateRequest)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
@@ -454,7 +464,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                $"/collections/{collection.Id}/vocabularies/{vocabulary.Id}"
+                Urls.Vocabularies.vocabularyById(collection.Id, vocabulary.Id)
 
             let! response = client.DeleteAsync(url)
             let! body = response.Content.ReadAsStringAsync()
@@ -491,7 +501,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                $"/collections/{collection.Id}/vocabularies/999999"
+                Urls.Vocabularies.vocabularyById(collection.Id, 999999)
 
             let! response = client.DeleteAsync(url)
 
@@ -508,7 +518,9 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let url = "/collections/1/vocabularies/1"
+            let url =
+                Urls.Vocabularies.vocabularyById(1, 1)
+
             let! response = client.DeleteAsync(url)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)

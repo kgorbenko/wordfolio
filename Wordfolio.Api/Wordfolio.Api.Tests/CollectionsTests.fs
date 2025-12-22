@@ -11,6 +11,8 @@ open Wordfolio.Api.Handlers.Collections
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
+module Urls = Wordfolio.Api.Urls
+
 type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
     interface IClassFixture<WordfolioIdentityTestFixture>
 
@@ -35,7 +37,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = "My Collection"
                   Description = Some "A test collection" }
 
-            let! response = client.PostAsJsonAsync(Urls.Collections, request)
+            let! response = client.PostAsJsonAsync(Urls.Collections.Path, request)
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
@@ -81,7 +83,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = "My Collection"
                   Description = Some "A test collection" }
 
-            let! response = client.PostAsJsonAsync(Urls.Collections, request)
+            let! response = client.PostAsJsonAsync(Urls.Collections.Path, request)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
         }
@@ -107,7 +109,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = ""
                   Description = Some "A test collection" }
 
-            let! response = client.PostAsJsonAsync(Urls.Collections, request)
+            let! response = client.PostAsJsonAsync(Urls.Collections.Path, request)
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
         }
@@ -129,7 +131,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.GetAsync(Urls.Collections)
+            let! response = client.GetAsync(Urls.Collections.Path)
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
@@ -150,7 +152,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! response = client.GetAsync(Urls.Collections)
+            let! response = client.GetAsync(Urls.Collections.Path)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
         }
@@ -181,7 +183,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.GetAsync(Urls.CollectionById collection.Id)
+            let! response = client.GetAsync(Urls.Collections.collectionById collection.Id)
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
@@ -217,7 +219,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.GetAsync(Urls.CollectionById 999999)
+            let! response = client.GetAsync(Urls.Collections.collectionById 999999)
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -232,7 +234,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! response = client.GetAsync(Urls.CollectionById 1)
+            let! response = client.GetAsync(Urls.Collections.collectionById 1)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
         }
@@ -267,7 +269,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = "Updated Name"
                   Description = Some "Updated Description" }
 
-            let! response = client.PutAsJsonAsync(Urls.CollectionById collection.Id, updateRequest)
+            let! response = client.PutAsJsonAsync(Urls.Collections.collectionById collection.Id, updateRequest)
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
@@ -312,7 +314,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = "Updated Name"
                   Description = Some "Updated Description" }
 
-            let! response = client.PutAsJsonAsync(Urls.CollectionById 999999, updateRequest)
+            let! response = client.PutAsJsonAsync(Urls.Collections.collectionById 999999, updateRequest)
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -342,7 +344,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = ""
                   Description = Some "Updated Description" }
 
-            let! response = client.PutAsJsonAsync(Urls.CollectionById collection.Id, updateRequest)
+            let! response = client.PutAsJsonAsync(Urls.Collections.collectionById collection.Id, updateRequest)
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
         }
@@ -361,7 +363,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = "Updated Name"
                   Description = Some "Updated Description" }
 
-            let! response = client.PutAsJsonAsync(Urls.CollectionById 1, updateRequest)
+            let! response = client.PutAsJsonAsync(Urls.Collections.collectionById 1, updateRequest)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
         }
@@ -387,7 +389,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.DeleteAsync(Urls.CollectionById collection.Id)
+            let! response = client.DeleteAsync(Urls.Collections.collectionById collection.Id)
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
@@ -417,7 +419,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.DeleteAsync(Urls.CollectionById 999999)
+            let! response = client.DeleteAsync(Urls.Collections.collectionById 999999)
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -432,7 +434,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! response = client.DeleteAsync(Urls.CollectionById 1)
+            let! response = client.DeleteAsync(Urls.Collections.collectionById 1)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
         }
