@@ -12,6 +12,7 @@
     <Compile Include="20250831004_CreateVocabulariesTable.fs" />
     <Compile Include="20251225001_CreateEntriesTable.fs" />
     <Compile Include="20251225002_CreateDefinitionsTable.fs" />
+    <Compile Include="20251225003_CreateTranslationsTable.fs" />
   </ItemGroup>
 
   <ItemGroup>

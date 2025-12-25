@@ -9,6 +9,7 @@ open Microsoft.EntityFrameworkCore
 open Microsoft.FSharp.Core.LanguagePrimitives
 
 open Wordfolio.Api.DataAccess.Definitions
+open Wordfolio.Api.DataAccess.Translations
 open Wordfolio.Common
 
 type User = { Id: int }
@@ -41,6 +42,13 @@ type Definition =
       EntryId: int
       DefinitionText: string
       Source: DefinitionSource
+      DisplayOrder: int }
+
+type Translation =
+    { Id: int
+      EntryId: int
+      TranslationText: string
+      Source: TranslationSource
       DisplayOrder: int }
 
 [<RequireQualifiedAccess>]
@@ -101,7 +109,8 @@ module Entities =
               CreatedAt = createdAt
               UpdatedAt = updatedAt |> Option.toNullable
               Vocabulary = vocabulary
-              Definitions = ResizeArray() }
+              Definitions = ResizeArray()
+              Translations = ResizeArray() }
 
         vocabulary.Entries.Add(entry)
         entry
@@ -122,6 +131,23 @@ module Entities =
 
         entry.Definitions.Add(definition)
         definition
+
+    let makeTranslation
+        (entry: Mapping.Entry)
+        (translationText: string)
+        (source: TranslationSource)
+        (displayOrder: int)
+        : Mapping.Translation =
+        let translation: Mapping.Translation =
+            { Id = 0
+              EntryId = entry.Id
+              TranslationText = translationText
+              Source = int16 source
+              DisplayOrder = displayOrder
+              Entry = entry }
+
+        entry.Translations.Add(translation)
+        translation
 
 type WordfolioSeeder internal (context: Mapping.WordfolioTestDbContext) =
     member internal _.Context = context
@@ -163,6 +189,13 @@ module Seeder =
           Source = EnumOfValue<int16, DefinitionSource>(entity.Source)
           DisplayOrder = entity.DisplayOrder }
 
+    let private toTranslation(entity: Mapping.Translation) : Translation =
+        { Id = entity.Id
+          EntryId = entity.EntryId
+          TranslationText = entity.TranslationText
+          Source = EnumOfValue<int16, TranslationSource>(entity.Source)
+          DisplayOrder = entity.DisplayOrder }
+
     let create(connection: DbConnection) : WordfolioSeeder =
         let builder =
             DbContextOptionsBuilder<Mapping.WordfolioTestDbContext>()
@@ -192,6 +225,10 @@ module Seeder =
 
     let addDefinitions (definitions: Mapping.Definition list) (seeder: WordfolioSeeder) : WordfolioSeeder =
         seeder.Context.Definitions.AddRange(definitions)
+        seeder
+
+    let addTranslations (translations: Mapping.Translation list) (seeder: WordfolioSeeder) : WordfolioSeeder =
+        seeder.Context.Translations.AddRange(translations)
         seeder
 
     let saveChangesAsync(seeder: WordfolioSeeder) : Task =
@@ -279,5 +316,15 @@ module Seeder =
             return
                 definitions
                 |> Seq.map toDefinition
+                |> Seq.toList
+        }
+
+    let getAllTranslationsAsync(seeder: WordfolioSeeder) : Task<Translation list> =
+        task {
+            let! translations = seeder.Context.Translations.AsNoTracking().ToArrayAsync()
+
+            return
+                translations
+                |> Seq.map toTranslation
                 |> Seq.toList
         }
