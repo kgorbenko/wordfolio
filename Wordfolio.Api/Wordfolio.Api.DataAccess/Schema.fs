@@ -69,3 +69,22 @@ module EntriesTable =
 
     [<Literal>]
     let UpdatedAtColumn = "UpdatedAt"
+
+module DefinitionsTable =
+    [<Literal>]
+    let Name = "Definitions"
+
+    [<Literal>]
+    let IdColumn = "Id"
+
+    [<Literal>]
+    let EntryIdColumn = "EntryId"
+
+    [<Literal>]
+    let DefinitionTextColumn = "DefinitionText"
+
+    [<Literal>]
+    let SourceColumn = "Source"
+
+    [<Literal>]
+    let DisplayOrderColumn = "DisplayOrder"
