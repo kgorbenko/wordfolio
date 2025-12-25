@@ -17,6 +17,7 @@
     <Compile Include="Users.fs" />
     <Compile Include="Collections.fs" />
     <Compile Include="Vocabularies.fs" />
+    <Compile Include="Entries.fs" />
   </ItemGroup>
 
   <ItemGroup>

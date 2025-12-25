@@ -29,7 +29,16 @@ and [<CLIMutable>] Vocabulary =
       Description: string
       CreatedAt: DateTimeOffset
       UpdatedAt: Nullable<DateTimeOffset>
-      Collection: Collection }
+      Collection: Collection
+      Entries: ResizeArray<Entry> }
+
+and [<CLIMutable>] Entry =
+    { Id: int
+      VocabularyId: int
+      EntryText: string
+      CreatedAt: DateTimeOffset
+      UpdatedAt: Nullable<DateTimeOffset>
+      Vocabulary: Vocabulary }
 
 type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
     inherit DbContext(options)
@@ -42,6 +51,9 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
 
     member this.Vocabularies: DbSet<Vocabulary> =
         base.Set<Vocabulary>()
+
+    member this.Entries: DbSet<Entry> =
+        base.Set<Entry>()
 
     override _.OnModelCreating(modelBuilder: ModelBuilder) =
         let users = modelBuilder.Entity<User>()
@@ -114,6 +126,34 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
         |> ignore
 
         vocabularies.Property(_.UpdatedAt).IsRequired(false)
+        |> ignore
+
+        vocabularies
+            .HasMany(fun v -> v.Entries :> IEnumerable<Entry>)
+            .WithOne(fun e -> e.Vocabulary)
+            .HasForeignKey(fun e -> e.VocabularyId :> obj)
+        |> ignore
+
+        let entries = modelBuilder.Entity<Entry>()
+
+        entries
+            .ToTable(Schema.EntriesTable.Name, Schema.Name)
+            .HasKey(fun x -> x.Id :> obj)
+        |> ignore
+
+        entries.Property(_.Id).ValueGeneratedOnAdd()
+        |> ignore
+
+        entries.Property(_.VocabularyId).IsRequired()
+        |> ignore
+
+        entries.Property(_.EntryText).IsRequired().HasMaxLength(255)
+        |> ignore
+
+        entries.Property(_.CreatedAt).IsRequired()
+        |> ignore
+
+        entries.Property(_.UpdatedAt).IsRequired(false)
         |> ignore
 
         base.OnModelCreating(modelBuilder)

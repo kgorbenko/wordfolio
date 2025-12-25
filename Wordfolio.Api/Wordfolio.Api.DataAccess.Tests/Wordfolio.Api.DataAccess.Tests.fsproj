@@ -23,6 +23,7 @@
     <Compile Include="UsersTests.fs" />
     <Compile Include="CollectionsTests.fs" />
     <Compile Include="VocabulariesTests.fs" />
+    <Compile Include="EntriesTests.fs" />
   </ItemGroup>
 
 </Project>
