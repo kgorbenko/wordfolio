@@ -3,6 +3,7 @@ module Wordfolio.Api.Handlers.Auth
 open System
 
 open Microsoft.AspNetCore.Builder
+open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Identity
 open Microsoft.AspNetCore.Routing
 open Microsoft.Extensions.Options
@@ -41,6 +42,7 @@ let mapAuthEndpoints(app: IEndpointRouteBuilder) =
                   RequiredUniqueChars = passwordOptions.RequiredUniqueChars })
         )
         .AllowAnonymous()
+        .WithTags([| "Auth" |])
     |> ignore
 
     app
