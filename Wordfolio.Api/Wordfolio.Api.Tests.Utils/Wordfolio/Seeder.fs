@@ -26,6 +26,13 @@ type Vocabulary =
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option }
 
+type Entry =
+    { Id: int
+      VocabularyId: int
+      EntryText: string
+      CreatedAt: DateTimeOffset
+      UpdatedAt: DateTimeOffset option }
+
 [<RequireQualifiedAccess>]
 module Entities =
     let makeUser id : Mapping.User =
@@ -65,10 +72,28 @@ module Entities =
               Description = description |> Option.toObj
               CreatedAt = createdAt
               UpdatedAt = updatedAt |> Option.toNullable
-              Collection = collection }
+              Collection = collection
+              Entries = ResizeArray() }
 
         collection.Vocabularies.Add(vocabulary)
         vocabulary
+
+    let makeEntry
+        (vocabulary: Mapping.Vocabulary)
+        (entryText: string)
+        (createdAt: DateTimeOffset)
+        (updatedAt: DateTimeOffset option)
+        : Mapping.Entry =
+        let entry: Mapping.Entry =
+            { Id = 0
+              VocabularyId = vocabulary.Id
+              EntryText = entryText
+              CreatedAt = createdAt
+              UpdatedAt = updatedAt |> Option.toNullable
+              Vocabulary = vocabulary }
+
+        vocabulary.Entries.Add(entry)
+        entry
 
 type WordfolioSeeder internal (context: Mapping.WordfolioTestDbContext) =
     member internal _.Context = context
@@ -96,6 +121,13 @@ module Seeder =
           CreatedAt = entity.CreatedAt
           UpdatedAt = Option.ofNullable entity.UpdatedAt }
 
+    let private toEntry(entity: Mapping.Entry) : Entry =
+        { Id = entity.Id
+          VocabularyId = entity.VocabularyId
+          EntryText = entity.EntryText
+          CreatedAt = entity.CreatedAt
+          UpdatedAt = Option.ofNullable entity.UpdatedAt }
+
     let create(connection: DbConnection) : WordfolioSeeder =
         let builder =
             DbContextOptionsBuilder<Mapping.WordfolioTestDbContext>()
@@ -117,6 +149,10 @@ module Seeder =
 
     let addVocabularies (vocabularies: Mapping.Vocabulary list) (seeder: WordfolioSeeder) : WordfolioSeeder =
         seeder.Context.Vocabularies.AddRange(vocabularies)
+        seeder
+
+    let addEntries (entries: Mapping.Entry list) (seeder: WordfolioSeeder) : WordfolioSeeder =
+        seeder.Context.Entries.AddRange(entries)
         seeder
 
     let saveChangesAsync(seeder: WordfolioSeeder) : Task =
@@ -178,4 +214,21 @@ module Seeder =
                 vocabulary
                 |> Option.ofObj
                 |> Option.map toVocabulary
+        }
+
+    let getAllEntriesAsync(seeder: WordfolioSeeder) : Task<Entry list> =
+        task {
+            let! entries = seeder.Context.Entries.AsNoTracking().ToArrayAsync()
+
+            return entries |> Seq.map toEntry |> Seq.toList
+        }
+
+    let getEntryByIdAsync (id: int) (seeder: WordfolioSeeder) : Task<Entry option> =
+        task {
+            let! entry = seeder.Context.Entries.AsNoTracking().FirstOrDefaultAsync(fun e -> e.Id = id)
+
+            return
+                entry
+                |> Option.ofObj
+                |> Option.map toEntry
         }

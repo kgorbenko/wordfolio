@@ -10,6 +10,7 @@
     <Compile Include="20250831002_CreateUsersTable.fs" />
     <Compile Include="20250831003_CreateCollectionsTable.fs" />
     <Compile Include="20250831004_CreateVocabulariesTable.fs" />
+    <Compile Include="20251225001_CreateEntriesTable.fs" />
   </ItemGroup>
 
   <ItemGroup>
