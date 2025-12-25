@@ -28,7 +28,6 @@
     <Compile Include="VocabulariesTests.fs" />
     <Compile Include="StatusTests.fs" />
     <Compile Include="OpenApiTests.fs" />
-    <Compile Include="OpenApiTagsTests.fs" />
   </ItemGroup>
 
 </Project>

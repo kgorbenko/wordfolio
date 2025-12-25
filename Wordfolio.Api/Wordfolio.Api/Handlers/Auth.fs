@@ -3,7 +3,6 @@ module Wordfolio.Api.Handlers.Auth
 open System
 
 open Microsoft.AspNetCore.Builder
-open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Identity
 open Microsoft.AspNetCore.Routing
 open Microsoft.Extensions.Options
@@ -23,13 +22,13 @@ type PasswordRequirements =
       RequireNonAlphanumeric: bool
       RequiredUniqueChars: int }
 
-let mapAuthEndpoints(app: IEndpointRouteBuilder) =
-    app.MapGroup("auth").MapIdentityApi<User>().AllowAnonymous()
+let mapAuthEndpoints(group: RouteGroupBuilder) =
+    group.MapIdentityApi<User>().AllowAnonymous()
     |> ignore
 
-    app
+    group
         .MapGet(
-            Urls.PasswordRequirements,
+            "/password-requirements",
             Func<IOptions<IdentityOptions>, PasswordRequirements>(fun identityOptions ->
                 let passwordOptions =
                     identityOptions.Value.Password
@@ -42,7 +41,4 @@ let mapAuthEndpoints(app: IEndpointRouteBuilder) =
                   RequiredUniqueChars = passwordOptions.RequiredUniqueChars })
         )
         .AllowAnonymous()
-        .WithTags([| "Auth" |])
     |> ignore
-
-    app

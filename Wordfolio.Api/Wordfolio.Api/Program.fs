@@ -1,4 +1,5 @@
 open Microsoft.AspNetCore.Builder
+open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Routing
 
 open Microsoft.Extensions.Hosting
@@ -20,11 +21,11 @@ type Program() =
 
 let mapEndpoints(app: IEndpointRouteBuilder) =
     let collectionsGroup =
-        app.MapGroup(Urls.Collections.Path)
+        app.MapGroup(Urls.Collections.Path).WithTags("Collections")
 
     mapCollectionsEndpoints collectionsGroup
 
-    collectionsGroup.MapGroup(Urls.Vocabularies.Path)
+    collectionsGroup.MapGroup(Urls.Vocabularies.Path).WithTags("Vocabularies")
     |> mapVocabulariesEndpoints
 
     app.MapGroup(Urls.Dictionary.Path)
@@ -54,8 +55,12 @@ let main args =
     app
     |> mapHealthChecks
     |> mapStatusEndpoint
-    |> mapAuthEndpoints
     |> mapEndpoints
+
+    let authGroup =
+        app.MapGroup("auth").WithTags("Auth")
+
+    mapAuthEndpoints authGroup
 
     app.Run()
 
