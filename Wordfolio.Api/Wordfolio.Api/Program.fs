@@ -28,6 +28,9 @@ let mapEndpoints(app: IEndpointRouteBuilder) =
     collectionsGroup.MapGroup(Urls.Vocabularies.Path).WithTags("Vocabularies")
     |> mapVocabulariesEndpoints
 
+    app.MapGroup("auth").WithTags("Auth")
+    |> mapAuthEndpoints
+
     app.MapGroup(Urls.Dictionary.Path)
     |> mapDictionaryEndpoints
 
@@ -56,11 +59,6 @@ let main args =
     |> mapHealthChecks
     |> mapStatusEndpoint
     |> mapEndpoints
-
-    let authGroup =
-        app.MapGroup("auth").WithTags("Auth")
-
-    mapAuthEndpoints authGroup
 
     app.Run()
 

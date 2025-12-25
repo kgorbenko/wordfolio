@@ -12,7 +12,7 @@ open Wordfolio.Api.Identity
 module Urls =
     [<Literal>]
     let PasswordRequirements =
-        "/auth/password-requirements"
+        "/password-requirements"
 
 type PasswordRequirements =
     { RequiredLength: int
@@ -28,7 +28,7 @@ let mapAuthEndpoints(group: RouteGroupBuilder) =
 
     group
         .MapGet(
-            "/password-requirements",
+            Urls.PasswordRequirements,
             Func<IOptions<IdentityOptions>, PasswordRequirements>(fun identityOptions ->
                 let passwordOptions =
                     identityOptions.Value.Password
