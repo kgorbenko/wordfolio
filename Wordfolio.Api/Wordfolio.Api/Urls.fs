@@ -23,6 +23,16 @@ module Vocabularies =
     let vocabularyById(collectionId: int, vocabularyId: int) =
         $"{vocabulariesByCollection collectionId}/{vocabularyId}"
 
+module Auth =
+    [<Literal>]
+    let Path = "/auth"
+
+    [<Literal>]
+    let PasswordRequirements =
+        "/password-requirements"
+
+    let passwordRequirements() = $"{Path}{PasswordRequirements}"
+
 module Dictionary =
     [<Literal>]
     let Path = "/dictionary"

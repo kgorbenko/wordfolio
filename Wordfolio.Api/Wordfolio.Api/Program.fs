@@ -28,7 +28,7 @@ let mapEndpoints(app: IEndpointRouteBuilder) =
     collectionsGroup.MapGroup(Urls.Vocabularies.Path).WithTags("Vocabularies")
     |> mapVocabulariesEndpoints
 
-    app.MapGroup("auth").WithTags("Auth")
+    app.MapGroup(Urls.Auth.Path).WithTags("Auth")
     |> mapAuthEndpoints
 
     app.MapGroup(Urls.Dictionary.Path)

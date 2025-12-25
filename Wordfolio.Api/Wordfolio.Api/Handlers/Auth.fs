@@ -7,12 +7,8 @@ open Microsoft.AspNetCore.Identity
 open Microsoft.AspNetCore.Routing
 open Microsoft.Extensions.Options
 
+open Wordfolio.Api
 open Wordfolio.Api.Identity
-
-module Urls =
-    [<Literal>]
-    let PasswordRequirements =
-        "/password-requirements"
 
 type PasswordRequirements =
     { RequiredLength: int
@@ -28,7 +24,7 @@ let mapAuthEndpoints(group: RouteGroupBuilder) =
 
     group
         .MapGet(
-            Urls.PasswordRequirements,
+            Urls.Auth.PasswordRequirements,
             Func<IOptions<IdentityOptions>, PasswordRequirements>(fun identityOptions ->
                 let passwordOptions =
                     identityOptions.Value.Password
