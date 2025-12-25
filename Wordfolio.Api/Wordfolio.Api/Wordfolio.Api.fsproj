@@ -11,6 +11,7 @@
     <Compile Include="Handlers\Auth.fs" />
     <Compile Include="Handlers\Collections.fs" />
     <Compile Include="Handlers\Vocabularies.fs" />
+    <Compile Include="Handlers\Dictionary.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

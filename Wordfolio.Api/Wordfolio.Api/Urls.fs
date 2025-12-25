@@ -22,3 +22,10 @@ module Vocabularies =
 
     let vocabularyById(collectionId: int, vocabularyId: int) =
         $"{vocabulariesByCollection collectionId}/{vocabularyId}"
+
+module Dictionary =
+    [<Literal>]
+    let Path = "/dictionary"
+
+    [<Literal>]
+    let Lookup = "/lookup"
