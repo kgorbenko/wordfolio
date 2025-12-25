@@ -2,10 +2,13 @@ namespace Wordfolio.Api.Tests.Utils.Wordfolio
 
 open System
 open System.Data.Common
+open System.Linq
 open System.Threading.Tasks
 
 open Microsoft.EntityFrameworkCore
+open Microsoft.FSharp.Core.LanguagePrimitives
 
+open Wordfolio.Api.DataAccess.Definitions
 open Wordfolio.Common
 
 type User = { Id: int }
@@ -32,6 +35,13 @@ type Entry =
       EntryText: string
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option }
+
+type Definition =
+    { Id: int
+      EntryId: int
+      DefinitionText: string
+      Source: DefinitionSource
+      DisplayOrder: int }
 
 [<RequireQualifiedAccess>]
 module Entities =
@@ -90,10 +100,28 @@ module Entities =
               EntryText = entryText
               CreatedAt = createdAt
               UpdatedAt = updatedAt |> Option.toNullable
-              Vocabulary = vocabulary }
+              Vocabulary = vocabulary
+              Definitions = ResizeArray() }
 
         vocabulary.Entries.Add(entry)
         entry
+
+    let makeDefinition
+        (entry: Mapping.Entry)
+        (definitionText: string)
+        (source: DefinitionSource)
+        (displayOrder: int)
+        : Mapping.Definition =
+        let definition: Mapping.Definition =
+            { Id = 0
+              EntryId = entry.Id
+              DefinitionText = definitionText
+              Source = int16 source
+              DisplayOrder = displayOrder
+              Entry = entry }
+
+        entry.Definitions.Add(definition)
+        definition
 
 type WordfolioSeeder internal (context: Mapping.WordfolioTestDbContext) =
     member internal _.Context = context
@@ -128,6 +156,13 @@ module Seeder =
           CreatedAt = entity.CreatedAt
           UpdatedAt = Option.ofNullable entity.UpdatedAt }
 
+    let private toDefinition(entity: Mapping.Definition) : Definition =
+        { Id = entity.Id
+          EntryId = entity.EntryId
+          DefinitionText = entity.DefinitionText
+          Source = EnumOfValue<int16, DefinitionSource>(entity.Source)
+          DisplayOrder = entity.DisplayOrder }
+
     let create(connection: DbConnection) : WordfolioSeeder =
         let builder =
             DbContextOptionsBuilder<Mapping.WordfolioTestDbContext>()
@@ -153,6 +188,10 @@ module Seeder =
 
     let addEntries (entries: Mapping.Entry list) (seeder: WordfolioSeeder) : WordfolioSeeder =
         seeder.Context.Entries.AddRange(entries)
+        seeder
+
+    let addDefinitions (definitions: Mapping.Definition list) (seeder: WordfolioSeeder) : WordfolioSeeder =
+        seeder.Context.Definitions.AddRange(definitions)
         seeder
 
     let saveChangesAsync(seeder: WordfolioSeeder) : Task =
@@ -231,4 +270,14 @@ module Seeder =
                 entry
                 |> Option.ofObj
                 |> Option.map toEntry
+        }
+
+    let getAllDefinitionsAsync(seeder: WordfolioSeeder) : Task<Definition list> =
+        task {
+            let! definitions = seeder.Context.Definitions.AsNoTracking().ToArrayAsync()
+
+            return
+                definitions
+                |> Seq.map toDefinition
+                |> Seq.toList
         }
