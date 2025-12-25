@@ -19,6 +19,7 @@
     <Compile Include="Vocabularies.fs" />
     <Compile Include="Entries.fs" />
     <Compile Include="Definitions.fs" />
+    <Compile Include="Translations.fs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -93,3 +93,24 @@ module DefinitionsTable =
 
     [<Literal>]
     let DisplayOrderColumn = "DisplayOrder"
+
+module TranslationsTable =
+
+    [<Literal>]
+    let Name = "Translations"
+
+    [<Literal>]
+    let IdColumn = "Id"
+
+    [<Literal>]
+    let EntryIdColumn = "EntryId"
+
+    [<Literal>]
+    let TranslationTextColumn =
+        "TranslationText"
+
+    [<Literal>]
+    let SourceColumn = "Source"
+
+    [<Literal>]
+    let DisplayOrderColumn = "DisplayOrder"

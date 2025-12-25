@@ -39,12 +39,21 @@ and [<CLIMutable>] Entry =
       CreatedAt: DateTimeOffset
       UpdatedAt: Nullable<DateTimeOffset>
       Vocabulary: Vocabulary
-      Definitions: ResizeArray<Definition> }
+      Definitions: ResizeArray<Definition>
+      Translations: ResizeArray<Translation> }
 
 and [<CLIMutable>] Definition =
     { Id: int
       EntryId: int
       DefinitionText: string
+      Source: int16
+      DisplayOrder: int
+      Entry: Entry }
+
+and [<CLIMutable>] Translation =
+    { Id: int
+      EntryId: int
+      TranslationText: string
       Source: int16
       DisplayOrder: int
       Entry: Entry }
@@ -66,6 +75,9 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
 
     member this.Definitions: DbSet<Definition> =
         base.Set<Definition>()
+
+    member this.Translations: DbSet<Translation> =
+        base.Set<Translation>()
 
     override _.OnModelCreating(modelBuilder: ModelBuilder) =
         let users = modelBuilder.Entity<User>()
@@ -174,6 +186,12 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
             .HasForeignKey(fun d -> d.EntryId :> obj)
         |> ignore
 
+        entries
+            .HasMany(fun e -> e.Translations :> IEnumerable<Translation>)
+            .WithOne(fun t -> t.Entry)
+            .HasForeignKey(fun t -> t.EntryId :> obj)
+        |> ignore
+
         let definitions =
             modelBuilder.Entity<Definition>()
 
@@ -195,6 +213,29 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
         |> ignore
 
         definitions.Property(_.DisplayOrder).IsRequired()
+        |> ignore
+
+        let translations =
+            modelBuilder.Entity<Translation>()
+
+        translations
+            .ToTable(Schema.TranslationsTable.Name, Schema.Name)
+            .HasKey(fun x -> x.Id :> obj)
+        |> ignore
+
+        translations.Property(_.Id).ValueGeneratedOnAdd()
+        |> ignore
+
+        translations.Property(_.EntryId).IsRequired()
+        |> ignore
+
+        translations.Property(_.TranslationText).IsRequired().HasMaxLength(255)
+        |> ignore
+
+        translations.Property(_.Source).IsRequired()
+        |> ignore
+
+        translations.Property(_.DisplayOrder).IsRequired()
         |> ignore
 
         base.OnModelCreating(modelBuilder)

@@ -25,6 +25,7 @@
     <Compile Include="VocabulariesTests.fs" />
     <Compile Include="EntriesTests.fs" />
     <Compile Include="DefinitionsTests.fs" />
+    <Compile Include="TranslationsTests.fs" />
   </ItemGroup>
 
 </Project>
