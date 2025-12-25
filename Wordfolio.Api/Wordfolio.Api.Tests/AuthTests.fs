@@ -7,6 +7,7 @@ open System.Threading.Tasks
 
 open Xunit
 
+open Wordfolio.Api
 open Wordfolio.Api.Handlers.Auth
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -288,7 +289,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! response = client.GetAsync(Urls.PasswordRequirements)
+            let! response = client.GetAsync(Urls.Auth.passwordRequirements())
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")

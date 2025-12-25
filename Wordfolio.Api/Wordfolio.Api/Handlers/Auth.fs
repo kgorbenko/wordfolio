@@ -7,12 +7,8 @@ open Microsoft.AspNetCore.Identity
 open Microsoft.AspNetCore.Routing
 open Microsoft.Extensions.Options
 
+open Wordfolio.Api
 open Wordfolio.Api.Identity
-
-module Urls =
-    [<Literal>]
-    let PasswordRequirements =
-        "/auth/password-requirements"
 
 type PasswordRequirements =
     { RequiredLength: int
@@ -22,13 +18,13 @@ type PasswordRequirements =
       RequireNonAlphanumeric: bool
       RequiredUniqueChars: int }
 
-let mapAuthEndpoints(app: IEndpointRouteBuilder) =
-    app.MapGroup("auth").MapIdentityApi<User>().AllowAnonymous()
+let mapAuthEndpoints(group: RouteGroupBuilder) =
+    group.MapIdentityApi<User>().AllowAnonymous()
     |> ignore
 
-    app
+    group
         .MapGet(
-            Urls.PasswordRequirements,
+            Urls.Auth.PasswordRequirements,
             Func<IOptions<IdentityOptions>, PasswordRequirements>(fun identityOptions ->
                 let passwordOptions =
                     identityOptions.Value.Password
@@ -42,5 +38,3 @@ let mapAuthEndpoints(app: IEndpointRouteBuilder) =
         )
         .AllowAnonymous()
     |> ignore
-
-    app
