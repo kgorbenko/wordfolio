@@ -24,7 +24,7 @@ let mapAuthEndpoints(group: RouteGroupBuilder) =
 
     group
         .MapGet(
-            Urls.Auth.PasswordRequirements,
+            "/password-requirements",
             Func<IOptions<IdentityOptions>, PasswordRequirements>(fun identityOptions ->
                 let passwordOptions =
                     identityOptions.Value.Password

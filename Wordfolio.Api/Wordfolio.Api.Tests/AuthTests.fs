@@ -289,7 +289,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! response = client.GetAsync(Urls.Auth.passwordRequirements())
+            let! response = client.GetAsync(Urls.Auth.PasswordRequirements)
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
