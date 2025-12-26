@@ -92,71 +92,47 @@ let getEntryByIdWithHierarchyAsync
 
         use! reader = connection.QueryMultipleAsync(commandDefinition)
 
-        // Read entry
-        let! entryResults = reader.ReadAsync<EntryRecord>()
+        let! entryRecord = reader.ReadFirstOrDefaultAsync<EntryRecord>()
 
-        let entryRecord =
-            entryResults |> Seq.tryHead
+        match box entryRecord with
+        | null -> return None
+        | _ ->
+            let! definitions = reader.ReadAsync<DefinitionRecord>()
+            let! translations = reader.ReadAsync<TranslationRecord>()
+            let! examples = reader.ReadAsync<ExampleRecord>()
 
-        match entryRecord with
-        | None -> return None
-        | Some entryRec ->
-            // Read definitions
-            let! definitionResults = reader.ReadAsync<DefinitionRecord>()
-
-            let definitions =
-                definitionResults |> Seq.toList
-
-            // Read translations
-            let! translationResults = reader.ReadAsync<TranslationRecord>()
-
-            let translations =
-                translationResults |> Seq.toList
-
-            // Read examples
-            let! exampleResults = reader.ReadAsync<ExampleRecord>()
-            let examples = exampleResults |> Seq.toList
-
-            // Create maps for efficient lookup
-            let definitionMap =
-                definitions
-                |> List.map(fun d -> (d.Id, d))
-                |> Map.ofList
-
-            let translationMap =
-                translations
-                |> List.map(fun t -> (t.Id, t))
-                |> Map.ofList
-
-            // Group examples by definition/translation
             let examplesByDefinition =
                 examples
-                |> List.filter(fun e -> e.DefinitionId.IsSome)
-                |> List.groupBy(fun e -> e.DefinitionId.Value)
-                |> Map.ofList
+                |> Seq.choose(fun e ->
+                    e.DefinitionId
+                    |> Option.map(fun defId -> (defId, e)))
+                |> Seq.groupBy fst
+                |> Seq.map(fun (defId, pairs) -> (defId, pairs |> Seq.map snd |> Seq.toList))
+                |> Map.ofSeq
 
             let examplesByTranslation =
                 examples
-                |> List.filter(fun e -> e.TranslationId.IsSome)
-                |> List.groupBy(fun e -> e.TranslationId.Value)
-                |> Map.ofList
+                |> Seq.choose(fun e ->
+                    e.TranslationId
+                    |> Option.map(fun transId -> (transId, e)))
+                |> Seq.groupBy fst
+                |> Seq.map(fun (transId, pairs) -> (transId, pairs |> Seq.map snd |> Seq.toList))
+                |> Map.ofSeq
 
-            // Build entry
             let entry: Entries.Entry =
-                { Id = entryRec.Id
-                  VocabularyId = entryRec.VocabularyId
-                  EntryText = entryRec.EntryText
-                  CreatedAt = entryRec.CreatedAt
+                { Id = entryRecord.Id
+                  VocabularyId = entryRecord.VocabularyId
+                  EntryText = entryRecord.EntryText
+                  CreatedAt = entryRecord.CreatedAt
                   UpdatedAt =
-                    if entryRec.UpdatedAt.HasValue then
-                        Some entryRec.UpdatedAt.Value
+                    if entryRecord.UpdatedAt.HasValue then
+                        Some entryRecord.UpdatedAt.Value
                     else
                         None }
 
-            // Build definitions with examples
             let definitionsWithExamples =
                 definitions
-                |> List.map(fun defRec ->
+                |> Seq.map(fun defRec ->
                     let definition: Definitions.Definition =
                         { Id = defRec.Id
                           EntryId = defRec.EntryId
@@ -178,11 +154,11 @@ let getEntryByIdWithHierarchyAsync
 
                     { Definition = definition
                       Examples = exampleList })
+                |> Seq.toList
 
-            // Build translations with examples
             let translationsWithExamples =
                 translations
-                |> List.map(fun transRec ->
+                |> Seq.map(fun transRec ->
                     let translation: Translations.Translation =
                         { Id = transRec.Id
                           EntryId = transRec.EntryId
@@ -204,6 +180,7 @@ let getEntryByIdWithHierarchyAsync
 
                     { Translation = translation
                       Examples = exampleList })
+                |> Seq.toList
 
             return
                 Some
