@@ -22,26 +22,36 @@ type EntryWithHierarchy =
       Translations: TranslationWithExamples list }
 
 [<CLIMutable>]
-type private HierarchyQueryResult =
-    { EntryId: int
+type private EntryRecord =
+    { Id: int
       VocabularyId: int
       EntryText: string
-      EntryCreatedAt: DateTimeOffset
-      EntryUpdatedAt: Nullable<DateTimeOffset>
-      DefinitionId: Nullable<int>
+      CreatedAt: DateTimeOffset
+      UpdatedAt: Nullable<DateTimeOffset> }
+
+[<CLIMutable>]
+type private DefinitionRecord =
+    { Id: int
+      EntryId: int
       DefinitionText: string
-      DefinitionSource: Nullable<int16>
-      DefinitionDisplayOrder: Nullable<int>
-      TranslationId: Nullable<int>
+      Source: int16
+      DisplayOrder: int }
+
+[<CLIMutable>]
+type private TranslationRecord =
+    { Id: int
+      EntryId: int
       TranslationText: string
-      TranslationSource: Nullable<int16>
-      TranslationDisplayOrder: Nullable<int>
-      DefExampleId: Nullable<int>
-      DefExampleText: string
-      DefExampleSource: Nullable<int16>
-      TransExampleId: Nullable<int>
-      TransExampleText: string
-      TransExampleSource: Nullable<int16> }
+      Source: int16
+      DisplayOrder: int }
+
+[<CLIMutable>]
+type private ExampleRecord =
+    { Id: int
+      DefinitionId: int option
+      TranslationId: int option
+      ExampleText: string
+      Source: int16 }
 
 let getEntryByIdWithHierarchyAsync
     (entryId: int)
@@ -52,126 +62,152 @@ let getEntryByIdWithHierarchyAsync
     task {
         let sql =
             """
-            SELECT
-                e."Id" as EntryId,
-                e."VocabularyId" as VocabularyId,
-                e."EntryText" as EntryText,
-                e."CreatedAt" as EntryCreatedAt,
-                e."UpdatedAt" as EntryUpdatedAt,
-                d."Id" as DefinitionId,
-                d."DefinitionText" as DefinitionText,
-                d."Source" as DefinitionSource,
-                d."DisplayOrder" as DefinitionDisplayOrder,
-                t."Id" as TranslationId,
-                t."TranslationText" as TranslationText,
-                t."Source" as TranslationSource,
-                t."DisplayOrder" as TranslationDisplayOrder,
-                de."Id" as DefExampleId,
-                de."ExampleText" as DefExampleText,
-                de."Source" as DefExampleSource,
-                te."Id" as TransExampleId,
-                te."ExampleText" as TransExampleText,
-                te."Source" as TransExampleSource
-            FROM wordfolio."Entries" e
-            LEFT JOIN wordfolio."Definitions" d ON d."EntryId" = e."Id"
-            LEFT JOIN wordfolio."Translations" t ON t."EntryId" = e."Id"
-            LEFT JOIN wordfolio."Examples" de ON de."DefinitionId" = d."Id"
-            LEFT JOIN wordfolio."Examples" te ON te."TranslationId" = t."Id"
-            WHERE e."Id" = @entryId
-            ORDER BY d."DisplayOrder", t."DisplayOrder"
+            SELECT "Id", "VocabularyId", "EntryText", "CreatedAt", "UpdatedAt"
+            FROM wordfolio."Entries"
+            WHERE "Id" = @entryId;
+
+            SELECT "Id", "EntryId", "DefinitionText", "Source", "DisplayOrder"
+            FROM wordfolio."Definitions"
+            WHERE "EntryId" = @entryId
+            ORDER BY "DisplayOrder";
+
+            SELECT "Id", "EntryId", "TranslationText", "Source", "DisplayOrder"
+            FROM wordfolio."Translations"
+            WHERE "EntryId" = @entryId
+            ORDER BY "DisplayOrder";
+
+            SELECT "Id", "DefinitionId", "TranslationId", "ExampleText", "Source"
+            FROM wordfolio."Examples"
+            WHERE "DefinitionId" IN (SELECT "Id" FROM wordfolio."Definitions" WHERE "EntryId" = @entryId)
+               OR "TranslationId" IN (SELECT "Id" FROM wordfolio."Translations" WHERE "EntryId" = @entryId);
             """
 
-        let! results =
-            connection.QueryAsync<HierarchyQueryResult>(
-                sql,
-                {| entryId = entryId |},
+        let commandDefinition =
+            CommandDefinition(
+                commandText = sql,
+                parameters = {| entryId = entryId |},
                 transaction = transaction,
-                commandTimeout = Nullable()
+                cancellationToken = cancellationToken
             )
 
-        let resultsList = results |> Seq.toList
+        use! reader = connection.QueryMultipleAsync(commandDefinition)
 
-        if resultsList.IsEmpty then
-            return None
-        else
-            let firstResult = resultsList.[0]
+        // Read entry
+        let! entryResults = reader.ReadAsync<EntryRecord>()
 
+        let entryRecord =
+            entryResults |> Seq.tryHead
+
+        match entryRecord with
+        | None -> return None
+        | Some entryRec ->
+            // Read definitions
+            let! definitionResults = reader.ReadAsync<DefinitionRecord>()
+
+            let definitions =
+                definitionResults |> Seq.toList
+
+            // Read translations
+            let! translationResults = reader.ReadAsync<TranslationRecord>()
+
+            let translations =
+                translationResults |> Seq.toList
+
+            // Read examples
+            let! exampleResults = reader.ReadAsync<ExampleRecord>()
+            let examples = exampleResults |> Seq.toList
+
+            // Create maps for efficient lookup
+            let definitionMap =
+                definitions
+                |> List.map(fun d -> (d.Id, d))
+                |> Map.ofList
+
+            let translationMap =
+                translations
+                |> List.map(fun t -> (t.Id, t))
+                |> Map.ofList
+
+            // Group examples by definition/translation
+            let examplesByDefinition =
+                examples
+                |> List.filter(fun e -> e.DefinitionId.IsSome)
+                |> List.groupBy(fun e -> e.DefinitionId.Value)
+                |> Map.ofList
+
+            let examplesByTranslation =
+                examples
+                |> List.filter(fun e -> e.TranslationId.IsSome)
+                |> List.groupBy(fun e -> e.TranslationId.Value)
+                |> Map.ofList
+
+            // Build entry
             let entry: Entries.Entry =
-                { Id = firstResult.EntryId
-                  VocabularyId = firstResult.VocabularyId
-                  EntryText = firstResult.EntryText
-                  CreatedAt = firstResult.EntryCreatedAt
+                { Id = entryRec.Id
+                  VocabularyId = entryRec.VocabularyId
+                  EntryText = entryRec.EntryText
+                  CreatedAt = entryRec.CreatedAt
                   UpdatedAt =
-                    if firstResult.EntryUpdatedAt.HasValue then
-                        Some firstResult.EntryUpdatedAt.Value
+                    if entryRec.UpdatedAt.HasValue then
+                        Some entryRec.UpdatedAt.Value
                     else
                         None }
 
-            // Group results by definition
-            let definitionsMap =
-                resultsList
-                |> List.filter(fun r -> r.DefinitionId.HasValue)
-                |> List.groupBy(fun r -> r.DefinitionId.Value)
-                |> List.map(fun (defId, rows) ->
-                    let firstRow = rows.[0]
-
+            // Build definitions with examples
+            let definitionsWithExamples =
+                definitions
+                |> List.map(fun defRec ->
                     let definition: Definitions.Definition =
-                        { Id = defId
-                          EntryId = firstResult.EntryId
-                          DefinitionText = firstRow.DefinitionText
-                          Source = EnumOfValue<int16, Definitions.DefinitionSource>(firstRow.DefinitionSource.Value)
-                          DisplayOrder = firstRow.DefinitionDisplayOrder.Value }
+                        { Id = defRec.Id
+                          EntryId = defRec.EntryId
+                          DefinitionText = defRec.DefinitionText
+                          Source = EnumOfValue<int16, Definitions.DefinitionSource>(defRec.Source)
+                          DisplayOrder = defRec.DisplayOrder }
 
-                    let examples =
-                        rows
-                        |> List.filter(fun r -> r.DefExampleId.HasValue)
-                        |> List.distinctBy(fun r -> r.DefExampleId.Value)
-                        |> List.map(fun r ->
-                            { Examples.Example.Id = r.DefExampleId.Value
-                              Examples.Example.DefinitionId = Some defId
-                              Examples.Example.TranslationId = None
-                              Examples.Example.ExampleText = r.DefExampleText
-                              Examples.Example.Source =
-                                EnumOfValue<int16, Examples.ExampleSource>(r.DefExampleSource.Value) })
+                    let exampleList =
+                        match examplesByDefinition.TryFind(defRec.Id) with
+                        | Some exs ->
+                            exs
+                            |> List.map(fun exRec ->
+                                { Examples.Example.Id = exRec.Id
+                                  Examples.Example.DefinitionId = Some defRec.Id
+                                  Examples.Example.TranslationId = None
+                                  Examples.Example.ExampleText = exRec.ExampleText
+                                  Examples.Example.Source = EnumOfValue<int16, Examples.ExampleSource>(exRec.Source) })
+                        | None -> []
 
                     { Definition = definition
-                      Examples = examples })
-                |> List.sortBy(fun d -> d.Definition.DisplayOrder)
+                      Examples = exampleList })
 
-            // Group results by translation
-            let translationsMap =
-                resultsList
-                |> List.filter(fun r -> r.TranslationId.HasValue)
-                |> List.groupBy(fun r -> r.TranslationId.Value)
-                |> List.map(fun (transId, rows) ->
-                    let firstRow = rows.[0]
-
+            // Build translations with examples
+            let translationsWithExamples =
+                translations
+                |> List.map(fun transRec ->
                     let translation: Translations.Translation =
-                        { Id = transId
-                          EntryId = firstResult.EntryId
-                          TranslationText = firstRow.TranslationText
-                          Source = EnumOfValue<int16, Translations.TranslationSource>(firstRow.TranslationSource.Value)
-                          DisplayOrder = firstRow.TranslationDisplayOrder.Value }
+                        { Id = transRec.Id
+                          EntryId = transRec.EntryId
+                          TranslationText = transRec.TranslationText
+                          Source = EnumOfValue<int16, Translations.TranslationSource>(transRec.Source)
+                          DisplayOrder = transRec.DisplayOrder }
 
-                    let examples =
-                        rows
-                        |> List.filter(fun r -> r.TransExampleId.HasValue)
-                        |> List.distinctBy(fun r -> r.TransExampleId.Value)
-                        |> List.map(fun r ->
-                            { Examples.Example.Id = r.TransExampleId.Value
-                              Examples.Example.DefinitionId = None
-                              Examples.Example.TranslationId = Some transId
-                              Examples.Example.ExampleText = r.TransExampleText
-                              Examples.Example.Source =
-                                EnumOfValue<int16, Examples.ExampleSource>(r.TransExampleSource.Value) })
+                    let exampleList =
+                        match examplesByTranslation.TryFind(transRec.Id) with
+                        | Some exs ->
+                            exs
+                            |> List.map(fun exRec ->
+                                { Examples.Example.Id = exRec.Id
+                                  Examples.Example.DefinitionId = None
+                                  Examples.Example.TranslationId = Some transRec.Id
+                                  Examples.Example.ExampleText = exRec.ExampleText
+                                  Examples.Example.Source = EnumOfValue<int16, Examples.ExampleSource>(exRec.Source) })
+                        | None -> []
 
                     { Translation = translation
-                      Examples = examples })
-                |> List.sortBy(fun t -> t.Translation.DisplayOrder)
+                      Examples = exampleList })
 
             return
                 Some
                     { Entry = entry
-                      Definitions = definitionsMap
-                      Translations = translationsMap }
+                      Definitions = definitionsWithExamples
+                      Translations = translationsWithExamples }
     }
