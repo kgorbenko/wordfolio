@@ -72,7 +72,7 @@ type EntriesTests(fixture: WordfolioTestFixture) =
                      |> fixture.WithConnectionAsync
                     :> Task))
 
-            Assert.Equal("23503", ex.SqlState)
+            Assert.Equal(SqlErrorCodes.ForeignKeyViolation, ex.SqlState)
         }
 
     [<Fact>]

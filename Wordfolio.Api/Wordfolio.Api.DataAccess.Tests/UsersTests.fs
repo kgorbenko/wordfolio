@@ -10,8 +10,6 @@ open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
 type UsersTests(fixture: WordfolioTestFixture) =
-    let UniqueViolationErrorCode = "23505"
-
     interface IClassFixture<WordfolioTestFixture>
 
     [<Fact>]
@@ -50,5 +48,5 @@ type UsersTests(fixture: WordfolioTestFixture) =
                      |> fixture.WithConnectionAsync
                     :> Task))
 
-            Assert.Equal(UniqueViolationErrorCode, ex.SqlState)
+            Assert.Equal(SqlErrorCodes.UniqueViolation, ex.SqlState)
         }
