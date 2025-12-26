@@ -59,6 +59,13 @@ let internal vocabulariesInsertTable =
     table'<VocabularyCreationParameters> Schema.VocabulariesTable.Name
     |> inSchema Schema.Name
 
+[<CLIMutable>]
+type internal CollectionRecord = { Id: int; UserId: int }
+
+let private collectionsTable =
+    table'<CollectionRecord> Schema.CollectionsTable.Name
+    |> inSchema Schema.Name
+
 let createVocabularyAsync
     (parameters: VocabularyCreationParameters)
     (connection: IDbConnection)
@@ -111,6 +118,25 @@ let getVocabulariesByCollectionIdAsync
             |> selectAsync connection transaction cancellationToken
 
         return results |> List.map fromRecord
+    }
+
+let getVocabularyByIdAndUserIdAsync
+    (vocabularyId: int)
+    (userId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<Vocabulary option> =
+    task {
+        let! result =
+            select {
+                for v in vocabulariesTable do
+                    innerJoin c in collectionsTable on (v.CollectionId = c.Id)
+                    where(v.Id = vocabularyId && c.UserId = userId)
+            }
+            |> trySelectFirstAsync connection transaction cancellationToken
+
+        return result |> Option.map fromRecord
     }
 
 let updateVocabularyAsync
