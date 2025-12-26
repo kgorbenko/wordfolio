@@ -9,6 +9,7 @@ open Microsoft.EntityFrameworkCore
 open Microsoft.FSharp.Core.LanguagePrimitives
 
 open Wordfolio.Api.DataAccess.Definitions
+open Wordfolio.Api.DataAccess.Examples
 open Wordfolio.Api.DataAccess.Translations
 open Wordfolio.Common
 
@@ -50,6 +51,13 @@ type Translation =
       TranslationText: string
       Source: TranslationSource
       DisplayOrder: int }
+
+type Example =
+    { Id: int
+      DefinitionId: int option
+      TranslationId: int option
+      ExampleText: string
+      Source: ExampleSource }
 
 [<RequireQualifiedAccess>]
 module Entities =
@@ -127,7 +135,8 @@ module Entities =
               DefinitionText = definitionText
               Source = int16 source
               DisplayOrder = displayOrder
-              Entry = entry }
+              Entry = entry
+              Examples = ResizeArray() }
 
         entry.Definitions.Add(definition)
         definition
@@ -144,10 +153,45 @@ module Entities =
               TranslationText = translationText
               Source = int16 source
               DisplayOrder = displayOrder
-              Entry = entry }
+              Entry = entry
+              Examples = ResizeArray() }
 
         entry.Translations.Add(translation)
         translation
+
+    let makeExampleForDefinition
+        (definition: Mapping.Definition)
+        (exampleText: string)
+        (source: ExampleSource)
+        : Mapping.Example =
+        let example: Mapping.Example =
+            { Id = 0
+              DefinitionId = Nullable(definition.Id)
+              TranslationId = Nullable()
+              ExampleText = exampleText
+              Source = int16 source
+              Definition = definition
+              Translation = Unchecked.defaultof<Mapping.Translation> }
+
+        definition.Examples.Add(example)
+        example
+
+    let makeExampleForTranslation
+        (translation: Mapping.Translation)
+        (exampleText: string)
+        (source: ExampleSource)
+        : Mapping.Example =
+        let example: Mapping.Example =
+            { Id = 0
+              DefinitionId = Nullable()
+              TranslationId = Nullable(translation.Id)
+              ExampleText = exampleText
+              Source = int16 source
+              Definition = Unchecked.defaultof<Mapping.Definition>
+              Translation = translation }
+
+        translation.Examples.Add(example)
+        example
 
 type WordfolioSeeder internal (context: Mapping.WordfolioTestDbContext) =
     member internal _.Context = context
@@ -196,6 +240,13 @@ module Seeder =
           Source = EnumOfValue<int16, TranslationSource>(entity.Source)
           DisplayOrder = entity.DisplayOrder }
 
+    let private toExample(entity: Mapping.Example) : Example =
+        { Id = entity.Id
+          DefinitionId = Option.ofNullable entity.DefinitionId
+          TranslationId = Option.ofNullable entity.TranslationId
+          ExampleText = entity.ExampleText
+          Source = EnumOfValue<int16, ExampleSource>(entity.Source) }
+
     let create(connection: DbConnection) : WordfolioSeeder =
         let builder =
             DbContextOptionsBuilder<Mapping.WordfolioTestDbContext>()
@@ -229,6 +280,10 @@ module Seeder =
 
     let addTranslations (translations: Mapping.Translation list) (seeder: WordfolioSeeder) : WordfolioSeeder =
         seeder.Context.Translations.AddRange(translations)
+        seeder
+
+    let addExamples (examples: Mapping.Example list) (seeder: WordfolioSeeder) : WordfolioSeeder =
+        seeder.Context.Examples.AddRange(examples)
         seeder
 
     let saveChangesAsync(seeder: WordfolioSeeder) : Task =
@@ -326,5 +381,15 @@ module Seeder =
             return
                 translations
                 |> Seq.map toTranslation
+                |> Seq.toList
+        }
+
+    let getAllExamplesAsync(seeder: WordfolioSeeder) : Task<Example list> =
+        task {
+            let! examples = seeder.Context.Examples.AsNoTracking().ToArrayAsync()
+
+            return
+                examples
+                |> Seq.map toExample
                 |> Seq.toList
         }

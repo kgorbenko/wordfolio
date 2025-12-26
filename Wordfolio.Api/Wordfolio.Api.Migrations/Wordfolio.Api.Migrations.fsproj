@@ -13,6 +13,8 @@
     <Compile Include="20251225001_CreateEntriesTable.fs" />
     <Compile Include="20251225002_CreateDefinitionsTable.fs" />
     <Compile Include="20251225003_CreateTranslationsTable.fs" />
+    <Compile Include="20251225004_CreateExamplesTable.fs" />
+    <Compile Include="20251225005_AddExamplesCheckConstraint.fs" />
   </ItemGroup>
 
   <ItemGroup>
