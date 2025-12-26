@@ -48,7 +48,8 @@ and [<CLIMutable>] Definition =
       DefinitionText: string
       Source: int16
       DisplayOrder: int
-      Entry: Entry }
+      Entry: Entry
+      Examples: ResizeArray<Example> }
 
 and [<CLIMutable>] Translation =
     { Id: int
@@ -56,7 +57,17 @@ and [<CLIMutable>] Translation =
       TranslationText: string
       Source: int16
       DisplayOrder: int
-      Entry: Entry }
+      Entry: Entry
+      Examples: ResizeArray<Example> }
+
+and [<CLIMutable>] Example =
+    { Id: int
+      DefinitionId: Nullable<int>
+      TranslationId: Nullable<int>
+      ExampleText: string
+      Source: int16
+      Definition: Definition
+      Translation: Translation }
 
 type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
     inherit DbContext(options)
@@ -78,6 +89,9 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
 
     member this.Translations: DbSet<Translation> =
         base.Set<Translation>()
+
+    member this.Examples: DbSet<Example> =
+        base.Set<Example>()
 
     override _.OnModelCreating(modelBuilder: ModelBuilder) =
         let users = modelBuilder.Entity<User>()
@@ -236,6 +250,43 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
         |> ignore
 
         translations.Property(_.DisplayOrder).IsRequired()
+        |> ignore
+
+        let examples =
+            modelBuilder.Entity<Example>()
+
+        examples
+            .ToTable(Schema.ExamplesTable.Name, Schema.Name)
+            .HasKey(fun x -> x.Id :> obj)
+        |> ignore
+
+        examples.Property(_.Id).ValueGeneratedOnAdd()
+        |> ignore
+
+        examples.Property(_.DefinitionId).IsRequired(false)
+        |> ignore
+
+        examples.Property(_.TranslationId).IsRequired(false)
+        |> ignore
+
+        examples.Property(_.ExampleText).IsRequired().HasMaxLength(500)
+        |> ignore
+
+        examples.Property(_.Source).IsRequired()
+        |> ignore
+
+        definitions
+            .HasMany(fun d -> d.Examples :> IEnumerable<Example>)
+            .WithOne(fun e -> e.Definition)
+            .HasForeignKey(fun e -> e.DefinitionId :> obj)
+            .IsRequired(false)
+        |> ignore
+
+        translations
+            .HasMany(fun t -> t.Examples :> IEnumerable<Example>)
+            .WithOne(fun e -> e.Translation)
+            .HasForeignKey(fun e -> e.TranslationId :> obj)
+            .IsRequired(false)
         |> ignore
 
         base.OnModelCreating(modelBuilder)

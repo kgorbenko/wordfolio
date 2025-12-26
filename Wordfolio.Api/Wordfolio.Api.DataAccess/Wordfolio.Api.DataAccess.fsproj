@@ -20,6 +20,7 @@
     <Compile Include="Entries.fs" />
     <Compile Include="Definitions.fs" />
     <Compile Include="Translations.fs" />
+    <Compile Include="Examples.fs" />
   </ItemGroup>
 
   <ItemGroup>

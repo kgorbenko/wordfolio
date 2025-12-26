@@ -108,3 +108,22 @@ module TranslationsTable =
 
     [<Literal>]
     let DisplayOrderColumn = "DisplayOrder"
+
+module ExamplesTable =
+    [<Literal>]
+    let Name = "Examples"
+
+    [<Literal>]
+    let IdColumn = "Id"
+
+    [<Literal>]
+    let DefinitionIdColumn = "DefinitionId"
+
+    [<Literal>]
+    let TranslationIdColumn = "TranslationId"
+
+    [<Literal>]
+    let ExampleTextColumn = "ExampleText"
+
+    [<Literal>]
+    let SourceColumn = "Source"
