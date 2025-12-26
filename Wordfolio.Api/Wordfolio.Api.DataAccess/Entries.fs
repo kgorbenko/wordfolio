@@ -2,13 +2,10 @@ module Wordfolio.Api.DataAccess.Entries
 
 open System
 open System.Data
-open System.Linq
 open System.Threading
 open System.Threading.Tasks
 
-open Dapper
 open Dapper.FSharp.PostgreSQL
-open Microsoft.FSharp.Core.LanguagePrimitives
 
 open Wordfolio.Api.DataAccess.Dapper
 open Wordfolio.Common

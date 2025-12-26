@@ -94,9 +94,9 @@ let getEntryByIdWithHierarchyAsync
 
         let! entryRecord = reader.ReadFirstOrDefaultAsync<EntryRecord>()
 
-        match box entryRecord with
-        | null -> return None
-        | _ ->
+        match entryRecord |> Option.ofObj with
+        | None -> return None
+        | Some entryRecord ->
             let! definitions = reader.ReadAsync<DefinitionRecord>()
             let! translations = reader.ReadAsync<TranslationRecord>()
             let! examples = reader.ReadAsync<ExampleRecord>()
@@ -125,10 +125,8 @@ let getEntryByIdWithHierarchyAsync
                   EntryText = entryRecord.EntryText
                   CreatedAt = entryRecord.CreatedAt
                   UpdatedAt =
-                    if entryRecord.UpdatedAt.HasValue then
-                        Some entryRecord.UpdatedAt.Value
-                    else
-                        None }
+                    entryRecord.UpdatedAt
+                    |> Option.ofNullable }
 
             let definitionsWithExamples =
                 definitions
