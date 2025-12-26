@@ -21,6 +21,7 @@
     <Compile Include="Definitions.fs" />
     <Compile Include="Translations.fs" />
     <Compile Include="Examples.fs" />
+    <Compile Include="EntriesHierarchy.fs" />
   </ItemGroup>
 
   <ItemGroup>

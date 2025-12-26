@@ -28,6 +28,7 @@
     <Compile Include="DefinitionsTests.fs" />
     <Compile Include="TranslationsTests.fs" />
     <Compile Include="ExamplesTests.fs" />
+    <Compile Include="EntriesHierarchyTests.fs" />
   </ItemGroup>
 
 </Project>
