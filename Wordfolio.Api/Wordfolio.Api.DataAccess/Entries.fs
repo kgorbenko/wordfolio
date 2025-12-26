@@ -105,6 +105,27 @@ let getEntriesByVocabularyIdAsync
         return results |> List.map fromRecord
     }
 
+let getEntryByTextAndVocabularyIdAsync
+    (vocabularyId: int)
+    (entryText: string)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<Entry option> =
+    task {
+        let! result =
+            select {
+                for e in entriesTable do
+                    where(
+                        e.VocabularyId = vocabularyId
+                        && e.EntryText = entryText
+                    )
+            }
+            |> trySelectFirstAsync connection transaction cancellationToken
+
+        return result |> Option.map fromRecord
+    }
+
 let updateEntryAsync
     (parameters: EntryUpdateParameters)
     (connection: IDbConnection)
