@@ -165,7 +165,7 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
                      |> fixture.WithConnectionAsync
                     :> Task))
 
-            Assert.Equal("23503", ex.SqlState)
+            Assert.Equal(SqlErrorCodes.ForeignKeyViolation, ex.SqlState)
         }
 
     [<Fact>]
@@ -185,7 +185,7 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
                      |> fixture.WithConnectionAsync
                     :> Task))
 
-            Assert.Equal("23503", ex.SqlState)
+            Assert.Equal(SqlErrorCodes.ForeignKeyViolation, ex.SqlState)
         }
 
     [<Fact>]
@@ -230,7 +230,7 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
                      |> fixture.WithConnectionAsync
                     :> Task))
 
-            Assert.Equal("23514", ex.SqlState)
+            Assert.Equal(SqlErrorCodes.CheckConstraintViolation, ex.SqlState)
         }
 
     [<Fact>]
@@ -250,7 +250,7 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
                      |> fixture.WithConnectionAsync
                     :> Task))
 
-            Assert.Equal("23514", ex.SqlState)
+            Assert.Equal(SqlErrorCodes.CheckConstraintViolation, ex.SqlState)
         }
 
     [<Fact>]

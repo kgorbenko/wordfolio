@@ -109,7 +109,7 @@ type TranslationsTests(fixture: WordfolioTestFixture) =
                      |> fixture.WithConnectionAsync
                     :> Task))
 
-            Assert.Equal("23503", ex.SqlState)
+            Assert.Equal(SqlErrorCodes.ForeignKeyViolation, ex.SqlState)
         }
 
     [<Fact>]
@@ -152,7 +152,7 @@ type TranslationsTests(fixture: WordfolioTestFixture) =
                      |> fixture.WithConnectionAsync
                     :> Task))
 
-            Assert.Equal("23505", ex.SqlState)
+            Assert.Equal(SqlErrorCodes.UniqueViolation, ex.SqlState)
         }
 
     [<Fact>]
