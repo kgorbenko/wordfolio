@@ -16,6 +16,10 @@
     <Compile Include="Vocabularies\Errors.fs" />
     <Compile Include="Vocabularies\Capabilities.fs" />
     <Compile Include="Vocabularies\Operations.fs" />
+    <Compile Include="Entries\Entry.fs" />
+    <Compile Include="Entries\Errors.fs" />
+    <Compile Include="Entries\Capabilities.fs" />
+    <Compile Include="Entries\Operations.fs" />
   </ItemGroup>
 
 </Project>
