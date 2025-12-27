@@ -52,16 +52,18 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 EntriesHierarchy.getEntryByIdWithHierarchyAsync entry.Id
                 |> fixture.WithConnectionAsync
 
-            match actual with
-            | None -> Assert.Fail("Expected entry but got None")
-            | Some hierarchy ->
-                Assert.Equal(entry.Id, hierarchy.Entry.Id)
-                Assert.Equal(vocabulary.Id, hierarchy.Entry.VocabularyId)
-                Assert.Equal("solitary", hierarchy.Entry.EntryText)
-                Assert.Equal(createdAt, hierarchy.Entry.CreatedAt)
-                Assert.Equal(None, hierarchy.Entry.UpdatedAt)
-                Assert.Empty(hierarchy.Definitions)
-                Assert.Empty(hierarchy.Translations)
+            let expected: EntriesHierarchy.EntryWithHierarchy option =
+                Some
+                    { Entry =
+                        { Id = entry.Id
+                          VocabularyId = vocabulary.Id
+                          EntryText = "solitary"
+                          CreatedAt = createdAt
+                          UpdatedAt = None }
+                      Definitions = []
+                      Translations = [] }
+
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -95,18 +97,25 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 EntriesHierarchy.getEntryByIdWithHierarchyAsync entry.Id
                 |> fixture.WithConnectionAsync
 
-            match actual with
-            | None -> Assert.Fail("Expected entry but got None")
-            | Some hierarchy ->
-                Assert.Equal(entry.Id, hierarchy.Entry.Id)
-                Assert.Equal("ephemeral", hierarchy.Entry.EntryText)
-                Assert.Equal(1, hierarchy.Definitions.Length)
-                Assert.Equal(definition.Id, hierarchy.Definitions.[0].Definition.Id)
-                Assert.Equal("Lasting for a very short time", hierarchy.Definitions.[0].Definition.DefinitionText)
-                Assert.Equal(Definitions.DefinitionSource.Manual, hierarchy.Definitions.[0].Definition.Source)
-                Assert.Equal(0, hierarchy.Definitions.[0].Definition.DisplayOrder)
-                Assert.Empty(hierarchy.Definitions.[0].Examples)
-                Assert.Empty(hierarchy.Translations)
+            let expected: EntriesHierarchy.EntryWithHierarchy option =
+                Some
+                    { Entry =
+                        { Id = entry.Id
+                          VocabularyId = vocabulary.Id
+                          EntryText = "ephemeral"
+                          CreatedAt = createdAt
+                          UpdatedAt = None }
+                      Definitions =
+                        [ { Definition =
+                              { Id = definition.Id
+                                EntryId = entry.Id
+                                DefinitionText = "Lasting for a very short time"
+                                Source = Definitions.DefinitionSource.Manual
+                                DisplayOrder = 0 }
+                            Examples = [] } ]
+                      Translations = [] }
+
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -140,18 +149,25 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 EntriesHierarchy.getEntryByIdWithHierarchyAsync entry.Id
                 |> fixture.WithConnectionAsync
 
-            match actual with
-            | None -> Assert.Fail("Expected entry but got None")
-            | Some hierarchy ->
-                Assert.Equal(entry.Id, hierarchy.Entry.Id)
-                Assert.Equal("serendipity", hierarchy.Entry.EntryText)
-                Assert.Empty(hierarchy.Definitions)
-                Assert.Equal(1, hierarchy.Translations.Length)
-                Assert.Equal(translation.Id, hierarchy.Translations.[0].Translation.Id)
-                Assert.Equal("счастливая случайность", hierarchy.Translations.[0].Translation.TranslationText)
-                Assert.Equal(Translations.TranslationSource.Api, hierarchy.Translations.[0].Translation.Source)
-                Assert.Equal(0, hierarchy.Translations.[0].Translation.DisplayOrder)
-                Assert.Empty(hierarchy.Translations.[0].Examples)
+            let expected: EntriesHierarchy.EntryWithHierarchy option =
+                Some
+                    { Entry =
+                        { Id = entry.Id
+                          VocabularyId = vocabulary.Id
+                          EntryText = "serendipity"
+                          CreatedAt = createdAt
+                          UpdatedAt = None }
+                      Definitions = []
+                      Translations =
+                        [ { Translation =
+                              { Id = translation.Id
+                                EntryId = entry.Id
+                                TranslationText = "счастливая случайность"
+                                Source = Translations.TranslationSource.Api
+                                DisplayOrder = 0 }
+                            Examples = [] } ] }
+
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -194,28 +210,35 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 EntriesHierarchy.getEntryByIdWithHierarchyAsync entry.Id
                 |> fixture.WithConnectionAsync
 
-            match actual with
-            | None -> Assert.Fail("Expected entry but got None")
-            | Some hierarchy ->
-                Assert.Equal(entry.Id, hierarchy.Entry.Id)
-                Assert.Equal("ubiquitous", hierarchy.Entry.EntryText)
-                Assert.Equal(1, hierarchy.Definitions.Length)
-                Assert.Equal(definition.Id, hierarchy.Definitions.[0].Definition.Id)
-                Assert.Equal(2, hierarchy.Definitions.[0].Examples.Length)
+            let expected: EntriesHierarchy.EntryWithHierarchy option =
+                Some
+                    { Entry =
+                        { Id = entry.Id
+                          VocabularyId = vocabulary.Id
+                          EntryText = "ubiquitous"
+                          CreatedAt = createdAt
+                          UpdatedAt = None }
+                      Definitions =
+                        [ { Definition =
+                              { Id = definition.Id
+                                EntryId = entry.Id
+                                DefinitionText = "Present everywhere"
+                                Source = Definitions.DefinitionSource.Api
+                                DisplayOrder = 0 }
+                            Examples =
+                              [ { Id = example1.Id
+                                  DefinitionId = Some definition.Id
+                                  TranslationId = None
+                                  ExampleText = "The mobile phone is ubiquitous"
+                                  Source = Examples.ExampleSource.Api }
+                                { Id = example2.Id
+                                  DefinitionId = Some definition.Id
+                                  TranslationId = None
+                                  ExampleText = "Coffee shops are ubiquitous in the city"
+                                  Source = Examples.ExampleSource.Custom } ] } ]
+                      Translations = [] }
 
-                let examples =
-                    hierarchy.Definitions.[0].Examples
-                    |> List.sortBy(fun e -> e.Id)
-
-                Assert.Equal(example1.Id, examples.[0].Id)
-                Assert.Equal("The mobile phone is ubiquitous", examples.[0].ExampleText)
-                Assert.Equal(Examples.ExampleSource.Api, examples.[0].Source)
-                Assert.Equal(Some definition.Id, examples.[0].DefinitionId)
-                Assert.Equal(None, examples.[0].TranslationId)
-
-                Assert.Equal(example2.Id, examples.[1].Id)
-                Assert.Equal("Coffee shops are ubiquitous in the city", examples.[1].ExampleText)
-                Assert.Equal(Examples.ExampleSource.Custom, examples.[1].Source)
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -258,29 +281,35 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 EntriesHierarchy.getEntryByIdWithHierarchyAsync entry.Id
                 |> fixture.WithConnectionAsync
 
-            match actual with
-            | None -> Assert.Fail("Expected entry but got None")
-            | Some hierarchy ->
-                Assert.Equal(entry.Id, hierarchy.Entry.Id)
-                Assert.Equal("meticulous", hierarchy.Entry.EntryText)
-                Assert.Empty(hierarchy.Definitions)
-                Assert.Equal(1, hierarchy.Translations.Length)
-                Assert.Equal(translation.Id, hierarchy.Translations.[0].Translation.Id)
-                Assert.Equal(2, hierarchy.Translations.[0].Examples.Length)
+            let expected: EntriesHierarchy.EntryWithHierarchy option =
+                Some
+                    { Entry =
+                        { Id = entry.Id
+                          VocabularyId = vocabulary.Id
+                          EntryText = "meticulous"
+                          CreatedAt = createdAt
+                          UpdatedAt = None }
+                      Definitions = []
+                      Translations =
+                        [ { Translation =
+                              { Id = translation.Id
+                                EntryId = entry.Id
+                                TranslationText = "тщательный"
+                                Source = Translations.TranslationSource.Manual
+                                DisplayOrder = 0 }
+                            Examples =
+                              [ { Id = example1.Id
+                                  DefinitionId = None
+                                  TranslationId = Some translation.Id
+                                  ExampleText = "He is meticulous about details"
+                                  Source = Examples.ExampleSource.Api }
+                                { Id = example2.Id
+                                  DefinitionId = None
+                                  TranslationId = Some translation.Id
+                                  ExampleText = "Her work is meticulous"
+                                  Source = Examples.ExampleSource.Custom } ] } ] }
 
-                let examples =
-                    hierarchy.Translations.[0].Examples
-                    |> List.sortBy(fun e -> e.Id)
-
-                Assert.Equal(example1.Id, examples.[0].Id)
-                Assert.Equal("He is meticulous about details", examples.[0].ExampleText)
-                Assert.Equal(Examples.ExampleSource.Api, examples.[0].Source)
-                Assert.Equal(None, examples.[0].DefinitionId)
-                Assert.Equal(Some translation.Id, examples.[0].TranslationId)
-
-                Assert.Equal(example2.Id, examples.[1].Id)
-                Assert.Equal("Her work is meticulous", examples.[1].ExampleText)
-                Assert.Equal(Examples.ExampleSource.Custom, examples.[1].Source)
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -323,31 +352,46 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 EntriesHierarchy.getEntryByIdWithHierarchyAsync entry.Id
                 |> fixture.WithConnectionAsync
 
-            match actual with
-            | None -> Assert.Fail("Expected entry but got None")
-            | Some hierarchy ->
-                Assert.Equal(entry.Id, hierarchy.Entry.Id)
-                Assert.Equal("resilient", hierarchy.Entry.EntryText)
-                Assert.Equal(2, hierarchy.Definitions.Length)
-                Assert.Equal(2, hierarchy.Translations.Length)
+            let expected: EntriesHierarchy.EntryWithHierarchy option =
+                Some
+                    { Entry =
+                        { Id = entry.Id
+                          VocabularyId = vocabulary.Id
+                          EntryText = "resilient"
+                          CreatedAt = createdAt
+                          UpdatedAt = None }
+                      Definitions =
+                        [ { Definition =
+                              { Id = definition1.Id
+                                EntryId = entry.Id
+                                DefinitionText = "Able to recover quickly"
+                                Source = Definitions.DefinitionSource.Api
+                                DisplayOrder = 0 }
+                            Examples = [] }
+                          { Definition =
+                              { Id = definition2.Id
+                                EntryId = entry.Id
+                                DefinitionText = "Able to withstand shock"
+                                Source = Definitions.DefinitionSource.Manual
+                                DisplayOrder = 1 }
+                            Examples = [] } ]
+                      Translations =
+                        [ { Translation =
+                              { Id = translation1.Id
+                                EntryId = entry.Id
+                                TranslationText = "устойчивый"
+                                Source = Translations.TranslationSource.Api
+                                DisplayOrder = 0 }
+                            Examples = [] }
+                          { Translation =
+                              { Id = translation2.Id
+                                EntryId = entry.Id
+                                TranslationText = "жизнеспособный"
+                                Source = Translations.TranslationSource.Manual
+                                DisplayOrder = 1 }
+                            Examples = [] } ] }
 
-                // Check definitions are ordered by DisplayOrder
-                Assert.Equal(definition1.Id, hierarchy.Definitions.[0].Definition.Id)
-                Assert.Equal("Able to recover quickly", hierarchy.Definitions.[0].Definition.DefinitionText)
-                Assert.Equal(0, hierarchy.Definitions.[0].Definition.DisplayOrder)
-
-                Assert.Equal(definition2.Id, hierarchy.Definitions.[1].Definition.Id)
-                Assert.Equal("Able to withstand shock", hierarchy.Definitions.[1].Definition.DefinitionText)
-                Assert.Equal(1, hierarchy.Definitions.[1].Definition.DisplayOrder)
-
-                // Check translations are ordered by DisplayOrder
-                Assert.Equal(translation1.Id, hierarchy.Translations.[0].Translation.Id)
-                Assert.Equal("устойчивый", hierarchy.Translations.[0].Translation.TranslationText)
-                Assert.Equal(0, hierarchy.Translations.[0].Translation.DisplayOrder)
-
-                Assert.Equal(translation2.Id, hierarchy.Translations.[1].Translation.Id)
-                Assert.Equal("жизнеспособный", hierarchy.Translations.[1].Translation.TranslationText)
-                Assert.Equal(1, hierarchy.Translations.[1].Translation.DisplayOrder)
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -390,27 +434,42 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 EntriesHierarchy.getEntryByIdWithHierarchyAsync entry.Id
                 |> fixture.WithConnectionAsync
 
-            match actual with
-            | None -> Assert.Fail("Expected entry but got None")
-            | Some hierarchy ->
-                Assert.Equal(entry.Id, hierarchy.Entry.Id)
-                Assert.Equal("tenacious", hierarchy.Entry.EntryText)
+            let expected: EntriesHierarchy.EntryWithHierarchy option =
+                Some
+                    { Entry =
+                        { Id = entry.Id
+                          VocabularyId = vocabulary.Id
+                          EntryText = "tenacious"
+                          CreatedAt = createdAt
+                          UpdatedAt = None }
+                      Definitions =
+                        [ { Definition =
+                              { Id = definition.Id
+                                EntryId = entry.Id
+                                DefinitionText = "Holding fast"
+                                Source = Definitions.DefinitionSource.Api
+                                DisplayOrder = 0 }
+                            Examples =
+                              [ { Id = defExample.Id
+                                  DefinitionId = Some definition.Id
+                                  TranslationId = None
+                                  ExampleText = "He is tenacious in his pursuit"
+                                  Source = Examples.ExampleSource.Api } ] } ]
+                      Translations =
+                        [ { Translation =
+                              { Id = translation.Id
+                                EntryId = entry.Id
+                                TranslationText = "упорный"
+                                Source = Translations.TranslationSource.Manual
+                                DisplayOrder = 0 }
+                            Examples =
+                              [ { Id = transExample.Id
+                                  DefinitionId = None
+                                  TranslationId = Some translation.Id
+                                  ExampleText = "She is very tenacious"
+                                  Source = Examples.ExampleSource.Custom } ] } ] }
 
-                // Check definition with example
-                Assert.Equal(1, hierarchy.Definitions.Length)
-                Assert.Equal(definition.Id, hierarchy.Definitions.[0].Definition.Id)
-                Assert.Equal("Holding fast", hierarchy.Definitions.[0].Definition.DefinitionText)
-                Assert.Equal(1, hierarchy.Definitions.[0].Examples.Length)
-                Assert.Equal(defExample.Id, hierarchy.Definitions.[0].Examples.[0].Id)
-                Assert.Equal("He is tenacious in his pursuit", hierarchy.Definitions.[0].Examples.[0].ExampleText)
-
-                // Check translation with example
-                Assert.Equal(1, hierarchy.Translations.Length)
-                Assert.Equal(translation.Id, hierarchy.Translations.[0].Translation.Id)
-                Assert.Equal("упорный", hierarchy.Translations.[0].Translation.TranslationText)
-                Assert.Equal(1, hierarchy.Translations.[0].Examples.Length)
-                Assert.Equal(transExample.Id, hierarchy.Translations.[0].Examples.[0].Id)
-                Assert.Equal("She is very tenacious", hierarchy.Translations.[0].Examples.[0].ExampleText)
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -444,11 +503,16 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 EntriesHierarchy.getEntryByIdWithHierarchyAsync entry.Id
                 |> fixture.WithConnectionAsync
 
-            match actual with
-            | None -> Assert.Fail("Expected entry but got None")
-            | Some hierarchy ->
-                Assert.Equal(entry.Id, hierarchy.Entry.Id)
-                Assert.Equal("benevolent", hierarchy.Entry.EntryText)
-                Assert.Equal(createdAt, hierarchy.Entry.CreatedAt)
-                Assert.Equal(Some updatedAt, hierarchy.Entry.UpdatedAt)
+            let expected: EntriesHierarchy.EntryWithHierarchy option =
+                Some
+                    { Entry =
+                        { Id = entry.Id
+                          VocabularyId = vocabulary.Id
+                          EntryText = "benevolent"
+                          CreatedAt = createdAt
+                          UpdatedAt = Some updatedAt }
+                      Definitions = []
+                      Translations = [] }
+
+            Assert.Equal(expected, actual)
         }
