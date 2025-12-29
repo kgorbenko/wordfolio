@@ -2,6 +2,7 @@ module Wordfolio.Api.Handlers.Entries
 
 open System
 open System.Security.Claims
+open System.Text.Json.Serialization
 open System.Threading
 
 open Microsoft.AspNetCore.Builder
@@ -18,18 +19,33 @@ open Wordfolio.Api.Infrastructure.Environment
 module UrlTokens = Wordfolio.Api.Urls
 module Urls = Wordfolio.Api.Urls.Entries
 
+type DefinitionSourceDto =
+    | Api = 0
+    | Manual = 1
+
+type TranslationSourceDto =
+    | Api = 0
+    | Manual = 1
+
+type ExampleSourceDto =
+    | Api = 0
+    | Custom = 1
+
 type ExampleRequest =
     { ExampleText: string
-      Source: ExampleSource }
+      [<JsonConverter(typeof<JsonStringEnumConverter>)>]
+      Source: ExampleSourceDto }
 
 type DefinitionRequest =
     { DefinitionText: string
-      Source: DefinitionSource
+      [<JsonConverter(typeof<JsonStringEnumConverter>)>]
+      Source: DefinitionSourceDto
       Examples: ExampleRequest list }
 
 type TranslationRequest =
     { TranslationText: string
-      Source: TranslationSource
+      [<JsonConverter(typeof<JsonStringEnumConverter>)>]
+      Source: TranslationSourceDto
       Examples: ExampleRequest list }
 
 type CreateEntryRequest =
@@ -41,19 +57,22 @@ type CreateEntryRequest =
 type ExampleResponse =
     { Id: int
       ExampleText: string
-      Source: ExampleSource }
+      [<JsonConverter(typeof<JsonStringEnumConverter>)>]
+      Source: ExampleSourceDto }
 
 type DefinitionResponse =
     { Id: int
       DefinitionText: string
-      Source: DefinitionSource
+      [<JsonConverter(typeof<JsonStringEnumConverter>)>]
+      Source: DefinitionSourceDto
       DisplayOrder: int
       Examples: ExampleResponse list }
 
 type TranslationResponse =
     { Id: int
       TranslationText: string
-      Source: TranslationSource
+      [<JsonConverter(typeof<JsonStringEnumConverter>)>]
+      Source: TranslationSourceDto
       DisplayOrder: int
       Examples: ExampleResponse list }
 
@@ -66,29 +85,62 @@ type EntryResponse =
       Definitions: DefinitionResponse list
       Translations: TranslationResponse list }
 
+let private toDefinitionSourceDomain(source: DefinitionSourceDto) : DefinitionSource =
+    match source with
+    | DefinitionSourceDto.Api -> DefinitionSource.Api
+    | DefinitionSourceDto.Manual -> DefinitionSource.Manual
+    | _ -> DefinitionSource.Manual
+
+let private toTranslationSourceDomain(source: TranslationSourceDto) : TranslationSource =
+    match source with
+    | TranslationSourceDto.Api -> TranslationSource.Api
+    | TranslationSourceDto.Manual -> TranslationSource.Manual
+    | _ -> TranslationSource.Manual
+
+let private toExampleSourceDomain(source: ExampleSourceDto) : ExampleSource =
+    match source with
+    | ExampleSourceDto.Api -> ExampleSource.Api
+    | ExampleSourceDto.Custom -> ExampleSource.Custom
+    | _ -> ExampleSource.Custom
+
+let private toExampleSourceDto(source: ExampleSource) : ExampleSourceDto =
+    match source with
+    | ExampleSource.Api -> ExampleSourceDto.Api
+    | ExampleSource.Custom -> ExampleSourceDto.Custom
+
+let private toDefinitionSourceDto(source: DefinitionSource) : DefinitionSourceDto =
+    match source with
+    | DefinitionSource.Api -> DefinitionSourceDto.Api
+    | DefinitionSource.Manual -> DefinitionSourceDto.Manual
+
+let private toTranslationSourceDto(source: TranslationSource) : TranslationSourceDto =
+    match source with
+    | TranslationSource.Api -> TranslationSourceDto.Api
+    | TranslationSource.Manual -> TranslationSourceDto.Manual
+
 let private toExampleInput(req: ExampleRequest) : ExampleInput =
     { ExampleText = req.ExampleText
-      Source = req.Source }
+      Source = toExampleSourceDomain req.Source }
 
 let private toDefinitionInput(req: DefinitionRequest) : DefinitionInput =
     { DefinitionText = req.DefinitionText
-      Source = req.Source
+      Source = toDefinitionSourceDomain req.Source
       Examples = req.Examples |> List.map toExampleInput }
 
 let private toTranslationInput(req: TranslationRequest) : TranslationInput =
     { TranslationText = req.TranslationText
-      Source = req.Source
+      Source = toTranslationSourceDomain req.Source
       Examples = req.Examples |> List.map toExampleInput }
 
 let private toExampleResponse(ex: Example) : ExampleResponse =
     { Id = ExampleId.value ex.Id
       ExampleText = ex.ExampleText
-      Source = ex.Source }
+      Source = toExampleSourceDto ex.Source }
 
 let private toDefinitionResponse(def: Definition) : DefinitionResponse =
     { Id = DefinitionId.value def.Id
       DefinitionText = def.DefinitionText
-      Source = def.Source
+      Source = toDefinitionSourceDto def.Source
       DisplayOrder = def.DisplayOrder
       Examples =
         def.Examples
@@ -97,7 +149,7 @@ let private toDefinitionResponse(def: Definition) : DefinitionResponse =
 let private toTranslationResponse(trans: Translation) : TranslationResponse =
     { Id = TranslationId.value trans.Id
       TranslationText = trans.TranslationText
-      Source = trans.Source
+      Source = toTranslationSourceDto trans.Source
       DisplayOrder = trans.DisplayOrder
       Examples =
         trans.Examples
@@ -140,6 +192,34 @@ let private toErrorResponse(error: EntryError) : IResult =
     | TooManyExamples maxCount -> Results.BadRequest({| error = $"Too many examples (max {maxCount} per item)" |})
     | ExampleTextTooLong maxLength ->
         Results.BadRequest({| error = $"Example text must be at most {maxLength} characters" |})
+
+let mapEntriesByVocabularyEndpoint(app: IEndpointRouteBuilder) =
+    app
+        .MapGet(
+            "/vocabularies/{vocabularyId}/entries",
+            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun vocabularyId user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
+
+                            let! result = getByVocabularyId env (UserId userId) (VocabularyId vocabularyId)
+
+                            return
+                                match result with
+                                | Ok entries ->
+                                    let response =
+                                        entries |> List.map toResponse
+
+                                    Results.Ok(response)
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .WithTags("Entries")
+    |> ignore
 
 let mapEntriesEndpoints(group: RouteGroupBuilder) =
     group.MapPost(
@@ -196,30 +276,5 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                         | Ok entry -> Results.Ok(toResponse entry)
                         | Error error -> toErrorResponse error
             })
-    )
-    |> ignore
-
-    group.MapGet(
-        "/vocabularies/{vocabularyId}/entries",
-        Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-            (fun vocabularyId user dataSource cancellationToken ->
-                task {
-                    match getUserId user with
-                    | None -> return Results.Unauthorized()
-                    | Some userId ->
-                        let env =
-                            TransactionalEnv(dataSource, cancellationToken)
-
-                        let! result = getByVocabularyId env (UserId userId) (VocabularyId vocabularyId)
-
-                        return
-                            match result with
-                            | Ok entries ->
-                                let response =
-                                    entries |> List.map toResponse
-
-                                Results.Ok(response)
-                            | Error error -> toErrorResponse error
-                })
     )
     |> ignore
