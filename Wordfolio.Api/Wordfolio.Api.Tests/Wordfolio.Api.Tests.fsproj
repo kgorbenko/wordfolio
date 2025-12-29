@@ -26,6 +26,7 @@
     <Compile Include="AuthTests.fs" />
     <Compile Include="CollectionsTests.fs" />
     <Compile Include="VocabulariesTests.fs" />
+    <Compile Include="EntriesTests.fs" />
     <Compile Include="StatusTests.fs" />
     <Compile Include="OpenApiTests.fs" />
   </ItemGroup>
