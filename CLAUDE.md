@@ -1,6 +1,6 @@
 # Wordfolio - AI Assistant Guide
 
-**Last Updated:** 2025-12-06
+**Last Updated:** 2025-12-29
 
 This document provides a comprehensive guide for AI assistants working on the Wordfolio codebase. It covers architecture, conventions, workflows, and best practices.
 
@@ -393,6 +393,30 @@ Connections and transactions are managed explicitly. Pass `null` for transaction
 
 The custom `UserStore` coordinates between two databases using `IUserStoreExtension` interface to trigger side effects when users are created, ensuring both Identity and Wordfolio databases stay in sync.
 
+#### 6. AppEnv Implementation Pattern
+
+AppEnv methods serve as a thin integration layer between domain capabilities and data access. Follow these rules:
+
+- **Single database call per method** - Avoid multiple database calls within a single AppEnv method implementation
+- **Simple mapping only** - Map domain parameters to data access parameters, make the call, map the result back to domain types
+- **No business logic** - AppEnv is for integration, not logic or orchestration
+- **Use optimized queries** - Prefer specialized data access functions (e.g., `getEntryByIdWithHierarchyAsync`) over multiple individual calls
+
+Example of good AppEnv implementation:
+```fsharp
+interface IGetEntryById with
+    member _.GetEntryById(EntryId id) =
+        task {
+            let! maybeEntryWithHierarchy =
+                DataAccess.EntriesHierarchy.getEntryByIdWithHierarchyAsync
+                    id connection transaction cancellationToken
+
+            return maybeEntryWithHierarchy |> Option.map toDomain
+        }
+```
+
+Avoid: Multiple calls, orchestration logic, or complex transformations in AppEnv methods. Move those to the data access layer or domain operations.
+
 ### Frontend Patterns
 
 #### 1. File-Based Routing (TanStack Router)
@@ -746,6 +770,7 @@ Always use `Schema.fs` for type-safe column references. Define tables using `tab
 | 2025-12-06 | Updated with guidelines from `.github/copilot-instructions.md`: import organization, component declaration style, project file formatting, dependency management, database testing best practices, and enhanced pre-commit checklist |
 | 2025-12-06 | Optimized for size: Added migration commands to Quick Start, removed Manual Setup section, removed verbose formatting rules and code snippets |
 | 2025-12-06 | Fixed Quick Start section: Clarified that migrations must always be run manually after starting Aspire, not automatically |
+| 2025-12-29 | Added AppEnv Implementation Pattern guidelines: AppEnv methods should be thin integration layers with single database calls, simple parameter/result mapping, and no business logic |
 
 ---
 

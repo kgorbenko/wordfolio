@@ -64,6 +64,12 @@ Follow these concise rules when generating code or suggestions for this reposito
   - Use explicit types for public APIs.
   - Keep pipelines readable.
 
+- AppEnv Implementation Pattern
+  - AppEnv methods are a thin integration layer - avoid multiple database calls per method.
+  - Keep it simple: map parameters, make call, map result.
+  - No business logic or orchestration in AppEnv.
+  - Use optimized data access functions (e.g., `getEntryByIdWithHierarchyAsync`) instead of multiple individual calls.
+
 - TypeScript/React style
   - Use arrow function expressions for component declarations instead of function declarations.
   - Example: `export const MyComponent = () => { ... }` instead of `export function MyComponent() { ... }`
