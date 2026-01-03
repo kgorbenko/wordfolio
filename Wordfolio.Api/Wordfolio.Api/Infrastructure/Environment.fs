@@ -420,6 +420,32 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                 return ()
             }
 
+    interface IUpdateEntry with
+        member _.UpdateEntry(EntryId id, entryText, updatedAt) =
+            task {
+                let parameters: Wordfolio.Api.DataAccess.Entries.EntryUpdateParameters =
+                    { Id = id
+                      EntryText = entryText
+                      UpdatedAt = updatedAt }
+
+                let! _ =
+                    Wordfolio.Api.DataAccess.Entries.updateEntryAsync
+                        parameters
+                        connection
+                        transaction
+                        cancellationToken
+
+                return ()
+            }
+
+    interface IClearEntryChildren with
+        member _.ClearEntryChildren(EntryId id) =
+            Wordfolio.Api.DataAccess.EntriesHierarchy.clearEntryChildrenAsync
+                id
+                connection
+                transaction
+                cancellationToken
+
     interface IGetVocabularyByIdAndUserId with
         member _.GetVocabularyByIdAndUserId(VocabularyId vocabularyId, UserId userId) =
             task {

@@ -29,6 +29,12 @@ type ICreateExamplesForDefinition =
 type ICreateExamplesForTranslation =
     abstract CreateExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>
 
+type IUpdateEntry =
+    abstract UpdateEntry: EntryId * string * System.DateTimeOffset -> Task<unit>
+
+type IClearEntryChildren =
+    abstract ClearEntryChildren: EntryId -> Task<unit>
+
 type IGetVocabularyByIdAndUserId =
     abstract GetVocabularyByIdAndUserId: VocabularyId * UserId -> Task<Vocabulary option>
 
@@ -55,6 +61,11 @@ module Capabilities =
 
     let createExamplesForTranslation (env: #ICreateExamplesForTranslation) translationId examples =
         env.CreateExamplesForTranslation(translationId, examples)
+
+    let updateEntry (env: #IUpdateEntry) entryId entryText updatedAt =
+        env.UpdateEntry(entryId, entryText, updatedAt)
+
+    let clearEntryChildren (env: #IClearEntryChildren) entryId = env.ClearEntryChildren(entryId)
 
     let getVocabularyByIdAndUserId (env: #IGetVocabularyByIdAndUserId) vocabularyId userId =
         env.GetVocabularyByIdAndUserId(vocabularyId, userId)
