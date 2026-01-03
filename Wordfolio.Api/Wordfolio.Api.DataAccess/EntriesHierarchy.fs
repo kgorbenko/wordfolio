@@ -193,21 +193,21 @@ let clearEntryChildrenAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<unit> =
+    : Task<int> =
     task {
-        let! _ =
+        let! deletedDefinitions =
             delete {
                 for d in Definitions.definitionsTable do
                     where(d.EntryId = entryId)
             }
             |> Dapper.deleteAsync connection transaction cancellationToken
 
-        let! _ =
+        let! deletedTranslations =
             delete {
                 for t in Translations.translationsTable do
                     where(t.EntryId = entryId)
             }
             |> Dapper.deleteAsync connection transaction cancellationToken
 
-        return ()
+        return deletedDefinitions + deletedTranslations
     }

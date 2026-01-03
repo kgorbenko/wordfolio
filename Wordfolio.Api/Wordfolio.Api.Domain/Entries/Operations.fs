@@ -208,7 +208,7 @@ let update env userId entryId entryText (definitions: DefinitionInput list) (tra
                                     match validateTranslations translations with
                                     | Error error -> return Error error
                                     | Ok validTranslations ->
-                                        do! clearEntryChildren appEnv entryId
+                                        let! _ = clearEntryChildren appEnv entryId
                                         do! updateEntry appEnv entryId trimmedText now
 
                                         do! createTranslationsAsync appEnv entryId validTranslations

@@ -547,9 +547,11 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            do!
+            let! deletedCount =
                 EntriesHierarchy.clearEntryChildrenAsync entry.Id
                 |> fixture.WithConnectionAsync
+
+            Assert.Equal(2, deletedCount)
 
             let! actualDefinitions =
                 fixture.Seeder
@@ -588,9 +590,11 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            do!
+            let! deletedCount =
                 EntriesHierarchy.clearEntryChildrenAsync entry.Id
                 |> fixture.WithConnectionAsync
+
+            Assert.Equal(2, deletedCount)
 
             let! actualTranslations =
                 fixture.Seeder
@@ -629,9 +633,11 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            do!
+            let! deletedCount =
                 EntriesHierarchy.clearEntryChildrenAsync entry.Id
                 |> fixture.WithConnectionAsync
+
+            Assert.Equal(2, deletedCount)
 
             let! actualDefinitions =
                 fixture.Seeder
@@ -678,9 +684,11 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            do!
+            let! deletedCount =
                 EntriesHierarchy.clearEntryChildrenAsync entry.Id
                 |> fixture.WithConnectionAsync
+
+            Assert.Equal(1, deletedCount)
 
             let! actualDefinitions =
                 fixture.Seeder
@@ -727,9 +735,11 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            do!
+            let! deletedCount =
                 EntriesHierarchy.clearEntryChildrenAsync entry.Id
                 |> fixture.WithConnectionAsync
+
+            Assert.Equal(1, deletedCount)
 
             let! actualTranslations =
                 fixture.Seeder
@@ -770,16 +780,27 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            do!
+            let! deletedCount =
                 EntriesHierarchy.clearEntryChildrenAsync 999
                 |> fixture.WithConnectionAsync
+
+            Assert.Equal(0, deletedCount)
 
             let! actualDefinitions =
                 fixture.Seeder
                 |> Seeder.getAllDefinitionsAsync
 
+            let expectedDefinition: Definition =
+                { Id = definition.Id
+                  EntryId = entry.Id
+                  DefinitionText = "Alone"
+                  Source = Definitions.DefinitionSource.Manual
+                  DisplayOrder = 0 }
+
             Assert.Single(actualDefinitions)
             |> ignore
+
+            Assert.Equal(expectedDefinition, actualDefinitions.[0])
         }
 
     [<Fact>]
@@ -821,9 +842,11 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            do!
+            let! deletedCount =
                 EntriesHierarchy.clearEntryChildrenAsync entry1.Id
                 |> fixture.WithConnectionAsync
+
+            Assert.Equal(2, deletedCount)
 
             let! actualDefinitions =
                 fixture.Seeder
@@ -847,6 +870,6 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
                     Source = Translations.TranslationSource.Api
                     DisplayOrder = 0 } ]
 
-            Assert.Equivalent(expectedDefinitions, actualDefinitions)
-            Assert.Equivalent(expectedTranslations, actualTranslations)
+            Assert.Equal<Definition list>(expectedDefinitions, actualDefinitions)
+            Assert.Equal<Translation list>(expectedTranslations, actualTranslations)
         }

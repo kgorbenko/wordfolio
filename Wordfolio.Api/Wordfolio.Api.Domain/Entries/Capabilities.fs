@@ -33,7 +33,7 @@ type IUpdateEntry =
     abstract UpdateEntry: EntryId * string * System.DateTimeOffset -> Task<unit>
 
 type IClearEntryChildren =
-    abstract ClearEntryChildren: EntryId -> Task<unit>
+    abstract ClearEntryChildren: EntryId -> Task<int>
 
 type IGetVocabularyByIdAndUserId =
     abstract GetVocabularyByIdAndUserId: VocabularyId * UserId -> Task<Vocabulary option>
