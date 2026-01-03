@@ -6,6 +6,7 @@ open System.Threading
 open System.Threading.Tasks
 
 open Dapper
+open Dapper.FSharp.PostgreSQL
 open Microsoft.FSharp.Core.LanguagePrimitives
 
 type DefinitionWithExamples =
@@ -192,22 +193,21 @@ let clearEntryChildrenAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<unit> =
+    : Task<int> =
     task {
-        let sql =
-            """
-            DELETE FROM wordfolio."Definitions" WHERE "EntryId" = @entryId;
-            DELETE FROM wordfolio."Translations" WHERE "EntryId" = @entryId;
-            """
+        let! deletedDefinitions =
+            delete {
+                for d in Definitions.definitionsTable do
+                    where(d.EntryId = entryId)
+            }
+            |> Dapper.deleteAsync connection transaction cancellationToken
 
-        let commandDefinition =
-            CommandDefinition(
-                commandText = sql,
-                parameters = {| entryId = entryId |},
-                transaction = transaction,
-                cancellationToken = cancellationToken
-            )
+        let! deletedTranslations =
+            delete {
+                for t in Translations.translationsTable do
+                    where(t.EntryId = entryId)
+            }
+            |> Dapper.deleteAsync connection transaction cancellationToken
 
-        let! _ = connection.ExecuteAsync(commandDefinition)
-        return ()
+        return deletedDefinitions + deletedTranslations
     }

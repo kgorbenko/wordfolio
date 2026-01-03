@@ -440,11 +440,16 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
 
     interface IClearEntryChildren with
         member _.ClearEntryChildren(EntryId id) =
-            Wordfolio.Api.DataAccess.EntriesHierarchy.clearEntryChildrenAsync
-                id
-                connection
-                transaction
-                cancellationToken
+            task {
+                let! _ =
+                    Wordfolio.Api.DataAccess.EntriesHierarchy.clearEntryChildrenAsync
+                        id
+                        connection
+                        transaction
+                        cancellationToken
+
+                return ()
+            }
 
     interface IGetVocabularyByIdAndUserId with
         member _.GetVocabularyByIdAndUserId(VocabularyId vocabularyId, UserId userId) =
