@@ -145,6 +145,40 @@ let updateEntryAsync
         return affectedRows
     }
 
+let clearEntryChildrenAsync
+    (entryId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<int> =
+    task {
+        let definitionsTable =
+            table'<{| Id: int; EntryId: int |}> Schema.DefinitionsTable.Name
+            |> inSchema Schema.Name
+
+        let! definitionsAffected =
+            delete {
+                for d in definitionsTable do
+                    where(d.EntryId = entryId)
+            }
+            |> deleteAsync connection transaction cancellationToken
+
+        let translationsTable =
+            table'<{| Id: int; EntryId: int |}> Schema.TranslationsTable.Name
+            |> inSchema Schema.Name
+
+        let! translationsAffected =
+            delete {
+                for t in translationsTable do
+                    where(t.EntryId = entryId)
+            }
+            |> deleteAsync connection transaction cancellationToken
+
+        return
+            definitionsAffected
+            + translationsAffected
+    }
+
 let deleteEntryAsync
     (id: int)
     (connection: IDbConnection)

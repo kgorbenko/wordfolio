@@ -475,3 +475,190 @@ type EntriesTests(fixture: WordfolioTestFixture) =
 
             Assert.Equal(None, actual)
         }
+
+    [<Fact>]
+    member _.``clearEntryChildrenAsync deletes all definitions and translations for an entry``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 310
+
+            let collection =
+                Entities.makeCollection user "Collection 1" None createdAt None
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+
+            let entry =
+                Entities.makeEntry vocabulary "test" createdAt None
+
+            let definition1 =
+                Entities.makeDefinition entry "Definition 1" Definitions.DefinitionSource.Manual 0
+
+            let definition2 =
+                Entities.makeDefinition entry "Definition 2" Definitions.DefinitionSource.Api 1
+
+            let translation1 =
+                Entities.makeTranslation entry "Translation 1" Translations.TranslationSource.Manual 0
+
+            let translation2 =
+                Entities.makeTranslation entry "Translation 2" Translations.TranslationSource.Api 1
+
+            let _ =
+                Entities.makeExampleForDefinition definition1 "Example for def 1" Examples.ExampleSource.Custom
+
+            let _ =
+                Entities.makeExampleForTranslation translation1 "Example for trans 1" Examples.ExampleSource.Custom
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            let! affectedRows =
+                Entries.clearEntryChildrenAsync entry.Id
+                |> fixture.WithConnectionAsync
+
+            Assert.Equal(4, affectedRows)
+
+            let! actualDefinitions =
+                fixture.Seeder
+                |> Seeder.getAllDefinitionsAsync
+
+            let! actualTranslations =
+                fixture.Seeder
+                |> Seeder.getAllTranslationsAsync
+
+            let! actualExamples =
+                fixture.Seeder
+                |> Seeder.getAllExamplesAsync
+
+            Assert.Empty(actualDefinitions)
+            Assert.Empty(actualTranslations)
+            Assert.Empty(actualExamples)
+        }
+
+    [<Fact>]
+    member _.``clearEntryChildrenAsync returns 0 when entry has no children``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 311
+
+            let collection =
+                Entities.makeCollection user "Collection 1" None createdAt None
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+
+            let entry =
+                Entities.makeEntry vocabulary "test" createdAt None
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            let! affectedRows =
+                Entries.clearEntryChildrenAsync entry.Id
+                |> fixture.WithConnectionAsync
+
+            Assert.Equal(0, affectedRows)
+        }
+
+    [<Fact>]
+    member _.``clearEntryChildrenAsync cascades to delete examples``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 312
+
+            let collection =
+                Entities.makeCollection user "Collection 1" None createdAt None
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+
+            let entry =
+                Entities.makeEntry vocabulary "test" createdAt None
+
+            let definition =
+                Entities.makeDefinition entry "Definition 1" Definitions.DefinitionSource.Manual 0
+
+            let _ =
+                Entities.makeExampleForDefinition definition "Example 1" Examples.ExampleSource.Custom
+
+            let _ =
+                Entities.makeExampleForDefinition definition "Example 2" Examples.ExampleSource.Api
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            let! _ =
+                Entries.clearEntryChildrenAsync entry.Id
+                |> fixture.WithConnectionAsync
+
+            let! actualExamples =
+                fixture.Seeder
+                |> Seeder.getAllExamplesAsync
+
+            Assert.Empty(actualExamples)
+        }
+
+    [<Fact>]
+    member _.``clearEntryChildrenAsync does not affect other entries``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 313
+
+            let collection =
+                Entities.makeCollection user "Collection 1" None createdAt None
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+
+            let entry1 =
+                Entities.makeEntry vocabulary "entry1" createdAt None
+
+            let entry2 =
+                Entities.makeEntry vocabulary "entry2" createdAt None
+
+            let definition1 =
+                Entities.makeDefinition entry1 "Definition for entry1" Definitions.DefinitionSource.Manual 0
+
+            let definition2 =
+                Entities.makeDefinition entry2 "Definition for entry2" Definitions.DefinitionSource.Manual 0
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            let! _ =
+                Entries.clearEntryChildrenAsync entry1.Id
+                |> fixture.WithConnectionAsync
+
+            let! actualDefinitions =
+                fixture.Seeder
+                |> Seeder.getAllDefinitionsAsync
+
+            Assert.Single(actualDefinitions)
+            |> ignore
+
+            Assert.Equal(definition2.Id, actualDefinitions.[0].Id)
+        }
