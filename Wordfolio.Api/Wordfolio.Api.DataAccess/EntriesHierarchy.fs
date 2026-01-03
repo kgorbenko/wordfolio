@@ -186,3 +186,28 @@ let getEntryByIdWithHierarchyAsync
                       Definitions = definitionsWithExamples
                       Translations = translationsWithExamples }
     }
+
+let clearEntryChildrenAsync
+    (entryId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<unit> =
+    task {
+        let sql =
+            """
+            DELETE FROM wordfolio."Definitions" WHERE "EntryId" = @entryId;
+            DELETE FROM wordfolio."Translations" WHERE "EntryId" = @entryId;
+            """
+
+        let commandDefinition =
+            CommandDefinition(
+                commandText = sql,
+                parameters = {| entryId = entryId |},
+                transaction = transaction,
+                cancellationToken = cancellationToken
+            )
+
+        let! _ = connection.ExecuteAsync(commandDefinition)
+        return ()
+    }

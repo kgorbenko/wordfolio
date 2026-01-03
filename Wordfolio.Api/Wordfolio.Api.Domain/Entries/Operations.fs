@@ -171,3 +171,52 @@ let getByVocabularyId env userId vocabularyId =
                 let! entries = getEntriesByVocabularyId appEnv vocabularyId
                 return Ok entries
         })
+
+let update env userId entryId entryText (definitions: DefinitionInput list) (translations: TranslationInput list) now =
+    runInTransaction env (fun appEnv ->
+        task {
+            match validateEntryText entryText with
+            | Error error -> return Error error
+            | Ok validText ->
+                let! maybeEntry = getEntryById appEnv entryId
+
+                match maybeEntry with
+                | None -> return Error(EntryNotFound entryId)
+                | Some existingEntry ->
+                    let! vocabAccessResult = checkVocabularyAccess appEnv userId existingEntry.VocabularyId
+
+                    match vocabAccessResult with
+                    | Error _ -> return Error(EntryNotFound entryId)
+                    | Ok _ ->
+                        if
+                            definitions.IsEmpty
+                            && translations.IsEmpty
+                        then
+                            return Error NoDefinitionsOrTranslations
+                        else
+                            let trimmedText = validText.Trim()
+
+                            let! maybeDuplicate =
+                                getEntryByTextAndVocabularyId appEnv existingEntry.VocabularyId trimmedText
+
+                            match maybeDuplicate with
+                            | Some dup when dup.Id <> entryId -> return Error(DuplicateEntry dup.Id)
+                            | _ ->
+                                match validateDefinitions definitions with
+                                | Error error -> return Error error
+                                | Ok validDefinitions ->
+                                    match validateTranslations translations with
+                                    | Error error -> return Error error
+                                    | Ok validTranslations ->
+                                        do! clearEntryChildren appEnv entryId
+                                        do! updateEntry appEnv entryId trimmedText now
+
+                                        do! createTranslationsAsync appEnv entryId validTranslations
+                                        do! createDefinitionsAsync appEnv entryId validDefinitions
+
+                                        let! maybeUpdated = getEntryById appEnv entryId
+
+                                        match maybeUpdated with
+                                        | Some entry -> return Ok entry
+                                        | None -> return Error(EntryNotFound entryId)
+        })

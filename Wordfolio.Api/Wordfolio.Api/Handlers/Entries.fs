@@ -54,6 +54,11 @@ type CreateEntryRequest =
       Definitions: DefinitionRequest list
       Translations: TranslationRequest list }
 
+type UpdateEntryRequest =
+    { EntryText: string
+      Definitions: DefinitionRequest list
+      Translations: TranslationRequest list }
+
 type ExampleResponse =
     { Id: int
       ExampleText: string
@@ -276,5 +281,42 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                         | Ok entry -> Results.Ok(toResponse entry)
                         | Error error -> toErrorResponse error
             })
+    )
+    |> ignore
+
+    group.MapPut(
+        UrlTokens.ById,
+        Func<int, UpdateEntryRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+            (fun id request user dataSource cancellationToken ->
+                task {
+                    match getUserId user with
+                    | None -> return Results.Unauthorized()
+                    | Some userId ->
+                        let env =
+                            TransactionalEnv(dataSource, cancellationToken)
+
+                        let definitions =
+                            request.Definitions
+                            |> List.map toDefinitionInput
+
+                        let translations =
+                            request.Translations
+                            |> List.map toTranslationInput
+
+                        let! result =
+                            update
+                                env
+                                (UserId userId)
+                                (EntryId id)
+                                request.EntryText
+                                definitions
+                                translations
+                                DateTimeOffset.UtcNow
+
+                        return
+                            match result with
+                            | Ok entry -> Results.Ok(toResponse entry)
+                            | Error error -> toErrorResponse error
+                })
     )
     |> ignore
