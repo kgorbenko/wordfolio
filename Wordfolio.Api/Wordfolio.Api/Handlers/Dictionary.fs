@@ -1,10 +1,13 @@
 module Wordfolio.Api.Handlers.Dictionary
 
 open System
+open System.Threading
 
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Routing
+
+open Wordfolio.Api.Infrastructure.WordsApi
 
 module UrlTokens = Wordfolio.Api.Urls
 module Urls = Wordfolio.Api.Urls.Dictionary
@@ -13,6 +16,7 @@ type ExampleResponse = { Text: string }
 
 type DefinitionResponse =
     { DefinitionText: string
+      PartOfSpeech: string
       Examples: ExampleResponse list }
 
 type TranslationResponse =
@@ -24,31 +28,42 @@ type LookupResponse =
       Definitions: DefinitionResponse list
       Translations: TranslationResponse list }
 
-let private getStubData(text: string) : LookupResponse =
-    { Text = text
-      Definitions =
-        [ { DefinitionText = "the state of being free from tension and anxiety"
-            Examples = [ { Text = "You should try to relax after a long day of work." } ] }
-          { DefinitionText = "to make or become less tense or anxious"
-            Examples = [ { Text = "Take a deep breath and relax your shoulders." } ] }
-          { DefinitionText = "to rest or engage in an enjoyable activity so as to become less tired or anxious"
-            Examples = [ { Text = "We spent the weekend relaxing at the beach." } ] } ]
-      Translations =
-        [ { TranslationText = "расслабляться"
-            Examples = [ { Text = "Тебе нужно расслабиться после долгого рабочего дня." } ] }
-          { TranslationText = "отдыхать"
-            Examples = [ { Text = "Мы провели выходные, отдыхая на пляже." } ] } ] }
+type LookupErrorResponse = { Error: string }
+
+let private mapLookupResult(result: LookupResult) : LookupResponse =
+    let definitions =
+        result.Definitions
+        |> List.map(fun def ->
+            { DefinitionText = def.Definition
+              PartOfSpeech =
+                def.PartOfSpeech
+                |> Option.defaultValue ""
+              Examples =
+                def.Examples
+                |> List.map(fun ex -> { Text = ex }) })
+
+    { Text = result.Word
+      Definitions = definitions
+      Translations = [] }
 
 let mapDictionaryEndpoints(group: RouteGroupBuilder) =
     group.MapGet(
         Urls.Lookup,
-        Func<string, _>(fun text ->
+        Func<string, WordsApiClient, CancellationToken, _>(fun text wordsApiClient cancellationToken ->
             task {
                 if String.IsNullOrWhiteSpace(text) then
                     return Results.BadRequest({| error = "Text parameter is required" |})
                 else
-                    let response = getStubData text
-                    return Results.Ok(response)
+                    let! result = wordsApiClient.LookupWordAsync(text, cancellationToken)
+
+                    match result with
+                    | Ok lookupResult ->
+                        let response = mapLookupResult lookupResult
+                        return Results.Ok(response)
+                    | Error NotFound ->
+                        return Results.NotFound({ Error = $"No definitions found for '{text}'" }: LookupErrorResponse)
+                    | Error(ApiError message) -> return Results.Problem(message, statusCode = 502)
+                    | Error(NetworkError message) -> return Results.Problem(message, statusCode = 503)
             })
     )
     |> ignore
