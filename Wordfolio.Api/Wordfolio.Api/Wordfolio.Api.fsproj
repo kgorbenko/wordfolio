@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="Urls.fs" />
     <Compile Include="IdentityIntegration.fs" />
+    <Compile Include="Infrastructure\WordsApi.fs" />
     <Compile Include="Infrastructure\Environment.fs" />
     <Compile Include="Handlers\Auth.fs" />
     <Compile Include="Handlers\Collections.fs" />
