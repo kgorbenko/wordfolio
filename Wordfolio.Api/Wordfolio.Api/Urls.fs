@@ -47,3 +47,6 @@ module Dictionary =
 
     [<Literal>]
     let Lookup = "/lookup"
+
+    [<Literal>]
+    let LookupStream = "/lookup-stream"
