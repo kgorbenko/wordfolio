@@ -6,6 +6,7 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 
 open Wordfolio.Api
+open Wordfolio.Api.Configuration.GroqApi
 open Wordfolio.Api.Handlers.Auth
 open Wordfolio.Api.Handlers.Collections
 open Wordfolio.Api.Handlers.Dictionary
@@ -65,6 +66,14 @@ let main args =
     |> ignore
 
     builder.Services.AddHttpClient<WordsApiClient>()
+    |> ignore
+
+    let groqApiConfiguration =
+        builder.Configuration.GetSection("GroqApi").Get<GroqApiConfiguration>()
+        |> Option.ofObj
+        |> Option.defaultWith(fun () -> failwith "GroqApi configuration section is missing or invalid")
+
+    builder.Services.AddSingleton(groqApiConfiguration)
     |> ignore
 
     let app = builder.Build()
