@@ -7,7 +7,6 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var postgresUsername = builder.AddParameter("postgres-username", secret: true);
 var postgresPassword = builder.AddParameter("postgres-password", secret: true);
-var rapidApiKey = builder.AddParameter("rapidapi-key", secret: true);
 var groqApiKey = builder.AddParameter("groq-api-key", secret: true);
 
 var databaseOptions =
@@ -31,7 +30,6 @@ var api = builder.AddProject<Projects.Wordfolio_Api>("apiservice")
     .WithReference(postgresDatabase)
     .WaitFor(migrationService)
     .WithHttpHealthCheck("/health")
-    .WithEnvironment("WordsApi__ApiKey", rapidApiKey)
     .WithEnvironment("GroqApi__ApiKey", groqApiKey);
 
 builder.AddNpmApp("frontend", "../Wordfolio.Frontend")

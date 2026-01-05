@@ -21,8 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="Infrastructure\FakeHttpMessageHandler.fs" />
-    <Compile Include="Infrastructure\WordsApiClientTests.fs" />
     <Compile Include="TestTokenGenerator.fs" />
     <Compile Include="WebApplicationFactory.fs" />
     <Compile Include="AuthTests.fs" />
