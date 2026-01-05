@@ -13,7 +13,6 @@ open Wordfolio.Api.Handlers.Dictionary
 open Wordfolio.Api.Handlers.Entries
 open Wordfolio.Api.Handlers.Vocabularies
 open Wordfolio.Api.IdentityIntegration
-open Wordfolio.Api.Infrastructure.WordsApi
 open Wordfolio.ServiceDefaults.Builder
 open Wordfolio.ServiceDefaults.HealthCheck
 open Wordfolio.ServiceDefaults.OpenApi
@@ -56,17 +55,6 @@ let main args =
         |> addOpenApi
 
     builder.AddNpgsqlDataSource("wordfoliodb")
-
-    let wordsApiConfiguration =
-        builder.Configuration.GetSection("WordsApi").Get<WordsApiConfiguration>()
-        |> Option.ofObj
-        |> Option.defaultWith(fun () -> failwith "WordsApi configuration section is missing or invalid")
-
-    builder.Services.AddSingleton(wordsApiConfiguration)
-    |> ignore
-
-    builder.Services.AddHttpClient<WordsApiClient>()
-    |> ignore
 
     let groqApiConfiguration =
         builder.Configuration.GetSection("GroqApi").Get<GroqApiConfiguration>()
