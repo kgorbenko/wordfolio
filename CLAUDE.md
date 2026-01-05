@@ -37,7 +37,7 @@ This document provides a comprehensive guide for AI assistants working on the Wo
 
 ## Architecture & Technology Stack
 
-### Backend (.NET 9.0)
+### Backend (.NET 10.0)
 
 | Category | Technology | Notes |
 |----------|-----------|-------|
@@ -150,7 +150,7 @@ wordfolio/
 
 ### Prerequisites
 
-- .NET 9.0 SDK
+- .NET 10.0 SDK
 - Node.js 20.x
 - PostgreSQL 15+ (or use Aspire's containerized instance)
 - Docker (for Aspire orchestration)
@@ -191,7 +191,7 @@ dotnet ef database update \
 dotnet build Wordfolio.Api/Wordfolio.Api.Migrations
 dotnet fm migrate \
   -p PostgreSQL15_0 \
-  -a "./Wordfolio.Api/Wordfolio.Api.Migrations/bin/Debug/net9.0/Wordfolio.Api.Migrations.dll" \
+  -a "./Wordfolio.Api/Wordfolio.Api.Migrations/bin/Debug/net10.0/Wordfolio.Api.Migrations.dll" \
   -c "Host=localhost;Port=5432;Database=wordfoliodb;User ID=myuser;Password=mypassword"
 ```
 
@@ -616,7 +616,7 @@ dotnet build Wordfolio.Api/Wordfolio.Api.Migrations
 
 dotnet fm migrate \
   -p PostgreSQL15_0 \
-  -a "./Wordfolio.Api/Wordfolio.Api.Migrations/bin/Debug/net9.0/Wordfolio.Api.Migrations.dll" \
+  -a "./Wordfolio.Api/Wordfolio.Api.Migrations/bin/Debug/net10.0/Wordfolio.Api.Migrations.dll" \
   -c "Host=localhost;Port=5432;Database=wordfoliodb;User ID=user;Password=pass"
 ```
 
@@ -625,7 +625,7 @@ dotnet fm migrate \
 ```bash
 dotnet fm rollback \
   -p PostgreSQL15_0 \
-  -a "./Wordfolio.Api/Wordfolio.Api.Migrations/bin/Debug/net9.0/Wordfolio.Api.Migrations.dll" \
+  -a "./Wordfolio.Api/Wordfolio.Api.Migrations/bin/Debug/net10.0/Wordfolio.Api.Migrations.dll" \
   -c "Host=localhost;Port=5432;Database=wordfoliodb;User ID=user;Password=pass" \
   --steps 1
 ```
@@ -738,7 +738,7 @@ Always use `Schema.fs` for type-safe column references. Define tables using `tab
 
 ### Official Documentation
 
-- [.NET 9.0 Docs](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9)
+- [.NET 10.0 Docs](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-10)
 - [F# Language Guide](https://learn.microsoft.com/en-us/dotnet/fsharp/)
 - [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/)
 - [Dapper.FSharp](https://github.com/Dzoukr/Dapper.FSharp)

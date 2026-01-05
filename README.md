@@ -12,4 +12,4 @@
 
 3. Execute wordfolio migrations:
 
-    ` dotnet fm migrate -p PostgreSQL15_0 -a ".\Wordfolio.Api\Wordfolio.Api.Migrations\bin\Debug\net9.0\Wordfolio.Api.Migrations.dll" -c "Host=localhost;Port=5432;Database=wordfoliodb;User ID=<postgres-username>;Password=<postgres-password>"`
+    ` dotnet fm migrate -p PostgreSQL15_0 -a ".\Wordfolio.Api\Wordfolio.Api.Migrations\bin\Debug\net10.0\Wordfolio.Api.Migrations.dll" -c "Host=localhost;Port=5432;Database=wordfoliodb;User ID=<postgres-username>;Password=<postgres-password>"`
