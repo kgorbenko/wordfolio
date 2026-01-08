@@ -1,10 +1,7 @@
 module Wordfolio.Api.Handlers.Dictionary
 
 open System
-open System.ClientModel
 open System.Net.ServerSentEvents
-open System.Runtime.CompilerServices
-open System.Text
 open System.Threading
 
 open FSharp.Control
@@ -12,12 +9,9 @@ open FSharp.Control
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Routing
-open Microsoft.Extensions.Logging
 
-open OpenAI
-open OpenAI.Chat
-
-open Wordfolio.Api.Configuration.GroqApi
+open Wordfolio.Api.Infrastructure.ChatClient
+open Wordfolio.Api.Infrastructure.DelimitedStreamProcessor
 
 module Urls = Wordfolio.Api.Urls.Dictionary
 
@@ -59,81 +53,31 @@ Rules:
 - Blank line between each definition and translation entry
 - JSON must be valid and compact (single line, no pretty-printing)"""
 
-let private streamLookup
-    (groqConfig: GroqApiConfiguration)
-    (text: string)
-    ([<EnumeratorCancellation>] cancellationToken: CancellationToken)
-    =
+let private streamLookup (chatClient: IChatClient) (text: string) (cancellationToken: CancellationToken) =
     taskSeq {
         let prompt = createWordLookupPrompt text
 
-        let options =
-            OpenAIClientOptions(Endpoint = Uri(groqConfig.Url))
-
-        let client =
-            OpenAIClient(ApiKeyCredential(groqConfig.ApiKey), options)
-
-        let chatClient =
-            client.GetChatClient(groqConfig.Model)
-
-        let chatOptions =
-            ChatCompletionOptions(Temperature = float32 0.1, MaxOutputTokenCount = 4096)
-
-        let messages =
-            [| ChatMessage.CreateUserMessage(prompt) :> ChatMessage |]
-
-        let buffer = StringBuilder()
-        let mutable inJsonPhase = false
-
         let stream =
-            chatClient.CompleteChatStreamingAsync(messages, chatOptions, cancellationToken)
+            chatClient.CompleteChatStreamingAsync prompt (float32 0.1) 4096 cancellationToken
 
-        for update in stream do
-            for part in update.ContentUpdate do
-                let content = part.Text
+        let processedStream =
+            processStream JsonDelimiter stream cancellationToken
 
-                if not(String.IsNullOrEmpty content) then
-                    buffer.Append(content) |> ignore
-
-                    if not inJsonPhase then
-                        let bufferText = buffer.ToString()
-
-                        match bufferText.IndexOf(JsonDelimiter) with
-                        | -1 ->
-                            let safeEnd =
-                                bufferText.Length - JsonDelimiter.Length
-
-                            if safeEnd > 0 then
-                                yield SseItem<string>(bufferText.Substring(0, safeEnd), eventType = "text")
-
-                                buffer.Clear().Append(bufferText.Substring(safeEnd))
-                                |> ignore
-                        | idx ->
-                            inJsonPhase <- true
-
-                            if idx > 0 then
-                                yield SseItem<string>(bufferText.Substring(0, idx), eventType = "text")
-
-                            buffer.Clear().Append(bufferText.Substring(idx + JsonDelimiter.Length))
-                            |> ignore
-
-        let remaining = buffer.ToString().Trim()
-
-        if remaining.Length > 0 then
-            let eventType =
-                if inJsonPhase then "result" else "text"
-
-            yield SseItem<string>(remaining, eventType = eventType)
+        for event in processedStream do
+            match event with
+            | StreamEvent.TextChunk text -> yield SseItem<string>(text, eventType = "text")
+            | StreamEvent.ResultChunk json -> yield SseItem<string>(json, eventType = "result")
     }
 
 let mapDictionaryEndpoints(group: RouteGroupBuilder) =
-    group.MapGet(
-        Urls.Lookup,
-        Func<string, GroqApiConfiguration, ILoggerFactory, CancellationToken, IResult>
-            (fun text groqConfig loggerFactory cancellationToken ->
+    group
+        .MapGet(
+            Urls.Lookup,
+            Func<string, IChatClient, CancellationToken, IResult>(fun text chatClient cancellationToken ->
                 if String.IsNullOrWhiteSpace(text) then
                     Results.BadRequest({| error = "Text parameter is required" |})
                 else
-                    TypedResults.ServerSentEvents(streamLookup groqConfig text cancellationToken))
-    )
+                    TypedResults.ServerSentEvents(streamLookup chatClient text cancellationToken))
+        )
+        .AllowAnonymous()
     |> ignore
