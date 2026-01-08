@@ -1,22 +1,23 @@
 module Wordfolio.Api.Handlers.Dictionary
 
 open System
+open System.ClientModel
 open System.Net.ServerSentEvents
 open System.Runtime.CompilerServices
 open System.Text
-open System.Text.Json.Nodes
 open System.Threading
 
 open FSharp.Control
 
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Http
-open Microsoft.AspNetCore.Http.HttpResults
 open Microsoft.AspNetCore.Routing
 open Microsoft.Extensions.Logging
 
+open OpenAI
+open OpenAI.Chat
+
 open Wordfolio.Api.Configuration.GroqApi
-open Wordfolio.GroqApi
 
 module Urls = Wordfolio.Api.Urls.Dictionary
 
@@ -58,44 +59,7 @@ Rules:
 - Blank line between each definition and translation entry
 - JSON must be valid and compact (single line, no pretty-printing)"""
 
-let private createChatRequest(model: string, prompt: string) =
-    let request = JsonObject()
-    request["model"] <- model
-
-    let userMessage = JsonObject()
-    userMessage["role"] <- "user"
-    userMessage["content"] <- prompt
-
-    let messages = JsonArray()
-    messages.Add(userMessage)
-
-    request["messages"] <- messages
-    request["temperature"] <- 0.1
-    request["max_tokens"] <- 4096
-    request
-
-let private tryGetProperty (propertyGetter: JsonNode -> JsonNode) (obj: JsonNode option) : JsonNode option =
-    obj
-    |> Option.bind(fun x -> propertyGetter x |> Option.ofObj)
-
-let private extractError(chunk: JsonNode) : string option =
-    chunk
-    |> Option.ofObj
-    |> tryGetProperty(fun x -> x["error"])
-    |> tryGetProperty(fun x -> x["message"])
-    |> Option.map _.GetValue<string>()
-
-let private extractContent(chunk: JsonNode) : string option =
-    chunk
-    |> Option.ofObj
-    |> tryGetProperty(fun x -> x["choices"])
-    |> tryGetProperty(fun x -> x[0])
-    |> tryGetProperty(fun x -> x["delta"])
-    |> tryGetProperty(fun x -> x["content"])
-    |> Option.map _.GetValue<string>()
-
 let private streamLookup
-    (logger: ILogger)
     (groqConfig: GroqApiConfiguration)
     (text: string)
     ([<EnumeratorCancellation>] cancellationToken: CancellationToken)
@@ -103,24 +67,32 @@ let private streamLookup
     taskSeq {
         let prompt = createWordLookupPrompt text
 
-        let request =
-            createChatRequest(groqConfig.Model, prompt)
+        let options =
+            OpenAIClientOptions(Endpoint = Uri(groqConfig.Url))
 
-        use groqClient =
-            new GroqApiClient(groqConfig.ApiKey)
+        let client =
+            OpenAIClient(ApiKeyCredential(groqConfig.ApiKey), options)
+
+        let chatClient =
+            client.GetChatClient(groqConfig.Model)
+
+        let chatOptions =
+            ChatCompletionOptions(Temperature = float32 0.1, MaxOutputTokenCount = 4096)
+
+        let messages =
+            [| ChatMessage.CreateUserMessage(prompt) :> ChatMessage |]
 
         let buffer = StringBuilder()
         let mutable inJsonPhase = false
 
-        for chunk in groqClient.CreateChatCompletionStreamAsync(request) do
-            match extractError chunk with
-            | Some errorMessage ->
-                logger.LogError("Groq API error during lookup for '{Text}': {Error}", text, errorMessage)
-                raise(InvalidOperationException($"Groq API error: {errorMessage}"))
-            | None ->
-                match extractContent chunk with
-                | None -> ()
-                | Some content ->
+        let stream =
+            chatClient.CompleteChatStreamingAsync(messages, chatOptions, cancellationToken)
+
+        for update in stream do
+            for part in update.ContentUpdate do
+                let content = part.Text
+
+                if not(String.IsNullOrEmpty content) then
                     buffer.Append(content) |> ignore
 
                     if not inJsonPhase then
@@ -162,9 +134,6 @@ let mapDictionaryEndpoints(group: RouteGroupBuilder) =
                 if String.IsNullOrWhiteSpace(text) then
                     Results.BadRequest({| error = "Text parameter is required" |})
                 else
-                    let logger =
-                        loggerFactory.CreateLogger("Wordfolio.Api.Handlers.Dictionary")
-
-                    TypedResults.ServerSentEvents(streamLookup logger groqConfig text cancellationToken))
+                    TypedResults.ServerSentEvents(streamLookup groqConfig text cancellationToken))
     )
     |> ignore

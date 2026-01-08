@@ -1,4 +1,7 @@
 module Wordfolio.Api.Configuration.GroqApi
 
 [<CLIMutable>]
-type GroqApiConfiguration = { ApiKey: string; Model: string }
+type GroqApiConfiguration =
+    { ApiKey: string
+      Model: string
+      Url: string }
