@@ -23,6 +23,7 @@
   <ItemGroup>
     <Compile Include="TestTokenGenerator.fs" />
     <Compile Include="WebApplicationFactory.fs" />
+    <Compile Include="Infrastructure\DelimitedStreamProcessorTests.fs" />
     <Compile Include="AuthTests.fs" />
     <Compile Include="CollectionsTests.fs" />
     <Compile Include="VocabulariesTests.fs" />

@@ -13,6 +13,8 @@ open Wordfolio.Api.Handlers.Dictionary
 open Wordfolio.Api.Handlers.Entries
 open Wordfolio.Api.Handlers.Vocabularies
 open Wordfolio.Api.IdentityIntegration
+open Wordfolio.Api.Infrastructure.ChatClient
+open Wordfolio.Api.Infrastructure.GroqChatClient
 open Wordfolio.ServiceDefaults.Builder
 open Wordfolio.ServiceDefaults.HealthCheck
 open Wordfolio.ServiceDefaults.OpenApi
@@ -56,12 +58,10 @@ let main args =
 
     builder.AddNpgsqlDataSource("wordfoliodb")
 
-    let groqApiConfiguration =
-        builder.Configuration.GetSection("GroqApi").Get<GroqApiConfiguration>()
-        |> Option.ofObj
-        |> Option.defaultWith(fun () -> failwith "GroqApi configuration section is missing or invalid")
+    builder.Services.AddOptions<GroqApiConfiguration>().BindConfiguration("GroqApi")
+    |> ignore
 
-    builder.Services.AddSingleton(groqApiConfiguration)
+    builder.Services.AddSingleton<IChatClient, GroqChatClient>()
     |> ignore
 
     let app = builder.Build()
