@@ -20,6 +20,7 @@
     <ProjectReference Include="..\Wordfolio.Api.DataAccess\Wordfolio.Api.DataAccess.fsproj" />
     <ProjectReference Include="..\Wordfolio.Api.Identity\Wordfolio.Api.Identity.csproj" />
     <ProjectReference Include="..\Wordfolio.Api.Migrations\Wordfolio.Api.Migrations.fsproj" />
+    <ProjectReference Include="..\Wordfolio.Api\Wordfolio.Api.fsproj" />
     <ProjectReference Include="..\..\Wordfolio.Common\Wordfolio.Common.fsproj" />
   </ItemGroup>
 
@@ -32,6 +33,7 @@
     <Compile Include="BaseDatabaseTestFixture.fs" />
     <Compile Include="WordfolioTestFixture.fs" />
     <Compile Include="WordfolioIdentityTestFixture.fs" />
+    <Compile Include="FakeChatClient.fs" />
   </ItemGroup>
 
 </Project>
