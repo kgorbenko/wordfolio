@@ -14,7 +14,7 @@ open Microsoft.Extensions.Hosting
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api
 
-type WebApplicationFactory(fixture: WordfolioIdentityTestFixture) =
+type WebApplicationFactory(fixture: WordfolioIdentityTestFixture, ?configureServices: IServiceCollection -> unit) =
     inherit WebApplicationFactory<Program.Program>()
 
     override _.ConfigureWebHost(builder: IWebHostBuilder) =
@@ -26,7 +26,11 @@ type WebApplicationFactory(fixture: WordfolioIdentityTestFixture) =
 
         builder.ConfigureServices(fun services ->
             services.AddScoped<ITestTokenGenerator, TestTokenGenerator>()
-            |> ignore)
+            |> ignore
+
+            match configureServices with
+            | Some configure -> configure services
+            | None -> ())
         |> ignore
 
     member this.CreateAuthenticatedClientAsync(user: Identity.User) : Task<HttpClient> =
