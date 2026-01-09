@@ -70,14 +70,12 @@ let private streamLookup (chatClient: IChatClient) (text: string) (cancellationT
     }
 
 let mapDictionaryEndpoints(group: RouteGroupBuilder) =
-    group
-        .MapGet(
-            Urls.Lookup,
-            Func<string, IChatClient, CancellationToken, IResult>(fun text chatClient cancellationToken ->
-                if String.IsNullOrWhiteSpace(text) then
-                    Results.BadRequest({| error = "Text parameter is required" |})
-                else
-                    TypedResults.ServerSentEvents(streamLookup chatClient text cancellationToken))
-        )
-        .AllowAnonymous()
+    group.MapGet(
+        Urls.Lookup,
+        Func<string, IChatClient, CancellationToken, IResult>(fun text chatClient cancellationToken ->
+            if String.IsNullOrWhiteSpace(text) then
+                Results.BadRequest({| error = "Text parameter is required" |})
+            else
+                TypedResults.ServerSentEvents(streamLookup chatClient text cancellationToken))
+    )
     |> ignore
