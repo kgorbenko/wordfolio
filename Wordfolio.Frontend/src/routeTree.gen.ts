@@ -11,7 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCollectionsIndexRouteImport } from './routes/_authenticated/collections/index'
+import { Route as AuthenticatedEntriesEntryIdRouteImport } from './routes/_authenticated/entries/$entryId'
+import { Route as AuthenticatedCollectionsCollectionIdIndexRouteImport } from './routes/_authenticated/collections/$collectionId/index'
+import { Route as AuthenticatedCollectionsCollectionIdVocabularyIdRouteImport } from './routes/_authenticated/collections/$collectionId/$vocabularyId'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -23,38 +29,114 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedCollectionsIndexRoute =
+  AuthenticatedCollectionsIndexRouteImport.update({
+    id: '/collections/',
+    path: '/collections/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedEntriesEntryIdRoute =
+  AuthenticatedEntriesEntryIdRouteImport.update({
+    id: '/entries/$entryId',
+    path: '/entries/$entryId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCollectionsCollectionIdIndexRoute =
+  AuthenticatedCollectionsCollectionIdIndexRouteImport.update({
+    id: '/collections/$collectionId/',
+    path: '/collections/$collectionId/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCollectionsCollectionIdVocabularyIdRoute =
+  AuthenticatedCollectionsCollectionIdVocabularyIdRouteImport.update({
+    id: '/collections/$collectionId/$vocabularyId',
+    path: '/collections/$collectionId/$vocabularyId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/entries/$entryId': typeof AuthenticatedEntriesEntryIdRoute
+  '/collections': typeof AuthenticatedCollectionsIndexRoute
+  '/collections/$collectionId/$vocabularyId': typeof AuthenticatedCollectionsCollectionIdVocabularyIdRoute
+  '/collections/$collectionId': typeof AuthenticatedCollectionsCollectionIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/entries/$entryId': typeof AuthenticatedEntriesEntryIdRoute
+  '/collections': typeof AuthenticatedCollectionsIndexRoute
+  '/collections/$collectionId/$vocabularyId': typeof AuthenticatedCollectionsCollectionIdVocabularyIdRoute
+  '/collections/$collectionId': typeof AuthenticatedCollectionsCollectionIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/entries/$entryId': typeof AuthenticatedEntriesEntryIdRoute
+  '/_authenticated/collections/': typeof AuthenticatedCollectionsIndexRoute
+  '/_authenticated/collections/$collectionId/$vocabularyId': typeof AuthenticatedCollectionsCollectionIdVocabularyIdRoute
+  '/_authenticated/collections/$collectionId/': typeof AuthenticatedCollectionsCollectionIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/register'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/dashboard'
+    | '/entries/$entryId'
+    | '/collections'
+    | '/collections/$collectionId/$vocabularyId'
+    | '/collections/$collectionId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register'
-  id: '__root__' | '/' | '/login' | '/register'
+  to:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/dashboard'
+    | '/entries/$entryId'
+    | '/collections'
+    | '/collections/$collectionId/$vocabularyId'
+    | '/collections/$collectionId'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/login'
+    | '/register'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/entries/$entryId'
+    | '/_authenticated/collections/'
+    | '/_authenticated/collections/$collectionId/$vocabularyId'
+    | '/_authenticated/collections/$collectionId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
 }
@@ -75,6 +157,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -82,11 +171,69 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/collections/': {
+      id: '/_authenticated/collections/'
+      path: '/collections'
+      fullPath: '/collections'
+      preLoaderRoute: typeof AuthenticatedCollectionsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/entries/$entryId': {
+      id: '/_authenticated/entries/$entryId'
+      path: '/entries/$entryId'
+      fullPath: '/entries/$entryId'
+      preLoaderRoute: typeof AuthenticatedEntriesEntryIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/collections/$collectionId/': {
+      id: '/_authenticated/collections/$collectionId/'
+      path: '/collections/$collectionId'
+      fullPath: '/collections/$collectionId'
+      preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/collections/$collectionId/$vocabularyId': {
+      id: '/_authenticated/collections/$collectionId/$vocabularyId'
+      path: '/collections/$collectionId/$vocabularyId'
+      fullPath: '/collections/$collectionId/$vocabularyId'
+      preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdVocabularyIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEntriesEntryIdRoute: typeof AuthenticatedEntriesEntryIdRoute
+  AuthenticatedCollectionsIndexRoute: typeof AuthenticatedCollectionsIndexRoute
+  AuthenticatedCollectionsCollectionIdVocabularyIdRoute: typeof AuthenticatedCollectionsCollectionIdVocabularyIdRoute
+  AuthenticatedCollectionsCollectionIdIndexRoute: typeof AuthenticatedCollectionsCollectionIdIndexRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedEntriesEntryIdRoute: AuthenticatedEntriesEntryIdRoute,
+  AuthenticatedCollectionsIndexRoute: AuthenticatedCollectionsIndexRoute,
+  AuthenticatedCollectionsCollectionIdVocabularyIdRoute:
+    AuthenticatedCollectionsCollectionIdVocabularyIdRoute,
+  AuthenticatedCollectionsCollectionIdIndexRoute:
+    AuthenticatedCollectionsCollectionIdIndexRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
 }

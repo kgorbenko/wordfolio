@@ -1,0 +1,29 @@
+.entry-list-item {
+    transition: all 0.15s ease;
+
+    &:hover {
+        transform: translateX(4px);
+    }
+
+    .content-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .text-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .translation {
+        font-style: italic;
+    }
+
+    .date-chip {
+        font-size: 0.7rem;
+        height: 24px;
+        flex-shrink: 0;
+    }
+}
