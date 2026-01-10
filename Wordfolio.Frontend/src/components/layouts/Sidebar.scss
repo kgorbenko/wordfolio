@@ -1,0 +1,51 @@
+.sidebar {
+    .logo-container {
+        height: 64px;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        box-sizing: content-box;
+    }
+
+    .logo-icon-wrapper {
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .content {
+        flex: 1;
+        overflow: auto;
+        padding: 8px 0;
+    }
+
+    .nav-icon {
+        min-width: 36px;
+    }
+
+    .expand-icon {
+        min-width: 36px;
+    }
+
+    .folder-icon {
+        min-width: 32px;
+    }
+
+    .nav-count {
+        font-size: 0.75rem;
+    }
+
+    .vocab-icon {
+        min-width: 28px;
+    }
+
+    .vocab-count {
+        font-size: 0.7rem;
+        margin-left: 8px;
+    }
+}

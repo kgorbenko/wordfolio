@@ -1,0 +1,44 @@
+.collection-card {
+    height: 100%;
+    position: relative;
+    transition: all 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+
+    .action-area {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+    }
+
+    .content {
+        width: 100%;
+    }
+
+    .header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+
+    .description {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        min-height: 40px;
+        margin-bottom: 12px;
+    }
+
+    .menu-button {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+    }
+}

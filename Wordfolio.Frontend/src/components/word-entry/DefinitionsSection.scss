@@ -1,0 +1,89 @@
+.definitions-section {
+    margin-bottom: 24px;
+
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        cursor: pointer;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .select-all {
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .counter-chip {
+        height: 22px;
+        font-size: 0.75rem;
+    }
+
+    .list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .item {
+        border-width: 1px;
+        border-style: solid;
+        border-radius: 8px;
+        padding: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .item-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .item-body {
+        flex: 1;
+    }
+
+    .pos-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .pos-chip {
+        height: 20px;
+        font-size: 0.7rem;
+    }
+
+    .examples {
+        margin-top: 8px;
+        padding-left: 8px;
+    }
+
+    .example-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 4px;
+        margin-bottom: 4px;
+    }
+
+    .example-text {
+        font-style: italic;
+        font-size: 0.85rem;
+    }
+}

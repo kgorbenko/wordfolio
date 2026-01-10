@@ -1,0 +1,13 @@
+.topbar {
+    .center-content {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.875rem;
+    }
+}
