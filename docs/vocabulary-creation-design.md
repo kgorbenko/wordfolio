@@ -241,7 +241,7 @@ Design a quick, non-intrusive workflow for users to capture words/phrases they e
 6. **Voice input** - speak the word instead of typing
 7. **Recent words dropdown** - quick access to recently searched words
 8. **Smart example selection** - if >5 definitions/translations, auto-deselect some examples
-9. **Offline mode** - cache recent definitions/translations for offline word addition
+9. **Offline mode** - cache recent LLM results for offline word addition
 10. **Section persistence** - remember user's preference (definitions-only vs both)
 
 ## Data Model Implications
@@ -256,7 +256,7 @@ Word/Phrase Entry
 ├─ definitions (array)
 │  ├─ Definition 1
 │  │  ├─ definition_text (string, editable)
-│  │  ├─ source ('api' | 'manual')
+│  │  ├─ source ('llm' | 'manual')
 │  │  └─ examples (array, limit 5)
 │  │     ├─ Example 1 (auto-generated, read-only)
 │  │     ├─ Example 2 (custom)
@@ -266,7 +266,7 @@ Word/Phrase Entry
 └─ translations (array)
    ├─ Translation 1
    │  ├─ translation_text (string, Russian, editable)
-   │  ├─ source ('api' | 'manual')
+   │  ├─ source ('llm' | 'manual')
    │  ├─ target_language ('ru' for MVP)
    │  └─ examples (array, limit 5)
    │     ├─ Example 1 (auto-generated Russian, read-only)
@@ -277,48 +277,86 @@ Word/Phrase Entry
 ```
 
 ### Key Attributes
-- **Definition/Translation.source:** 'api' | 'manual' (track if auto-fetched or user-created)
+- **Definition/Translation.source:** 'llm' | 'manual' (track if LLM-generated or user-created)
 - **Translation.target_language:** 'ru' for MVP (future: user preference)
-- **Example.source:** 'api' | 'custom' (track generation method)
+- **Example.source:** 'llm' | 'custom' (track generation method)
 - **Example.is_editable:** false for auto-generated, true for custom
 - **Example.max_length:** 200 characters
 - **Examples_per_item.limit:** 5 total (1 auto + 4 custom)
 - **Minimum_to_save:** At least 1 definition OR 1 translation (or both)
 
-## API Integration Requirements
+## LLM Integration
 
-### Dictionary + Translation API Needs
-1. **Word lookup endpoint** - return multiple definitions AND translations per word
-2. **Example sentence generation** - 1 example per definition + 1 per translation
-3. **Response time:** <1 second for good UX
-4. **Fallback:** Allow manual entry if API fails or word not found
+### LLM-Powered Word Lookup
+Instead of traditional dictionary/translation APIs, we use an LLM (Large Language Model) to generate definitions and translations. This approach provides:
 
-### MVP API Strategy (English → Russian)
+1. **Unified response** - single LLM call returns both definitions AND translations with examples
+2. **Context-aware definitions** - LLM understands word usage nuances better than static dictionaries
+3. **Natural example sentences** - high-quality, contextual examples generated on-the-fly
+4. **Flexible output** - handles slang, idioms, and phrases that traditional APIs may miss
+5. **Consistent format** - structured JSON output for reliable parsing
 
-**Option 1: Combined API (Recommended)**
-- Single API call returns both definitions and translations
-- Possible APIs: Yandex Dictionary, Google Translate API, DeepL API
-- Pros: Faster, single request
-- Cons: May require API key
+### Implementation Details
 
-**Option 2: Separate APIs**
-- Definitions: Free Dictionary API (`https://api.dictionaryapi.dev/api/v2/entries/en/{word}`)
-- Translations: Separate translation API (Yandex, Google, DeepL)
-- Examples: May need third API or manual generation
-- Pros: Mix free + paid services
-- Cons: Multiple API calls, slower
+**Streaming Response:**
+- Uses Server-Sent Events (SSE) for real-time streaming
+- Two-part output: human-readable text first, then structured JSON
+- User sees definitions appearing progressively (better perceived performance)
 
-**Recommended for MVP:**
-- Use Yandex Dictionary API or similar that provides both definitions and translations
-- Fallback to manual entry for both sections if API fails
-- Cache results to reduce API calls and support offline mode (future)
+**Prompt Structure:**
+- Input: English word or phrase
+- Output Part 1: Formatted text with definitions and Russian translations
+- Output Part 2: JSON with structured data for saving
+
+**JSON Schema:**
+```json
+{
+  "definitions": [
+    {
+      "definition": "...",
+      "partOfSpeech": "verb|noun|adj|adv|null",
+      "exampleSentences": ["..."]
+    }
+  ],
+  "translations": [
+    {
+      "translation": "...",
+      "partOfSpeech": "verb|noun|adj|adv|null",
+      "examples": [
+        { "russian": "...", "english": "..." }
+      ]
+    }
+  ]
+}
+```
+
+**LLM Parameters:**
+- Temperature: 0.1 (low for consistent, factual output)
+- Max tokens: 4096 (sufficient for comprehensive definitions)
+
+### Advantages Over Traditional APIs
+
+| Aspect | Traditional APIs | LLM Approach |
+|--------|------------------|---------------|
+| Coverage | Limited to dictionary entries | Handles any word/phrase |
+| Examples | Often missing or limited | Always generates relevant examples |
+| Translations | Separate API needed | Included in same request |
+| Phrases/Idioms | Poor support | Excellent understanding |
+| Context | Static definitions | Contextually appropriate |
+| Maintenance | Multiple API integrations | Single LLM integration |
+
+### Fallback Strategy
+- If LLM fails or times out: allow manual entry for both sections
+- If word not recognized: LLM will indicate this, user can add manually
+- Network errors: show error state with retry option
 
 ## Technical Considerations (High-Level)
 
 ### Performance Targets
 - **Modal open time:** <100ms
-- **API response time:** <1s
-- **Debounce delay:** 300-500ms (balance responsiveness vs API calls)
+- **LLM first token:** <500ms (streaming starts quickly)
+- **LLM full response:** 2-4s (acceptable with streaming UX)
+- **Debounce delay:** 500ms (balance responsiveness vs LLM calls)
 - **Animation duration:** 200-300ms (smooth but fast)
 
 ### Mobile Optimizations
