@@ -15,6 +15,7 @@
     <Compile Include="20251225003_CreateTranslationsTable.fs" />
     <Compile Include="20251225004_CreateExamplesTable.fs" />
     <Compile Include="20251225005_AddExamplesCheckConstraint.fs" />
+    <Compile Include="20260110001_AddSystemCollectionsAndDefaultVocabularies.fs" />
   </ItemGroup>
 
   <ItemGroup>

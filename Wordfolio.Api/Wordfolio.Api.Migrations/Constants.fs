@@ -31,6 +31,9 @@ module CollectionsTable =
     [<Literal>]
     let UpdatedAtColumn = "UpdatedAt"
 
+    [<Literal>]
+    let IsSystemColumn = "IsSystem"
+
 module VocabulariesTable =
 
     [<Literal>]
@@ -53,6 +56,9 @@ module VocabulariesTable =
 
     [<Literal>]
     let UpdatedAtColumn = "UpdatedAt"
+
+    [<Literal>]
+    let IsDefaultColumn = "IsDefault"
 
 module EntriesTable =
 
