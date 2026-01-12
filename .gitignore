@@ -422,3 +422,6 @@ FodyWeavers.xsd
 
 # Claude settings
 .claude/*
+
+# opencode settings
+opencode.json
