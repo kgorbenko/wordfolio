@@ -23,10 +23,10 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 600
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "ephemeral" createdAt None
@@ -85,10 +85,10 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 601
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "serendipity" createdAt None
@@ -199,10 +199,10 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 602
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "test" createdAt None
@@ -264,10 +264,10 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 603
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "ephemeral" createdAt None
@@ -322,10 +322,10 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 604
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "test" createdAt None
@@ -356,10 +356,10 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 605
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "serendipity" createdAt None
@@ -414,10 +414,10 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 606
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "test" createdAt None
@@ -448,10 +448,10 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 607
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "test" createdAt None
@@ -551,10 +551,10 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 608
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "test" createdAt None
@@ -631,10 +631,10 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 609
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "test" createdAt None
@@ -672,10 +672,10 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 610
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "test" createdAt None

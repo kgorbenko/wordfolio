@@ -5,6 +5,7 @@ open System.Data
 open System.Threading
 open System.Threading.Tasks
 
+open Dapper
 open Dapper.FSharp.PostgreSQL
 
 open Wordfolio.Api.DataAccess.Dapper
@@ -17,7 +18,8 @@ type internal VocabularyRecord =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset> }
+      UpdatedAt: Nullable<DateTimeOffset>
+      IsDefault: bool }
 
 type Vocabulary =
     { Id: int
@@ -55,12 +57,21 @@ let internal vocabulariesTable =
     table'<VocabularyRecord> Schema.VocabulariesTable.Name
     |> inSchema Schema.Name
 
+[<CLIMutable>]
+type internal VocabularyInsertParameters =
+    { CollectionId: int
+      Name: string
+      Description: string option
+      CreatedAt: DateTimeOffset
+      IsDefault: bool }
+
 let internal vocabulariesInsertTable =
-    table'<VocabularyCreationParameters> Schema.VocabulariesTable.Name
+    table'<VocabularyInsertParameters> Schema.VocabulariesTable.Name
     |> inSchema Schema.Name
 
 [<CLIMutable>]
-type internal CollectionRecord = { Id: int; UserId: int }
+type internal CollectionRecord =
+    { Id: int; UserId: int; IsSystem: bool }
 
 let private collectionsTable =
     table'<CollectionRecord> Schema.CollectionsTable.Name
@@ -73,12 +84,19 @@ let createVocabularyAsync
     (cancellationToken: CancellationToken)
     : Task<int> =
     task {
+        let insertParams: VocabularyInsertParameters =
+            { CollectionId = parameters.CollectionId
+              Name = parameters.Name
+              Description = parameters.Description
+              CreatedAt = parameters.CreatedAt
+              IsDefault = false }
+
         let! record =
             insert {
                 into vocabulariesInsertTable
-                values [ parameters ]
+                value insertParams
             }
-            |> insertOutputSingleAsync<VocabularyCreationParameters, VocabularyRecord>
+            |> insertOutputSingleAsync<VocabularyInsertParameters, VocabularyRecord>
                 connection
                 transaction
                 cancellationToken
@@ -96,7 +114,13 @@ let getVocabularyByIdAsync
         let! result =
             select {
                 for v in vocabulariesTable do
-                    where(v.Id = id)
+                    innerJoin c in collectionsTable on (v.CollectionId = c.Id)
+
+                    where(
+                        v.Id = id
+                        && v.IsDefault = false
+                        && c.IsSystem = false
+                    )
             }
             |> trySelectFirstAsync connection transaction cancellationToken
 
@@ -113,7 +137,13 @@ let getVocabulariesByCollectionIdAsync
         let! results =
             select {
                 for v in vocabulariesTable do
-                    where(v.CollectionId = collectionId)
+                    innerJoin c in collectionsTable on (v.CollectionId = c.Id)
+
+                    where(
+                        v.CollectionId = collectionId
+                        && v.IsDefault = false
+                        && c.IsSystem = false
+                    )
             }
             |> selectAsync connection transaction cancellationToken
 
@@ -132,7 +162,13 @@ let getVocabularyByIdAndUserIdAsync
             select {
                 for v in vocabulariesTable do
                     innerJoin c in collectionsTable on (v.CollectionId = c.Id)
-                    where(v.Id = vocabularyId && c.UserId = userId)
+
+                    where(
+                        v.Id = vocabularyId
+                        && c.UserId = userId
+                        && v.IsDefault = false
+                        && c.IsSystem = false
+                    )
             }
             |> trySelectFirstAsync connection transaction cancellationToken
 
@@ -146,17 +182,31 @@ let updateVocabularyAsync
     (cancellationToken: CancellationToken)
     : Task<int> =
     task {
-        let! affectedRows =
-            update {
-                for v in vocabulariesTable do
-                    setColumn v.Name parameters.Name
-                    setColumn v.Description parameters.Description
-                    setColumn v.UpdatedAt (Nullable parameters.UpdatedAt)
-                    where(v.Id = parameters.Id)
-            }
-            |> updateAsync connection transaction cancellationToken
+        let sql =
+            """
+            UPDATE wordfolio."Vocabularies" v
+            SET "Name" = @Name, "Description" = @Description, "UpdatedAt" = @UpdatedAt
+            WHERE v."Id" = @Id
+              AND v."IsDefault" = false
+              AND NOT EXISTS (
+                  SELECT 1 FROM wordfolio."Collections" c
+                  WHERE c."Id" = v."CollectionId" AND c."IsSystem" = true
+              )
+            """
 
-        return affectedRows
+        let commandDefinition =
+            CommandDefinition(
+                commandText = sql,
+                parameters =
+                    {| Id = parameters.Id
+                       Name = parameters.Name
+                       Description = parameters.Description |> Option.toObj
+                       UpdatedAt = Nullable parameters.UpdatedAt |},
+                transaction = transaction,
+                cancellationToken = cancellationToken
+            )
+
+        return! connection.ExecuteAsync(commandDefinition)
     }
 
 let deleteVocabularyAsync
@@ -166,12 +216,24 @@ let deleteVocabularyAsync
     (cancellationToken: CancellationToken)
     : Task<int> =
     task {
-        let! affectedRows =
-            delete {
-                for v in vocabulariesTable do
-                    where(v.Id = id)
-            }
-            |> deleteAsync connection transaction cancellationToken
+        let sql =
+            """
+            DELETE FROM wordfolio."Vocabularies" v
+            WHERE v."Id" = @Id
+              AND v."IsDefault" = false
+              AND NOT EXISTS (
+                  SELECT 1 FROM wordfolio."Collections" c
+                  WHERE c."Id" = v."CollectionId" AND c."IsSystem" = true
+              )
+            """
 
-        return affectedRows
+        let commandDefinition =
+            CommandDefinition(
+                commandText = sql,
+                parameters = {| Id = id |},
+                transaction = transaction,
+                cancellationToken = cancellationToken
+            )
+
+        return! connection.ExecuteAsync(commandDefinition)
     }

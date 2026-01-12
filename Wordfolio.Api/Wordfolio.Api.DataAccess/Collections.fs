@@ -17,7 +17,8 @@ type internal CollectionRecord =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset> }
+      UpdatedAt: Nullable<DateTimeOffset>
+      IsSystem: bool }
 
 type Collection =
     { Id: int
@@ -55,8 +56,16 @@ let internal collectionsTable =
     table'<CollectionRecord> Schema.CollectionsTable.Name
     |> inSchema Schema.Name
 
+[<CLIMutable>]
+type internal CollectionInsertParameters =
+    { UserId: int
+      Name: string
+      Description: string option
+      CreatedAt: DateTimeOffset
+      IsSystem: bool }
+
 let internal collectionsInsertTable =
-    table'<CollectionCreationParameters> Schema.CollectionsTable.Name
+    table'<CollectionInsertParameters> Schema.CollectionsTable.Name
     |> inSchema Schema.Name
 
 let createCollectionAsync
@@ -66,12 +75,19 @@ let createCollectionAsync
     (cancellationToken: CancellationToken)
     : Task<int> =
     task {
+        let insertParams: CollectionInsertParameters =
+            { UserId = parameters.UserId
+              Name = parameters.Name
+              Description = parameters.Description
+              CreatedAt = parameters.CreatedAt
+              IsSystem = false }
+
         let! record =
             insert {
                 into collectionsInsertTable
-                values [ parameters ]
+                value insertParams
             }
-            |> insertOutputSingleAsync<CollectionCreationParameters, CollectionRecord>
+            |> insertOutputSingleAsync<CollectionInsertParameters, CollectionRecord>
                 connection
                 transaction
                 cancellationToken
@@ -89,7 +105,7 @@ let getCollectionByIdAsync
         let! result =
             select {
                 for c in collectionsTable do
-                    where(c.Id = id)
+                    where(c.Id = id && c.IsSystem = false)
             }
             |> trySelectFirstAsync connection transaction cancellationToken
 
@@ -106,7 +122,7 @@ let getCollectionsByUserIdAsync
         let! results =
             select {
                 for c in collectionsTable do
-                    where(c.UserId = userId)
+                    where(c.UserId = userId && c.IsSystem = false)
             }
             |> selectAsync connection transaction cancellationToken
 
@@ -126,7 +142,11 @@ let updateCollectionAsync
                     setColumn c.Name parameters.Name
                     setColumn c.Description parameters.Description
                     setColumn c.UpdatedAt (Nullable parameters.UpdatedAt)
-                    where(c.Id = parameters.Id)
+
+                    where(
+                        c.Id = parameters.Id
+                        && c.IsSystem = false
+                    )
             }
             |> updateAsync connection transaction cancellationToken
 
@@ -143,7 +163,7 @@ let deleteCollectionAsync
         let! affectedRows =
             delete {
                 for c in collectionsTable do
-                    where(c.Id = id)
+                    where(c.Id = id && c.IsSystem = false)
             }
             |> deleteAsync connection transaction cancellationToken
 

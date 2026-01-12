@@ -62,7 +62,8 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
                     Name = "My Collection"
                     Description = Some "A test collection"
                     CreatedAt = result.CreatedAt
-                    UpdatedAt = None } ]
+                    UpdatedAt = None
+                    IsSystem = false } ]
 
             let! databaseState = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
 
@@ -174,6 +175,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
                     (Some "Test Description")
                     DateTimeOffset.UtcNow
                     None
+                    false
 
             do!
                 fixture.WordfolioSeeder
@@ -256,6 +258,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
                     (Some "Original Description")
                     DateTimeOffset.UtcNow
                     None
+                    false
 
             do!
                 fixture.WordfolioSeeder
@@ -288,7 +291,8 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
                   Name = "Updated Name"
                   Description = Some "Updated Description"
                   CreatedAt = collection.CreatedAt
-                  UpdatedAt = collection.UpdatedAt }
+                  UpdatedAt = collection.UpdatedAt
+                  IsSystem = false }
 
             Assert.Equal(expected, collection)
         }
@@ -330,7 +334,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(106, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                Entities.makeCollection wordfolioUser "Original Name" None DateTimeOffset.UtcNow None
+                Entities.makeCollection wordfolioUser "Original Name" None DateTimeOffset.UtcNow None false
 
             do!
                 fixture.WordfolioSeeder
@@ -379,7 +383,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(106, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
 
             do!
                 fixture.WordfolioSeeder

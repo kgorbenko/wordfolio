@@ -21,7 +21,8 @@ type Collection =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
+      UpdatedAt: DateTimeOffset option
+      IsSystem: bool }
 
 type Vocabulary =
     { Id: int
@@ -29,7 +30,8 @@ type Vocabulary =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
+      UpdatedAt: DateTimeOffset option
+      IsDefault: bool }
 
 type Entry =
     { Id: int
@@ -70,6 +72,7 @@ module Entities =
         (description: string option)
         (createdAt: DateTimeOffset)
         (updatedAt: DateTimeOffset option)
+        (isSystem: bool)
         : Mapping.Collection =
         let collection: Mapping.Collection =
             { Id = 0
@@ -78,6 +81,7 @@ module Entities =
               Description = description |> Option.toObj
               CreatedAt = createdAt
               UpdatedAt = updatedAt |> Option.toNullable
+              IsSystem = isSystem
               User = user
               Vocabularies = ResizeArray() }
 
@@ -90,6 +94,7 @@ module Entities =
         (description: string option)
         (createdAt: DateTimeOffset)
         (updatedAt: DateTimeOffset option)
+        (isDefault: bool)
         : Mapping.Vocabulary =
         let vocabulary: Mapping.Vocabulary =
             { Id = 0
@@ -98,6 +103,7 @@ module Entities =
               Description = description |> Option.toObj
               CreatedAt = createdAt
               UpdatedAt = updatedAt |> Option.toNullable
+              IsDefault = isDefault
               Collection = collection
               Entries = ResizeArray() }
 
@@ -209,7 +215,8 @@ module Seeder =
           Name = entity.Name
           Description = Option.ofObj entity.Description
           CreatedAt = entity.CreatedAt
-          UpdatedAt = Option.ofNullable entity.UpdatedAt }
+          UpdatedAt = Option.ofNullable entity.UpdatedAt
+          IsSystem = entity.IsSystem }
 
     let private toVocabulary(entity: Mapping.Vocabulary) : Vocabulary =
         { Id = entity.Id
@@ -217,7 +224,8 @@ module Seeder =
           Name = entity.Name
           Description = Option.ofObj entity.Description
           CreatedAt = entity.CreatedAt
-          UpdatedAt = Option.ofNullable entity.UpdatedAt }
+          UpdatedAt = Option.ofNullable entity.UpdatedAt
+          IsDefault = entity.IsDefault }
 
     let private toEntry(entity: Mapping.Entry) : Entry =
         { Id = entity.Id
