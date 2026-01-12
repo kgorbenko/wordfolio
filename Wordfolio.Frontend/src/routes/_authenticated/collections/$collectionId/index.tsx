@@ -167,10 +167,10 @@ const CollectionDetailPage = () => {
             prev.map((v) =>
                 v.id === editingVocabulary.id
                     ? {
-                        ...v,
-                        name: editName.trim(),
-                        description: editDescription.trim() || null,
-                    }
+                          ...v,
+                          name: editName.trim(),
+                          description: editDescription.trim() || null,
+                      }
                     : v
             )
         );

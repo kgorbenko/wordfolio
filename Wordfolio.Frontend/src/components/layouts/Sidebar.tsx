@@ -268,8 +268,8 @@ export const Sidebar = ({ variant, open, onClose }: SidebarProps) => {
                                             collection.id
                                                 ? "primary.main"
                                                 : isExpanded(collection.id)
-                                                    ? "text.primary"
-                                                    : "text.secondary",
+                                                  ? "text.primary"
+                                                  : "text.secondary",
                                         sx: {
                                             "&:hover": {
                                                 textDecoration: "underline",

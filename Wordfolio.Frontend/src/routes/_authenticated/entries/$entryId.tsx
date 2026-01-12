@@ -321,11 +321,11 @@ const EntryDetailPage = () => {
                     definitions: editedEntry.definitions.map((d) =>
                         d.id === parentId
                             ? {
-                                ...d,
-                                examples: d.examples.filter(
-                                    (ex) => ex.id !== exampleId
-                                ),
-                            }
+                                  ...d,
+                                  examples: d.examples.filter(
+                                      (ex) => ex.id !== exampleId
+                                  ),
+                              }
                             : d
                     ),
                 });
@@ -335,11 +335,11 @@ const EntryDetailPage = () => {
                     translations: editedEntry.translations.map((t) =>
                         t.id === parentId
                             ? {
-                                ...t,
-                                examples: t.examples.filter(
-                                    (ex) => ex.id !== exampleId
-                                ),
-                            }
+                                  ...t,
+                                  examples: t.examples.filter(
+                                      (ex) => ex.id !== exampleId
+                                  ),
+                              }
                             : t
                     ),
                 });
@@ -357,15 +357,15 @@ const EntryDetailPage = () => {
                     definitions: editedEntry.definitions.map((d) =>
                         d.id === addExampleFor.id
                             ? {
-                                ...d,
-                                examples: [
-                                    ...d.examples,
-                                    {
-                                        id: newExampleId,
-                                        exampleText: newExampleText.trim(),
-                                    },
-                                ],
-                            }
+                                  ...d,
+                                  examples: [
+                                      ...d.examples,
+                                      {
+                                          id: newExampleId,
+                                          exampleText: newExampleText.trim(),
+                                      },
+                                  ],
+                              }
                             : d
                     ),
                 });
@@ -375,15 +375,15 @@ const EntryDetailPage = () => {
                     translations: editedEntry.translations.map((t) =>
                         t.id === addExampleFor.id
                             ? {
-                                ...t,
-                                examples: [
-                                    ...t.examples,
-                                    {
-                                        id: newExampleId,
-                                        exampleText: newExampleText.trim(),
-                                    },
-                                ],
-                            }
+                                  ...t,
+                                  examples: [
+                                      ...t.examples,
+                                      {
+                                          id: newExampleId,
+                                          exampleText: newExampleText.trim(),
+                                      },
+                                  ],
+                              }
                             : t
                     ),
                 });
