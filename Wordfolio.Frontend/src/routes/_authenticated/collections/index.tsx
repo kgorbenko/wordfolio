@@ -101,10 +101,10 @@ const CollectionsPage = () => {
             prev.map((c) =>
                 c.id === editingCollection.id
                     ? {
-                        ...c,
-                        name: editName.trim(),
-                        description: editDescription.trim() || null,
-                    }
+                          ...c,
+                          name: editName.trim(),
+                          description: editDescription.trim() || null,
+                      }
                     : c
             )
         );

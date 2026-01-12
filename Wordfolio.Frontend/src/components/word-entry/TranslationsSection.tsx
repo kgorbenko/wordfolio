@@ -205,40 +205,40 @@ export const TranslationsSection = ({
 
                                     {trans.examples.length > 0 &&
                                         trans.selected && (
-                                        <Box className="examples">
-                                            {trans.examples.map((ex) => (
-                                                <Box
-                                                    key={ex.id}
-                                                    className="example-item"
-                                                >
-                                                    <Checkbox
-                                                        checked={
-                                                            ex.selected
-                                                        }
-                                                        onChange={() =>
-                                                            handleToggleExample(
-                                                                trans.id,
-                                                                ex.id
-                                                            )
-                                                        }
-                                                        size="small"
-                                                        color="secondary"
-                                                        sx={{
-                                                            mt: -0.5,
-                                                            p: 0.25,
-                                                        }}
-                                                    />
-                                                    <Typography
-                                                        className="example-text"
-                                                        variant="body2"
-                                                        color="text.secondary"
+                                            <Box className="examples">
+                                                {trans.examples.map((ex) => (
+                                                    <Box
+                                                        key={ex.id}
+                                                        className="example-item"
                                                     >
-                                                        {ex.exampleText}
-                                                    </Typography>
-                                                </Box>
-                                            ))}
-                                        </Box>
-                                    )}
+                                                        <Checkbox
+                                                            checked={
+                                                                ex.selected
+                                                            }
+                                                            onChange={() =>
+                                                                handleToggleExample(
+                                                                    trans.id,
+                                                                    ex.id
+                                                                )
+                                                            }
+                                                            size="small"
+                                                            color="secondary"
+                                                            sx={{
+                                                                mt: -0.5,
+                                                                p: 0.25,
+                                                            }}
+                                                        />
+                                                        <Typography
+                                                            className="example-text"
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                        >
+                                                            {ex.exampleText}
+                                                        </Typography>
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        )}
                                 </Box>
                             </Box>
                         </Box>

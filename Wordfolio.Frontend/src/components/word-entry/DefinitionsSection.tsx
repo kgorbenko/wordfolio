@@ -202,39 +202,39 @@ export const DefinitionsSection = ({
 
                                     {def.examples.length > 0 &&
                                         def.selected && (
-                                        <Box className="examples">
-                                            {def.examples.map((ex) => (
-                                                <Box
-                                                    key={ex.id}
-                                                    className="example-item"
-                                                >
-                                                    <Checkbox
-                                                        checked={
-                                                            ex.selected
-                                                        }
-                                                        onChange={() =>
-                                                            handleToggleExample(
-                                                                def.id,
-                                                                ex.id
-                                                            )
-                                                        }
-                                                        size="small"
-                                                        sx={{
-                                                            mt: -0.5,
-                                                            p: 0.25,
-                                                        }}
-                                                    />
-                                                    <Typography
-                                                        className="example-text"
-                                                        variant="body2"
-                                                        color="text.secondary"
+                                            <Box className="examples">
+                                                {def.examples.map((ex) => (
+                                                    <Box
+                                                        key={ex.id}
+                                                        className="example-item"
                                                     >
-                                                        {ex.exampleText}
-                                                    </Typography>
-                                                </Box>
-                                            ))}
-                                        </Box>
-                                    )}
+                                                        <Checkbox
+                                                            checked={
+                                                                ex.selected
+                                                            }
+                                                            onChange={() =>
+                                                                handleToggleExample(
+                                                                    def.id,
+                                                                    ex.id
+                                                                )
+                                                            }
+                                                            size="small"
+                                                            sx={{
+                                                                mt: -0.5,
+                                                                p: 0.25,
+                                                            }}
+                                                        />
+                                                        <Typography
+                                                            className="example-text"
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                        >
+                                                            {ex.exampleText}
+                                                        </Typography>
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        )}
                                 </Box>
                             </Box>
                         </Box>
