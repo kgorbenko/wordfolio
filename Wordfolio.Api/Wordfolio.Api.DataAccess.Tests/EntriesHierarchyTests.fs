@@ -35,10 +35,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 400
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "solitary" createdAt None
@@ -77,10 +77,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 401
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "ephemeral" createdAt None
@@ -129,10 +129,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 402
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "serendipity" createdAt None
@@ -181,10 +181,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 403
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "ubiquitous" createdAt None
@@ -252,10 +252,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 404
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "meticulous" createdAt None
@@ -323,10 +323,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 405
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "resilient" createdAt None
@@ -405,10 +405,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 406
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "tenacious" createdAt None
@@ -486,10 +486,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 407
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "benevolent" createdAt (Some updatedAt)
@@ -528,10 +528,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 500
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "ephemeral" createdAt None
@@ -571,10 +571,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 501
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "serendipity" createdAt None
@@ -614,10 +614,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 502
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "ubiquitous" createdAt None
@@ -662,10 +662,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 503
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "meticulous" createdAt None
@@ -713,10 +713,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 504
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "tenacious" createdAt None
@@ -764,10 +764,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 505
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry =
                 Entities.makeEntry vocabulary "solitary" createdAt None
@@ -814,10 +814,10 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 506
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None
+                Entities.makeCollection user "Collection 1" None createdAt None false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
 
             let entry1 =
                 Entities.makeEntry vocabulary "resilient" createdAt None

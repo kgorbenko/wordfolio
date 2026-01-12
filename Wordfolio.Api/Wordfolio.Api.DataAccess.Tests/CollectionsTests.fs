@@ -46,7 +46,8 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                       Name = "My Collection"
                       Description = Some "Test collection"
                       CreatedAt = createdAt
-                      UpdatedAt = None }
+                      UpdatedAt = None
+                      IsSystem = false }
 
             Assert.Equivalent(expected, actualCollection)
         }
@@ -85,7 +86,8 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                       Name = "My Collection"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None }
+                      UpdatedAt = None
+                      IsSystem = false }
 
             Assert.Equivalent(expected, actualCollection)
         }
@@ -122,7 +124,7 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "My Collection" (Some "Test collection") createdAt None
+                Entities.makeCollection user "My Collection" (Some "Test collection") createdAt None false
 
             do!
                 fixture.Seeder
@@ -169,13 +171,13 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
             let user2 = Entities.makeUser 101
 
             let collection1 =
-                Entities.makeCollection user1 "Collection 1" None createdAt None
+                Entities.makeCollection user1 "Collection 1" None createdAt None false
 
             let collection2 =
-                Entities.makeCollection user1 "Collection 2" None createdAt None
+                Entities.makeCollection user1 "Collection 2" None createdAt None false
 
             let _ =
-                Entities.makeCollection user2 "Collection 3" None createdAt None
+                Entities.makeCollection user2 "Collection 3" None createdAt None false
 
             do!
                 fixture.Seeder
@@ -236,7 +238,7 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 101
 
             let collection =
-                Entities.makeCollection user "Original Name" (Some "Original Description") createdAt None
+                Entities.makeCollection user "Original Name" (Some "Original Description") createdAt None false
 
             do!
                 fixture.Seeder
@@ -262,7 +264,8 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                       Name = "Updated Name"
                       Description = Some "Updated Description"
                       CreatedAt = createdAt
-                      UpdatedAt = Some updatedAt }
+                      UpdatedAt = Some updatedAt
+                      IsSystem = false }
 
             Assert.Equal(expected, actual)
         }
@@ -281,7 +284,7 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 104
 
             let collection =
-                Entities.makeCollection user "Collection Name" (Some "Original Description") createdAt None
+                Entities.makeCollection user "Collection Name" (Some "Original Description") createdAt None false
 
             do!
                 fixture.Seeder
@@ -307,7 +310,8 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                       Name = "Collection Name"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = Some updatedAt }
+                      UpdatedAt = Some updatedAt
+                      IsSystem = false }
 
             Assert.Equal(expected, actual)
         }
@@ -342,7 +346,7 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 102
 
             let collection =
-                Entities.makeCollection user "Collection to delete" None createdAt None
+                Entities.makeCollection user "Collection to delete" None createdAt None false
 
             do!
                 fixture.Seeder
@@ -372,4 +376,144 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
                 |> fixture.WithConnectionAsync
 
             Assert.Equal(0, affectedRows)
+        }
+
+    [<Fact>]
+    member _.``getCollectionByIdAsync returns None when collection is system``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let systemCollection =
+                Entities.makeCollection user "Unsorted" None createdAt None true
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ systemCollection ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                Collections.getCollectionByIdAsync systemCollection.Id
+                |> fixture.WithConnectionAsync
+
+            Assert.Equal(None, actual)
+        }
+
+    [<Fact>]
+    member _.``getCollectionsByUserIdAsync filters out system collections``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let systemCollection =
+                Entities.makeCollection user "Unsorted" None createdAt None true
+
+            let regularCollection =
+                Entities.makeCollection user "Regular Collection" None createdAt None false
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ systemCollection; regularCollection ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                Collections.getCollectionsByUserIdAsync user.Id
+                |> fixture.WithConnectionAsync
+
+            let expected: Collections.Collection list =
+                [ { Id = regularCollection.Id
+                    UserId = user.Id
+                    Name = "Regular Collection"
+                    Description = None
+                    CreatedAt = createdAt
+                    UpdatedAt = None } ]
+
+            Assert.Equal<Collections.Collection list>(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``updateCollectionAsync returns 0 when collection is system``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let updatedAt =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let systemCollection =
+                Entities.makeCollection user "Unsorted" None createdAt None true
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ systemCollection ]
+                |> Seeder.saveChangesAsync
+
+            let! affectedRows =
+                Collections.updateCollectionAsync
+                    { Id = systemCollection.Id
+                      Name = "Updated Name"
+                      Description = Some "Updated Description"
+                      UpdatedAt = updatedAt }
+                |> fixture.WithConnectionAsync
+
+            Assert.Equal(0, affectedRows)
+
+            let! actual = Seeder.getCollectionByIdAsync systemCollection.Id fixture.Seeder
+
+            let expected: Collection option =
+                Some
+                    { Id = systemCollection.Id
+                      UserId = user.Id
+                      Name = "Unsorted"
+                      Description = None
+                      CreatedAt = createdAt
+                      UpdatedAt = None
+                      IsSystem = true }
+
+            Assert.Equal(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``deleteCollectionAsync returns 0 when collection is system``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let systemCollection =
+                Entities.makeCollection user "Unsorted" None createdAt None true
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ systemCollection ]
+                |> Seeder.saveChangesAsync
+
+            let! affectedRows =
+                Collections.deleteCollectionAsync systemCollection.Id
+                |> fixture.WithConnectionAsync
+
+            Assert.Equal(0, affectedRows)
+
+            let! actual = Seeder.getCollectionByIdAsync systemCollection.Id fixture.Seeder
+
+            Assert.True(actual.IsSome)
         }

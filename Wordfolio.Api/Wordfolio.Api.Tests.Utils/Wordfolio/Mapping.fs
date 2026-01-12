@@ -19,6 +19,7 @@ and [<CLIMutable>] Collection =
       Description: string
       CreatedAt: DateTimeOffset
       UpdatedAt: Nullable<DateTimeOffset>
+      IsSystem: bool
       User: User
       Vocabularies: ResizeArray<Vocabulary> }
 
@@ -29,6 +30,7 @@ and [<CLIMutable>] Vocabulary =
       Description: string
       CreatedAt: DateTimeOffset
       UpdatedAt: Nullable<DateTimeOffset>
+      IsDefault: bool
       Collection: Collection
       Entries: ResizeArray<Entry> }
 
@@ -140,6 +142,9 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
         collections.Property(_.UpdatedAt).IsRequired(false)
         |> ignore
 
+        collections.Property(_.IsSystem).IsRequired()
+        |> ignore
+
         let vocabularies =
             modelBuilder.Entity<Vocabulary>()
 
@@ -164,6 +169,9 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
         |> ignore
 
         vocabularies.Property(_.UpdatedAt).IsRequired(false)
+        |> ignore
+
+        vocabularies.Property(_.IsDefault).IsRequired()
         |> ignore
 
         vocabularies
