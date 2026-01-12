@@ -16,6 +16,7 @@
     <Compile Include="Schema.fs" />
     <Compile Include="Users.fs" />
     <Compile Include="Collections.fs" />
+    <Compile Include="CollectionsHierarchy.fs" />
     <Compile Include="Vocabularies.fs" />
     <Compile Include="Entries.fs" />
     <Compile Include="Definitions.fs" />
