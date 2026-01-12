@@ -18,14 +18,11 @@ This document outlines all API changes required to support the vocabulary manage
 
 ## Task 1: Database Migration
 
-### Create migration file: `20260110001_AddSystemCollectionsAndDefaultVocabularies.fs`
-
-**Steps:**
-1. Add `IsSystem bit NOT NULL DEFAULT 0` to Collections table
-2. Add `IsDefault bit NOT NULL DEFAULT 0` to Vocabularies table
-3. Add migration to `Wordfolio.Api.Migrations.fsproj`
-
-**Run migration after creation.**
+- [x] Create migration file: `20260110001_AddSystemCollectionsAndDefaultVocabularies.fs`
+- [x] Add `IsSystem bit NOT NULL DEFAULT 0` to Collections table
+- [x] Add `IsDefault bit NOT NULL DEFAULT 0` to Vocabularies table
+- [x] Add migration to `Wordfolio.Api.Migrations.fsproj`
+- [x] Run migration
 
 ---
 
@@ -33,36 +30,19 @@ This document outlines all API changes required to support the vocabulary manage
 
 ### File: `Wordfolio.Api.DataAccess/Collections.fs`
 
-**2.1 Add internal record with system flag**
-```fsharp
-[<CLIMutable>]
-type internal CollectionRecordWithSystemFlag =
-    { Id: int
-      UserId: int
-      Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
-      IsSystem: bool }
-```
-
-**2.2 Update `collectionsTable` to use `CollectionRecordWithSystemFlag`**
-
-**2.3 Modify existing queries to filter out system collections:**
-- `getCollectionsByUserIdAsync`: Add `WHERE IsSystem = 0`
-- `getCollectionByIdAsync`: Add `WHERE IsSystem = 0`
-- `createCollectionAsync`: Set `IsSystem = 0`
-
-**2.4 Add new functions:**
-- `getDefaultCollectionByUserIdAsync`: Returns "Unsorted" collection (IsSystem = 1)
-- `createDefaultCollectionAsync`: Creates "Unsorted" collection with name "Unsorted" (IsSystem = 1)
-
-**2.5 Add tree query:**
-- `getCollectionsWithVocabulariesByUserIdAsync`:
-  - Returns: `{ Collection: Collection; Vocabularies: Vocabulary list } list`
-  - Filters: `IsSystem = 0` (collections) and `IsDefault = 0` (vocabularies)
-  - JOIN with Vocabularies table to get nested vocabularies
-  - Returns structured tree data for sidebar
+- [x] 2.1 Update `CollectionRecord` to include `IsSystem: bool`
+- [x] 2.2 Update `CollectionInsertParameters` to include `IsSystem: bool`
+- [x] 2.3 Modify existing queries to filter out system collections:
+  - [x] `getCollectionsByUserIdAsync`: Add `WHERE IsSystem = false`
+  - [x] `getCollectionByIdAsync`: Add `WHERE IsSystem = false`
+  - [x] `createCollectionAsync`: Set `IsSystem = false`
+  - [x] `updateCollectionAsync`: Add `WHERE IsSystem = false`
+  - [x] `deleteCollectionAsync`: Add `WHERE IsSystem = false`
+- [x] 2.4 Add new functions:
+  - [x] `getDefaultCollectionByUserIdAsync`: Returns "Unsorted" collection (IsSystem = true)
+  - [x] `createDefaultCollectionAsync`: Creates "Unsorted" collection with name "Unsorted" (IsSystem = true)
+- [x] 2.5 Add tree query:
+  - [x] `getCollectionsWithVocabulariesByUserIdAsync`: Returns `{ Collection: Collection; Vocabularies: Vocabulary list } list`
 
 ---
 
@@ -70,36 +50,21 @@ type internal CollectionRecordWithSystemFlag =
 
 ### File: `Wordfolio.Api.DataAccess/Vocabularies.fs`
 
-**3.1 Add internal record with default flag**
-```fsharp
-[<CLIMutable>]
-type internal VocabularyRecordWithDefaultFlag =
-    { Id: int
-      CollectionId: int
-      Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
-      IsDefault: bool }
-```
-
-**3.2 Update `vocabulariesTable` to use `VocabularyRecordWithDefaultFlag`**
-
-**3.3 Modify existing queries to filter out default vocabularies:**
-- `getVocabulariesByCollectionIdAsync`: Add `WHERE IsDefault = 0`
-- `getVocabularyByIdAsync`: Add `WHERE IsDefault = 0`
-- `createVocabularyAsync`: Set `IsDefault = 0`
-- `updateVocabularyAsync`: Preserve `IsDefault` value
-- `deleteVocabularyAsync`: Only allow deletion if not default
-
-**3.4 Add new functions:**
-- `getDefaultVocabularyByUserIdAsync`: Returns default vocabulary (IsDefault = 1)
-  - JOIN with Collections to verify user owns the collection
-- `createDefaultVocabularyAsync`: Creates default vocabulary in "Unsorted" collection with name "Unsorted" (IsDefault = 1)
-
-**3.5 Add count function:**
-- `getVocabularyEntryCountAsync(vocabularyId, connection, transaction, cancellationToken)`: Returns int
-  - Used for populating `EntryCount` in responses
+- [x] 3.1 Update `VocabularyRecord` to include `IsDefault: bool`
+- [x] 3.2 Update `VocabularyInsertParameters` to include `IsDefault: bool`
+- [x] 3.3 Add `CollectionRecord` with `IsSystem: bool` for join queries
+- [x] 3.4 Modify existing queries to filter out default vocabularies AND vocabularies in system collections:
+  - [x] `getVocabularyByIdAsync`: Add join with Collections, filter `IsDefault = false AND IsSystem = false`
+  - [x] `getVocabulariesByCollectionIdAsync`: Add join with Collections, filter `IsDefault = false AND IsSystem = false`
+  - [x] `getVocabularyByIdAndUserIdAsync`: Add filter `IsDefault = false AND IsSystem = false`
+  - [x] `createVocabularyAsync`: Set `IsDefault = false`
+  - [x] `updateVocabularyAsync`: Use `NOT EXISTS` subquery to filter out default vocabularies and system collections
+  - [x] `deleteVocabularyAsync`: Use `NOT EXISTS` subquery to filter out default vocabularies and system collections
+- [x] 3.5 Add new functions:
+  - [x] `getDefaultVocabularyByUserIdAsync`: Returns default vocabulary (IsDefault = true)
+  - [x] `createDefaultVocabularyAsync`: Creates default vocabulary in "Unsorted" collection with name "Unsorted" (IsDefault = true)
+- [x] ~~3.6 Add count function~~ (REMOVED - not needed)
+  - ~~`getVocabularyEntryCountAsync(vocabularyId, connection, transaction, cancellationToken)`: Returns int~~
 
 ---
 
@@ -107,16 +72,7 @@ type internal VocabularyRecordWithDefaultFlag =
 
 ### File: `Wordfolio.Api.Domain/Vocabularies/Errors.fs`
 
-**4.1 Add new error types:**
-```fsharp
-type VocabularyError =
-    | VocabularyNotFound of VocabularyId
-    | VocabularyAccessDenied of UserId * VocabularyId
-    | VocabularyNameRequired
-    | VocabularyNameTooLong of int
-    | VocabularyCollectionNotFound of CollectionId
-    | DefaultVocabularyNotFound of UserId  // NEW
-```
+- [ ] 4.1 Add new error type: `DefaultVocabularyNotFound of UserId`
 
 ---
 
@@ -124,23 +80,11 @@ type VocabularyError =
 
 ### File: `Wordfolio.Api.Domain/Vocabularies/Operations.fs`
 
-**5.1 Add new operation:**
-```fsharp
-let getDefaultOrCreateAsync
-    (env: TransactionalEnv)
-    (userId: UserId)
-    : Task<Result<Vocabulary, VocabularyError>>
-```
-
-**Logic:**
-1. Try to get existing default vocabulary for user
-2. If found, return `Ok vocabulary`
-3. If not found:
-   - Check if "Unsorted" collection exists
-   - If not, create it
-   - Create default vocabulary in "Unsorted" collection
-   - Return `Ok defaultVocabulary`
-4. Handle errors appropriately (access denied, etc.)
+- [ ] 5.1 Add new operation: `getDefaultOrCreateAsync`
+  - Try to get existing default vocabulary for user
+  - If not found, check if "Unsorted" collection exists (create if not)
+  - Create default vocabulary in "Unsorted" collection
+  - Return vocabulary
 
 ---
 
@@ -148,62 +92,18 @@ let getDefaultOrCreateAsync
 
 ### File: `Wordfolio.Api/Handlers/Collections.fs`
 
-**6.1 Add new response types:**
-```fsharp
-type VocabularySummaryResponse =
-    { Id: int
-      Name: string
-      Description: string option }
-
-type CollectionResponse =
-    { Id: int
-      Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
-      VocabularyCount: int option
-      Vocabularies: VocabularySummaryResponse list option }
-```
-
-**6.2 Modify `GET /collections`:**
-- Accept optional query parameter `include: string[]` (e.g., `?include=vocabularies`)
-- When `vocabularies` in include array:
-  - Call `getCollectionsWithVocabulariesByUserIdAsync`
-  - Populate `Vocabularies` and `VocabularyCount` for each collection
-- When `vocabularies` NOT in include:
-  - Call `getCollectionsByUserIdAsync`
-  - Optionally populate `VocabularyCount` (count query per collection, or modify query to include counts)
-  - Set `Vocabularies` to `None`
-
-**6.3 Modify `GET /collections/{id}`:**
-- Add `VocabularyCount` to response
-- Get count from `Vocabularies.getVocabularyCountByCollectionIdAsync` (need to add this function)
+- [ ] 6.1 Add new response types: `VocabularySummaryResponse`, `CollectionWithVocabulariesResponse`
+- [ ] 6.2 Modify `GET /collections`: Accept optional query parameter `include=vocabularies`
 
 ---
 
-## Task 7: Handler Layer - Vocabularies
+## ~~Task 7: Handler Layer - Vocabularies~~ (REMOVED)
 
 ### File: `Wordfolio.Api/Handlers/Vocabularies.fs`
 
-**7.1 Modify `VocabularyResponse`:**
-```fsharp
-type VocabularyResponse =
-    { Id: int
-      CollectionId: int
-      Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
-      EntryCount: int option }
-```
-
-**7.2 Modify `GET /collections/{collectionId}/vocabularies`:**
-- For each vocabulary, populate `EntryCount` using `getVocabularyEntryCountAsync`
-- Note: This endpoint excludes default vocabularies (IsDefault = 0 filter in data layer)
-
-**7.3 Modify `GET /collections/{collectionId}/vocabularies/{id}`:**
-- Populate `EntryCount` field
-- Note: This endpoint excludes default vocabularies (IsDefault = 0 filter in data layer)
+- ~~[ ] 7.1 Modify `VocabularyResponse`: Add `EntryCount: int option`~~ (REMOVED - not needed)
+- ~~[ ] 7.2 Modify `GET /collections/{collectionId}/vocabularies`: Populate `EntryCount`~~ (REMOVED - not needed)
+- ~~[ ] 7.3 Modify `GET /collections/{collectionId}/vocabularies/{id}`: Populate `EntryCount`~~ (REMOVED - not needed)
 
 ---
 
@@ -211,99 +111,66 @@ type VocabularyResponse =
 
 ### File: `Wordfolio.Api/Handlers/Entries.fs`
 
-**8.1 Modify `CreateEntryRequest`:**
-```fsharp
-type CreateEntryRequest =
-    { VocabularyId: int option  // Made optional (was required)
-      EntryText: string
-      Definitions: DefinitionRequest list
-      Translations: TranslationRequest list }
-```
-
-**8.2 Modify `POST /entries`:**
-- If `VocabularyId` is `None`:
-  - Call `getDefaultOrCreateAsync` to get or create default vocabulary
-  - Use returned vocabulary ID
-  - Return entry with `VocabularyId` populated
-- If `VocabularyId` is `Some`:
-  - Validate vocabulary exists and is accessible
-  - Use existing logic
-
-**8.3 Add new endpoint `DELETE /entries/{id}`:**
-```fsharp
-group.MapDelete(
-    UrlTokens.ById,
-    Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-        (fun id user dataSource cancellationToken ->
-            task {
-                match getUserId user with
-                | None -> return Results.Unauthorized()
-                | Some userId ->
-                    let env = TransactionalEnv(dataSource, cancellationToken)
-                    let! result = delete env (UserId userId) (EntryId id)
-
-                    return
-                        match result with
-                        | Ok() -> Results.NoContent()
-                        | Error error -> toErrorResponse error
-            })
-)
-```
-
-**8.4 Update error mapping in `toErrorResponse`:**
-- Ensure all `EntryError` cases are handled
+- [ ] 8.1 Modify `CreateEntryRequest`: Make `VocabularyId` optional
+- [ ] 8.2 Modify `POST /entries`: Use default vocabulary when `VocabularyId` is None
+- [ ] 8.3 Add new endpoint `DELETE /entries/{id}`
+- [ ] 8.4 Update error mapping in `toErrorResponse`
 
 ---
 
-## Task 9: DataAccess Layer - Add Missing Count Functions
+## ~~Task 9: DataAccess Layer - Add Missing Count Functions~~ (REMOVED)
 
 ### File: `Wordfolio.Api.DataAccess/Collections.fs`
 
-**Add function:**
-```fsharp
-let getVocabularyCountByCollectionIdAsync
-    (collectionId: int)
-    (connection: IDbConnection)
-    (transaction: IDbTransaction)
-    (cancellationToken: CancellationToken)
-    : Task<int>
-```
-
-- Count vocabularies in collection (excluding default: `WHERE CollectionId = @collectionId AND IsDefault = 0`)
+- [x] ~~Add `getVocabularyCountByCollectionIdAsync`: Count vocabularies in collection (excluding default)~~ (REMOVED - not needed)
 
 ---
 
-## Task 10: Update Tests
+## Task 10: Tests
 
-### 10.1 Database Tests
-- Test new columns in migrations
+### 10.1 DataAccess Tests - Collections
+- [x] Test `createCollectionAsync` sets `IsSystem = false`
+- [x] Test `getCollectionByIdAsync` returns None for system collections
+- [x] Test `getCollectionsByUserIdAsync` filters out system collections
+- [x] Test `updateCollectionAsync` returns 0 for system collections
+- [x] Test `deleteCollectionAsync` returns 0 for system collections
+- [x] Test `getDefaultCollectionByUserIdAsync`
+- [x] Test `createDefaultCollectionAsync`
+- [x] Test `getCollectionsWithVocabulariesByUserIdAsync`
+- [x] ~~Test `getVocabularyCountByCollectionIdAsync`~~ (REMOVED - function removed)
 
-### 10.2 DataAccess Tests
-- Test filtering of system collections and default vocabularies
-- Test `getCollectionsWithVocabulariesByUserIdAsync` returns correct tree structure
-- Test `getDefaultVocabularyByUserIdAsync`
-- Test `createDefaultCollectionAsync` and `createDefaultVocabularyAsync`
-- Test count functions
+### 10.2 DataAccess Tests - Vocabularies
+- [x] Test `createVocabularyAsync` sets `IsDefault = false`
+- [x] Test `getVocabularyByIdAsync` returns None for default vocabularies
+- [x] Test `getVocabularyByIdAsync` returns None for vocabularies in system collections
+- [x] Test `getVocabulariesByCollectionIdAsync` filters out default vocabularies
+- [x] Test `getVocabulariesByCollectionIdAsync` returns empty for system collections
+- [x] Test `getVocabularyByIdAndUserIdAsync` returns None for default vocabularies
+- [x] Test `getVocabularyByIdAndUserIdAsync` returns None for vocabularies in system collections
+- [x] Test `updateVocabularyAsync` returns 0 for default vocabularies
+- [x] Test `updateVocabularyAsync` returns 0 for vocabularies in system collections
+- [x] Test `deleteVocabularyAsync` returns 0 for default vocabularies
+- [x] Test `deleteVocabularyAsync` returns 0 for vocabularies in system collections
+- [x] Test `getDefaultVocabularyByUserIdAsync`
+- [x] Test `createDefaultVocabularyAsync`
+- [x] ~~Test `getVocabularyEntryCountAsync`~~ (REMOVED - function removed)
 
 ### 10.3 Domain Tests
-- Test `getDefaultOrCreateAsync` operation
-  - Test when default vocabulary exists
-  - Test when default vocabulary doesn't exist (should create)
-  - Test error cases
+- [ ] Test `getDefaultOrCreateAsync` when default vocabulary exists
+- [ ] Test `getDefaultOrCreateAsync` when default vocabulary doesn't exist (should create)
+- [ ] Test `getDefaultOrCreateAsync` error cases
 
 ### 10.4 Integration Tests
-- Test `GET /collections?include=vocabularies` returns tree
-- Test `GET /collections?include=vocabularies` excludes system collections
-- Test `POST /entries` with null `VocabularyId` creates in default vocabulary
-- Test `POST /entries` auto-creates default vocabulary if needed
-- Test `DELETE /entries/{id}` works correctly
-- Test `EntryCount` is populated in responses
+- [ ] Test `GET /collections?include=vocabularies` returns tree
+- [ ] Test `GET /collections?include=vocabularies` excludes system collections
+- [ ] Test `POST /entries` with null `VocabularyId` creates in default vocabulary
+- [ ] Test `POST /entries` auto-creates default vocabulary if needed
+- [ ] Test `DELETE /entries/{id}` works correctly
 
 ---
 
 ## Task 11: Run Verification Commands
 
-### Backend
 ```bash
 # Build
 dotnet build
@@ -322,12 +189,13 @@ dotnet format
 
 ## Implementation Order
 
-1. **Database Migration** (Task 1)
-2. **DataAccess Layer** (Tasks 2, 3, 9) - depends on migration
-3. **Domain Layer** (Tasks 4, 5) - depends on DataAccess
-4. **Handler Layer** (Tasks 6, 7, 8) - depends on Domain
-5. **Tests** (Task 10) - can be done alongside development
-6. **Verification** (Task 11)
+1. **Database Migration** (Task 1) - COMPLETED
+2. **DataAccess Layer - Basic Filtering** (Tasks 2.1-2.3, 3.1-3.4) - COMPLETED
+3. **DataAccess Layer - New Functions** (Tasks 2.4-2.5, 3.5) - COMPLETED (Task 3.6, 9 removed)
+4. **Domain Layer** (Tasks 4, 5) - TODO
+5. **Handler Layer** (Tasks 6, 8) - TODO (Task 7 removed)
+6. **Remaining Tests** (Task 10) - DataAccess tests COMPLETED, Domain/Integration tests TODO
+7. **Verification** (Task 11) - Run after each step
 
 ---
 
@@ -339,3 +207,4 @@ dotnet format
 - **Unsorted collection and default vocabulary are created automatically** when first needed
 - **Frontend will fetch tree data** via `GET /collections?include=vocabularies` for sidebar
 - **Word entry without specifying vocabulary** uses default vocabulary automatically
+- **Vocabulary queries also filter by collection's IsSystem** to prevent accessing vocabularies in system collections

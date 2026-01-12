@@ -517,3 +517,348 @@ type CollectionsTests(fixture: WordfolioTestFixture) =
 
             Assert.True(actual.IsSome)
         }
+
+    [<Fact>]
+    member _.``getDefaultCollectionByUserIdAsync returns system collection when it exists``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let systemCollection =
+                Entities.makeCollection user "Unsorted" None createdAt None true
+
+            let regularCollection =
+                Entities.makeCollection user "Regular" None createdAt None false
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ systemCollection; regularCollection ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                Collections.getDefaultCollectionByUserIdAsync user.Id
+                |> fixture.WithConnectionAsync
+
+            let expected: Collections.Collection option =
+                Some
+                    { Id = systemCollection.Id
+                      UserId = user.Id
+                      Name = "Unsorted"
+                      Description = None
+                      CreatedAt = createdAt
+                      UpdatedAt = None }
+
+            Assert.Equal(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``getDefaultCollectionByUserIdAsync returns None when no system collection exists``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let regularCollection =
+                Entities.makeCollection user "Regular" None createdAt None false
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ regularCollection ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                Collections.getDefaultCollectionByUserIdAsync user.Id
+                |> fixture.WithConnectionAsync
+
+            Assert.Equal(None, actual)
+        }
+
+    [<Fact>]
+    member _.``createDefaultCollectionAsync creates system collection``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            let! createdId =
+                Collections.createDefaultCollectionAsync
+                    { UserId = user.Id
+                      Name = "Unsorted"
+                      Description = None
+                      CreatedAt = createdAt }
+                |> fixture.WithConnectionAsync
+
+            let! actualCollection =
+                fixture.Seeder
+                |> Seeder.getCollectionByIdAsync createdId
+
+            let expected: Collection option =
+                Some
+                    { Id = createdId
+                      UserId = user.Id
+                      Name = "Unsorted"
+                      Description = None
+                      CreatedAt = createdAt
+                      UpdatedAt = None
+                      IsSystem = true }
+
+            Assert.Equivalent(expected, actualCollection)
+        }
+
+    [<Fact>]
+    member _.``getDefaultCollectionByUserIdAsync throws when multiple system collections exist``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let systemCollection1 =
+                Entities.makeCollection user "Unsorted 1" None createdAt None true
+
+            let systemCollection2 =
+                Entities.makeCollection user "Unsorted 2" None createdAt None true
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ systemCollection1; systemCollection2 ]
+                |> Seeder.saveChangesAsync
+
+            let! ex =
+                Assert.ThrowsAsync<System.Exception>(fun () ->
+                    Collections.getDefaultCollectionByUserIdAsync user.Id
+                    |> fixture.WithConnectionAsync
+                    :> Task)
+
+            Assert.Equal("Query returned more than one element when at most one was expected", ex.Message)
+        }
+
+    [<Fact>]
+    member _.``getCollectionsWithVocabulariesByUserIdAsync returns collections with their vocabularies``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let collection1 =
+                Entities.makeCollection user "Collection 1" (Some "Description 1") createdAt None false
+
+            let collection2 =
+                Entities.makeCollection user "Collection 2" None createdAt None false
+
+            let vocab1 =
+                Entities.makeVocabulary collection1 "Vocab 1" (Some "Vocab desc") createdAt None false
+
+            let vocab2 =
+                Entities.makeVocabulary collection1 "Vocab 2" None createdAt None false
+
+            let vocab3 =
+                Entities.makeVocabulary collection2 "Vocab 3" None createdAt None false
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ collection1; collection2 ]
+                |> Seeder.addVocabularies [ vocab1; vocab2; vocab3 ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                Collections.getCollectionsWithVocabulariesByUserIdAsync user.Id
+                |> fixture.WithConnectionAsync
+
+            let expected: Collections.CollectionWithVocabularies list =
+                [ { Collection =
+                      { Id = collection1.Id
+                        UserId = user.Id
+                        Name = "Collection 1"
+                        Description = Some "Description 1"
+                        CreatedAt = createdAt
+                        UpdatedAt = None }
+                    Vocabularies =
+                      [ { Id = vocab1.Id
+                          CollectionId = collection1.Id
+                          Name = "Vocab 1"
+                          Description = Some "Vocab desc"
+                          CreatedAt = createdAt
+                          UpdatedAt = None }
+                        { Id = vocab2.Id
+                          CollectionId = collection1.Id
+                          Name = "Vocab 2"
+                          Description = None
+                          CreatedAt = createdAt
+                          UpdatedAt = None } ] }
+                  { Collection =
+                      { Id = collection2.Id
+                        UserId = user.Id
+                        Name = "Collection 2"
+                        Description = None
+                        CreatedAt = createdAt
+                        UpdatedAt = None }
+                    Vocabularies =
+                      [ { Id = vocab3.Id
+                          CollectionId = collection2.Id
+                          Name = "Vocab 3"
+                          Description = None
+                          CreatedAt = createdAt
+                          UpdatedAt = None } ] } ]
+
+            Assert.Equal<Collections.CollectionWithVocabularies list>(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``getCollectionsWithVocabulariesByUserIdAsync filters out system collections``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let systemCollection =
+                Entities.makeCollection user "Unsorted" None createdAt None true
+
+            let regularCollection =
+                Entities.makeCollection user "Regular" None createdAt None false
+
+            let _ =
+                Entities.makeVocabulary systemCollection "Default Vocab" None createdAt None true
+
+            let vocab =
+                Entities.makeVocabulary regularCollection "Regular Vocab" None createdAt None false
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                Collections.getCollectionsWithVocabulariesByUserIdAsync user.Id
+                |> fixture.WithConnectionAsync
+
+            let expected: Collections.CollectionWithVocabularies list =
+                [ { Collection =
+                      { Id = regularCollection.Id
+                        UserId = user.Id
+                        Name = "Regular"
+                        Description = None
+                        CreatedAt = createdAt
+                        UpdatedAt = None }
+                    Vocabularies =
+                      [ { Id = vocab.Id
+                          CollectionId = regularCollection.Id
+                          Name = "Regular Vocab"
+                          Description = None
+                          CreatedAt = createdAt
+                          UpdatedAt = None } ] } ]
+
+            Assert.Equal<Collections.CollectionWithVocabularies list>(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``getCollectionsWithVocabulariesByUserIdAsync filters out default vocabularies``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let collection =
+                Entities.makeCollection user "Collection" None createdAt None false
+
+            let defaultVocab =
+                Entities.makeVocabulary collection "Default" None createdAt None true
+
+            let regularVocab =
+                Entities.makeVocabulary collection "Regular" None createdAt None false
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ defaultVocab; regularVocab ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                Collections.getCollectionsWithVocabulariesByUserIdAsync user.Id
+                |> fixture.WithConnectionAsync
+
+            let expected: Collections.CollectionWithVocabularies list =
+                [ { Collection =
+                      { Id = collection.Id
+                        UserId = user.Id
+                        Name = "Collection"
+                        Description = None
+                        CreatedAt = createdAt
+                        UpdatedAt = None }
+                    Vocabularies =
+                      [ { Id = regularVocab.Id
+                          CollectionId = collection.Id
+                          Name = "Regular"
+                          Description = None
+                          CreatedAt = createdAt
+                          UpdatedAt = None } ] } ]
+
+            Assert.Equal<Collections.CollectionWithVocabularies list>(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``getCollectionsWithVocabulariesByUserIdAsync returns empty list for collections with no vocabularies``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let collection =
+                Entities.makeCollection user "Empty Collection" None createdAt None false
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                Collections.getCollectionsWithVocabulariesByUserIdAsync user.Id
+                |> fixture.WithConnectionAsync
+
+            let expected: Collections.CollectionWithVocabularies list =
+                [ { Collection =
+                      { Id = collection.Id
+                        UserId = user.Id
+                        Name = "Empty Collection"
+                        Description = None
+                        CreatedAt = createdAt
+                        UpdatedAt = None }
+                    Vocabularies = [] } ]
+
+            Assert.Equal<Collections.CollectionWithVocabularies list>(expected, actual)
+        }
