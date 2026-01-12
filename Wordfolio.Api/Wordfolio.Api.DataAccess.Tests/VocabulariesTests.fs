@@ -900,3 +900,154 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
 
             Assert.Equal(expected, actual)
         }
+
+    [<Fact>]
+    member _.``getDefaultVocabularyByUserIdAsync returns default vocabulary when it exists``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let collection =
+                Entities.makeCollection user "Collection" None createdAt None false
+
+            let defaultVocabulary =
+                Entities.makeVocabulary collection "Unsorted" None createdAt None true
+
+            let regularVocabulary =
+                Entities.makeVocabulary collection "Regular" None createdAt None false
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ defaultVocabulary; regularVocabulary ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                Vocabularies.getDefaultVocabularyByUserIdAsync user.Id
+                |> fixture.WithConnectionAsync
+
+            let expected: Vocabularies.Vocabulary option =
+                Some
+                    { Id = defaultVocabulary.Id
+                      CollectionId = collection.Id
+                      Name = "Unsorted"
+                      Description = None
+                      CreatedAt = createdAt
+                      UpdatedAt = None }
+
+            Assert.Equal(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``getDefaultVocabularyByUserIdAsync returns None when no default vocabulary exists``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let collection =
+                Entities.makeCollection user "Collection" None createdAt None false
+
+            let regularVocabulary =
+                Entities.makeVocabulary collection "Regular" None createdAt None false
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ regularVocabulary ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                Vocabularies.getDefaultVocabularyByUserIdAsync user.Id
+                |> fixture.WithConnectionAsync
+
+            Assert.Equal(None, actual)
+        }
+
+    [<Fact>]
+    member _.``createDefaultVocabularyAsync creates default vocabulary``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let collection =
+                Entities.makeCollection user "Collection" None createdAt None false
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.saveChangesAsync
+
+            let! createdId =
+                Vocabularies.createDefaultVocabularyAsync
+                    { CollectionId = collection.Id
+                      Name = "Unsorted"
+                      Description = None
+                      CreatedAt = createdAt }
+                |> fixture.WithConnectionAsync
+
+            let! actualVocabulary =
+                fixture.Seeder
+                |> Seeder.getVocabularyByIdAsync createdId
+
+            let expected: Vocabulary option =
+                Some
+                    { Id = createdId
+                      CollectionId = collection.Id
+                      Name = "Unsorted"
+                      Description = None
+                      CreatedAt = createdAt
+                      UpdatedAt = None
+                      IsDefault = true }
+
+            Assert.Equivalent(expected, actualVocabulary)
+        }
+
+    [<Fact>]
+    member _.``getDefaultVocabularyByUserIdAsync throws when multiple default vocabularies exist``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let collection =
+                Entities.makeCollection user "Collection" None createdAt None false
+
+            let defaultVocabulary1 =
+                Entities.makeVocabulary collection "Default 1" None createdAt None true
+
+            let defaultVocabulary2 =
+                Entities.makeVocabulary collection "Default 2" None createdAt None true
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ defaultVocabulary1; defaultVocabulary2 ]
+                |> Seeder.saveChangesAsync
+
+            let! ex =
+                Assert.ThrowsAsync<System.Exception>(fun () ->
+                    Vocabularies.getDefaultVocabularyByUserIdAsync user.Id
+                    |> fixture.WithConnectionAsync
+                    :> Task)
+
+            Assert.Equal("Query returned more than one element when at most one was expected", ex.Message)
+        }

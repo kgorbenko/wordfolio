@@ -237,3 +237,48 @@ let deleteVocabularyAsync
 
         return! connection.ExecuteAsync(commandDefinition)
     }
+
+let getDefaultVocabularyByUserIdAsync
+    (userId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<Vocabulary option> =
+    task {
+        let! result =
+            select {
+                for v in vocabulariesTable do
+                    innerJoin c in collectionsTable on (v.CollectionId = c.Id)
+                    where(c.UserId = userId && v.IsDefault = true)
+            }
+            |> selectSingleAsync connection transaction cancellationToken
+
+        return result |> Option.map fromRecord
+    }
+
+let createDefaultVocabularyAsync
+    (parameters: VocabularyCreationParameters)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<int> =
+    task {
+        let insertParams: VocabularyInsertParameters =
+            { CollectionId = parameters.CollectionId
+              Name = parameters.Name
+              Description = parameters.Description
+              CreatedAt = parameters.CreatedAt
+              IsDefault = true }
+
+        let! record =
+            insert {
+                into vocabulariesInsertTable
+                value insertParams
+            }
+            |> insertOutputSingleAsync<VocabularyInsertParameters, VocabularyRecord>
+                connection
+                transaction
+                cancellationToken
+
+        return record.Id
+    }

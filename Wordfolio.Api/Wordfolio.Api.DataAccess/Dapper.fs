@@ -72,6 +72,24 @@ let trySelectFirstAsync
         return result |> Seq.tryHead
     }
 
+let selectSingleAsync
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    (selectFunc: SelectQuery)
+    : Task<'a option> =
+    task {
+        let! result = connection.SelectAsync<'a>(selectFunc, trans = transaction, cancellationToken = cancellationToken)
+
+        let items =
+            result |> Seq.truncate 2 |> Seq.toList
+
+        match items with
+        | [] -> return None
+        | [ single ] -> return Some single
+        | _ -> return failwith "Query returned more than one element when at most one was expected"
+    }
+
 let updateAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)
