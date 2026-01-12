@@ -5,11 +5,9 @@ open System.Data
 open System.Threading
 open System.Threading.Tasks
 
-open Dapper
 open Dapper.FSharp.PostgreSQL
 
 open Wordfolio.Api.DataAccess.Dapper
-open Wordfolio.Common
 
 [<CLIMutable>]
 type internal CollectionRecord =
@@ -47,11 +45,7 @@ let private fromRecord(record: CollectionRecord) : Collection =
       Name = record.Name
       Description = record.Description
       CreatedAt = record.CreatedAt
-      UpdatedAt =
-        if record.UpdatedAt.HasValue then
-            Some record.UpdatedAt.Value
-        else
-            None }
+      UpdatedAt = record.UpdatedAt |> Option.ofNullable }
 
 let internal collectionsTable =
     table'<CollectionRecord> Schema.CollectionsTable.Name
@@ -213,82 +207,4 @@ let createDefaultCollectionAsync
                 cancellationToken
 
         return record.Id
-    }
-
-type VocabularySummary =
-    { Id: int
-      CollectionId: int
-      Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
-
-type CollectionWithVocabularies =
-    { Collection: Collection
-      Vocabularies: VocabularySummary list }
-
-[<CLIMutable>]
-type internal VocabularyRecord =
-    { Id: int
-      CollectionId: int
-      Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
-      IsDefault: bool }
-
-let getCollectionsWithVocabulariesByUserIdAsync
-    (userId: int)
-    (connection: IDbConnection)
-    (transaction: IDbTransaction)
-    (cancellationToken: CancellationToken)
-    : Task<CollectionWithVocabularies list> =
-    task {
-        let sql =
-            """
-            SELECT
-                c."Id", c."UserId", c."Name", c."Description", c."CreatedAt", c."UpdatedAt", c."IsSystem",
-                v."Id", v."CollectionId", v."Name", v."Description", v."CreatedAt", v."UpdatedAt", v."IsDefault"
-            FROM wordfolio."Collections" c
-            LEFT JOIN wordfolio."Vocabularies" v ON v."CollectionId" = c."Id" AND v."IsDefault" = false
-            WHERE c."UserId" = @UserId AND c."IsSystem" = false
-            ORDER BY c."Id", v."Id"
-            """
-
-        let commandDefinition =
-            CommandDefinition(
-                commandText = sql,
-                parameters = {| UserId = userId |},
-                transaction = transaction,
-                cancellationToken = cancellationToken
-            )
-
-        let! results =
-            connection.QueryAsync<CollectionRecord, VocabularyRecord, CollectionRecord * VocabularyRecord option>(
-                commandDefinition,
-                (fun c v -> (c, Option.ofObj v)),
-                splitOn = "Id"
-            )
-
-        let grouped =
-            results
-            |> Seq.groupBy fst
-            |> Seq.map(fun (collection, rows) ->
-                let vocabularies =
-                    rows
-                    |> Seq.choose snd
-                    |> Seq.map(fun v ->
-                        { Id = v.Id
-                          CollectionId = v.CollectionId
-                          Name = v.Name
-                          Description = v.Description
-                          CreatedAt = v.CreatedAt
-                          UpdatedAt = v.UpdatedAt |> Option.ofNullable })
-                    |> Seq.toList
-
-                { Collection = fromRecord collection
-                  Vocabularies = vocabularies })
-            |> Seq.toList
-
-        return grouped
     }

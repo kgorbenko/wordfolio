@@ -41,8 +41,12 @@ This document outlines all API changes required to support the vocabulary manage
 - [x] 2.4 Add new functions:
   - [x] `getDefaultCollectionByUserIdAsync`: Returns "Unsorted" collection (IsSystem = true)
   - [x] `createDefaultCollectionAsync`: Creates "Unsorted" collection with name "Unsorted" (IsSystem = true)
-- [x] 2.5 Add tree query:
-  - [x] `getCollectionsWithVocabulariesByUserIdAsync`: Returns `{ Collection: Collection; Vocabularies: Vocabulary list } list`
+- [x] 2.5 Add tree query with counts in separate module:
+  - [x] File: `Wordfolio.Api.DataAccess/CollectionsHierarchy.fs`
+  - [x] `CollectionsHierarchy.getCollectionsByUserIdAsync`: Returns `CollectionSummary list`
+  - [x] `CollectionSummary` includes `Vocabularies: VocabularySummary list` (embedded, not separate)
+  - [x] `VocabularySummary` includes `EntryCount: int` for UI display
+  - Note: Counts are fetched in a single optimized query using LEFT JOINs (avoids N+1 problem)
 
 ---
 
@@ -63,7 +67,7 @@ This document outlines all API changes required to support the vocabulary manage
 - [x] 3.5 Add new functions:
   - [x] `getDefaultVocabularyByUserIdAsync`: Returns default vocabulary (IsDefault = true)
   - [x] `createDefaultVocabularyAsync`: Creates default vocabulary in "Unsorted" collection with name "Unsorted" (IsDefault = true)
-- [x] ~~3.6 Add count function~~ (REMOVED - not needed)
+- [x] ~~3.6 Add count function~~ (REMOVED - counts now included in tree query Task 2.5)
   - ~~`getVocabularyEntryCountAsync(vocabularyId, connection, transaction, cancellationToken)`: Returns int~~
 
 ---
@@ -92,7 +96,7 @@ This document outlines all API changes required to support the vocabulary manage
 
 ### File: `Wordfolio.Api/Handlers/Collections.fs`
 
-- [ ] 6.1 Add new response types: `VocabularySummaryResponse`, `CollectionWithVocabulariesResponse`
+- [ ] 6.1 Add new response types: `VocabularySummaryResponse` (with `EntryCount`), `CollectionSummaryResponse` (with embedded `Vocabularies`)
 - [ ] 6.2 Modify `GET /collections`: Accept optional query parameter `include=vocabularies`
 
 ---
@@ -118,11 +122,11 @@ This document outlines all API changes required to support the vocabulary manage
 
 ---
 
-## ~~Task 9: DataAccess Layer - Add Missing Count Functions~~ (REMOVED)
+## ~~Task 9: DataAccess Layer - Add Missing Count Functions~~ (REMOVED - counts included in tree query)
 
 ### File: `Wordfolio.Api.DataAccess/Collections.fs`
 
-- [x] ~~Add `getVocabularyCountByCollectionIdAsync`: Count vocabularies in collection (excluding default)~~ (REMOVED - not needed)
+- [x] ~~Add `getVocabularyCountByCollectionIdAsync`: Count vocabularies in collection (excluding default)~~ (REMOVED - `VocabularyCount` now included in Task 2.5 tree query)
 
 ---
 
@@ -136,8 +140,14 @@ This document outlines all API changes required to support the vocabulary manage
 - [x] Test `deleteCollectionAsync` returns 0 for system collections
 - [x] Test `getDefaultCollectionByUserIdAsync`
 - [x] Test `createDefaultCollectionAsync`
-- [x] Test `getCollectionsWithVocabulariesByUserIdAsync`
 - [x] ~~Test `getVocabularyCountByCollectionIdAsync`~~ (REMOVED - function removed)
+
+### 10.1b DataAccess Tests - CollectionsHierarchy
+- [x] Test `getCollectionsByUserIdAsync` returns collections with their vocabularies
+- [x] Test `getCollectionsByUserIdAsync` filters out system collections
+- [x] Test `getCollectionsByUserIdAsync` filters out default vocabularies
+- [x] Test `getCollectionsByUserIdAsync` returns empty vocabularies list for collections with no vocabularies
+- [x] Test `getCollectionsByUserIdAsync` returns correct entry counts
 
 ### 10.2 DataAccess Tests - Vocabularies
 - [x] Test `createVocabularyAsync` sets `IsDefault = false`
@@ -153,7 +163,7 @@ This document outlines all API changes required to support the vocabulary manage
 - [x] Test `deleteVocabularyAsync` returns 0 for vocabularies in system collections
 - [x] Test `getDefaultVocabularyByUserIdAsync`
 - [x] Test `createDefaultVocabularyAsync`
-- [x] ~~Test `getVocabularyEntryCountAsync`~~ (REMOVED - function removed)
+- [x] ~~Test `getVocabularyEntryCountAsync`~~ (REMOVED - counts now tested via tree query)
 
 ### 10.3 Domain Tests
 - [ ] Test `getDefaultOrCreateAsync` when default vocabulary exists
@@ -161,7 +171,7 @@ This document outlines all API changes required to support the vocabulary manage
 - [ ] Test `getDefaultOrCreateAsync` error cases
 
 ### 10.4 Integration Tests
-- [ ] Test `GET /collections?include=vocabularies` returns tree
+- [ ] Test `GET /collections?include=vocabularies` returns tree with counts
 - [ ] Test `GET /collections?include=vocabularies` excludes system collections
 - [ ] Test `POST /entries` with null `VocabularyId` creates in default vocabulary
 - [ ] Test `POST /entries` auto-creates default vocabulary if needed
@@ -191,7 +201,7 @@ dotnet format
 
 1. **Database Migration** (Task 1) - COMPLETED
 2. **DataAccess Layer - Basic Filtering** (Tasks 2.1-2.3, 3.1-3.4) - COMPLETED
-3. **DataAccess Layer - New Functions** (Tasks 2.4-2.5, 3.5) - COMPLETED (Task 3.6, 9 removed)
+3. **DataAccess Layer - New Functions** (Tasks 2.4-2.5, 3.5) - COMPLETED (Task 3.6, 9 removed - counts included in tree query)
 4. **Domain Layer** (Tasks 4, 5) - TODO
 5. **Handler Layer** (Tasks 6, 8) - TODO (Task 7 removed)
 6. **Remaining Tests** (Task 10) - DataAccess tests COMPLETED, Domain/Integration tests TODO
@@ -205,6 +215,6 @@ dotnet format
 - **System collections and default vocabularies are filtered out by default** in all queries
 - **Only accessible via specific functions** when deliberately loading them
 - **Unsorted collection and default vocabulary are created automatically** when first needed
-- **Frontend will fetch tree data** via `GET /collections?include=vocabularies` for sidebar
+- **Frontend will fetch tree data** via `GET /collections?include=vocabularies` for sidebar (uses `CollectionsHierarchy.getCollectionsByUserIdAsync`)
 - **Word entry without specifying vocabulary** uses default vocabulary automatically
 - **Vocabulary queries also filter by collection's IsSystem** to prevent accessing vocabularies in system collections
