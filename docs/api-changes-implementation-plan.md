@@ -72,11 +72,11 @@ This document outlines all API changes required to support the vocabulary manage
 
 ---
 
-## Task 4: Domain Layer - Vocabularies Errors
+## ~~Task 4: Domain Layer - Vocabularies Errors~~ (REMOVED)
 
 ### File: `Wordfolio.Api.Domain/Vocabularies/Errors.fs`
 
-- [ ] 4.1 Add new error type: `DefaultVocabularyNotFound of UserId`
+- ~~[ ] 4.1 Add new error type: `DefaultVocabularyNotFound of UserId`~~ (REMOVED - operation always succeeds)
 
 ---
 
@@ -84,11 +84,16 @@ This document outlines all API changes required to support the vocabulary manage
 
 ### File: `Wordfolio.Api.Domain/Vocabularies/Operations.fs`
 
-- [ ] 5.1 Add new operation: `getDefaultOrCreateAsync`
+- [x] 5.1 Add new operation: `getDefaultOrCreate`
   - Try to get existing default vocabulary for user
-  - If not found, check if "Unsorted" collection exists (create if not)
-  - Create default vocabulary in "Unsorted" collection
-  - Return vocabulary
+  - If not found, check if system collection exists (create if not)
+  - Create default vocabulary in system collection
+  - Construct and return vocabulary (no re-fetch needed)
+- [x] 5.2 Add capability interfaces and parameter types to `Capabilities.fs`:
+  - `CreateVocabularyParameters` and `CreateCollectionParameters` record types
+  - `IGetDefaultVocabulary`, `ICreateDefaultVocabulary` (returns `VocabularyId`), `IGetDefaultCollection`, `ICreateDefaultCollection`
+- [x] 5.3 Implement capability interfaces in `Infrastructure/Environment.fs`
+- [x] 5.4 Add domain tests in `Wordfolio.Api.Domain.Tests/Vocabularies/GetDefaultOrCreateTests.fs`
 
 ---
 
@@ -166,9 +171,9 @@ This document outlines all API changes required to support the vocabulary manage
 - [x] ~~Test `getVocabularyEntryCountAsync`~~ (REMOVED - counts now tested via tree query)
 
 ### 10.3 Domain Tests
-- [ ] Test `getDefaultOrCreateAsync` when default vocabulary exists
-- [ ] Test `getDefaultOrCreateAsync` when default vocabulary doesn't exist (should create)
-- [ ] Test `getDefaultOrCreateAsync` error cases
+- [x] Test `getDefaultOrCreate` when default vocabulary exists
+- [x] Test `getDefaultOrCreate` when collection exists but vocabulary doesn't (should create vocabulary)
+- [x] Test `getDefaultOrCreate` when neither collection nor vocabulary exists (should create both)
 
 ### 10.4 Integration Tests
 - [ ] Test `GET /collections?include=vocabularies` returns tree with counts
@@ -202,9 +207,9 @@ dotnet format
 1. **Database Migration** (Task 1) - COMPLETED
 2. **DataAccess Layer - Basic Filtering** (Tasks 2.1-2.3, 3.1-3.4) - COMPLETED
 3. **DataAccess Layer - New Functions** (Tasks 2.4-2.5, 3.5) - COMPLETED (Task 3.6, 9 removed - counts included in tree query)
-4. **Domain Layer** (Tasks 4, 5) - TODO
+4. **Domain Layer** (Task 5; Task 4 removed) - COMPLETED
 5. **Handler Layer** (Tasks 6, 8) - TODO (Task 7 removed)
-6. **Remaining Tests** (Task 10) - DataAccess tests COMPLETED, Domain/Integration tests TODO
+6. **Remaining Tests** (Task 10) - DataAccess tests COMPLETED, Domain tests COMPLETED, Integration tests TODO
 7. **Verification** (Task 11) - Run after each step
 
 ---

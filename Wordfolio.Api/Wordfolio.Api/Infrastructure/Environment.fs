@@ -256,6 +256,70 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                         cancellationToken
             }
 
+    interface IGetDefaultVocabulary with
+        member _.GetDefaultVocabulary(UserId userId) =
+            task {
+                let! result =
+                    Wordfolio.Api.DataAccess.Vocabularies.getDefaultVocabularyByUserIdAsync
+                        userId
+                        connection
+                        transaction
+                        cancellationToken
+
+                return result |> Option.map toVocabularyDomain
+            }
+
+    interface ICreateDefaultVocabulary with
+        member _.CreateDefaultVocabulary(parameters: CreateVocabularyParameters) =
+            task {
+                let dataAccessParams: DataAccess.VocabularyCreationParameters =
+                    { CollectionId = CollectionId.value parameters.CollectionId
+                      Name = parameters.Name
+                      Description = parameters.Description
+                      CreatedAt = parameters.CreatedAt }
+
+                let! id =
+                    Wordfolio.Api.DataAccess.Vocabularies.createDefaultVocabularyAsync
+                        dataAccessParams
+                        connection
+                        transaction
+                        cancellationToken
+
+                return VocabularyId id
+            }
+
+    interface IGetDefaultCollection with
+        member _.GetDefaultCollection(UserId userId) =
+            task {
+                let! result =
+                    Wordfolio.Api.DataAccess.Collections.getDefaultCollectionByUserIdAsync
+                        userId
+                        connection
+                        transaction
+                        cancellationToken
+
+                return result |> Option.map toCollectionDomain
+            }
+
+    interface ICreateDefaultCollection with
+        member _.CreateDefaultCollection(parameters: CreateCollectionParameters) =
+            task {
+                let dataAccessParams: DataAccess.CollectionCreationParameters =
+                    { UserId = UserId.value parameters.UserId
+                      Name = parameters.Name
+                      Description = parameters.Description
+                      CreatedAt = parameters.CreatedAt }
+
+                let! id =
+                    Wordfolio.Api.DataAccess.Collections.createDefaultCollectionAsync
+                        dataAccessParams
+                        connection
+                        transaction
+                        cancellationToken
+
+                return CollectionId id
+            }
+
     interface IGetEntryById with
         member _.GetEntryById(EntryId id) =
             task {
