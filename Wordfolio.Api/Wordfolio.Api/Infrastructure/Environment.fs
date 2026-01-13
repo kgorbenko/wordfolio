@@ -10,6 +10,7 @@ open Npgsql
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
+open Wordfolio.Api.Domain.CollectionsHierarchy
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Vocabularies
 
@@ -529,6 +530,36 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                 return
                     maybeVocabulary
                     |> Option.map toVocabularyDomain
+            }
+
+    interface IGetCollectionsWithVocabularies with
+        member _.GetCollectionsWithVocabularies(UserId userId) =
+            task {
+                let! results =
+                    Wordfolio.Api.DataAccess.CollectionsHierarchy.getCollectionsByUserIdAsync
+                        userId
+                        connection
+                        transaction
+                        cancellationToken
+
+                return
+                    results
+                    |> List.map(fun c ->
+                        { Id = CollectionId c.Id
+                          Name = c.Name
+                          Description = c.Description
+                          CreatedAt = c.CreatedAt
+                          UpdatedAt = c.UpdatedAt
+                          Vocabularies =
+                            c.Vocabularies
+                            |> List.map(fun v ->
+                                { Id = VocabularyId v.Id
+                                  CollectionId = CollectionId v.CollectionId
+                                  Name = v.Name
+                                  Description = v.Description
+                                  CreatedAt = v.CreatedAt
+                                  UpdatedAt = v.UpdatedAt
+                                  EntryCount = v.EntryCount }) })
             }
 
 type TransactionalEnv(dataSource: NpgsqlDataSource, cancellationToken: CancellationToken) =

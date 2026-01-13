@@ -12,6 +12,10 @@ module Collections =
 
     let collectionById(id: int) = $"{Path}/{id}"
 
+module CollectionsHierarchy =
+    [<Literal>]
+    let Path = "/collections-hierarchy"
+
 module Vocabularies =
     [<Literal>]
     let Path =

@@ -9,6 +9,7 @@ open Wordfolio.Api
 open Wordfolio.Api.Configuration.GroqApi
 open Wordfolio.Api.Handlers.Auth
 open Wordfolio.Api.Handlers.Collections
+open Wordfolio.Api.Handlers.CollectionsHierarchy
 open Wordfolio.Api.Handlers.Dictionary
 open Wordfolio.Api.Handlers.Entries
 open Wordfolio.Api.Handlers.Vocabularies
@@ -29,6 +30,8 @@ let mapEndpoints(app: IEndpointRouteBuilder) =
         app.MapGroup(Urls.Collections.Path).WithTags("Collections")
 
     mapCollectionsEndpoints collectionsGroup
+
+    mapCollectionsHierarchyEndpoint app
 
     collectionsGroup.MapGroup(Urls.Vocabularies.Path).WithTags("Vocabularies")
     |> mapVocabulariesEndpoints

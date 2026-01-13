@@ -26,6 +26,7 @@
     <Compile Include="Infrastructure\DelimitedStreamProcessorTests.fs" />
     <Compile Include="AuthTests.fs" />
     <Compile Include="CollectionsTests.fs" />
+    <Compile Include="CollectionsHierarchyTests.fs" />
     <Compile Include="VocabulariesTests.fs" />
     <Compile Include="EntriesTests.fs" />
     <Compile Include="DictionaryTests.fs" />

@@ -97,12 +97,25 @@ This document outlines all API changes required to support the vocabulary manage
 
 ---
 
-## Task 6: Handler Layer - Collections
+## Task 6: Handler Layer - Collections Hierarchy
 
-### File: `Wordfolio.Api/Handlers/Collections.fs`
+### New endpoint: `GET /collections-hierarchy`
 
-- [ ] 6.1 Add new response types: `VocabularySummaryResponse` (with `EntryCount`), `CollectionSummaryResponse` (with embedded `Vocabularies`)
-- [ ] 6.2 Modify `GET /collections`: Accept optional query parameter `include=vocabularies`
+**Domain Layer:**
+- [x] 6.1 Create `CollectionsHierarchy` namespace with `VocabularySummary` and `CollectionSummary` types
+- [x] 6.2 Create `CollectionsHierarchy/Capabilities.fs` with `IGetCollectionsWithVocabularies` interface
+- [x] 6.3 Create `CollectionsHierarchy/Operations.fs` with `getByUserId` operation
+- [x] 6.4 Add domain files to `Wordfolio.Api.Domain.fsproj`
+- [x] 6.5 Add domain tests in `CollectionsHierarchy/GetByUserIdTests.fs`
+
+**Handler Layer:**
+- [x] 6.6 Add `CollectionsHierarchy.Path` to `Urls.fs`
+- [x] 6.7 Create new handler file `Handlers/CollectionsHierarchy.fs` with response types:
+  - `VocabularySummaryResponse` (with `EntryCount`)
+  - `CollectionSummaryResponse` (with embedded `Vocabularies`)
+- [x] 6.8 Implement `IGetCollectionsWithVocabularies` in `Environment.fs`
+- [x] 6.9 Register endpoint in `Program.fs`
+- [x] 6.10 Add handler file to `Wordfolio.Api.fsproj`
 
 ---
 
@@ -176,8 +189,11 @@ This document outlines all API changes required to support the vocabulary manage
 - [x] Test `getDefaultOrCreate` when neither collection nor vocabulary exists (should create both)
 
 ### 10.4 Integration Tests
-- [ ] Test `GET /collections?include=vocabularies` returns tree with counts
-- [ ] Test `GET /collections?include=vocabularies` excludes system collections
+- [x] Test `GET /collections-hierarchy` returns tree with counts
+- [x] Test `GET /collections-hierarchy` excludes system collections
+- [x] Test `GET /collections-hierarchy` excludes default vocabularies
+- [x] Test `GET /collections-hierarchy` returns empty list when no collections
+- [x] Test `GET /collections-hierarchy` without authentication fails
 - [ ] Test `POST /entries` with null `VocabularyId` creates in default vocabulary
 - [ ] Test `POST /entries` auto-creates default vocabulary if needed
 - [ ] Test `DELETE /entries/{id}` works correctly
@@ -208,7 +224,7 @@ dotnet format
 2. **DataAccess Layer - Basic Filtering** (Tasks 2.1-2.3, 3.1-3.4) - COMPLETED
 3. **DataAccess Layer - New Functions** (Tasks 2.4-2.5, 3.5) - COMPLETED (Task 3.6, 9 removed - counts included in tree query)
 4. **Domain Layer** (Task 5; Task 4 removed) - COMPLETED
-5. **Handler Layer** (Tasks 6, 8) - TODO (Task 7 removed)
+5. **Handler Layer** (Task 6 COMPLETED, Task 8 TODO) - Task 7 removed
 6. **Remaining Tests** (Task 10) - DataAccess tests COMPLETED, Domain tests COMPLETED, Integration tests TODO
 7. **Verification** (Task 11) - Run after each step
 
@@ -220,6 +236,6 @@ dotnet format
 - **System collections and default vocabularies are filtered out by default** in all queries
 - **Only accessible via specific functions** when deliberately loading them
 - **Unsorted collection and default vocabulary are created automatically** when first needed
-- **Frontend will fetch tree data** via `GET /collections?include=vocabularies` for sidebar (uses `CollectionsHierarchy.getCollectionsByUserIdAsync`)
+- **Frontend will fetch tree data** via `GET /collections-hierarchy` for sidebar (uses `CollectionsHierarchy.getCollectionsByUserIdAsync`)
 - **Word entry without specifying vocabulary** uses default vocabulary automatically
 - **Vocabulary queries also filter by collection's IsSystem** to prevent accessing vocabularies in system collections
