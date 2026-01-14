@@ -49,7 +49,7 @@ type TranslationRequest =
       Examples: ExampleRequest list }
 
 type CreateEntryRequest =
-    { VocabularyId: int
+    { VocabularyId: int option
       EntryText: string
       Definitions: DefinitionRequest list
       Translations: TranslationRequest list }
@@ -238,23 +238,21 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                         let env =
                             TransactionalEnv(dataSource, cancellationToken)
 
-                        let definitions =
-                            request.Definitions
-                            |> List.map toDefinitionInput
+                        let parameters: CreateEntryParameters =
+                            { UserId = UserId userId
+                              VocabularyId =
+                                request.VocabularyId
+                                |> Option.map VocabularyId
+                              EntryText = request.EntryText
+                              Definitions =
+                                request.Definitions
+                                |> List.map toDefinitionInput
+                              Translations =
+                                request.Translations
+                                |> List.map toTranslationInput
+                              CreatedAt = DateTimeOffset.UtcNow }
 
-                        let translations =
-                            request.Translations
-                            |> List.map toTranslationInput
-
-                        let! result =
-                            create
-                                env
-                                (UserId userId)
-                                (VocabularyId request.VocabularyId)
-                                request.EntryText
-                                definitions
-                                translations
-                                DateTimeOffset.UtcNow
+                        let! result = create env parameters
 
                         return
                             match result with
@@ -279,6 +277,26 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                     return
                         match result with
                         | Ok entry -> Results.Ok(toResponse entry)
+                        | Error error -> toErrorResponse error
+            })
+    )
+    |> ignore
+
+    group.MapDelete(
+        UrlTokens.ById,
+        Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun id user dataSource cancellationToken ->
+            task {
+                match getUserId user with
+                | None -> return Results.Unauthorized()
+                | Some userId ->
+                    let env =
+                        TransactionalEnv(dataSource, cancellationToken)
+
+                    let! result = delete env (UserId userId) (EntryId id)
+
+                    return
+                        match result with
+                        | Ok() -> Results.NoContent()
                         | Error error -> toErrorResponse error
             })
     )

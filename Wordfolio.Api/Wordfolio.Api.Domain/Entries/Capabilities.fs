@@ -38,6 +38,9 @@ type IClearEntryChildren =
 type IGetVocabularyByIdAndUserId =
     abstract GetVocabularyByIdAndUserId: VocabularyId * UserId -> Task<Vocabulary option>
 
+type IDeleteEntry =
+    abstract DeleteEntry: EntryId -> Task<int>
+
 module Capabilities =
     let getEntryById (env: #IGetEntryById) entryId = env.GetEntryById(entryId)
 
@@ -69,3 +72,5 @@ module Capabilities =
 
     let getVocabularyByIdAndUserId (env: #IGetVocabularyByIdAndUserId) vocabularyId userId =
         env.GetVocabularyByIdAndUserId(vocabularyId, userId)
+
+    let deleteEntry (env: #IDeleteEntry) entryId = env.DeleteEntry(entryId)

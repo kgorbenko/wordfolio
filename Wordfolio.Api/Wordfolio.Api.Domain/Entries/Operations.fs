@@ -4,6 +4,7 @@ open System
 open System.Threading.Tasks
 
 open Wordfolio.Api.Domain.Entries.Capabilities
+open Wordfolio.Api.Domain.Shared
 open Wordfolio.Api.Domain.Transactions
 
 [<Literal>]
@@ -95,45 +96,53 @@ let createTranslationsAsync env entryId (translations: TranslationInput list) : 
                 do! createExamplesForTranslation env transId trans.Examples
     }
 
-let create
-    env
-    userId
-    vocabularyId
-    entryText
-    (definitions: DefinitionInput list)
-    (translations: TranslationInput list)
-    now
-    =
+let create env (parameters: CreateEntryParameters) =
     runInTransaction env (fun appEnv ->
         task {
-            match validateEntryText entryText with
+            match validateEntryText parameters.EntryText with
             | Error error -> return Error error
             | Ok validText ->
                 if
-                    definitions.IsEmpty
-                    && translations.IsEmpty
+                    parameters.Definitions.IsEmpty
+                    && parameters.Translations.IsEmpty
                 then
                     return Error NoDefinitionsOrTranslations
                 else
-                    let! vocabAccessResult = checkVocabularyAccess appEnv userId vocabularyId
+                    let! vocabularyIdResult =
+                        match parameters.VocabularyId with
+                        | Some id ->
+                            task {
+                                let! accessResult = checkVocabularyAccess appEnv parameters.UserId id
+                                return accessResult |> Result.map(fun () -> id)
+                            }
+                        | None ->
+                            task {
+                                let! id =
+                                    Operations.getOrCreateDefaultVocabulary
+                                        appEnv
+                                        parameters.UserId
+                                        parameters.CreatedAt
 
-                    match vocabAccessResult with
+                                return Ok id
+                            }
+
+                    match vocabularyIdResult with
                     | Error error -> return Error error
-                    | Ok _ ->
+                    | Ok vocabularyId ->
                         let! maybeExistingEntry = getEntryByTextAndVocabularyId appEnv vocabularyId (validText.Trim())
 
                         match maybeExistingEntry with
                         | Some existing -> return Error(DuplicateEntry existing.Id)
                         | None ->
-                            match validateDefinitions definitions with
+                            match validateDefinitions parameters.Definitions with
                             | Error error -> return Error error
                             | Ok validDefinitions ->
-                                match validateTranslations translations with
+                                match validateTranslations parameters.Translations with
                                 | Error error -> return Error error
                                 | Ok validTranslations ->
                                     let trimmedText = validText.Trim()
 
-                                    let! entryId = createEntry appEnv vocabularyId trimmedText now
+                                    let! entryId = createEntry appEnv vocabularyId trimmedText parameters.CreatedAt
 
                                     do! createTranslationsAsync appEnv entryId validTranslations
                                     do! createDefinitionsAsync appEnv entryId validDefinitions
@@ -219,4 +228,21 @@ let update env userId entryId entryText (definitions: DefinitionInput list) (tra
                                         match maybeUpdated with
                                         | Some entry -> return Ok entry
                                         | None -> return Error(EntryNotFound entryId)
+        })
+
+let delete env userId entryId =
+    runInTransaction env (fun appEnv ->
+        task {
+            let! maybeEntry = getEntryById appEnv entryId
+
+            match maybeEntry with
+            | None -> return Error(EntryNotFound entryId)
+            | Some entry ->
+                let! vocabAccessResult = checkVocabularyAccess appEnv userId entry.VocabularyId
+
+                match vocabAccessResult with
+                | Error _ -> return Error(EntryNotFound entryId)
+                | Ok _ ->
+                    let! _ = deleteEntry appEnv entryId
+                    return Ok()
         })

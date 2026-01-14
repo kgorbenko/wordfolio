@@ -57,3 +57,11 @@ type TranslationInput =
     { TranslationText: string
       Source: TranslationSource
       Examples: ExampleInput list }
+
+type CreateEntryParameters =
+    { UserId: UserId
+      VocabularyId: VocabularyId option
+      EntryText: string
+      Definitions: DefinitionInput list
+      Translations: TranslationInput list
+      CreatedAt: DateTimeOffset }
