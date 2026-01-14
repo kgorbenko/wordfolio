@@ -9,6 +9,25 @@ export interface VocabularyResponse {
     readonly updatedAt: string | null;
 }
 
+export interface VocabularySummaryResponse {
+    readonly id: number;
+    readonly collectionId: number;
+    readonly name: string;
+    readonly description: string | null;
+    readonly createdAt: string;
+    readonly updatedAt: string | null;
+    readonly entryCount: number;
+}
+
+export interface CollectionSummaryResponse {
+    readonly id: number;
+    readonly name: string;
+    readonly description: string | null;
+    readonly createdAt: string;
+    readonly updatedAt: string | null;
+    readonly vocabularies: VocabularySummaryResponse[];
+}
+
 export interface CreateVocabularyRequest {
     readonly name: string;
     readonly description?: string | null;
@@ -48,6 +67,20 @@ const getAuthHeaders = (): HeadersInit => {
 };
 
 export const vocabulariesApi = {
+    getCollectionsHierarchy: async (): Promise<CollectionSummaryResponse[]> => {
+        const response = await fetch(`${API_BASE_URL}/collections-hierarchy`, {
+            method: "GET",
+            headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+            const error: ApiError = await response.json();
+            throw error;
+        }
+
+        return response.json();
+    },
+
     getCollections: async (): Promise<CollectionResponse[]> => {
         const response = await fetch(`${API_BASE_URL}/collections`, {
             method: "GET",
