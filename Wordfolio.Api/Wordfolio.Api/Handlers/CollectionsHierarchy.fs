@@ -90,4 +90,6 @@ let mapCollectionsHierarchyEndpoint(app: IEndpointRouteBuilder) =
                 })
         )
         .WithTags("Collections")
+        .Produces<CollectionSummaryResponse list>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
     |> ignore

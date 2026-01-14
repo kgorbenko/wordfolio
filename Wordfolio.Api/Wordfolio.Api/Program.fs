@@ -21,6 +21,8 @@ open Wordfolio.ServiceDefaults.HealthCheck
 open Wordfolio.ServiceDefaults.OpenApi
 open Wordfolio.ServiceDefaults.Status
 
+open Wordfolio.Api.OpenApi
+
 type Program() =
     class
     end

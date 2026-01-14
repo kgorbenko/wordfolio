@@ -60,47 +60,10 @@ let private toErrorResponse(error: CollectionError) : IResult =
         Results.BadRequest({| error = $"Name must be at most {maxLength} characters" |})
 
 let mapCollectionsEndpoints(group: RouteGroupBuilder) =
-    group.MapGet(
-        UrlTokens.Root,
-        Func<ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun user dataSource cancellationToken ->
-            task {
-                match getUserId user with
-                | None -> return Results.Unauthorized()
-                | Some userId ->
-                    let env =
-                        TransactionalEnv(dataSource, cancellationToken)
-
-                    let! result = getByUserId env (UserId userId)
-                    let response = result |> List.map toResponse
-                    return Results.Ok(response)
-            })
-    )
-    |> ignore
-
-    group.MapGet(
-        UrlTokens.ById,
-        Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun id user dataSource cancellationToken ->
-            task {
-                match getUserId user with
-                | None -> return Results.Unauthorized()
-                | Some userId ->
-                    let env =
-                        TransactionalEnv(dataSource, cancellationToken)
-
-                    let! result = getById env (UserId userId) (CollectionId id)
-
-                    return
-                        match result with
-                        | Ok collection -> Results.Ok(toResponse collection)
-                        | Error error -> toErrorResponse error
-            })
-    )
-    |> ignore
-
-    group.MapPost(
-        UrlTokens.Root,
-        Func<CreateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-            (fun request user dataSource cancellationToken ->
+    group
+        .MapGet(
+            UrlTokens.Root,
+            Func<ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun user dataSource cancellationToken ->
                 task {
                     match getUserId user with
                     | None -> return Results.Unauthorized()
@@ -108,64 +71,127 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
                         let env =
                             TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result = create env (UserId userId) request.Name request.Description DateTimeOffset.UtcNow
-
-                        return
-                            match result with
-                            | Ok collection ->
-                                Results.Created(
-                                    Urls.collectionById(CollectionId.value collection.Id),
-                                    toResponse collection
-                                )
-                            | Error error -> toErrorResponse error
+                        let! result = getByUserId env (UserId userId)
+                        let response = result |> List.map toResponse
+                        return Results.Ok(response)
                 })
-    )
+        )
+        .Produces<CollectionResponse list>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
     |> ignore
 
-    group.MapPut(
-        UrlTokens.ById,
-        Func<int, UpdateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-            (fun id request user dataSource cancellationToken ->
-                task {
-                    match getUserId user with
-                    | None -> return Results.Unauthorized()
-                    | Some userId ->
-                        let env =
-                            TransactionalEnv(dataSource, cancellationToken)
+    group
+        .MapGet(
+            UrlTokens.ById,
+            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result =
-                            update
-                                env
-                                (UserId userId)
-                                (CollectionId id)
-                                request.Name
-                                request.Description
-                                DateTimeOffset.UtcNow
+                            let! result = getById env (UserId userId) (CollectionId id)
 
-                        return
-                            match result with
-                            | Ok collection -> Results.Ok(toResponse collection)
-                            | Error error -> toErrorResponse error
-                })
-    )
+                            return
+                                match result with
+                                | Ok collection -> Results.Ok(toResponse collection)
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .Produces<CollectionResponse>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
     |> ignore
 
-    group.MapDelete(
-        UrlTokens.ById,
-        Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun id user dataSource cancellationToken ->
-            task {
-                match getUserId user with
-                | None -> return Results.Unauthorized()
-                | Some userId ->
-                    let env =
-                        TransactionalEnv(dataSource, cancellationToken)
+    group
+        .MapPost(
+            UrlTokens.Root,
+            Func<CreateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun request user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
-                    let! result = delete env (UserId userId) (CollectionId id)
+                            let! result =
+                                create env (UserId userId) request.Name request.Description DateTimeOffset.UtcNow
 
-                    return
-                        match result with
-                        | Ok() -> Results.NoContent()
-                        | Error error -> toErrorResponse error
-            })
-    )
+                            return
+                                match result with
+                                | Ok collection ->
+                                    Results.Created(
+                                        Urls.collectionById(CollectionId.value collection.Id),
+                                        toResponse collection
+                                    )
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .Produces<CollectionResponse>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+    |> ignore
+
+    group
+        .MapPut(
+            UrlTokens.ById,
+            Func<int, UpdateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id request user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
+
+                            let! result =
+                                update
+                                    env
+                                    (UserId userId)
+                                    (CollectionId id)
+                                    request.Name
+                                    request.Description
+                                    DateTimeOffset.UtcNow
+
+                            return
+                                match result with
+                                | Ok collection -> Results.Ok(toResponse collection)
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .Produces<CollectionResponse>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+    |> ignore
+
+    group
+        .MapDelete(
+            UrlTokens.ById,
+            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
+
+                            let! result = delete env (UserId userId) (CollectionId id)
+
+                            return
+                                match result with
+                                | Ok() -> Results.NoContent()
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
     |> ignore
