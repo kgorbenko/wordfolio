@@ -10,6 +10,7 @@ import {
     Collapse,
     Typography,
     Divider,
+    Skeleton,
     alpha,
     useTheme,
 } from "@mui/material";
@@ -18,55 +19,14 @@ import MenuBookIcon from "@mui/icons-material/MenuBook";
 import HomeIcon from "@mui/icons-material/Home";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+
+import { CollectionSummaryResponse } from "../../api/vocabulariesApi";
+import { useCollectionsHierarchyQuery } from "../../queries/useCollectionsHierarchyQuery";
 
 import "./Sidebar.scss";
 
 export const SIDEBAR_WIDTH = 280;
-
-interface Vocabulary {
-    readonly id: number;
-    readonly name: string;
-    readonly entryCount: number;
-}
-
-interface Collection {
-    readonly id: number;
-    readonly name: string;
-    readonly vocabularies: Vocabulary[];
-}
-
-const stubCollections: Collection[] = [
-    {
-        id: 1,
-        name: "Books",
-        vocabularies: [
-            { id: 1, name: "Catcher in the Rye", entryCount: 42 },
-            { id: 2, name: "1984", entryCount: 28 },
-            { id: 3, name: "To Kill a Mockingbird", entryCount: 15 },
-        ],
-    },
-    {
-        id: 2,
-        name: "Movies",
-        vocabularies: [
-            { id: 4, name: "The Shawshank Redemption", entryCount: 33 },
-            { id: 5, name: "Pulp Fiction", entryCount: 21 },
-        ],
-    },
-    {
-        id: 3,
-        name: "Work",
-        vocabularies: [
-            { id: 6, name: "Technical Terms", entryCount: 67 },
-            { id: 7, name: "Business English", entryCount: 45 },
-        ],
-    },
-    {
-        id: 4,
-        name: "Unsorted",
-        vocabularies: [{ id: 8, name: "My Words", entryCount: 12 }],
-    },
-];
 
 interface SidebarProps {
     readonly variant: "permanent" | "temporary";
@@ -74,10 +34,252 @@ interface SidebarProps {
     readonly onClose?: () => void;
 }
 
+const AllCollectionsButtonSkeleton = () => (
+    <ListItemButton sx={{ px: 2, py: 1 }}>
+        <ListItemIcon className="nav-icon">
+            <Skeleton variant="circular" width={20} height={20} />
+        </ListItemIcon>
+        <ListItemText primary={<Skeleton variant="text" width="80%" />} />
+    </ListItemButton>
+);
+
+const CollectionsListSkeleton = () => (
+    <List disablePadding>
+        {[1, 2, 3].map((i) => (
+            <ListItemButton key={i} sx={{ px: 2, py: 1 }}>
+                <ListItemIcon className="expand-icon">
+                    <Skeleton variant="circular" width={20} height={20} />
+                </ListItemIcon>
+                <ListItemIcon className="folder-icon">
+                    <Skeleton variant="circular" width={20} height={20} />
+                </ListItemIcon>
+                <ListItemText
+                    primary={<Skeleton variant="text" width="70%" />}
+                />
+                <Skeleton variant="text" width={16} className="nav-count" />
+            </ListItemButton>
+        ))}
+    </List>
+);
+
+const CollectionsListError = () => {
+    const theme = useTheme();
+
+    return (
+        <Box
+            sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                py: 3,
+                px: 2,
+                color: "text.secondary",
+            }}
+        >
+            <ErrorOutlineIcon
+                sx={{ fontSize: 32, mb: 1, color: theme.palette.error.light }}
+            />
+            <Typography variant="body2" textAlign="center">
+                Failed to load collections
+            </Typography>
+        </Box>
+    );
+};
+
+interface CollectionsListProps {
+    readonly collections: CollectionSummaryResponse[];
+    readonly currentCollectionId: number | undefined;
+    readonly currentVocabularyId: number | undefined;
+    readonly expandedCollections: number[];
+    readonly onToggleCollection: (collectionId: number) => void;
+    readonly onCollectionClick: (
+        event: React.MouseEvent,
+        collectionId: number
+    ) => void;
+    readonly onVocabularyClick: (
+        collectionId: number,
+        vocabularyId: number
+    ) => void;
+}
+
+const CollectionsList = ({
+    collections,
+    currentCollectionId,
+    currentVocabularyId,
+    expandedCollections,
+    onToggleCollection,
+    onCollectionClick,
+    onVocabularyClick,
+}: CollectionsListProps) => {
+    const theme = useTheme();
+
+    const isExpanded = (collectionId: number) =>
+        expandedCollections.includes(collectionId);
+
+    return (
+        <List disablePadding>
+            {collections.map((collection) => (
+                <Box key={collection.id}>
+                    <ListItemButton
+                        onClick={() => onToggleCollection(collection.id)}
+                        sx={{
+                            px: 2,
+                            py: 1,
+                            "&:hover": {
+                                bgcolor: alpha(theme.palette.primary.main, 0.04),
+                            },
+                        }}
+                    >
+                        <ListItemIcon className="expand-icon">
+                            {isExpanded(collection.id) ? (
+                                <ExpandMoreIcon
+                                    sx={{
+                                        color: "primary.main",
+                                        fontSize: 20,
+                                    }}
+                                />
+                            ) : (
+                                <ChevronRightIcon
+                                    sx={{
+                                        color: "text.secondary",
+                                        fontSize: 20,
+                                    }}
+                                />
+                            )}
+                        </ListItemIcon>
+                        <ListItemIcon className="folder-icon">
+                            <FolderIcon
+                                sx={{
+                                    color:
+                                        isExpanded(collection.id) ||
+                                        currentCollectionId === collection.id
+                                            ? "primary.main"
+                                            : "text.secondary",
+                                    fontSize: 20,
+                                }}
+                            />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary={collection.name}
+                            onClick={(e) => onCollectionClick(e, collection.id)}
+                            primaryTypographyProps={{
+                                fontWeight:
+                                    isExpanded(collection.id) ||
+                                    currentCollectionId === collection.id
+                                        ? 600
+                                        : 500,
+                                fontSize: "0.9rem",
+                                color:
+                                    currentCollectionId === collection.id
+                                        ? "primary.main"
+                                        : isExpanded(collection.id)
+                                          ? "text.primary"
+                                          : "text.secondary",
+                                sx: {
+                                    "&:hover": {
+                                        textDecoration: "underline",
+                                    },
+                                },
+                            }}
+                        />
+                        <Typography
+                            className="nav-count"
+                            variant="caption"
+                            sx={{ color: "text.disabled" }}
+                        >
+                            {collection.vocabularies.length}
+                        </Typography>
+                    </ListItemButton>
+
+                    <Collapse
+                        in={isExpanded(collection.id)}
+                        timeout="auto"
+                        unmountOnExit
+                    >
+                        <List disablePadding>
+                            {collection.vocabularies.map((vocab) => (
+                                <ListItemButton
+                                    key={vocab.id}
+                                    selected={currentVocabularyId === vocab.id}
+                                    onClick={() =>
+                                        onVocabularyClick(
+                                            collection.id,
+                                            vocab.id
+                                        )
+                                    }
+                                    sx={{
+                                        pl: 8.5,
+                                        py: 0.75,
+                                        "&:hover": {
+                                            bgcolor: alpha(
+                                                theme.palette.primary.main,
+                                                0.04
+                                            ),
+                                        },
+                                        "&.Mui-selected": {
+                                            bgcolor: alpha(
+                                                theme.palette.primary.main,
+                                                0.08
+                                            ),
+                                            borderRight: `3px solid ${theme.palette.primary.main}`,
+                                            "&:hover": {
+                                                bgcolor: alpha(
+                                                    theme.palette.primary.main,
+                                                    0.12
+                                                ),
+                                            },
+                                        },
+                                    }}
+                                >
+                                    <ListItemIcon className="vocab-icon">
+                                        <MenuBookIcon
+                                            sx={{
+                                                color:
+                                                    currentVocabularyId ===
+                                                    vocab.id
+                                                        ? "primary.main"
+                                                        : "text.disabled",
+                                                fontSize: 16,
+                                            }}
+                                        />
+                                    </ListItemIcon>
+                                    <ListItemText
+                                        primary={vocab.name}
+                                        primaryTypographyProps={{
+                                            fontSize: "0.85rem",
+                                            fontWeight:
+                                                currentVocabularyId === vocab.id
+                                                    ? 600
+                                                    : 400,
+                                            color:
+                                                currentVocabularyId === vocab.id
+                                                    ? "primary.main"
+                                                    : "text.secondary",
+                                            noWrap: true,
+                                        }}
+                                    />
+                                    <Typography
+                                        className="vocab-count"
+                                        variant="caption"
+                                        sx={{ color: "text.disabled" }}
+                                    >
+                                        {vocab.entryCount}
+                                    </Typography>
+                                </ListItemButton>
+                            ))}
+                        </List>
+                    </Collapse>
+                </Box>
+            ))}
+        </List>
+    );
+};
+
 export const Sidebar = ({ variant, open, onClose }: SidebarProps) => {
     const theme = useTheme();
     const navigate = useNavigate();
     const params = useParams({ strict: false });
+    const { data, isLoading, isError } = useCollectionsHierarchyQuery();
 
     const currentCollectionId = params.collectionId
         ? Number(params.collectionId)
@@ -91,7 +293,7 @@ export const Sidebar = ({ variant, open, onClose }: SidebarProps) => {
             if (currentCollectionId) {
                 return [currentCollectionId];
             }
-            return [1, 4];
+            return [];
         }
     );
 
@@ -102,9 +304,6 @@ export const Sidebar = ({ variant, open, onClose }: SidebarProps) => {
                 : [...prev, collectionId]
         );
     };
-
-    const isExpanded = (collectionId: number) =>
-        expandedCollections.includes(collectionId);
 
     const handleNavigation = (callback: () => void) => {
         callback();
@@ -175,205 +374,54 @@ export const Sidebar = ({ variant, open, onClose }: SidebarProps) => {
             </Box>
 
             <Box sx={{ py: 1 }}>
-                <ListItemButton
-                    onClick={handleHomeClick}
-                    sx={{
-                        px: 2,
-                        py: 1,
-                        "&:hover": {
-                            bgcolor: alpha(theme.palette.primary.main, 0.04),
-                        },
-                    }}
-                >
-                    <ListItemIcon className="nav-icon">
-                        <HomeIcon
-                            sx={{ color: "text.secondary", fontSize: 20 }}
-                        />
-                    </ListItemIcon>
-                    <ListItemText
-                        primary="All Collections"
-                        primaryTypographyProps={{
-                            fontWeight: 500,
-                            fontSize: "0.9rem",
-                            color: "text.secondary",
+                {isLoading ? (
+                    <AllCollectionsButtonSkeleton />
+                ) : (
+                    <ListItemButton
+                        onClick={handleHomeClick}
+                        sx={{
+                            px: 2,
+                            py: 1,
+                            "&:hover": {
+                                bgcolor: alpha(theme.palette.primary.main, 0.04),
+                            },
                         }}
-                    />
-                </ListItemButton>
+                    >
+                        <ListItemIcon className="nav-icon">
+                            <HomeIcon
+                                sx={{ color: "text.secondary", fontSize: 20 }}
+                            />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="All Collections"
+                            primaryTypographyProps={{
+                                fontWeight: 500,
+                                fontSize: "0.9rem",
+                                color: "text.secondary",
+                            }}
+                        />
+                    </ListItemButton>
+                )}
             </Box>
 
             <Divider />
 
             <Box className="content">
-                <List disablePadding>
-                    {stubCollections.map((collection) => (
-                        <Box key={collection.id}>
-                            <ListItemButton
-                                onClick={() => toggleCollection(collection.id)}
-                                sx={{
-                                    px: 2,
-                                    py: 1,
-                                    "&:hover": {
-                                        bgcolor: alpha(
-                                            theme.palette.primary.main,
-                                            0.04
-                                        ),
-                                    },
-                                }}
-                            >
-                                <ListItemIcon className="expand-icon">
-                                    {isExpanded(collection.id) ? (
-                                        <ExpandMoreIcon
-                                            sx={{
-                                                color: "primary.main",
-                                                fontSize: 20,
-                                            }}
-                                        />
-                                    ) : (
-                                        <ChevronRightIcon
-                                            sx={{
-                                                color: "text.secondary",
-                                                fontSize: 20,
-                                            }}
-                                        />
-                                    )}
-                                </ListItemIcon>
-                                <ListItemIcon className="folder-icon">
-                                    <FolderIcon
-                                        sx={{
-                                            color:
-                                                isExpanded(collection.id) ||
-                                                currentCollectionId ===
-                                                    collection.id
-                                                    ? "primary.main"
-                                                    : "text.secondary",
-                                            fontSize: 20,
-                                        }}
-                                    />
-                                </ListItemIcon>
-                                <ListItemText
-                                    primary={collection.name}
-                                    onClick={(e) =>
-                                        handleCollectionClick(e, collection.id)
-                                    }
-                                    primaryTypographyProps={{
-                                        fontWeight:
-                                            isExpanded(collection.id) ||
-                                            currentCollectionId ===
-                                                collection.id
-                                                ? 600
-                                                : 500,
-                                        fontSize: "0.9rem",
-                                        color:
-                                            currentCollectionId ===
-                                            collection.id
-                                                ? "primary.main"
-                                                : isExpanded(collection.id)
-                                                  ? "text.primary"
-                                                  : "text.secondary",
-                                        sx: {
-                                            "&:hover": {
-                                                textDecoration: "underline",
-                                            },
-                                        },
-                                    }}
-                                />
-                                <Typography
-                                    className="nav-count"
-                                    variant="caption"
-                                    sx={{ color: "text.disabled" }}
-                                >
-                                    {collection.vocabularies.length}
-                                </Typography>
-                            </ListItemButton>
-
-                            <Collapse
-                                in={isExpanded(collection.id)}
-                                timeout="auto"
-                                unmountOnExit
-                            >
-                                <List disablePadding>
-                                    {collection.vocabularies.map((vocab) => (
-                                        <ListItemButton
-                                            key={vocab.id}
-                                            selected={
-                                                currentVocabularyId === vocab.id
-                                            }
-                                            onClick={() =>
-                                                handleVocabularyClick(
-                                                    collection.id,
-                                                    vocab.id
-                                                )
-                                            }
-                                            sx={{
-                                                pl: 8.5,
-                                                py: 0.75,
-                                                "&:hover": {
-                                                    bgcolor: alpha(
-                                                        theme.palette.primary
-                                                            .main,
-                                                        0.04
-                                                    ),
-                                                },
-                                                "&.Mui-selected": {
-                                                    bgcolor: alpha(
-                                                        theme.palette.primary
-                                                            .main,
-                                                        0.08
-                                                    ),
-                                                    borderRight: `3px solid ${theme.palette.primary.main}`,
-                                                    "&:hover": {
-                                                        bgcolor: alpha(
-                                                            theme.palette
-                                                                .primary.main,
-                                                            0.12
-                                                        ),
-                                                    },
-                                                },
-                                            }}
-                                        >
-                                            <ListItemIcon className="vocab-icon">
-                                                <MenuBookIcon
-                                                    sx={{
-                                                        color:
-                                                            currentVocabularyId ===
-                                                            vocab.id
-                                                                ? "primary.main"
-                                                                : "text.disabled",
-                                                        fontSize: 16,
-                                                    }}
-                                                />
-                                            </ListItemIcon>
-                                            <ListItemText
-                                                primary={vocab.name}
-                                                primaryTypographyProps={{
-                                                    fontSize: "0.85rem",
-                                                    fontWeight:
-                                                        currentVocabularyId ===
-                                                        vocab.id
-                                                            ? 600
-                                                            : 400,
-                                                    color:
-                                                        currentVocabularyId ===
-                                                        vocab.id
-                                                            ? "primary.main"
-                                                            : "text.secondary",
-                                                    noWrap: true,
-                                                }}
-                                            />
-                                            <Typography
-                                                className="vocab-count"
-                                                variant="caption"
-                                                sx={{ color: "text.disabled" }}
-                                            >
-                                                {vocab.entryCount}
-                                            </Typography>
-                                        </ListItemButton>
-                                    ))}
-                                </List>
-                            </Collapse>
-                        </Box>
-                    ))}
-                </List>
+                {isLoading ? (
+                    <CollectionsListSkeleton />
+                ) : isError ? (
+                    <CollectionsListError />
+                ) : (
+                    <CollectionsList
+                        collections={data ?? []}
+                        currentCollectionId={currentCollectionId}
+                        currentVocabularyId={currentVocabularyId}
+                        expandedCollections={expandedCollections}
+                        onToggleCollection={toggleCollection}
+                        onCollectionClick={handleCollectionClick}
+                        onVocabularyClick={handleVocabularyClick}
+                    />
+                )}
             </Box>
         </Box>
     );
