@@ -28,7 +28,7 @@ var migrationService = builder.AddProject<Projects.Wordfolio_MigrationRunner>("m
 
 var api = builder.AddProject<Projects.Wordfolio_Api>("apiservice")
     .WithReference(postgresDatabase)
-    .WaitFor(migrationService)
+    .WaitForCompletion(migrationService)
     .WithHttpHealthCheck("/health")
     .WithEnvironment("GroqApi__ApiKey", groqApiKey);
 
