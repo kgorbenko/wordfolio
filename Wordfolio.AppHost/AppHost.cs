@@ -32,10 +32,9 @@ var api = builder.AddProject<Projects.Wordfolio_Api>("apiservice")
     .WithHttpHealthCheck("/health")
     .WithEnvironment("GroqApi__ApiKey", groqApiKey);
 
-builder.AddNpmApp("frontend", "../Wordfolio.Frontend")
+builder.AddViteApp("frontend", "../Wordfolio.Frontend")
     .WithReference(api)
     .WithEnvironment("BROWSER", "none")
-    .WithHttpEndpoint(env: "VITE_PORT")
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 

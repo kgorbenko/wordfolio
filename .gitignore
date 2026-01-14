@@ -83,6 +83,9 @@ ScaffoldingReadMe.txt
 # StyleCop
 StyleCopReport.xml
 
+# Aspire settings
+.aspire/
+
 # Files built by Visual Studio
 *_i.c
 *_p.c
