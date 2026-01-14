@@ -3,18 +3,11 @@ module Wordfolio.Api.Domain.Vocabularies.Operations
 open System
 open System.Threading.Tasks
 
-open Wordfolio.Api.Domain.Vocabularies.Capabilities
 open Wordfolio.Api.Domain.Transactions
+open Wordfolio.Api.Domain.Vocabularies.Capabilities
 
 [<Literal>]
 let MaxNameLength = 255
-
-[<Literal>]
-let SystemCollectionName =
-    "[System] Unsorted"
-
-[<Literal>]
-let DefaultVocabularyName = "[Default]"
 
 let private validateName(name: string) : Result<string, VocabularyError> =
     if String.IsNullOrWhiteSpace(name) then
@@ -136,45 +129,4 @@ let delete env userId vocabularyId =
                         return Ok()
                     else
                         return Error(VocabularyNotFound vocabularyId)
-        })
-
-let getDefaultOrCreate env userId now =
-    runInTransaction env (fun appEnv ->
-        task {
-            let! maybeVocabulary = getDefaultVocabulary appEnv userId
-
-            match maybeVocabulary with
-            | Some vocabulary -> return Ok vocabulary
-            | None ->
-                let! maybeCollection = getDefaultCollection appEnv userId
-
-                let! collectionId =
-                    match maybeCollection with
-                    | Some collection -> collection.Id |> Task.FromResult
-                    | None ->
-                        let collectionParams: CreateCollectionParameters =
-                            { UserId = userId
-                              Name = SystemCollectionName
-                              Description = None
-                              CreatedAt = now }
-
-                        createDefaultCollection appEnv collectionParams
-
-                let vocabularyParams: CreateVocabularyParameters =
-                    { CollectionId = collectionId
-                      Name = DefaultVocabularyName
-                      Description = None
-                      CreatedAt = now }
-
-                let! vocabularyId = createDefaultVocabulary appEnv vocabularyParams
-
-                let vocabulary: Vocabulary =
-                    { Id = vocabularyId
-                      CollectionId = collectionId
-                      Name = DefaultVocabularyName
-                      Description = None
-                      CreatedAt = now
-                      UpdatedAt = None }
-
-                return Ok vocabulary
         })

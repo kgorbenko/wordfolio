@@ -29,7 +29,7 @@
     <Compile Include="Vocabularies\CreateTests.fs" />
     <Compile Include="Vocabularies\UpdateTests.fs" />
     <Compile Include="Vocabularies\DeleteTests.fs" />
-    <Compile Include="Vocabularies\GetDefaultOrCreateTests.fs" />
+    <Compile Include="Shared\GetOrCreateDefaultVocabularyTests.fs" />
     <Compile Include="CollectionsHierarchy\GetByUserIdTests.fs" />
     <Compile Include="Entries\CreateTests.fs" />
   </ItemGroup>

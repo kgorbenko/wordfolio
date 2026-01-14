@@ -7,10 +7,6 @@ open System.Threading.Tasks
 
 open Xunit
 
-open Wordfolio.Api.DataAccess.Definitions
-open Wordfolio.Api.DataAccess.Examples
-open Wordfolio.Api.DataAccess.Translations
-open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Handlers.Entries
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -48,7 +44,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: CreateEntryRequest =
-                { VocabularyId = vocabulary.Id
+                { VocabularyId = Some vocabulary.Id
                   EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
@@ -167,7 +163,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use client = factory.CreateClient()
 
             let request: CreateEntryRequest =
-                { VocabularyId = 1
+                { VocabularyId = Some 1
                   EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
@@ -208,7 +204,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: CreateEntryRequest =
-                { VocabularyId = vocabulary.Id
+                { VocabularyId = Some vocabulary.Id
                   EntryText = ""
                   Definitions =
                     [ { DefinitionText = "a greeting"
@@ -249,7 +245,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: CreateEntryRequest =
-                { VocabularyId = vocabulary.Id
+                { VocabularyId = Some vocabulary.Id
                   EntryText = "hello"
                   Definitions = []
                   Translations = [] }
@@ -287,7 +283,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: CreateEntryRequest =
-                { VocabularyId = vocabulary.Id
+                { VocabularyId = Some vocabulary.Id
                   EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
@@ -344,7 +340,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: CreateEntryRequest =
-                { VocabularyId = vocabulary.Id
+                { VocabularyId = Some vocabulary.Id
                   EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
@@ -377,7 +373,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: CreateEntryRequest =
-                { VocabularyId = 999999
+                { VocabularyId = Some 999999
                   EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
@@ -1165,4 +1161,380 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.PutAsJsonAsync(url, request)
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``POST with null VocabularyId creates entry in new default vocabulary``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(400, "user@example.com", "P@ssw0rd!")
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: CreateEntryRequest =
+                { VocabularyId = None
+                  EntryText = "hello"
+                  Definitions =
+                    [ { DefinitionText = "a greeting"
+                        Source = DefinitionSourceDto.Manual
+                        Examples = [] } ]
+                  Translations = [] }
+
+            let url = Urls.Entries.Path
+
+            let! response = client.PostAsJsonAsync(url, request)
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode)
+
+            let! result = response.Content.ReadFromJsonAsync<EntryResponse>()
+
+            Assert.NotNull(result)
+
+            let! vocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+            Assert.Single(vocabularies) |> ignore
+
+            let expectedDefinition: DefinitionResponse =
+                { Id = result.Definitions.[0].Id
+                  DefinitionText = "a greeting"
+                  Source = DefinitionSourceDto.Manual
+                  DisplayOrder = 0
+                  Examples = [] }
+
+            let expectedEntry: EntryResponse =
+                { Id = result.Id
+                  VocabularyId = vocabularies.[0].Id
+                  EntryText = "hello"
+                  CreatedAt = result.CreatedAt
+                  UpdatedAt = None
+                  Definitions = [ expectedDefinition ]
+                  Translations = [] }
+
+            Assert.Equal(expectedEntry, result)
+
+            let expectedVocabulary: Wordfolio.Vocabulary =
+                { vocabularies.[0] with
+                    Name = "[Default]"
+                    Description = None
+                    IsDefault = true }
+
+            Assert.Equal<Wordfolio.Vocabulary list>([ expectedVocabulary ], vocabularies)
+
+            let! collections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+            Assert.Single(collections) |> ignore
+
+            let expectedCollection: Wordfolio.Collection =
+                { collections.[0] with
+                    Name = "[System] Unsorted"
+                    Description = None
+                    IsSystem = true }
+
+            Assert.Equal<Wordfolio.Collection list>([ expectedCollection ], collections)
+            Assert.Equal(vocabularies.[0].CollectionId, collections.[0].Id)
+        }
+
+    [<Fact>]
+    member _.``POST with null VocabularyId uses existing default vocabulary``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(401, "user@example.com", "P@ssw0rd!")
+
+            let systemCollection =
+                Entities.makeCollection wordfolioUser "[System] Unsorted" None DateTimeOffset.UtcNow None true
+
+            let defaultVocabulary =
+                Entities.makeVocabulary systemCollection "[Default]" None DateTimeOffset.UtcNow None true
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ systemCollection ]
+                |> Seeder.addVocabularies [ defaultVocabulary ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: CreateEntryRequest =
+                { VocabularyId = None
+                  EntryText = "hello"
+                  Definitions =
+                    [ { DefinitionText = "a greeting"
+                        Source = DefinitionSourceDto.Manual
+                        Examples = [] } ]
+                  Translations = [] }
+
+            let url = Urls.Entries.Path
+
+            let! response = client.PostAsJsonAsync(url, request)
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode)
+
+            let! result = response.Content.ReadFromJsonAsync<EntryResponse>()
+
+            Assert.NotNull(result)
+
+            let expectedDefinition: DefinitionResponse =
+                { Id = result.Definitions.[0].Id
+                  DefinitionText = "a greeting"
+                  Source = DefinitionSourceDto.Manual
+                  DisplayOrder = 0
+                  Examples = [] }
+
+            let expectedEntry: EntryResponse =
+                { Id = result.Id
+                  VocabularyId = defaultVocabulary.Id
+                  EntryText = "hello"
+                  CreatedAt = result.CreatedAt
+                  UpdatedAt = None
+                  Definitions = [ expectedDefinition ]
+                  Translations = [] }
+
+            Assert.Equal(expectedEntry, result)
+
+            let! vocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+            Assert.Single(vocabularies) |> ignore
+
+            let expectedVocabulary: Wordfolio.Vocabulary =
+                { vocabularies.[0] with
+                    Name = "[Default]"
+                    Description = None
+                    IsDefault = true }
+
+            Assert.Equal<Wordfolio.Vocabulary list>([ expectedVocabulary ], vocabularies)
+
+            let! collections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+            Assert.Single(collections) |> ignore
+
+            let expectedCollection: Wordfolio.Collection =
+                { collections.[0] with
+                    Name = "[System] Unsorted"
+                    Description = None
+                    IsSystem = true }
+
+            Assert.Equal<Wordfolio.Collection list>([ expectedCollection ], collections)
+        }
+
+    [<Fact>]
+    member _.``DELETE deletes entry successfully``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(402, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let url = Urls.Entries.entryById entry.Id
+
+            let! response = client.DeleteAsync(url)
+
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode)
+
+            let! deletedEntry = Seeder.getEntryByIdAsync entry.Id fixture.WordfolioSeeder
+            Assert.True(deletedEntry.IsNone)
+        }
+
+    [<Fact>]
+    member _.``DELETE without authentication fails``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! _, wordfolioUser = factory.CreateUserAsync(403, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use client = factory.CreateClient()
+
+            let url = Urls.Entries.entryById entry.Id
+
+            let! response = client.DeleteAsync(url)
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``DELETE for non-existent entry returns 404``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(404, "user@example.com", "P@ssw0rd!")
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let url = Urls.Entries.entryById 999999
+
+            let! response = client.DeleteAsync(url)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``DELETE for another user's entry returns 404``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! _, wordfolioUser1 = factory.CreateUserAsync(405, "user1@example.com", "P@ssw0rd!")
+            let! identityUser2, wordfolioUser2 = factory.CreateUserAsync(406, "user2@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser1 "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser1; wordfolioUser2 ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser2)
+
+            let url = Urls.Entries.entryById entry.Id
+
+            let! response = client.DeleteAsync(url)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``DELETE cascades to delete definitions, translations, and examples``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(407, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            let definition =
+                Entities.makeDefinition
+                    entry
+                    "a greeting"
+                    Wordfolio.Api.DataAccess.Definitions.DefinitionSource.Manual
+                    0
+
+            let translation =
+                Entities.makeTranslation entry "hola" Wordfolio.Api.DataAccess.Translations.TranslationSource.Manual 0
+
+            let defExample =
+                Entities.makeExampleForDefinition
+                    definition
+                    "Hello, world!"
+                    Wordfolio.Api.DataAccess.Examples.ExampleSource.Custom
+
+            let transExample =
+                Entities.makeExampleForTranslation
+                    translation
+                    "Hola, mundo!"
+                    Wordfolio.Api.DataAccess.Examples.ExampleSource.Custom
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.addDefinitions [ definition ]
+                |> Seeder.addTranslations [ translation ]
+                |> Seeder.addExamples [ defExample; transExample ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let url = Urls.Entries.entryById entry.Id
+
+            let! response = client.DeleteAsync(url)
+
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode)
+
+            let! entries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            Assert.Empty(entries)
+
+            let! definitions = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            Assert.Empty(definitions)
+
+            let! translations = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            Assert.Empty(translations)
+
+            let! examples = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+            Assert.Empty(examples)
         }

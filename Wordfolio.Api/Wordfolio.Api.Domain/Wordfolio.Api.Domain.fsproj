@@ -8,6 +8,9 @@
   <ItemGroup>
     <Compile Include="Ids.fs" />
     <Compile Include="Transactions.fs" />
+    <Compile Include="Shared\Types.fs" />
+    <Compile Include="Shared\Capabilities.fs" />
+    <Compile Include="Shared\Operations.fs" />
     <Compile Include="Collections\Collection.fs" />
     <Compile Include="Collections\Errors.fs" />
     <Compile Include="Collections\Capabilities.fs" />

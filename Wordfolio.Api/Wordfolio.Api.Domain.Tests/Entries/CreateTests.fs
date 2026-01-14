@@ -6,8 +6,10 @@ open System.Threading.Tasks
 open Xunit
 
 open Wordfolio.Api.Domain
+open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.Operations
+open Wordfolio.Api.Domain.Shared
 open Wordfolio.Api.Domain.Vocabularies
 
 type TestEnv
@@ -116,6 +118,22 @@ type TestEnv
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
 
+    interface IGetDefaultVocabulary with
+        member _.GetDefaultVocabulary(_) =
+            failwith "IGetDefaultVocabulary not expected in these tests"
+
+    interface ICreateDefaultVocabulary with
+        member _.CreateDefaultVocabulary(_) =
+            failwith "ICreateDefaultVocabulary not expected in these tests"
+
+    interface IGetDefaultCollection with
+        member _.GetDefaultCollection(_) =
+            failwith "IGetDefaultCollection not expected in these tests"
+
+    interface ICreateDefaultCollection with
+        member _.CreateDefaultCollection(_) =
+            failwith "ICreateDefaultCollection not expected in these tests"
+
 let makeVocabulary id collectionId name =
     { Id = VocabularyId id
       CollectionId = CollectionId collectionId
@@ -164,6 +182,14 @@ let makeTranslationInput text source examples =
 
 let makeExampleInput text source = { ExampleText = text; Source = source }
 
+let makeCreateParams userId vocabularyId entryText definitions translations createdAt : CreateEntryParameters =
+    { UserId = userId
+      VocabularyId = Some vocabularyId
+      EntryText = entryText
+      Definitions = definitions
+      Translations = translations
+      CreatedAt = createdAt }
+
 [<Fact>]
 let ``creates entry with definitions only``() =
     task {
@@ -193,7 +219,7 @@ let ``creates entry with definitions only``() =
                 getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
             )
 
-        let! result = create env (UserId 1) (VocabularyId 1) "test word" definitionInputs [] now
+        let! result = create env (makeCreateParams (UserId 1) (VocabularyId 1) "test word" definitionInputs [] now)
 
         Assert.Equal(Ok createdEntry, result)
 
@@ -235,7 +261,7 @@ let ``creates entry with translations only``() =
                 getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
             )
 
-        let! result = create env (UserId 1) (VocabularyId 1) "test word" [] translationInputs now
+        let! result = create env (makeCreateParams (UserId 1) (VocabularyId 1) "test word" [] translationInputs now)
 
         Assert.Equal(Ok createdEntry, result)
 
@@ -283,7 +309,8 @@ let ``creates entry with both definitions and translations``() =
                 getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
             )
 
-        let! result = create env (UserId 1) (VocabularyId 1) "test word" definitionInputs translationInputs now
+        let! result =
+            create env (makeCreateParams (UserId 1) (VocabularyId 1) "test word" definitionInputs translationInputs now)
 
         Assert.Equal(Ok createdEntry, result)
 
@@ -331,7 +358,7 @@ let ``trims whitespace from entry text``() =
                 getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
             )
 
-        let! result = create env (UserId 1) (VocabularyId 1) "  test word  " definitionInputs [] now
+        let! result = create env (makeCreateParams (UserId 1) (VocabularyId 1) "  test word  " definitionInputs [] now)
 
         Assert.True(Result.isOk result)
     }
@@ -354,12 +381,13 @@ let ``returns error when entry text is empty``() =
         let! result =
             create
                 env
-                (UserId 1)
-                (VocabularyId 1)
-                ""
-                [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
-                []
-                DateTimeOffset.UtcNow
+                (makeCreateParams
+                    (UserId 1)
+                    (VocabularyId 1)
+                    ""
+                    [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
+                    []
+                    DateTimeOffset.UtcNow)
 
         Assert.Equal(Error EntryTextRequired, result)
         Assert.Empty(env.CreateEntryCalls)
@@ -383,12 +411,13 @@ let ``returns error when entry text is whitespace only``() =
         let! result =
             create
                 env
-                (UserId 1)
-                (VocabularyId 1)
-                "   "
-                [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
-                []
-                DateTimeOffset.UtcNow
+                (makeCreateParams
+                    (UserId 1)
+                    (VocabularyId 1)
+                    "   "
+                    [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
+                    []
+                    DateTimeOffset.UtcNow)
 
         Assert.Equal(Error EntryTextRequired, result)
     }
@@ -413,12 +442,13 @@ let ``returns error when entry text exceeds max length``() =
         let! result =
             create
                 env
-                (UserId 1)
-                (VocabularyId 1)
-                longText
-                [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
-                []
-                DateTimeOffset.UtcNow
+                (makeCreateParams
+                    (UserId 1)
+                    (VocabularyId 1)
+                    longText
+                    [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
+                    []
+                    DateTimeOffset.UtcNow)
 
         Assert.Equal(Error(EntryTextTooLong MaxEntryTextLength), result)
     }
@@ -438,7 +468,7 @@ let ``returns error when both definitions and translations are empty``() =
                 getVocabularyByIdAndUserId = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (UserId 1) (VocabularyId 1) "test word" [] [] DateTimeOffset.UtcNow
+        let! result = create env (makeCreateParams (UserId 1) (VocabularyId 1) "test word" [] [] DateTimeOffset.UtcNow)
 
         Assert.Equal(Error NoDefinitionsOrTranslations, result)
     }
@@ -461,12 +491,13 @@ let ``returns error when vocabulary is not found``() =
         let! result =
             create
                 env
-                (UserId 1)
-                (VocabularyId 1)
-                "test word"
-                [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
-                []
-                DateTimeOffset.UtcNow
+                (makeCreateParams
+                    (UserId 1)
+                    (VocabularyId 1)
+                    "test word"
+                    [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
+                    []
+                    DateTimeOffset.UtcNow)
 
         Assert.Equal(Error(VocabularyNotFoundOrAccessDenied(VocabularyId 1)), result)
     }
@@ -495,12 +526,13 @@ let ``returns error when duplicate entry exists``() =
         let! result =
             create
                 env
-                (UserId 1)
-                (VocabularyId 1)
-                "test word"
-                [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
-                []
-                DateTimeOffset.UtcNow
+                (makeCreateParams
+                    (UserId 1)
+                    (VocabularyId 1)
+                    "test word"
+                    [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
+                    []
+                    DateTimeOffset.UtcNow)
 
         Assert.Equal(Error(DuplicateEntry(EntryId 1)), result)
     }
@@ -532,7 +564,10 @@ let ``returns error when example text is too long``() =
                 getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
             )
 
-        let! result = create env (UserId 1) (VocabularyId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow
+        let! result =
+            create
+                env
+                (makeCreateParams (UserId 1) (VocabularyId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
 
         Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
     }
@@ -562,7 +597,10 @@ let ``returns error when too many examples in definition``() =
                 getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
             )
 
-        let! result = create env (UserId 1) (VocabularyId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow
+        let! result =
+            create
+                env
+                (makeCreateParams (UserId 1) (VocabularyId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
 
         Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
     }
@@ -592,7 +630,10 @@ let ``returns error when too many examples in translation``() =
                 getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
             )
 
-        let! result = create env (UserId 1) (VocabularyId 1) "test word" [] translationInputs DateTimeOffset.UtcNow
+        let! result =
+            create
+                env
+                (makeCreateParams (UserId 1) (VocabularyId 1) "test word" [] translationInputs DateTimeOffset.UtcNow)
 
         Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
     }

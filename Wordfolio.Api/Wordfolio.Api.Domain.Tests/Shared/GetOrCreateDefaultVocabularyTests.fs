@@ -1,4 +1,4 @@
-module Wordfolio.Api.Domain.Tests.Vocabularies.GetDefaultOrCreateTests
+module Wordfolio.Api.Domain.Tests.Shared.GetOrCreateDefaultVocabularyTests
 
 open System
 open System.Threading.Tasks
@@ -7,8 +7,9 @@ open Xunit
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
+open Wordfolio.Api.Domain.Shared
+open Wordfolio.Api.Domain.Shared.Operations
 open Wordfolio.Api.Domain.Vocabularies
-open Wordfolio.Api.Domain.Vocabularies.Operations
 
 type TestEnv
     (
@@ -63,10 +64,7 @@ type TestEnv
             createDefaultCollectionCalls.Add(parameters)
             createDefaultCollection parameters
 
-    interface ITransactional<TestEnv> with
-        member this.RunInTransaction(operation) = operation this
-
-let makeCollection id userId =
+let makeCollection id userId : Collection =
     { Id = CollectionId id
       UserId = UserId userId
       Name = SystemCollectionName
@@ -74,7 +72,7 @@ let makeCollection id userId =
       CreatedAt = DateTimeOffset.UtcNow
       UpdatedAt = None }
 
-let makeVocabulary id collectionId createdAt =
+let makeVocabulary id collectionId createdAt : Vocabulary =
     { Id = VocabularyId id
       CollectionId = CollectionId collectionId
       Name = DefaultVocabularyName
@@ -83,7 +81,7 @@ let makeVocabulary id collectionId createdAt =
       UpdatedAt = None }
 
 [<Fact>]
-let ``returns existing default vocabulary when it exists``() =
+let ``returns existing default vocabulary id when it exists``() =
     task {
         let now = DateTimeOffset.UtcNow
 
@@ -98,9 +96,9 @@ let ``returns existing default vocabulary when it exists``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = getDefaultOrCreate env (UserId 1) now
+        let! result = getOrCreateDefaultVocabulary env (UserId 1) now
 
-        Assert.Equal(Ok existingVocabulary, result)
+        Assert.Equal(VocabularyId 1, result)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularyCalls)
         Assert.Empty(env.CreateDefaultVocabularyCalls)
         Assert.Empty(env.GetDefaultCollectionCalls)
@@ -112,9 +110,6 @@ let ``creates vocabulary when collection exists but vocabulary does not``() =
     task {
         let now = DateTimeOffset.UtcNow
         let collection = makeCollection 1 1
-
-        let expectedVocabulary =
-            makeVocabulary 1 1 now
 
         let expectedVocabularyParams: CreateVocabularyParameters =
             { CollectionId = CollectionId 1
@@ -130,9 +125,9 @@ let ``creates vocabulary when collection exists but vocabulary does not``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = getDefaultOrCreate env (UserId 1) now
+        let! result = getOrCreateDefaultVocabulary env (UserId 1) now
 
-        Assert.Equal(Ok expectedVocabulary, result)
+        Assert.Equal(VocabularyId 1, result)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularyCalls)
         Assert.Equal<CreateVocabularyParameters list>([ expectedVocabularyParams ], env.CreateDefaultVocabularyCalls)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultCollectionCalls)
@@ -143,9 +138,6 @@ let ``creates vocabulary when collection exists but vocabulary does not``() =
 let ``creates both collection and vocabulary when neither exists``() =
     task {
         let now = DateTimeOffset.UtcNow
-
-        let expectedVocabulary =
-            makeVocabulary 1 1 now
 
         let expectedCollectionParams: CreateCollectionParameters =
             { UserId = UserId 1
@@ -167,9 +159,9 @@ let ``creates both collection and vocabulary when neither exists``() =
                 createDefaultCollection = (fun _ -> Task.FromResult(CollectionId 1))
             )
 
-        let! result = getDefaultOrCreate env (UserId 1) now
+        let! result = getOrCreateDefaultVocabulary env (UserId 1) now
 
-        Assert.Equal(Ok expectedVocabulary, result)
+        Assert.Equal(VocabularyId 1, result)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularyCalls)
         Assert.Equal<CreateVocabularyParameters list>([ expectedVocabularyParams ], env.CreateDefaultVocabularyCalls)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultCollectionCalls)

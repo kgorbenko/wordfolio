@@ -12,6 +12,7 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.CollectionsHierarchy
 open Wordfolio.Api.Domain.Entries
+open Wordfolio.Api.Domain.Shared
 open Wordfolio.Api.Domain.Vocabularies
 
 module DataAccess =
@@ -530,6 +531,12 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                 return
                     maybeVocabulary
                     |> Option.map toVocabularyDomain
+            }
+
+    interface IDeleteEntry with
+        member _.DeleteEntry(EntryId id) =
+            task {
+                return! Wordfolio.Api.DataAccess.Entries.deleteEntryAsync id connection transaction cancellationToken
             }
 
     interface IGetCollectionsWithVocabularies with
