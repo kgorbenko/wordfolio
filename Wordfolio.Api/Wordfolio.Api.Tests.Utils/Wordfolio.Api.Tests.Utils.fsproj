@@ -9,7 +9,7 @@
     <PackageReference Include="Respawn" Version="6.2.1" />
     <PackageReference Include="Testcontainers.PostgreSql" Version="4.6.0" />
     <PackageReference Include="Testcontainers.XunitV3" Version="4.6.0" />
-    <PackageReference Include="Npgsql" Version="9.0.3" />
+    <PackageReference Include="Npgsql" Version="10.0.1" />
     <PackageReference Include="Dapper.FSharp" Version="4.9.0" />
     <PackageReference Include="xunit.v3.extensibility.core" Version="3.0.1" />
     <PackageReference Include="FluentMigrator.Runner" Version="7.1.0" />

@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Npgsql" Version="9.4.1" />
+    <PackageReference Include="Aspire.Npgsql" Version="13.1.0" />
     <PackageReference Include="Dapper.FSharp" Version="4.9.0" />
   </ItemGroup>
 
