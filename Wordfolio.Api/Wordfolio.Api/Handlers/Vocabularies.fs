@@ -63,129 +63,154 @@ let private toErrorResponse(error: VocabularyError) : IResult =
     | VocabularyCollectionNotFound _ -> Results.NotFound({| error = "Collection not found" |})
 
 let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
-    group.MapGet(
-        UrlTokens.Root,
-        Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-            (fun collectionId user dataSource cancellationToken ->
-                task {
-                    match getUserId user with
-                    | None -> return Results.Unauthorized()
-                    | Some userId ->
-                        let env =
-                            TransactionalEnv(dataSource, cancellationToken)
+    group
+        .MapGet(
+            UrlTokens.Root,
+            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result = getByCollectionId env (UserId userId) (CollectionId collectionId)
+                            let! result = getByCollectionId env (UserId userId) (CollectionId collectionId)
 
-                        return
-                            match result with
-                            | Ok vocabularies ->
-                                let response =
-                                    vocabularies |> List.map toResponse
+                            return
+                                match result with
+                                | Ok vocabularies ->
+                                    let response =
+                                        vocabularies |> List.map toResponse
 
-                                Results.Ok(response)
-                            | Error error -> toErrorResponse error
-                })
-    )
+                                    Results.Ok(response)
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .Produces<VocabularyResponse list>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status404NotFound)
     |> ignore
 
-    group.MapPost(
-        UrlTokens.Root,
-        Func<int, CreateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-            (fun collectionId request user dataSource cancellationToken ->
-                task {
-                    match getUserId user with
-                    | None -> return Results.Unauthorized()
-                    | Some userId ->
-                        let env =
-                            TransactionalEnv(dataSource, cancellationToken)
+    group
+        .MapPost(
+            UrlTokens.Root,
+            Func<int, CreateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId request user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result =
-                            create
-                                env
-                                (UserId userId)
-                                (CollectionId collectionId)
-                                request.Name
-                                request.Description
-                                DateTimeOffset.UtcNow
+                            let! result =
+                                create
+                                    env
+                                    (UserId userId)
+                                    (CollectionId collectionId)
+                                    request.Name
+                                    request.Description
+                                    DateTimeOffset.UtcNow
 
-                        return
-                            match result with
-                            | Ok vocabulary ->
-                                Results.Created(
-                                    Urls.vocabularyById(collectionId, VocabularyId.value vocabulary.Id),
-                                    toResponse vocabulary
-                                )
-                            | Error error -> toErrorResponse error
-                })
-    )
+                            return
+                                match result with
+                                | Ok vocabulary ->
+                                    Results.Created(
+                                        Urls.vocabularyById(collectionId, VocabularyId.value vocabulary.Id),
+                                        toResponse vocabulary
+                                    )
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .Produces<VocabularyResponse>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status404NotFound)
     |> ignore
 
-    group.MapGet(
-        UrlTokens.ById,
-        Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-            (fun collectionId id user dataSource cancellationToken ->
-                task {
-                    match getUserId user with
-                    | None -> return Results.Unauthorized()
-                    | Some userId ->
-                        let env =
-                            TransactionalEnv(dataSource, cancellationToken)
+    group
+        .MapGet(
+            UrlTokens.ById,
+            Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId id user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result = getById env (UserId userId) (VocabularyId id)
+                            let! result = getById env (UserId userId) (VocabularyId id)
 
-                        return
-                            match result with
-                            | Ok vocabulary -> Results.Ok(toResponse vocabulary)
-                            | Error error -> toErrorResponse error
-                })
-    )
+                            return
+                                match result with
+                                | Ok vocabulary -> Results.Ok(toResponse vocabulary)
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .Produces<VocabularyResponse>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
     |> ignore
 
-    group.MapPut(
-        UrlTokens.ById,
-        Func<int, int, UpdateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-            (fun collectionId id request user dataSource cancellationToken ->
-                task {
-                    match getUserId user with
-                    | None -> return Results.Unauthorized()
-                    | Some userId ->
-                        let env =
-                            TransactionalEnv(dataSource, cancellationToken)
+    group
+        .MapPut(
+            UrlTokens.ById,
+            Func<int, int, UpdateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId id request user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result =
-                            update
-                                env
-                                (UserId userId)
-                                (VocabularyId id)
-                                request.Name
-                                request.Description
-                                DateTimeOffset.UtcNow
+                            let! result =
+                                update
+                                    env
+                                    (UserId userId)
+                                    (VocabularyId id)
+                                    request.Name
+                                    request.Description
+                                    DateTimeOffset.UtcNow
 
-                        return
-                            match result with
-                            | Ok vocabulary -> Results.Ok(toResponse vocabulary)
-                            | Error error -> toErrorResponse error
-                })
-    )
+                            return
+                                match result with
+                                | Ok vocabulary -> Results.Ok(toResponse vocabulary)
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .Produces<VocabularyResponse>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
     |> ignore
 
-    group.MapDelete(
-        UrlTokens.ById,
-        Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-            (fun collectionId id user dataSource cancellationToken ->
-                task {
-                    match getUserId user with
-                    | None -> return Results.Unauthorized()
-                    | Some userId ->
-                        let env =
-                            TransactionalEnv(dataSource, cancellationToken)
+    group
+        .MapDelete(
+            UrlTokens.ById,
+            Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId id user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result = delete env (UserId userId) (VocabularyId id)
+                            let! result = delete env (UserId userId) (VocabularyId id)
 
-                        return
-                            match result with
-                            | Ok() -> Results.NoContent()
-                            | Error error -> toErrorResponse error
-                })
-    )
+                            return
+                                match result with
+                                | Ok() -> Results.NoContent()
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
     |> ignore
