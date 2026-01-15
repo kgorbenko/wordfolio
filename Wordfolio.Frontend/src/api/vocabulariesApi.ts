@@ -11,7 +11,6 @@ export interface VocabularyResponse {
 
 export interface VocabularySummaryResponse {
     readonly id: number;
-    readonly collectionId: number;
     readonly name: string;
     readonly description: string | null;
     readonly createdAt: string;
@@ -26,6 +25,11 @@ export interface CollectionSummaryResponse {
     readonly createdAt: string;
     readonly updatedAt: string | null;
     readonly vocabularies: VocabularySummaryResponse[];
+}
+
+export interface CollectionsHierarchyResponse {
+    readonly collections: CollectionSummaryResponse[];
+    readonly defaultVocabulary: VocabularySummaryResponse | null;
 }
 
 export interface CreateVocabularyRequest {
@@ -67,19 +71,23 @@ const getAuthHeaders = (): HeadersInit => {
 };
 
 export const vocabulariesApi = {
-    getCollectionsHierarchy: async (): Promise<CollectionSummaryResponse[]> => {
-        const response = await fetch(`${API_BASE_URL}/collections-hierarchy`, {
-            method: "GET",
-            headers: getAuthHeaders(),
-        });
+    getCollectionsHierarchy:
+        async (): Promise<CollectionsHierarchyResponse> => {
+            const response = await fetch(
+                `${API_BASE_URL}/collections-hierarchy`,
+                {
+                    method: "GET",
+                    headers: getAuthHeaders(),
+                }
+            );
 
-        if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
-        }
+            if (!response.ok) {
+                const error: ApiError = await response.json();
+                throw error;
+            }
 
-        return response.json();
-    },
+            return response.json();
+        },
 
     getCollections: async (): Promise<CollectionResponse[]> => {
         const response = await fetch(`${API_BASE_URL}/collections`, {

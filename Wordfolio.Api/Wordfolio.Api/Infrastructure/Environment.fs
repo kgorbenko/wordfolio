@@ -561,12 +561,32 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                             c.Vocabularies
                             |> List.map(fun v ->
                                 { Id = VocabularyId v.Id
-                                  CollectionId = CollectionId v.CollectionId
                                   Name = v.Name
                                   Description = v.Description
                                   CreatedAt = v.CreatedAt
                                   UpdatedAt = v.UpdatedAt
                                   EntryCount = v.EntryCount }) })
+            }
+
+    interface IGetDefaultVocabularySummary with
+        member _.GetDefaultVocabularySummary(UserId userId) =
+            task {
+                let! result =
+                    Wordfolio.Api.DataAccess.CollectionsHierarchy.getDefaultVocabularySummaryByUserIdAsync
+                        userId
+                        connection
+                        transaction
+                        cancellationToken
+
+                return
+                    result
+                    |> Option.map(fun v ->
+                        { Id = VocabularyId v.Id
+                          Name = v.Name
+                          Description = v.Description
+                          CreatedAt = v.CreatedAt
+                          UpdatedAt = v.UpdatedAt
+                          EntryCount = v.EntryCount })
             }
 
 type TransactionalEnv(dataSource: NpgsqlDataSource, cancellationToken: CancellationToken) =

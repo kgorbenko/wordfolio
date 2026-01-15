@@ -9,7 +9,6 @@ open Dapper
 
 type VocabularySummary =
     { Id: int
-      CollectionId: int
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
@@ -38,7 +37,6 @@ type internal CollectionRecord =
 [<CLIMutable>]
 type internal VocabularyRecord =
     { Id: int
-      CollectionId: int
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
@@ -57,7 +55,7 @@ let getCollectionsByUserIdAsync
             """
             SELECT
                 c."Id", c."UserId", c."Name", c."Description", c."CreatedAt", c."UpdatedAt", c."IsSystem",
-                v."Id", v."CollectionId", v."Name", v."Description", v."CreatedAt", v."UpdatedAt", v."IsDefault",
+                v."Id", v."Name", v."Description", v."CreatedAt", v."UpdatedAt", v."IsDefault",
                 COALESCE(e."EntryCount", 0) as "EntryCount"
             FROM wordfolio."Collections" c
             LEFT JOIN wordfolio."Vocabularies" v ON v."CollectionId" = c."Id" AND v."IsDefault" = false
@@ -94,7 +92,6 @@ let getCollectionsByUserIdAsync
                     |> Seq.choose snd
                     |> Seq.map(fun v ->
                         { Id = v.Id
-                          CollectionId = v.CollectionId
                           Name = v.Name
                           Description = v.Description
                           CreatedAt = v.CreatedAt
@@ -114,4 +111,47 @@ let getCollectionsByUserIdAsync
             |> Seq.toList
 
         return grouped
+    }
+
+let getDefaultVocabularySummaryByUserIdAsync
+    (userId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<VocabularySummary option> =
+    task {
+        let sql =
+            """
+            SELECT
+                v."Id", v."Name", v."Description",
+                v."CreatedAt", v."UpdatedAt", v."IsDefault",
+                COUNT(e."Id") as "EntryCount"
+            FROM wordfolio."Vocabularies" v
+            INNER JOIN wordfolio."Collections" c ON c."Id" = v."CollectionId"
+            LEFT JOIN wordfolio."Entries" e ON e."VocabularyId" = v."Id"
+            WHERE c."UserId" = @UserId AND v."IsDefault" = true
+            GROUP BY v."Id", v."Name", v."Description",
+                     v."CreatedAt", v."UpdatedAt", v."IsDefault"
+            """
+
+        let commandDefinition =
+            CommandDefinition(
+                commandText = sql,
+                parameters = {| UserId = userId |},
+                transaction = transaction,
+                cancellationToken = cancellationToken
+            )
+
+        let! results = connection.QueryAsync<VocabularyRecord>(commandDefinition)
+
+        return
+            results
+            |> Seq.tryHead
+            |> Option.map(fun v ->
+                { Id = v.Id
+                  Name = v.Name
+                  Description = v.Description
+                  CreatedAt = v.CreatedAt
+                  UpdatedAt = v.UpdatedAt |> Option.ofNullable
+                  EntryCount = v.EntryCount })
     }

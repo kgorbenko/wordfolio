@@ -56,14 +56,12 @@ type CollectionsHierarchyTests(fixture: WordfolioTestFixture) =
                     UpdatedAt = None
                     Vocabularies =
                       [ { Id = vocab1.Id
-                          CollectionId = collection1.Id
                           Name = "Vocab 1"
                           Description = Some "Vocab desc"
                           CreatedAt = createdAt
                           UpdatedAt = None
                           EntryCount = 0 }
                         { Id = vocab2.Id
-                          CollectionId = collection1.Id
                           Name = "Vocab 2"
                           Description = None
                           CreatedAt = createdAt
@@ -77,7 +75,6 @@ type CollectionsHierarchyTests(fixture: WordfolioTestFixture) =
                     UpdatedAt = None
                     Vocabularies =
                       [ { Id = vocab3.Id
-                          CollectionId = collection2.Id
                           Name = "Vocab 3"
                           Description = None
                           CreatedAt = createdAt
@@ -127,7 +124,6 @@ type CollectionsHierarchyTests(fixture: WordfolioTestFixture) =
                     UpdatedAt = None
                     Vocabularies =
                       [ { Id = vocab.Id
-                          CollectionId = regularCollection.Id
                           Name = "Regular Vocab"
                           Description = None
                           CreatedAt = createdAt
@@ -176,7 +172,6 @@ type CollectionsHierarchyTests(fixture: WordfolioTestFixture) =
                     UpdatedAt = None
                     Vocabularies =
                       [ { Id = regularVocab.Id
-                          CollectionId = collection.Id
                           Name = "Regular"
                           Description = None
                           CreatedAt = createdAt
@@ -273,14 +268,12 @@ type CollectionsHierarchyTests(fixture: WordfolioTestFixture) =
                     UpdatedAt = None
                     Vocabularies =
                       [ { Id = vocab1.Id
-                          CollectionId = collection.Id
                           Name = "Vocab 1"
                           Description = None
                           CreatedAt = createdAt
                           UpdatedAt = None
                           EntryCount = 3 }
                         { Id = vocab2.Id
-                          CollectionId = collection.Id
                           Name = "Vocab 2"
                           Description = None
                           CreatedAt = createdAt
@@ -288,4 +281,221 @@ type CollectionsHierarchyTests(fixture: WordfolioTestFixture) =
                           EntryCount = 1 } ] } ]
 
             Assert.Equal<CollectionsHierarchy.CollectionSummary list>(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``getDefaultVocabularySummaryByUserIdAsync returns default vocabulary with entry count``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let systemCollection =
+                Entities.makeCollection user "Unsorted" None createdAt None true
+
+            let defaultVocab =
+                Entities.makeVocabulary systemCollection "My Words" (Some "Default vocabulary") createdAt None true
+
+            let entry1 =
+                Entities.makeEntry defaultVocab "word1" createdAt None
+
+            let entry2 =
+                Entities.makeEntry defaultVocab "word2" createdAt None
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ systemCollection ]
+                |> Seeder.addVocabularies [ defaultVocab ]
+                |> Seeder.addEntries [ entry1; entry2 ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                CollectionsHierarchy.getDefaultVocabularySummaryByUserIdAsync user.Id
+                |> fixture.WithConnectionAsync
+
+            let expected: CollectionsHierarchy.VocabularySummary option =
+                Some
+                    { Id = defaultVocab.Id
+                      Name = "My Words"
+                      Description = Some "Default vocabulary"
+                      CreatedAt = createdAt
+                      UpdatedAt = None
+                      EntryCount = 2 }
+
+            Assert.Equal(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``getDefaultVocabularySummaryByUserIdAsync returns vocabulary with zero entry count when no entries``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let systemCollection =
+                Entities.makeCollection user "Unsorted" None createdAt None true
+
+            let defaultVocab =
+                Entities.makeVocabulary systemCollection "My Words" None createdAt None true
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ systemCollection ]
+                |> Seeder.addVocabularies [ defaultVocab ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                CollectionsHierarchy.getDefaultVocabularySummaryByUserIdAsync user.Id
+                |> fixture.WithConnectionAsync
+
+            let expected: CollectionsHierarchy.VocabularySummary option =
+                Some
+                    { Id = defaultVocab.Id
+                      Name = "My Words"
+                      Description = None
+                      CreatedAt = createdAt
+                      UpdatedAt = None
+                      EntryCount = 0 }
+
+            Assert.Equal(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``getDefaultVocabularySummaryByUserIdAsync returns None when no default vocabulary exists``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let collection =
+                Entities.makeCollection user "Regular Collection" None createdAt None false
+
+            let regularVocab =
+                Entities.makeVocabulary collection "Regular Vocab" None createdAt None false
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ regularVocab ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                CollectionsHierarchy.getDefaultVocabularySummaryByUserIdAsync user.Id
+                |> fixture.WithConnectionAsync
+
+            Assert.Equal(None, actual)
+        }
+
+    [<Fact>]
+    member _.``getCollectionsByUserIdAsync does not return collections from other users``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user1 = Entities.makeUser 100
+            let user2 = Entities.makeUser 101
+
+            let user1Collection =
+                Entities.makeCollection user1 "User 1 Collection" None createdAt None false
+
+            let user2Collection =
+                Entities.makeCollection user2 "User 2 Collection" None createdAt None false
+
+            let user1Vocab =
+                Entities.makeVocabulary user1Collection "User 1 Vocab" None createdAt None false
+
+            let user2Vocab =
+                Entities.makeVocabulary user2Collection "User 2 Vocab" None createdAt None false
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user1; user2 ]
+                |> Seeder.addCollections [ user1Collection; user2Collection ]
+                |> Seeder.addVocabularies [ user1Vocab; user2Vocab ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                CollectionsHierarchy.getCollectionsByUserIdAsync user1.Id
+                |> fixture.WithConnectionAsync
+
+            let expected: CollectionsHierarchy.CollectionSummary list =
+                [ { Id = user1Collection.Id
+                    UserId = user1.Id
+                    Name = "User 1 Collection"
+                    Description = None
+                    CreatedAt = createdAt
+                    UpdatedAt = None
+                    Vocabularies =
+                      [ { Id = user1Vocab.Id
+                          Name = "User 1 Vocab"
+                          Description = None
+                          CreatedAt = createdAt
+                          UpdatedAt = None
+                          EntryCount = 0 } ] } ]
+
+            Assert.Equal<CollectionsHierarchy.CollectionSummary list>(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``getDefaultVocabularySummaryByUserIdAsync does not return default vocabulary from other users``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user1 = Entities.makeUser 100
+            let user2 = Entities.makeUser 101
+
+            let user1SystemCollection =
+                Entities.makeCollection user1 "Unsorted" None createdAt None true
+
+            let user2SystemCollection =
+                Entities.makeCollection user2 "Unsorted" None createdAt None true
+
+            let user1DefaultVocab =
+                Entities.makeVocabulary user1SystemCollection "My Words" None createdAt None true
+
+            let user2DefaultVocab =
+                Entities.makeVocabulary user2SystemCollection "My Words" None createdAt None true
+
+            let user2Entry =
+                Entities.makeEntry user2DefaultVocab "word" createdAt None
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user1; user2 ]
+                |> Seeder.addCollections [ user1SystemCollection; user2SystemCollection ]
+                |> Seeder.addVocabularies [ user1DefaultVocab; user2DefaultVocab ]
+                |> Seeder.addEntries [ user2Entry ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                CollectionsHierarchy.getDefaultVocabularySummaryByUserIdAsync user1.Id
+                |> fixture.WithConnectionAsync
+
+            let expected: CollectionsHierarchy.VocabularySummary option =
+                Some
+                    { Id = user1DefaultVocab.Id
+                      Name = "My Words"
+                      Description = None
+                      CreatedAt = createdAt
+                      UpdatedAt = None
+                      EntryCount = 0 }
+
+            Assert.Equal(expected, actual)
         }

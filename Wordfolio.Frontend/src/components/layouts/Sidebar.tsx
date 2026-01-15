@@ -17,11 +17,15 @@ import {
 import FolderIcon from "@mui/icons-material/Folder";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import HomeIcon from "@mui/icons-material/Home";
+import StarIcon from "@mui/icons-material/Star";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
-import { CollectionSummaryResponse } from "../../api/vocabulariesApi";
+import {
+    CollectionSummaryResponse,
+    VocabularySummaryResponse,
+} from "../../api/vocabulariesApi";
 import { useCollectionsHierarchyQuery } from "../../queries/useCollectionsHierarchyQuery";
 
 import "./Sidebar.scss";
@@ -42,6 +46,75 @@ const AllCollectionsButtonSkeleton = () => (
         <ListItemText primary={<Skeleton variant="text" width="80%" />} />
     </ListItemButton>
 );
+
+const DefaultVocabularyPinnedSkeleton = () => (
+    <ListItemButton sx={{ px: 2, py: 1 }}>
+        <ListItemIcon className="nav-icon">
+            <Skeleton variant="circular" width={20} height={20} />
+        </ListItemIcon>
+        <ListItemText primary={<Skeleton variant="text" width="60%" />} />
+        <Skeleton variant="text" width={16} />
+    </ListItemButton>
+);
+
+interface DefaultVocabularyPinnedProps {
+    readonly defaultVocabulary: VocabularySummaryResponse;
+    readonly isSelected: boolean;
+    readonly onClick: () => void;
+}
+
+const DefaultVocabularyPinned = ({
+    defaultVocabulary,
+    isSelected,
+    onClick,
+}: DefaultVocabularyPinnedProps) => {
+    const theme = useTheme();
+
+    return (
+        <ListItemButton
+            selected={isSelected}
+            onClick={onClick}
+            sx={{
+                px: 2,
+                py: 1,
+                "&:hover": {
+                    bgcolor: alpha(theme.palette.primary.main, 0.04),
+                },
+                "&.Mui-selected": {
+                    bgcolor: alpha(theme.palette.primary.main, 0.08),
+                    borderRight: `3px solid ${theme.palette.primary.main}`,
+                    "&:hover": {
+                        bgcolor: alpha(theme.palette.primary.main, 0.12),
+                    },
+                },
+            }}
+        >
+            <ListItemIcon className="nav-icon">
+                <StarIcon
+                    sx={{
+                        color: isSelected ? "primary.main" : "warning.main",
+                        fontSize: 20,
+                    }}
+                />
+            </ListItemIcon>
+            <ListItemText
+                primary={defaultVocabulary.name}
+                primaryTypographyProps={{
+                    fontWeight: isSelected ? 600 : 500,
+                    fontSize: "0.9rem",
+                    color: isSelected ? "primary.main" : "text.secondary",
+                }}
+            />
+            <Typography
+                className="nav-count"
+                variant="caption"
+                sx={{ color: "text.disabled" }}
+            >
+                {defaultVocabulary.entryCount}
+            </Typography>
+        </ListItemButton>
+    );
+};
 
 const CollectionsListSkeleton = () => (
     <List disablePadding>
@@ -126,7 +199,10 @@ const CollectionsList = ({
                             px: 2,
                             py: 1,
                             "&:hover": {
-                                bgcolor: alpha(theme.palette.primary.main, 0.04),
+                                bgcolor: alpha(
+                                    theme.palette.primary.main,
+                                    0.04
+                                ),
                             },
                         }}
                     >
@@ -346,6 +422,8 @@ export const Sidebar = ({ variant, open, onClose }: SidebarProps) => {
         });
     };
 
+    const isDefaultVocabularySelected = false;
+
     const drawerContent = (
         <Box className="sidebar">
             <Box
@@ -375,32 +453,50 @@ export const Sidebar = ({ variant, open, onClose }: SidebarProps) => {
 
             <Box sx={{ py: 1 }}>
                 {isLoading ? (
-                    <AllCollectionsButtonSkeleton />
+                    <>
+                        <DefaultVocabularyPinnedSkeleton />
+                        <AllCollectionsButtonSkeleton />
+                    </>
                 ) : (
-                    <ListItemButton
-                        onClick={handleHomeClick}
-                        sx={{
-                            px: 2,
-                            py: 1,
-                            "&:hover": {
-                                bgcolor: alpha(theme.palette.primary.main, 0.04),
-                            },
-                        }}
-                    >
-                        <ListItemIcon className="nav-icon">
-                            <HomeIcon
-                                sx={{ color: "text.secondary", fontSize: 20 }}
+                    <>
+                        {data?.defaultVocabulary && (
+                            <DefaultVocabularyPinned
+                                defaultVocabulary={data.defaultVocabulary}
+                                isSelected={!!isDefaultVocabularySelected}
+                                onClick={() => {}}
                             />
-                        </ListItemIcon>
-                        <ListItemText
-                            primary="All Collections"
-                            primaryTypographyProps={{
-                                fontWeight: 500,
-                                fontSize: "0.9rem",
-                                color: "text.secondary",
+                        )}
+                        <ListItemButton
+                            onClick={handleHomeClick}
+                            sx={{
+                                px: 2,
+                                py: 1,
+                                "&:hover": {
+                                    bgcolor: alpha(
+                                        theme.palette.primary.main,
+                                        0.04
+                                    ),
+                                },
                             }}
-                        />
-                    </ListItemButton>
+                        >
+                            <ListItemIcon className="nav-icon">
+                                <HomeIcon
+                                    sx={{
+                                        color: "text.secondary",
+                                        fontSize: 20,
+                                    }}
+                                />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary="All Collections"
+                                primaryTypographyProps={{
+                                    fontWeight: 500,
+                                    fontSize: "0.9rem",
+                                    color: "text.secondary",
+                                }}
+                            />
+                        </ListItemButton>
+                    </>
                 )}
             </Box>
 
@@ -413,7 +509,7 @@ export const Sidebar = ({ variant, open, onClose }: SidebarProps) => {
                     <CollectionsListError />
                 ) : (
                     <CollectionsList
-                        collections={data ?? []}
+                        collections={data?.collections ?? []}
                         currentCollectionId={currentCollectionId}
                         currentVocabularyId={currentVocabularyId}
                         expandedCollections={expandedCollections}
