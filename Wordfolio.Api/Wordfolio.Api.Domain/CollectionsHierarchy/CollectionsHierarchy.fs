@@ -6,7 +6,6 @@ open Wordfolio.Api.Domain
 
 type VocabularySummary =
     { Id: VocabularyId
-      CollectionId: CollectionId
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
@@ -20,3 +19,7 @@ type CollectionSummary =
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option
       Vocabularies: VocabularySummary list }
+
+type CollectionsHierarchyResult =
+    { Collections: CollectionSummary list
+      DefaultVocabulary: VocabularySummary option }

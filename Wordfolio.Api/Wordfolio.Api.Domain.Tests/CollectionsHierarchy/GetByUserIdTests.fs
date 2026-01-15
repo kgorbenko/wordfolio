@@ -9,12 +9,23 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.CollectionsHierarchy
 open Wordfolio.Api.Domain.CollectionsHierarchy.Operations
 
-type TestEnv(getCollectionsWithVocabularies: UserId -> Task<CollectionSummary list>) =
+type TestEnv
+    (
+        getCollectionsWithVocabularies: UserId -> Task<CollectionSummary list>,
+        getDefaultVocabularySummary: UserId -> Task<VocabularySummary option>
+    ) =
     let getCollectionsWithVocabulariesCalls =
+        ResizeArray<UserId>()
+
+    let getDefaultVocabularySummaryCalls =
         ResizeArray<UserId>()
 
     member _.GetCollectionsWithVocabulariesCalls =
         getCollectionsWithVocabulariesCalls
+        |> Seq.toList
+
+    member _.GetDefaultVocabularySummaryCalls =
+        getDefaultVocabularySummaryCalls
         |> Seq.toList
 
     interface IGetCollectionsWithVocabularies with
@@ -22,15 +33,19 @@ type TestEnv(getCollectionsWithVocabularies: UserId -> Task<CollectionSummary li
             getCollectionsWithVocabulariesCalls.Add(userId)
             getCollectionsWithVocabularies userId
 
+    interface IGetDefaultVocabularySummary with
+        member _.GetDefaultVocabularySummary(userId) =
+            getDefaultVocabularySummaryCalls.Add(userId)
+            getDefaultVocabularySummary userId
+
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
 
 let now =
     DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
-let makeVocabularySummary collectionId vocabularyId name entryCount =
+let makeVocabularySummary vocabularyId name entryCount =
     { Id = VocabularyId vocabularyId
-      CollectionId = CollectionId collectionId
       Name = name
       Description = None
       CreatedAt = now
@@ -49,25 +64,32 @@ let makeCollectionSummary id name vocabularies =
 let ``returns collections with vocabularies for user``() =
     task {
         let vocab1 =
-            makeVocabularySummary 1 10 "Vocabulary 1" 5
+            makeVocabularySummary 10 "Vocabulary 1" 5
 
         let vocab2 =
-            makeVocabularySummary 1 11 "Vocabulary 2" 3
+            makeVocabularySummary 11 "Vocabulary 2" 3
 
         let collections =
             [ makeCollectionSummary 1 "Collection 1" [ vocab1; vocab2 ]
               makeCollectionSummary 2 "Collection 2" [] ]
 
         let env =
-            TestEnv(fun userId ->
-                if userId <> UserId 1 then
-                    failwith $"Unexpected userId: {userId}"
+            TestEnv(
+                (fun userId ->
+                    if userId <> UserId 1 then
+                        failwith $"Unexpected userId: {userId}"
 
-                Task.FromResult(collections))
+                    Task.FromResult(collections)),
+                (fun _ -> Task.FromResult(None))
+            )
 
         let! result = getByUserId env (UserId 1)
 
-        Assert.Equal(Ok collections, result)
+        let expected: CollectionsHierarchyResult =
+            { Collections = collections
+              DefaultVocabulary = None }
+
+        Assert.Equal(Ok expected, result)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsWithVocabulariesCalls)
     }
 
@@ -75,14 +97,72 @@ let ``returns collections with vocabularies for user``() =
 let ``returns empty list when user has no collections``() =
     task {
         let env =
-            TestEnv(fun userId ->
-                if userId <> UserId 1 then
-                    failwith $"Unexpected userId: {userId}"
+            TestEnv(
+                (fun userId ->
+                    if userId <> UserId 1 then
+                        failwith $"Unexpected userId: {userId}"
 
-                Task.FromResult([]))
+                    Task.FromResult([])),
+                (fun _ -> Task.FromResult(None))
+            )
 
         let! result = getByUserId env (UserId 1)
 
-        Assert.Equal(Ok [], result)
+        let expected: CollectionsHierarchyResult =
+            { Collections = []
+              DefaultVocabulary = None }
+
+        Assert.Equal(Ok expected, result)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsWithVocabulariesCalls)
+    }
+
+[<Fact>]
+let ``returns default vocabulary when it has entries``() =
+    task {
+        let defaultVocab =
+            makeVocabularySummary 200 "My Words" 5
+
+        let env =
+            TestEnv(
+                (fun _ -> Task.FromResult([])),
+                (fun userId ->
+                    if userId <> UserId 1 then
+                        failwith $"Unexpected userId: {userId}"
+
+                    Task.FromResult(Some defaultVocab))
+            )
+
+        let! result = getByUserId env (UserId 1)
+
+        let expected: CollectionsHierarchyResult =
+            { Collections = []
+              DefaultVocabulary = Some defaultVocab }
+
+        Assert.Equal(Ok expected, result)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularySummaryCalls)
+    }
+
+[<Fact>]
+let ``does not return default vocabulary when it has no entries``() =
+    task {
+        let defaultVocab =
+            makeVocabularySummary 200 "My Words" 0
+
+        let env =
+            TestEnv(
+                (fun _ -> Task.FromResult([])),
+                (fun userId ->
+                    if userId <> UserId 1 then
+                        failwith $"Unexpected userId: {userId}"
+
+                    Task.FromResult(Some defaultVocab))
+            )
+
+        let! result = getByUserId env (UserId 1)
+
+        let expected: CollectionsHierarchyResult =
+            { Collections = []
+              DefaultVocabulary = None }
+
+        Assert.Equal(Ok expected, result)
     }

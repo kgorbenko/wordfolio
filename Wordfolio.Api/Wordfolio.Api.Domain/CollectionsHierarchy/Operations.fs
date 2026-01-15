@@ -8,5 +8,14 @@ let getByUserId env userId =
     runInTransaction env (fun appEnv ->
         task {
             let! collections = getCollectionsWithVocabularies appEnv userId
-            return Ok collections
+            let! defaultVocabulary = getDefaultVocabularySummary appEnv userId
+
+            let filteredDefaultVocabulary =
+                defaultVocabulary
+                |> Option.filter(fun v -> v.EntryCount > 0)
+
+            return
+                Ok
+                    { Collections = collections
+                      DefaultVocabulary = filteredDefaultVocabulary }
         })

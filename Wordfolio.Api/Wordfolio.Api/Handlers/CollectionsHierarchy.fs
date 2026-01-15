@@ -19,7 +19,6 @@ module Urls = Wordfolio.Api.Urls.CollectionsHierarchy
 
 type VocabularySummaryResponse =
     { Id: int
-      CollectionId: int
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
@@ -34,9 +33,12 @@ type CollectionSummaryResponse =
       UpdatedAt: DateTimeOffset option
       Vocabularies: VocabularySummaryResponse list }
 
+type CollectionsHierarchyResponse =
+    { Collections: CollectionSummaryResponse list
+      DefaultVocabulary: VocabularySummaryResponse option }
+
 let private toVocabularySummaryResponse(v: VocabularySummary) : VocabularySummaryResponse =
     { Id = VocabularyId.value v.Id
-      CollectionId = CollectionId.value v.CollectionId
       Name = v.Name
       Description = v.Description
       CreatedAt = v.CreatedAt
@@ -80,16 +82,24 @@ let mapCollectionsHierarchyEndpoint(app: IEndpointRouteBuilder) =
 
                         return
                             match result with
-                            | Ok collections ->
-                                let response =
-                                    collections
-                                    |> List.map toCollectionSummaryResponse
+                            | Ok hierarchyResult ->
+                                let response: CollectionsHierarchyResponse =
+                                    { Collections =
+                                        hierarchyResult.Collections
+                                        |> List.map toCollectionSummaryResponse
+                                      DefaultVocabulary =
+                                        hierarchyResult.DefaultVocabulary
+                                        |> Option.map toVocabularySummaryResponse }
 
                                 Results.Ok(response)
-                            | Error _ -> Results.Ok([])
+                            | Error _ ->
+                                Results.Ok(
+                                    { Collections = []
+                                      DefaultVocabulary = None }
+                                )
                 })
         )
         .WithTags("Collections")
-        .Produces<CollectionSummaryResponse list>(StatusCodes.Status200OK)
+        .Produces<CollectionsHierarchyResponse>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
     |> ignore
