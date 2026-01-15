@@ -67,44 +67,42 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
             Assert.Equal(HttpStatusCode.Created, response.StatusCode)
 
-            let! result = response.Content.ReadFromJsonAsync<EntryResponse>()
-
-            Assert.NotNull(result)
+            let! actual = response.Content.ReadFromJsonAsync<EntryResponse>()
 
             let expectedDefinitionExample: ExampleResponse =
-                { Id = result.Definitions.[0].Examples.[0].Id
+                { Id = actual.Definitions.[0].Examples.[0].Id
                   ExampleText = "Hello, world!"
                   Source = ExampleSourceDto.Custom }
 
             let expectedDefinition: DefinitionResponse =
-                { Id = result.Definitions.[0].Id
+                { Id = actual.Definitions.[0].Id
                   DefinitionText = "a greeting"
                   Source = DefinitionSourceDto.Manual
                   DisplayOrder = 0
                   Examples = [ expectedDefinitionExample ] }
 
             let expectedTranslationExample: ExampleResponse =
-                { Id = result.Translations.[0].Examples.[0].Id
+                { Id = actual.Translations.[0].Examples.[0].Id
                   ExampleText = "Hola, mundo!"
                   Source = ExampleSourceDto.Custom }
 
             let expectedTranslation: TranslationResponse =
-                { Id = result.Translations.[0].Id
+                { Id = actual.Translations.[0].Id
                   TranslationText = "hola"
                   Source = TranslationSourceDto.Manual
                   DisplayOrder = 0
                   Examples = [ expectedTranslationExample ] }
 
-            let expectedEntry: EntryResponse =
-                { Id = result.Id
+            let expected: EntryResponse =
+                { Id = actual.Id
                   VocabularyId = vocabulary.Id
                   EntryText = "hello"
-                  CreatedAt = result.CreatedAt
+                  CreatedAt = actual.CreatedAt
                   UpdatedAt = None
                   Definitions = [ expectedDefinition ]
                   Translations = [ expectedTranslation ] }
 
-            Assert.Equal(expectedEntry, result)
+            Assert.Equal(expected, actual)
 
             let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
 
@@ -449,44 +447,42 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! result = response.Content.ReadFromJsonAsync<EntryResponse>()
-
-            Assert.NotNull(result)
+            let! actual = response.Content.ReadFromJsonAsync<EntryResponse>()
 
             let expectedDefinitionExample: ExampleResponse =
-                { Id = result.Definitions.[0].Examples.[0].Id
+                { Id = actual.Definitions.[0].Examples.[0].Id
                   ExampleText = "Hello, world!"
                   Source = ExampleSourceDto.Custom }
 
             let expectedDefinition: DefinitionResponse =
-                { Id = result.Definitions.[0].Id
+                { Id = actual.Definitions.[0].Id
                   DefinitionText = "a greeting"
                   Source = DefinitionSourceDto.Manual
                   DisplayOrder = 0
                   Examples = [ expectedDefinitionExample ] }
 
             let expectedTranslationExample: ExampleResponse =
-                { Id = result.Translations.[0].Examples.[0].Id
+                { Id = actual.Translations.[0].Examples.[0].Id
                   ExampleText = "Hola, mundo!"
                   Source = ExampleSourceDto.Custom }
 
             let expectedTranslation: TranslationResponse =
-                { Id = result.Translations.[0].Id
+                { Id = actual.Translations.[0].Id
                   TranslationText = "hola"
                   Source = TranslationSourceDto.Manual
                   DisplayOrder = 0
                   Examples = [ expectedTranslationExample ] }
 
-            let expectedEntry: EntryResponse =
+            let expected: EntryResponse =
                 { Id = entry.Id
                   VocabularyId = vocabulary.Id
                   EntryText = "hello"
-                  CreatedAt = result.CreatedAt
+                  CreatedAt = actual.CreatedAt
                   UpdatedAt = None
                   Definitions = [ expectedDefinition ]
                   Translations = [ expectedTranslation ] }
 
-            Assert.Equal(expectedEntry, result)
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -570,35 +566,30 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! result = response.Content.ReadFromJsonAsync<EntryResponse[]>()
+            let! actual = response.Content.ReadFromJsonAsync<EntryResponse list>()
 
-            Assert.NotNull(result)
-            Assert.Equal(2, result.Length)
+            let actual =
+                actual
+                |> Seq.sortBy(_.EntryText)
+                |> List.ofSeq
 
-            let sortedResult =
-                result
-                |> Array.sortBy(fun e -> e.EntryText)
+            let expected: EntryResponse list =
+                [ { Id = actual.[0].Id
+                    VocabularyId = vocabulary.Id
+                    EntryText = "hello"
+                    CreatedAt = actual.[0].CreatedAt
+                    UpdatedAt = None
+                    Definitions = []
+                    Translations = [] }
+                  { Id = actual.[1].Id
+                    VocabularyId = vocabulary.Id
+                    EntryText = "world"
+                    CreatedAt = actual.[1].CreatedAt
+                    UpdatedAt = None
+                    Definitions = []
+                    Translations = [] } ]
 
-            let expectedEntry1: EntryResponse =
-                { Id = sortedResult.[0].Id
-                  VocabularyId = vocabulary.Id
-                  EntryText = "hello"
-                  CreatedAt = sortedResult.[0].CreatedAt
-                  UpdatedAt = None
-                  Definitions = []
-                  Translations = [] }
-
-            let expectedEntry2: EntryResponse =
-                { Id = sortedResult.[1].Id
-                  VocabularyId = vocabulary.Id
-                  EntryText = "world"
-                  CreatedAt = sortedResult.[1].CreatedAt
-                  UpdatedAt = None
-                  Definitions = []
-                  Translations = [] }
-
-            Assert.Equal(expectedEntry1, sortedResult.[0])
-            Assert.Equal(expectedEntry2, sortedResult.[1])
+            Assert.Equal<EntryResponse list>(expected, actual)
         }
 
     [<Fact>]
@@ -750,45 +741,42 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
             Assert.Equal(HttpStatusCode.OK, response.StatusCode)
 
-            let! result = response.Content.ReadFromJsonAsync<EntryResponse>()
-
-            Assert.NotNull(result)
-            Assert.True(result.UpdatedAt.IsSome)
+            let! actual = response.Content.ReadFromJsonAsync<EntryResponse>()
 
             let expectedDefinitionExample: ExampleResponse =
-                { Id = result.Definitions.[0].Examples.[0].Id
+                { Id = actual.Definitions.[0].Examples.[0].Id
                   ExampleText = "Hello there!"
                   Source = ExampleSourceDto.Custom }
 
             let expectedDefinition: DefinitionResponse =
-                { Id = result.Definitions.[0].Id
+                { Id = actual.Definitions.[0].Id
                   DefinitionText = "a new greeting"
                   Source = DefinitionSourceDto.Manual
                   DisplayOrder = 0
                   Examples = [ expectedDefinitionExample ] }
 
             let expectedTranslationExample: ExampleResponse =
-                { Id = result.Translations.[0].Examples.[0].Id
+                { Id = actual.Translations.[0].Examples.[0].Id
                   ExampleText = "Hola ahi!"
                   Source = ExampleSourceDto.Custom }
 
             let expectedTranslation: TranslationResponse =
-                { Id = result.Translations.[0].Id
+                { Id = actual.Translations.[0].Id
                   TranslationText = "hola actualizado"
                   Source = TranslationSourceDto.Manual
                   DisplayOrder = 0
                   Examples = [ expectedTranslationExample ] }
 
-            let expectedEntry: EntryResponse =
+            let expected: EntryResponse =
                 { Id = entry.Id
                   VocabularyId = vocabulary.Id
                   EntryText = "hello updated"
-                  CreatedAt = result.CreatedAt
-                  UpdatedAt = result.UpdatedAt
+                  CreatedAt = actual.CreatedAt
+                  UpdatedAt = actual.UpdatedAt
                   Definitions = [ expectedDefinition ]
                   Translations = [ expectedTranslation ] }
 
-            Assert.Equal(expectedEntry, result)
+            Assert.Equal(expected, actual)
 
             let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
 
@@ -1070,27 +1058,25 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
             Assert.Equal(HttpStatusCode.OK, response.StatusCode)
 
-            let! result = response.Content.ReadFromJsonAsync<EntryResponse>()
-
-            Assert.NotNull(result)
+            let! actual = response.Content.ReadFromJsonAsync<EntryResponse>()
 
             let expectedDefinition: DefinitionResponse =
-                { Id = result.Definitions.[0].Id
+                { Id = actual.Definitions.[0].Id
                   DefinitionText = "updated definition"
                   Source = DefinitionSourceDto.Manual
                   DisplayOrder = 0
                   Examples = [] }
 
-            let expectedEntry: EntryResponse =
+            let expected: EntryResponse =
                 { Id = entry.Id
                   VocabularyId = vocabulary.Id
                   EntryText = "hello"
-                  CreatedAt = result.CreatedAt
-                  UpdatedAt = result.UpdatedAt
+                  CreatedAt = actual.CreatedAt
+                  UpdatedAt = actual.UpdatedAt
                   Definitions = [ expectedDefinition ]
                   Translations = [] }
 
-            Assert.Equal(expectedEntry, result)
+            Assert.Equal(expected, actual)
 
             let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
 
@@ -1112,6 +1098,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             Assert.Equal<Definition list>(expectedDbDefinitions, dbDefinitions)
 
             let! dbTranslations = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+
             Assert.Empty(dbTranslations)
 
             let! dbExamples = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
@@ -1197,30 +1184,28 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
             Assert.Equal(HttpStatusCode.Created, response.StatusCode)
 
-            let! result = response.Content.ReadFromJsonAsync<EntryResponse>()
-
-            Assert.NotNull(result)
+            let! actual = response.Content.ReadFromJsonAsync<EntryResponse>()
 
             let! vocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
             Assert.Single(vocabularies) |> ignore
 
             let expectedDefinition: DefinitionResponse =
-                { Id = result.Definitions.[0].Id
+                { Id = actual.Definitions.[0].Id
                   DefinitionText = "a greeting"
                   Source = DefinitionSourceDto.Manual
                   DisplayOrder = 0
                   Examples = [] }
 
-            let expectedEntry: EntryResponse =
-                { Id = result.Id
+            let expected: EntryResponse =
+                { Id = actual.Id
                   VocabularyId = vocabularies.[0].Id
                   EntryText = "hello"
-                  CreatedAt = result.CreatedAt
+                  CreatedAt = actual.CreatedAt
                   UpdatedAt = None
                   Definitions = [ expectedDefinition ]
                   Translations = [] }
 
-            Assert.Equal(expectedEntry, result)
+            Assert.Equal(expected, actual)
 
             let expectedVocabulary: Wordfolio.Vocabulary =
                 { vocabularies.[0] with
@@ -1285,27 +1270,25 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
             Assert.Equal(HttpStatusCode.Created, response.StatusCode)
 
-            let! result = response.Content.ReadFromJsonAsync<EntryResponse>()
-
-            Assert.NotNull(result)
+            let! actual = response.Content.ReadFromJsonAsync<EntryResponse>()
 
             let expectedDefinition: DefinitionResponse =
-                { Id = result.Definitions.[0].Id
+                { Id = actual.Definitions.[0].Id
                   DefinitionText = "a greeting"
                   Source = DefinitionSourceDto.Manual
                   DisplayOrder = 0
                   Examples = [] }
 
-            let expectedEntry: EntryResponse =
-                { Id = result.Id
+            let expected: EntryResponse =
+                { Id = actual.Id
                   VocabularyId = defaultVocabulary.Id
                   EntryText = "hello"
-                  CreatedAt = result.CreatedAt
+                  CreatedAt = actual.CreatedAt
                   UpdatedAt = None
                   Definitions = [ expectedDefinition ]
                   Translations = [] }
 
-            Assert.Equal(expectedEntry, result)
+            Assert.Equal(expected, actual)
 
             let! vocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
             Assert.Single(vocabularies) |> ignore
@@ -1365,8 +1348,10 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode)
 
-            let! deletedEntry = Seeder.getEntryByIdAsync entry.Id fixture.WordfolioSeeder
-            Assert.True(deletedEntry.IsNone)
+            let! actual = Seeder.getEntryByIdAsync entry.Id fixture.WordfolioSeeder
+            let expected: Entry option = None
+
+            Assert.Equal<Entry option>(expected, actual)
         }
 
     [<Fact>]

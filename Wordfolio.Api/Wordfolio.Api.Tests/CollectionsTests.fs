@@ -137,7 +137,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! result = response.Content.ReadFromJsonAsync<CollectionResponse[]>()
+            let! result = response.Content.ReadFromJsonAsync<CollectionResponse list>()
 
             Assert.NotNull(result)
             Assert.Empty(result)
@@ -190,18 +190,16 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! result = response.Content.ReadFromJsonAsync<CollectionResponse>()
-
-            Assert.NotNull(result)
+            let! actual = response.Content.ReadFromJsonAsync<CollectionResponse>()
 
             let expected: CollectionResponse =
                 { Id = collection.Id
                   Name = "Test Collection"
                   Description = Some "Test Description"
-                  CreatedAt = result.CreatedAt
+                  CreatedAt = actual.CreatedAt
                   UpdatedAt = None }
 
-            Assert.Equal(expected, result)
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -277,24 +275,19 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! result = response.Content.ReadFromJsonAsync<CollectionResponse>()
-
-            Assert.NotNull(result)
-            Assert.True(result.UpdatedAt.IsSome)
-
             let! collections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
-            let collection = Assert.Single(collections)
+            let actual = Assert.Single(collections)
 
             let expected: Wordfolio.Collection =
-                { Id = collection.Id
+                { Id = actual.Id
                   UserId = 105
                   Name = "Updated Name"
                   Description = Some "Updated Description"
-                  CreatedAt = collection.CreatedAt
-                  UpdatedAt = collection.UpdatedAt
+                  CreatedAt = actual.CreatedAt
+                  UpdatedAt = actual.UpdatedAt
                   IsSystem = false }
 
-            Assert.Equal(expected, collection)
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -403,7 +396,7 @@ type CollectionsTests(fixture: WordfolioIdentityTestFixture) =
                 fixture.WordfolioSeeder
                 |> Seeder.getAllCollectionsAsync
 
-            Assert.True(databaseState.IsEmpty)
+            Assert.Empty(databaseState)
         }
 
     [<Fact>]

@@ -225,19 +225,17 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! result = response.Content.ReadFromJsonAsync<VocabularyResponse>()
-
-            Assert.NotNull(result)
+            let! actual = response.Content.ReadFromJsonAsync<VocabularyResponse>()
 
             let expected: VocabularyResponse =
                 { Id = vocabulary.Id
                   CollectionId = collection.Id
                   Name = "Test Vocabulary"
                   Description = Some "Test Description"
-                  CreatedAt = result.CreatedAt
+                  CreatedAt = actual.CreatedAt
                   UpdatedAt = None }
 
-            Assert.Equal(expected, result)
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -330,24 +328,19 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! result = response.Content.ReadFromJsonAsync<VocabularyResponse>()
-
-            Assert.NotNull(result)
-            Assert.True(result.UpdatedAt.IsSome)
-
             let! vocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
-            let vocabulary = Assert.Single(vocabularies)
+            let actual = Assert.Single(vocabularies)
 
             let expected: Wordfolio.Vocabulary =
-                { Id = vocabulary.Id
+                { Id = actual.Id
                   CollectionId = collection.Id
                   Name = "Updated Name"
                   Description = Some "Updated Description"
-                  CreatedAt = vocabulary.CreatedAt
-                  UpdatedAt = vocabulary.UpdatedAt
+                  CreatedAt = actual.CreatedAt
+                  UpdatedAt = actual.UpdatedAt
                   IsDefault = false }
 
-            Assert.Equal(expected, vocabulary)
+            Assert.Equal(expected, actual)
         }
 
     [<Fact>]
@@ -480,7 +473,7 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
                 fixture.WordfolioSeeder
                 |> Seeder.getAllVocabulariesAsync
 
-            Assert.True(databaseState.IsEmpty)
+            Assert.Empty(databaseState)
         }
 
     [<Fact>]

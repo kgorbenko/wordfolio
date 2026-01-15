@@ -15,23 +15,27 @@ This guide provides essential information for AI agents working on the Wordfolio
 
 ### Backend
 ```bash
-dotnet build                      # Build
-dotnet test                       # Run tests
+dotnet build                      # Build all projects
+dotnet test                       # Run all tests
+dotnet test --filter "FullyQualifiedName~TestName"  # Run single test by name pattern
+dotnet test --filter "FullyQualifiedName=Namespace.Class.Method"  # Run exact test
 dotnet fantomas .                 # Format F# code
 dotnet fantomas --check .         # Check F# format
-dotnet format                     # Format C# code
+dotnet format                     # Format C# code (Identity project)
 dotnet format --verify-no-changes # Check C# format
 ```
 
 ### Frontend
 ```bash
 cd Wordfolio.Frontend
-npm run build                     # Build
-npm test                          # Run tests (watch mode)
-npm test run                      # Run tests (single run)
+npm run build                     # Build (TypeScript compile + Vite)
+npm test                          # Run all tests (single run)
+npm run test:watch                # Run tests in watch mode
+npm test -- -t "test name"        # Run single test by name pattern
+npm test -- path/to/test.test.ts  # Run specific test file
 npm run lint                      # Lint (max warnings = 0)
-npm run format                    # Format code
-npm run format:check              # Check format
+npm run format                    # Format with Prettier
+npm run format:check              # Check Prettier format
 ```
 
 ### Database Migrations
@@ -75,6 +79,8 @@ dotnet fm migrate -p PostgreSQL15_0 -a "./Wordfolio.Api/Wordfolio.Api.Migrations
 - **Imports:** Organize in three groups (System, Third-party, Local) separated by blank lines, sorted alphabetically
 - **Async functions:** Suffix with `Async`, return `Task<'T>`, use `task { }`
 - **Data access functions:** Business params → connection → transaction → cancellationToken
+- **Error handling:** Use `Result<'T, DomainError>` for validation/business logic errors; discriminated unions for error types
+- **Project files:** Use double spaces for indentation in .csproj/.fsproj; separate PropertyGroup/ItemGroup with blank lines
 
 ### C# Conventions
 - **Classes/Interfaces/Methods:** PascalCase
@@ -157,12 +163,26 @@ AppEnv methods are thin integration layers. Follow these rules:
 
 ## Testing Best Practices
 
+### Backend Tests (F#/XUnit)
+1. **Assert Whole Objects:** Always compare complete objects instead of individual properties to prevent false-positives when new properties are added
+   ```fsharp
+   // ❌ DON'T: Assert properties individually
+   let result = doSomething()
+   Assert.Equal("Prop1Value", result.Prop1)
+   Assert.Equal("Prop2Value", result.Prop2)
+   
+   // ✅ DO: Assert against complete expected object
+   let actual = doSomething()
+   let expected: ResultType = { Prop1 = "Prop1Value"; Prop2 = "Prop2Value" }
+   Assert.Equal(expected, actual)
+   ```
+
 ### Database Tests (Critical Rules)
 1. **Seeding:** Perform all initial database seeding via `DatabaseSeeder` only
 2. **No Tested Functions in Setup:** Do NOT use functions from tested modules for seeding/assertions
 3. **Test Isolation:** Preferably make only ONE call to the tested function per test
 4. **Assertions via Seeder:** Query the database for assertions using `DatabaseSeeder` only
-5. **Compare Full Records:** Use tested records for assertions
+5. **Compare Full Records:** Use tested records for assertions (see "Assert Whole Objects" above)
 
 ### Frontend Tests
 - **Location:** All tests MUST be in `Wordfolio.Frontend/tests/`

@@ -163,9 +163,10 @@ module DelimitedStreamProcessorTests =
         task {
             let chunks: string list = []
 
-            let! events = runProcessor "---JSON---" chunks
+            let! actual = runProcessor "---JSON---" chunks
 
-            Assert.Empty(events)
+            let expected: StreamEvent list = []
+            Assert.Equal<StreamEvent list>(expected, actual)
         }
 
     [<Fact>]

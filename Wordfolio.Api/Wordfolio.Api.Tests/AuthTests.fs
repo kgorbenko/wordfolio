@@ -107,6 +107,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             Assert.Equal(HttpStatusCode.BadRequest, secondResponse.StatusCode)
 
             let! validationError = secondResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>()
+
             Assert.NotNull(validationError)
             Assert.True(validationError.Errors.ContainsKey("DuplicateUserName"))
         }
@@ -130,6 +131,7 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
 
             let! validationError = response.Content.ReadFromJsonAsync<ValidationProblemDetails>()
+
             Assert.NotNull(validationError)
             Assert.True(validationError.Errors.ContainsKey("PasswordTooShort"))
         }
@@ -296,12 +298,13 @@ type AuthTests(fixture: WordfolioIdentityTestFixture) =
 
             let! requirements = response.Content.ReadFromJsonAsync<PasswordRequirements>()
 
-            Assert.NotNull(requirements)
-            Assert.True(requirements.RequiredLength > 0)
-            Assert.Equal(6, requirements.RequiredLength)
-            Assert.True(requirements.RequireDigit)
-            Assert.True(requirements.RequireLowercase)
-            Assert.True(requirements.RequireUppercase)
-            Assert.True(requirements.RequireNonAlphanumeric)
-            Assert.Equal(1, requirements.RequiredUniqueChars)
+            let expected: PasswordRequirements =
+                { RequiredLength = 6
+                  RequireDigit = true
+                  RequireLowercase = true
+                  RequireUppercase = true
+                  RequireNonAlphanumeric = true
+                  RequiredUniqueChars = 1 }
+
+            Assert.Equal(expected, requirements)
         }
