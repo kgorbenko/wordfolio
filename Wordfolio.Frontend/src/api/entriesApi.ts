@@ -53,7 +53,7 @@ export interface TranslationRequest {
 }
 
 export interface CreateEntryRequest {
-    readonly vocabularyId: number;
+    readonly vocabularyId?: number | null;
     readonly entryText: string;
     readonly definitions: DefinitionRequest[];
     readonly translations: TranslationRequest[];

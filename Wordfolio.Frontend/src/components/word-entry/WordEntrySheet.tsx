@@ -56,9 +56,10 @@ export const WordEntrySheet = ({
     const [vocabularies, setVocabularies] = useState<
         Array<VocabularyResponse & { collectionName: string }>
     >([]);
-    const [selectedVocabularyId, setSelectedVocabularyId] = useState<
-        number | null
-    >(initialVocabularyId ?? null);
+    const [selectedVocabularyId, setSelectedVocabularyId] = useState<number>(
+        initialVocabularyId ?? 0
+    );
+
     const [definitions, setDefinitions] = useState<DefinitionItem[]>([]);
     const [translations, setTranslations] = useState<TranslationItem[]>([]);
     const [streamingText, setStreamingText] = useState("");
@@ -73,12 +74,11 @@ export const WordEntrySheet = ({
             const allVocabs = await vocabulariesApi.getAllVocabularies();
             setVocabularies(allVocabs);
 
-            if (!selectedVocabularyId && allVocabs.length > 0) {
-                const defaultVocab = allVocabs.find(
-                    (v) =>
-                        v.name === "My Words" && v.collectionName === "Unsorted"
-                );
-                setSelectedVocabularyId(defaultVocab?.id ?? allVocabs[0].id);
+            if (
+                initialVocabularyId !== undefined &&
+                selectedVocabularyId === 0
+            ) {
+                setSelectedVocabularyId(allVocabs[0].id);
             }
         } catch {
             const defaultVocab =
@@ -86,7 +86,7 @@ export const WordEntrySheet = ({
             setVocabularies([{ ...defaultVocab, collectionName: "Unsorted" }]);
             setSelectedVocabularyId(defaultVocab.id);
         }
-    }, [selectedVocabularyId]);
+    }, [initialVocabularyId, selectedVocabularyId]);
 
     useEffect(() => {
         if (open) {
@@ -216,11 +216,6 @@ export const WordEntrySheet = ({
     };
 
     const handleSave = async () => {
-        if (!selectedVocabularyId) {
-            openErrorNotification({ message: "Please select a vocabulary" });
-            return;
-        }
-
         const selectedDefs = definitions.filter((d) => d.selected);
         const selectedTrans = translations.filter((t) => t.selected);
 
@@ -261,7 +256,8 @@ export const WordEntrySheet = ({
             );
 
             await entriesApi.createEntry({
-                vocabularyId: selectedVocabularyId,
+                vocabularyId:
+                    selectedVocabularyId === 0 ? null : selectedVocabularyId,
                 entryText: word.trim(),
                 definitions: definitionRequests,
                 translations: translationRequests,
@@ -306,13 +302,14 @@ export const WordEntrySheet = ({
             >
                 <FormControl fullWidth size="small" sx={{ mb: 2 }}>
                     <InputLabel>Vocabulary</InputLabel>
-                    <Select
-                        value={selectedVocabularyId ?? ""}
+                    <Select<number>
+                        value={selectedVocabularyId}
                         label="Vocabulary"
-                        onChange={(e) =>
-                            setSelectedVocabularyId(e.target.value as number)
-                        }
+                        onChange={(e) => {
+                            setSelectedVocabularyId(Number(e.target.value));
+                        }}
                     >
+                        <MenuItem value={0}>Drafts — organize later</MenuItem>
                         {vocabularies.map((v) => (
                             <MenuItem key={v.id} value={v.id}>
                                 {v.collectionName} / {v.name}
@@ -447,7 +444,7 @@ export const WordEntrySheet = ({
                 open={open}
                 onClose={onClose}
                 PaperProps={{
-                    className: "mobile-drawer",
+                    className: "word-entry-sheet mobile-drawer",
                 }}
             >
                 {content}
@@ -462,7 +459,7 @@ export const WordEntrySheet = ({
             maxWidth="sm"
             fullWidth
             PaperProps={{
-                className: "dialog",
+                className: "word-entry-sheet dialog",
             }}
         >
             {content}
