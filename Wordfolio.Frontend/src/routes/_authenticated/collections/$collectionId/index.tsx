@@ -12,19 +12,22 @@ import {
     TextField,
     Button,
     Breadcrumbs,
+    Skeleton,
+    IconButton,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import { VocabularyCard } from "../../../../components/vocabularies/VocabularyCard";
 import { EmptyState } from "../../../../components/common/EmptyState";
-
-interface Collection {
-    id: number;
-    name: string;
-    description: string | null;
-}
+import { RetryOnError } from "../../../../components/common/RetryOnError";
+import { useCollectionQuery } from "../../../../queries/useCollectionQuery";
+import { useDeleteCollectionMutation } from "../../../../mutations/useDeleteCollectionMutation";
+import { useConfirmDialog } from "../../../../contexts/ConfirmDialogContext";
+import { useNotificationContext } from "../../../../contexts/NotificationContext";
 
 interface Vocabulary {
     id: number;
@@ -33,21 +36,6 @@ interface Vocabulary {
     description: string | null;
     entryCount: number;
 }
-
-const stubCollections: Collection[] = [
-    { id: 1, name: "Books", description: "Words from books I'm reading" },
-    {
-        id: 2,
-        name: "Movies",
-        description: "Vocabulary from films and TV shows",
-    },
-    { id: 3, name: "Work", description: "Professional and technical terms" },
-    {
-        id: 4,
-        name: "Unsorted",
-        description: "Default collection for quick word entries",
-    },
-];
 
 const initialVocabularies: Vocabulary[] = [
     {
@@ -112,10 +100,27 @@ const CollectionDetailPage = () => {
     const { collectionId } = Route.useParams();
     const navigate = useNavigate();
     const numericCollectionId = Number(collectionId);
+    const { raiseConfirmDialogAsync } = useConfirmDialog();
+    const { openErrorNotification } = useNotificationContext();
 
-    const collection = stubCollections.find(
-        (c) => c.id === numericCollectionId
-    );
+    const {
+        data: collection,
+        isLoading,
+        isError,
+        refetch,
+    } = useCollectionQuery(numericCollectionId);
+
+    const deleteMutation = useDeleteCollectionMutation({
+        onSuccess: () => {
+            void navigate({ to: "/collections" });
+        },
+        onError: () => {
+            openErrorNotification({
+                message: "Failed to delete collection. Please try again.",
+            });
+        },
+    });
+
     const [vocabularies, setVocabularies] = useState<Vocabulary[]>(
         initialVocabularies.filter(
             (v) => v.collectionId === numericCollectionId
@@ -193,6 +198,92 @@ const CollectionDetailPage = () => {
         setDeletingVocabulary(null);
     };
 
+    const handleDeleteCollection = async () => {
+        if (!collection) return;
+
+        const confirmed = await raiseConfirmDialogAsync({
+            title: "Delete Collection",
+            message: `Are you sure you want to delete "${collection.name}"? This will also delete all vocabularies and entries within it.`,
+            confirmLabel: "Delete",
+            confirmColor: "error",
+        });
+
+        if (confirmed) {
+            deleteMutation.mutate(numericCollectionId);
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <Container maxWidth={false} sx={{ py: 4 }}>
+                <Skeleton
+                    variant="text"
+                    width={300}
+                    height={24}
+                    sx={{ mb: 2 }}
+                />
+                <Skeleton
+                    variant="text"
+                    width={200}
+                    height={40}
+                    sx={{ mb: 1 }}
+                />
+                <Skeleton
+                    variant="text"
+                    width={400}
+                    height={24}
+                    sx={{ mb: 3 }}
+                />
+                <Box
+                    sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "1fr 1fr",
+                            md: "1fr 1fr 1fr",
+                        },
+                        gap: 2,
+                    }}
+                >
+                    {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} variant="rounded" height={120} />
+                    ))}
+                </Box>
+            </Container>
+        );
+    }
+
+    if (isError) {
+        return (
+            <Container maxWidth={false} sx={{ py: 4 }}>
+                <Breadcrumbs
+                    separator={<NavigateNextIcon fontSize="small" />}
+                    sx={{ mb: 2 }}
+                >
+                    <Link
+                        to="/collections"
+                        style={{ textDecoration: "none", color: "inherit" }}
+                    >
+                        <Typography
+                            color="text.secondary"
+                            sx={{ "&:hover": { color: "primary.main" } }}
+                        >
+                            Collections
+                        </Typography>
+                    </Link>
+                    <Typography color="text.primary" fontWeight={500}>
+                        Collection
+                    </Typography>
+                </Breadcrumbs>
+                <RetryOnError
+                    title="Failed to Load Collection"
+                    description="Something went wrong while loading this collection. Please try again."
+                    onRetry={() => void refetch()}
+                />
+            </Container>
+        );
+    }
+
     if (!collection) {
         return (
             <Container maxWidth={false} sx={{ py: 4 }}>
@@ -225,9 +316,40 @@ const CollectionDetailPage = () => {
                 </Typography>
             </Breadcrumbs>
 
-            <Typography variant="h4" gutterBottom fontWeight={600}>
-                {collection.name}
-            </Typography>
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    mb: collection.description ? 0 : 3,
+                }}
+            >
+                <Typography variant="h4" fontWeight={600}>
+                    {collection.name}
+                </Typography>
+                <Box sx={{ display: "flex", gap: 1 }}>
+                    <IconButton
+                        aria-label="Edit collection"
+                        color="primary"
+                        onClick={() =>
+                            void navigate({
+                                to: "/collections/$collectionId/edit",
+                                params: { collectionId },
+                            })
+                        }
+                    >
+                        <EditIcon />
+                    </IconButton>
+                    <IconButton
+                        aria-label="Delete collection"
+                        color="error"
+                        onClick={() => void handleDeleteCollection()}
+                        disabled={deleteMutation.isPending}
+                    >
+                        <DeleteIcon />
+                    </IconButton>
+                </Box>
+            </Box>
             {collection.description && (
                 <Typography
                     variant="body1"

@@ -50,6 +50,11 @@ export interface CreateCollectionRequest {
     readonly description?: string | null;
 }
 
+export interface UpdateCollectionRequest {
+    readonly name: string;
+    readonly description?: string | null;
+}
+
 export interface ApiError {
     readonly type?: string;
     readonly title?: string;
@@ -118,6 +123,50 @@ export const vocabulariesApi = {
         }
 
         return response.json();
+    },
+
+    getCollection: async (id: number): Promise<CollectionResponse> => {
+        const response = await fetch(`${API_BASE_URL}/collections/${id}`, {
+            method: "GET",
+            headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+            const error: ApiError = await response.json();
+            throw error;
+        }
+
+        return response.json();
+    },
+
+    updateCollection: async (
+        id: number,
+        request: UpdateCollectionRequest
+    ): Promise<CollectionResponse> => {
+        const response = await fetch(`${API_BASE_URL}/collections/${id}`, {
+            method: "PUT",
+            headers: getAuthHeaders(),
+            body: JSON.stringify(request),
+        });
+
+        if (!response.ok) {
+            const error: ApiError = await response.json();
+            throw error;
+        }
+
+        return response.json();
+    },
+
+    deleteCollection: async (id: number): Promise<void> => {
+        const response = await fetch(`${API_BASE_URL}/collections/${id}`, {
+            method: "DELETE",
+            headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+            const error: ApiError = await response.json();
+            throw error;
+        }
     },
 
     getVocabularies: async (
