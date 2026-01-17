@@ -1,35 +1,27 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
 import {
     Box,
     Container,
     Typography,
     Breadcrumbs,
-    TextField,
-    InputAdornment,
-    alpha,
-    useTheme,
+    Skeleton,
+    IconButton,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-import { EntryListItem } from "../../../../components/entries/EntryListItem";
-import { EmptyState } from "../../../../components/common/EmptyState";
-import { useUiStore } from "../../../../stores/uiStore";
-
-interface Collection {
-    id: number;
-    name: string;
-    description: string | null;
-}
-
-interface Vocabulary {
-    id: number;
-    collectionId: number;
-    name: string;
-    description: string | null;
-}
+import { EntryListItem } from "../../../../../components/entries/EntryListItem";
+import { EmptyState } from "../../../../../components/common/EmptyState";
+import { RetryOnError } from "../../../../../components/common/RetryOnError";
+import { useUiStore } from "../../../../../stores/uiStore";
+import { useCollectionQuery } from "../../../../../queries/useCollectionQuery";
+import { useVocabularyQuery } from "../../../../../queries/useVocabularyQuery";
+import { useDeleteVocabularyMutation } from "../../../../../mutations/useDeleteVocabularyMutation";
+import { useConfirmDialog } from "../../../../../contexts/ConfirmDialogContext";
+import { useNotificationContext } from "../../../../../contexts/NotificationContext";
+import { assertNonNullable } from "../../../../../utils/misc";
 
 interface Entry {
     id: number;
@@ -39,72 +31,6 @@ interface Entry {
     firstTranslation: string | null;
     createdAt: string;
 }
-
-const stubCollections: Collection[] = [
-    { id: 1, name: "Books", description: "Words from books I'm reading" },
-    {
-        id: 2,
-        name: "Movies",
-        description: "Vocabulary from films and TV shows",
-    },
-    { id: 3, name: "Work", description: "Professional and technical terms" },
-    {
-        id: 4,
-        name: "Unsorted",
-        description: "Default collection for quick word entries",
-    },
-];
-
-const stubVocabularies: Vocabulary[] = [
-    {
-        id: 1,
-        collectionId: 1,
-        name: "Catcher in the Rye",
-        description: "J.D. Salinger's classic",
-    },
-    {
-        id: 2,
-        collectionId: 1,
-        name: "1984",
-        description: "George Orwell's dystopia",
-    },
-    {
-        id: 3,
-        collectionId: 1,
-        name: "To Kill a Mockingbird",
-        description: "Harper Lee",
-    },
-    {
-        id: 4,
-        collectionId: 2,
-        name: "The Shawshank Redemption",
-        description: null,
-    },
-    {
-        id: 5,
-        collectionId: 2,
-        name: "Pulp Fiction",
-        description: "Tarantino's masterpiece",
-    },
-    {
-        id: 6,
-        collectionId: 3,
-        name: "Technical Terms",
-        description: "Software development jargon",
-    },
-    {
-        id: 7,
-        collectionId: 3,
-        name: "Business English",
-        description: "Corporate vocabulary",
-    },
-    {
-        id: 8,
-        collectionId: 4,
-        name: "My Words",
-        description: "Default vocabulary for quick word entries",
-    },
-];
 
 const stubEntries: Entry[] = [
     {
@@ -171,38 +97,141 @@ const stubEntries: Entry[] = [
 ];
 
 const VocabularyDetailPage = () => {
-    const theme = useTheme();
     const { collectionId, vocabularyId } = Route.useParams();
     const navigate = useNavigate();
     const { openWordEntry } = useUiStore();
-    const [searchQuery, setSearchQuery] = useState("");
+    const { raiseConfirmDialogAsync } = useConfirmDialog();
+    const { openErrorNotification } = useNotificationContext();
 
     const numericCollectionId = Number(collectionId);
     const numericVocabularyId = Number(vocabularyId);
 
-    const collection = stubCollections.find(
-        (c) => c.id === numericCollectionId
-    );
-    const vocabulary = stubVocabularies.find(
-        (v) => v.id === numericVocabularyId
-    );
+    const {
+        data: collection,
+        isLoading: isCollectionLoading,
+        isError: isCollectionError,
+        refetch: refetchCollection,
+    } = useCollectionQuery(numericCollectionId);
+
+    const {
+        data: vocabulary,
+        isLoading: isVocabularyLoading,
+        isError: isVocabularyError,
+        refetch: refetchVocabulary,
+    } = useVocabularyQuery(numericCollectionId, numericVocabularyId);
+
+    const deleteMutation = useDeleteVocabularyMutation({
+        onSuccess: () => {
+            void navigate({
+                to: "/collections/$collectionId",
+                params: { collectionId },
+            });
+        },
+        onError: () => {
+            openErrorNotification({
+                message: "Failed to delete vocabulary. Please try again.",
+            });
+        },
+    });
+
     const entries = stubEntries.filter(
         (e) => e.vocabularyId === numericVocabularyId
     );
 
-    const filteredEntries = entries.filter((entry) =>
-        entry.entryText.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const handleDeleteVocabulary = async () => {
+        assertNonNullable(vocabulary);
 
-    if (!collection || !vocabulary) {
+        const confirmed = await raiseConfirmDialogAsync({
+            title: "Delete Vocabulary",
+            message: `Are you sure you want to delete "${vocabulary.name}"? This will also delete all entries within it.`,
+            confirmLabel: "Delete",
+            confirmColor: "error",
+        });
+
+        if (confirmed) {
+            deleteMutation.mutate({
+                collectionId: numericCollectionId,
+                vocabularyId: numericVocabularyId,
+            });
+        }
+    };
+
+    const isLoading = isCollectionLoading || isVocabularyLoading;
+    const isError = isCollectionError || isVocabularyError;
+
+    const handleRetry = () => {
+        if (isCollectionError) {
+            void refetchCollection();
+        }
+        if (isVocabularyError) {
+            void refetchVocabulary();
+        }
+    };
+
+    if (isLoading) {
         return (
             <Container maxWidth={false} sx={{ py: 4 }}>
-                <Typography variant="h5" color="text.secondary">
-                    Vocabulary not found
-                </Typography>
+                <Skeleton
+                    variant="text"
+                    width={300}
+                    height={24}
+                    sx={{ mb: 2 }}
+                />
+                <Skeleton
+                    variant="text"
+                    width={200}
+                    height={40}
+                    sx={{ mb: 1 }}
+                />
+                <Skeleton
+                    variant="text"
+                    width={400}
+                    height={24}
+                    sx={{ mb: 3 }}
+                />
+                <Skeleton variant="rounded" height={56} sx={{ mb: 2 }} />
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} variant="rounded" height={80} />
+                    ))}
+                </Box>
             </Container>
         );
     }
+
+    if (isError) {
+        return (
+            <Container maxWidth={false} sx={{ py: 4 }}>
+                <Breadcrumbs
+                    separator={<NavigateNextIcon fontSize="small" />}
+                    sx={{ mb: 2 }}
+                >
+                    <Link
+                        to="/collections"
+                        style={{ textDecoration: "none", color: "inherit" }}
+                    >
+                        <Typography
+                            color="text.secondary"
+                            sx={{ "&:hover": { color: "primary.main" } }}
+                        >
+                            Collections
+                        </Typography>
+                    </Link>
+                    <Typography color="text.primary" fontWeight={500}>
+                        Vocabulary
+                    </Typography>
+                </Breadcrumbs>
+                <RetryOnError
+                    title="Failed to Load Vocabulary"
+                    description="Something went wrong while loading this vocabulary. Please try again."
+                    onRetry={handleRetry}
+                />
+            </Container>
+        );
+    }
+
+    assertNonNullable(collection);
+    assertNonNullable(vocabulary);
 
     return (
         <Container maxWidth={false} sx={{ py: 4 }}>
@@ -242,8 +271,8 @@ const VocabularyDetailPage = () => {
                 sx={{
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "center",
-                    mb: 3,
+                    alignItems: "flex-start",
+                    mb: vocabulary.description ? 0 : 3,
                 }}
             >
                 <Box>
@@ -251,37 +280,42 @@ const VocabularyDetailPage = () => {
                         {vocabulary.name}
                     </Typography>
                     {vocabulary.description && (
-                        <Typography variant="body1" color="text.secondary">
+                        <Typography
+                            variant="body1"
+                            color="text.secondary"
+                            sx={{ mb: 3 }}
+                        >
                             {vocabulary.description}
                         </Typography>
                     )}
                 </Box>
-                <Typography variant="body2" color="text.secondary">
-                    {entries.length} {entries.length === 1 ? "word" : "words"}
-                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                        {entries.length}{" "}
+                        {entries.length === 1 ? "word" : "words"}
+                    </Typography>
+                    <IconButton
+                        aria-label="Edit vocabulary"
+                        color="primary"
+                        onClick={() =>
+                            void navigate({
+                                to: "/collections/$collectionId/$vocabularyId/edit",
+                                params: { collectionId, vocabularyId },
+                            })
+                        }
+                    >
+                        <EditIcon />
+                    </IconButton>
+                    <IconButton
+                        aria-label="Delete vocabulary"
+                        color="error"
+                        onClick={() => void handleDeleteVocabulary()}
+                        disabled={deleteMutation.isPending}
+                    >
+                        <DeleteIcon />
+                    </IconButton>
+                </Box>
             </Box>
-
-            {entries.length > 0 && (
-                <TextField
-                    fullWidth
-                    placeholder="Search words..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <SearchIcon sx={{ color: "text.secondary" }} />
-                            </InputAdornment>
-                        ),
-                    }}
-                    sx={{
-                        mb: 2,
-                        "& .MuiOutlinedInput-root": {
-                            bgcolor: alpha(theme.palette.primary.main, 0.04),
-                        },
-                    }}
-                />
-            )}
 
             {entries.length === 0 ? (
                 <EmptyState
@@ -295,7 +329,7 @@ const VocabularyDetailPage = () => {
                     actionLabel="Add Word"
                     onAction={() => openWordEntry(numericVocabularyId)}
                 />
-            ) : filteredEntries.length === 0 ? (
+            ) : entries.length === 0 ? (
                 <Box sx={{ textAlign: "center", py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
                         No words match your search.
@@ -303,7 +337,7 @@ const VocabularyDetailPage = () => {
                 </Box>
             ) : (
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                    {filteredEntries.map((entry) => (
+                    {entries.map((entry) => (
                         <EntryListItem
                             key={entry.id}
                             id={entry.id}
@@ -328,7 +362,7 @@ const VocabularyDetailPage = () => {
 };
 
 export const Route = createFileRoute(
-    "/_authenticated/collections/$collectionId/$vocabularyId"
+    "/_authenticated/collections/$collectionId/$vocabularyId/"
 )({
     component: VocabularyDetailPage,
 });

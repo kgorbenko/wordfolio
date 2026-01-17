@@ -1,4 +1,3 @@
-import { useState, MouseEvent } from "react";
 import {
     Card,
     CardActionArea,
@@ -6,16 +5,8 @@ import {
     Typography,
     Box,
     Chip,
-    IconButton,
-    Menu,
-    MenuItem,
-    ListItemIcon,
-    ListItemText,
 } from "@mui/material";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 
 import "./VocabularyCard.scss";
 
@@ -25,8 +16,6 @@ interface VocabularyCardProps {
     readonly description?: string;
     readonly entryCount: number;
     readonly onClick?: () => void;
-    readonly onEdit?: () => void;
-    readonly onDelete?: () => void;
 }
 
 export const VocabularyCard = ({
@@ -34,35 +23,11 @@ export const VocabularyCard = ({
     description,
     entryCount,
     onClick,
-    onEdit,
-    onDelete,
 }: VocabularyCardProps) => {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const menuOpen = Boolean(anchorEl);
-
-    const handleMenuClick = (event: MouseEvent<HTMLButtonElement>) => {
-        event.stopPropagation();
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleMenuClose = () => {
-        setAnchorEl(null);
-    };
-
-    const handleEdit = () => {
-        handleMenuClose();
-        onEdit?.();
-    };
-
-    const handleDelete = () => {
-        handleMenuClose();
-        onDelete?.();
-    };
-
     return (
         <Card className="vocabulary-card" sx={{ "&:hover": { boxShadow: 4 } }}>
             <CardActionArea className="action-area" onClick={onClick}>
-                <CardContent className="content" sx={{ pr: 5 }}>
+                <CardContent className="content">
                     <Box className="header">
                         <MenuBookIcon
                             sx={{ color: "secondary.main", fontSize: 24 }}
@@ -97,39 +62,6 @@ export const VocabularyCard = ({
                     )}
                 </CardContent>
             </CardActionArea>
-
-            <IconButton
-                className="menu-button"
-                size="small"
-                onClick={handleMenuClick}
-                sx={{
-                    bgcolor: "background.paper",
-                    "&:hover": { bgcolor: "action.hover" },
-                }}
-            >
-                <MoreVertIcon fontSize="small" />
-            </IconButton>
-
-            <Menu
-                anchorEl={anchorEl}
-                open={menuOpen}
-                onClose={handleMenuClose}
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                transformOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-                <MenuItem onClick={handleEdit}>
-                    <ListItemIcon>
-                        <EditIcon fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText>Edit</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={handleDelete} sx={{ color: "error.main" }}>
-                    <ListItemIcon>
-                        <DeleteIcon fontSize="small" color="error" />
-                    </ListItemIcon>
-                    <ListItemText>Delete</ListItemText>
-                </MenuItem>
-            </Menu>
         </Card>
     );
 };
