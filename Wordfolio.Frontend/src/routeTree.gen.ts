@@ -16,7 +16,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCollectionsIndexRouteImport } from './routes/_authenticated/collections/index'
 import { Route as AuthenticatedEntriesEntryIdRouteImport } from './routes/_authenticated/entries/$entryId'
+import { Route as AuthenticatedCollectionsNewRouteImport } from './routes/_authenticated/collections/new'
 import { Route as AuthenticatedCollectionsCollectionIdIndexRouteImport } from './routes/_authenticated/collections/$collectionId/index'
+import { Route as AuthenticatedCollectionsCollectionIdEditRouteImport } from './routes/_authenticated/collections/$collectionId/edit'
 import { Route as AuthenticatedCollectionsCollectionIdVocabularyIdRouteImport } from './routes/_authenticated/collections/$collectionId/$vocabularyId'
 
 const RegisterRoute = RegisterRouteImport.update({
@@ -55,10 +57,22 @@ const AuthenticatedEntriesEntryIdRoute =
     path: '/entries/$entryId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedCollectionsNewRoute =
+  AuthenticatedCollectionsNewRouteImport.update({
+    id: '/collections/new',
+    path: '/collections/new',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCollectionsCollectionIdIndexRoute =
   AuthenticatedCollectionsCollectionIdIndexRouteImport.update({
     id: '/collections/$collectionId/',
     path: '/collections/$collectionId/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCollectionsCollectionIdEditRoute =
+  AuthenticatedCollectionsCollectionIdEditRouteImport.update({
+    id: '/collections/$collectionId/edit',
+    path: '/collections/$collectionId/edit',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedCollectionsCollectionIdVocabularyIdRoute =
@@ -73,9 +87,11 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/collections/new': typeof AuthenticatedCollectionsNewRoute
   '/entries/$entryId': typeof AuthenticatedEntriesEntryIdRoute
   '/collections': typeof AuthenticatedCollectionsIndexRoute
   '/collections/$collectionId/$vocabularyId': typeof AuthenticatedCollectionsCollectionIdVocabularyIdRoute
+  '/collections/$collectionId/edit': typeof AuthenticatedCollectionsCollectionIdEditRoute
   '/collections/$collectionId': typeof AuthenticatedCollectionsCollectionIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -83,9 +99,11 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/collections/new': typeof AuthenticatedCollectionsNewRoute
   '/entries/$entryId': typeof AuthenticatedEntriesEntryIdRoute
   '/collections': typeof AuthenticatedCollectionsIndexRoute
   '/collections/$collectionId/$vocabularyId': typeof AuthenticatedCollectionsCollectionIdVocabularyIdRoute
+  '/collections/$collectionId/edit': typeof AuthenticatedCollectionsCollectionIdEditRoute
   '/collections/$collectionId': typeof AuthenticatedCollectionsCollectionIdIndexRoute
 }
 export interface FileRoutesById {
@@ -95,9 +113,11 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/collections/new': typeof AuthenticatedCollectionsNewRoute
   '/_authenticated/entries/$entryId': typeof AuthenticatedEntriesEntryIdRoute
   '/_authenticated/collections/': typeof AuthenticatedCollectionsIndexRoute
   '/_authenticated/collections/$collectionId/$vocabularyId': typeof AuthenticatedCollectionsCollectionIdVocabularyIdRoute
+  '/_authenticated/collections/$collectionId/edit': typeof AuthenticatedCollectionsCollectionIdEditRoute
   '/_authenticated/collections/$collectionId/': typeof AuthenticatedCollectionsCollectionIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -107,9 +127,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/dashboard'
+    | '/collections/new'
     | '/entries/$entryId'
     | '/collections'
     | '/collections/$collectionId/$vocabularyId'
+    | '/collections/$collectionId/edit'
     | '/collections/$collectionId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -117,9 +139,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/dashboard'
+    | '/collections/new'
     | '/entries/$entryId'
     | '/collections'
     | '/collections/$collectionId/$vocabularyId'
+    | '/collections/$collectionId/edit'
     | '/collections/$collectionId'
   id:
     | '__root__'
@@ -128,9 +152,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/_authenticated/dashboard'
+    | '/_authenticated/collections/new'
     | '/_authenticated/entries/$entryId'
     | '/_authenticated/collections/'
     | '/_authenticated/collections/$collectionId/$vocabularyId'
+    | '/_authenticated/collections/$collectionId/edit'
     | '/_authenticated/collections/$collectionId/'
   fileRoutesById: FileRoutesById
 }
@@ -192,11 +218,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEntriesEntryIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/collections/new': {
+      id: '/_authenticated/collections/new'
+      path: '/collections/new'
+      fullPath: '/collections/new'
+      preLoaderRoute: typeof AuthenticatedCollectionsNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/collections/$collectionId/': {
       id: '/_authenticated/collections/$collectionId/'
       path: '/collections/$collectionId'
       fullPath: '/collections/$collectionId'
       preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/collections/$collectionId/edit': {
+      id: '/_authenticated/collections/$collectionId/edit'
+      path: '/collections/$collectionId/edit'
+      fullPath: '/collections/$collectionId/edit'
+      preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/collections/$collectionId/$vocabularyId': {
@@ -211,18 +251,23 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedCollectionsNewRoute: typeof AuthenticatedCollectionsNewRoute
   AuthenticatedEntriesEntryIdRoute: typeof AuthenticatedEntriesEntryIdRoute
   AuthenticatedCollectionsIndexRoute: typeof AuthenticatedCollectionsIndexRoute
   AuthenticatedCollectionsCollectionIdVocabularyIdRoute: typeof AuthenticatedCollectionsCollectionIdVocabularyIdRoute
+  AuthenticatedCollectionsCollectionIdEditRoute: typeof AuthenticatedCollectionsCollectionIdEditRoute
   AuthenticatedCollectionsCollectionIdIndexRoute: typeof AuthenticatedCollectionsCollectionIdIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedCollectionsNewRoute: AuthenticatedCollectionsNewRoute,
   AuthenticatedEntriesEntryIdRoute: AuthenticatedEntriesEntryIdRoute,
   AuthenticatedCollectionsIndexRoute: AuthenticatedCollectionsIndexRoute,
   AuthenticatedCollectionsCollectionIdVocabularyIdRoute:
     AuthenticatedCollectionsCollectionIdVocabularyIdRoute,
+  AuthenticatedCollectionsCollectionIdEditRoute:
+    AuthenticatedCollectionsCollectionIdEditRoute,
   AuthenticatedCollectionsCollectionIdIndexRoute:
     AuthenticatedCollectionsCollectionIdIndexRoute,
 }

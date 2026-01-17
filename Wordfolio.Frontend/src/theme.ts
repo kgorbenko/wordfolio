@@ -115,6 +115,9 @@ export const theme = createTheme({
             },
         },
         MuiInputLabel: {
+            defaultProps: {
+                disableAnimation: true,
+            },
             styleOverrides: {
                 root: {
                     fontSize: 14,
