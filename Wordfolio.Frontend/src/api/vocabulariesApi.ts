@@ -37,6 +37,11 @@ export interface CreateVocabularyRequest {
     readonly description?: string | null;
 }
 
+export interface UpdateVocabularyRequest {
+    readonly name: string;
+    readonly description?: string | null;
+}
+
 export interface CollectionResponse {
     readonly id: number;
     readonly name: string;
@@ -207,6 +212,66 @@ export const vocabulariesApi = {
         }
 
         return response.json();
+    },
+
+    getVocabulary: async (
+        collectionId: number,
+        vocabularyId: number
+    ): Promise<VocabularyResponse> => {
+        const response = await fetch(
+            `${API_BASE_URL}/collections/${collectionId}/vocabularies/${vocabularyId}`,
+            {
+                method: "GET",
+                headers: getAuthHeaders(),
+            }
+        );
+
+        if (!response.ok) {
+            const error: ApiError = await response.json();
+            throw error;
+        }
+
+        return response.json();
+    },
+
+    updateVocabulary: async (
+        collectionId: number,
+        vocabularyId: number,
+        request: UpdateVocabularyRequest
+    ): Promise<VocabularyResponse> => {
+        const response = await fetch(
+            `${API_BASE_URL}/collections/${collectionId}/vocabularies/${vocabularyId}`,
+            {
+                method: "PUT",
+                headers: getAuthHeaders(),
+                body: JSON.stringify(request),
+            }
+        );
+
+        if (!response.ok) {
+            const error: ApiError = await response.json();
+            throw error;
+        }
+
+        return response.json();
+    },
+
+    deleteVocabulary: async (
+        collectionId: number,
+        vocabularyId: number
+    ): Promise<void> => {
+        const response = await fetch(
+            `${API_BASE_URL}/collections/${collectionId}/vocabularies/${vocabularyId}`,
+            {
+                method: "DELETE",
+                headers: getAuthHeaders(),
+            }
+        );
+
+        if (!response.ok) {
+            const error: ApiError = await response.json();
+            throw error;
+        }
     },
 
     getAllVocabularies: async (): Promise<

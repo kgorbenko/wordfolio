@@ -31,34 +31,34 @@
 
 ## TODO Task List
 
-1. [ ] Integrate Collections List (GET /api/collections)
+1. [x] Integrate Collections List (GET /api/collections)
    - Add query hook
    - Replace stub data in collections list route
    - Ensure empty state and loading state render correctly
 
-2. [ ] Integrate Collection CRUD (GET/POST/PUT/DELETE /api/collections)
+2. [x] Integrate Collection CRUD (GET/POST/PUT/DELETE /api/collections)
    - Add API client methods for get/update/delete
    - Add mutation hooks for create/update/delete
    - Wire create/edit/delete dialogs in collections list route
    - Invalidate collections + collections-hierarchy queries
 
-3. [ ] Integrate Collection Detail (GET /api/collections/{id})
+3. [x] Integrate Collection Detail (GET /api/collections/{id})
    - Add query hook
    - Replace stub collection data in collection detail route
    - Keep breadcrumb + header in sync with fetched data
 
-4. [ ] Integrate Vocabularies List (GET /api/collections/{collectionId}/vocabularies)
+4. [x] Integrate Vocabularies List (GET /api/collections/{collectionId}/vocabularies)
    - Add query hook
    - Replace stub vocabularies data in collection detail route
    - Verify empty state and counts
 
-5. [ ] Integrate Vocabulary CRUD (POST/PUT/DELETE /api/collections/{collectionId}/vocabularies)
+5. [x] Integrate Vocabulary CRUD (POST/PUT/DELETE /api/collections/{collectionId}/vocabularies)
    - Add API client methods for get/update/delete
    - Add mutation hooks for create/update/delete
    - Wire create/edit/delete dialogs in collection detail route
    - Invalidate vocabularies + collections-hierarchy queries
 
-6. [ ] Integrate Vocabulary Detail (GET /api/collections/{collectionId}/vocabularies/{id})
+6. [x] Integrate Vocabulary Detail (GET /api/collections/{collectionId}/vocabularies/{id})
    - Add query hook
    - Replace stub vocabulary data in vocabulary detail route
    - Keep breadcrumb + header in sync with fetched data
