@@ -1,6 +1,6 @@
 # Wordfolio - AI Assistant Guide
 
-**Last Updated:** 2025-12-29
+**Last Updated:** 2026-01-18
 
 This document provides a comprehensive guide for AI assistants working on the Wordfolio codebase. It covers architecture, conventions, workflows, and best practices.
 
@@ -31,7 +31,43 @@ This document provides a comprehensive guide for AI assistants working on the Wo
 - Modern React SPA frontend
 - PostgreSQL database with timezone-aware timestamps
 
-**Architecture Style:** Layered monolith with clear separation between API, data access, and identity concerns.
+**Architecture Style:** Layered monolith with clear separation between API, domain logic, data access, and identity concerns.
+
+---
+
+## Quick Commands
+
+### Backend
+```bash
+dotnet build                      # Build all projects
+dotnet test                       # Run all tests
+dotnet test --filter "FullyQualifiedName~TestName"  # Run single test by name pattern
+dotnet test --filter "FullyQualifiedName=Namespace.Class.Method"  # Run exact test
+dotnet fantomas .                 # Format F# code
+dotnet format                     # Format C# code (Identity project)
+```
+
+### Frontend
+```bash
+cd Wordfolio.Frontend
+npm run build                     # Build (TypeScript compile + Vite)
+npm test                          # Run all tests (single run)
+npm run test:watch                # Run tests in watch mode
+npm test -- -t "test name"        # Run single test by name pattern
+npm test -- path/to/test.test.ts  # Run specific test file
+npm run lint                      # Lint (max warnings = 0)
+npm run format                    # Format with Prettier
+```
+
+### Database Migrations
+```bash
+# Identity (EF Core)
+dotnet ef database update --startup-project ./Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj --connection "Host=localhost;Port=5432;Database=wordfoliodb;User ID=user;Password=pass"
+
+# Wordfolio (FluentMigrator)
+dotnet build Wordfolio.Api/Wordfolio.Api.Migrations
+dotnet fm migrate -p PostgreSQL15_0 -a "./Wordfolio.Api/Wordfolio.Api.Migrations/bin/Debug/net10.0/Wordfolio.Api.Migrations.dll" -c "Host=localhost;Port=5432;Database=wordfoliodb;User ID=user;Password=pass"
+```
 
 ---
 
@@ -43,32 +79,34 @@ This document provides a comprehensive guide for AI assistants working on the Wo
 |----------|-----------|-------|
 | **Primary Language** | F# | Functional-first approach for business logic |
 | **Secondary Language** | C# | Used only for ASP.NET Core Identity integration |
-| **Web Framework** | ASP.NET Core 9.0 | Minimal APIs with functional composition |
+| **Web Framework** | ASP.NET Core | Minimal APIs with functional composition |
 | **Database** | PostgreSQL 15.0 | Single database, two schemas (Identity + Wordfolio) |
-| **ORM - Identity** | Entity Framework Core 9.0 | Code-first migrations for auth tables |
-| **Data Access - Business** | Dapper.FSharp 4.8.0 | Type-safe functional queries |
-| **Migrations - Business** | FluentMigrator 7.1.0 | Version-numbered schema migrations |
+| **Domain Layer** | F# Pure Domain | Capabilities, Operations, and Types (no dependencies) |
+| **ORM - Identity** | Entity Framework Core | Code-first migrations for auth tables |
+| **Data Access - Business** | Dapper.FSharp | Type-safe functional queries |
+| **Migrations - Business** | FluentMigrator | Version-numbered schema migrations |
 | **Authentication** | ASP.NET Core Identity | Bearer tokens + refresh tokens |
 | **Observability** | OpenTelemetry | Metrics, traces, logging |
-| **Orchestration** | .NET Aspire 9.4.1 | Local dev environment management |
+| **AI Integration** | OpenAI / Groq | For AI-powered features (definitions, translations) |
+| **Orchestration** | .NET Aspire | Local dev environment management |
 
 ### Frontend (Node.js 20)
 
-| Category | Technology | Version | Notes |
-|----------|-----------|---------|-------|
-| **Language** | TypeScript | 5.9.2 | Strict mode enabled |
-| **Framework** | React | 19.1.1 | Latest stable with concurrent features |
-| **Build Tool** | Vite | 7.1.2 | Fast dev server, optimized builds |
-| **Routing** | TanStack Router | 1.134.17 | File-based routing with type safety |
-| **State (Global)** | Zustand | 5.0.8 | Lightweight with localStorage persistence |
-| **State (Server)** | TanStack Query | 5.90.7 | Async state, caching, mutations |
-| **Forms** | React Hook Form | 7.66.0 | Performant, uncontrolled inputs |
-| **Validation** | Zod | 4.1.12 | Runtime type safety for forms/API |
-| **UI Library** | Material-UI (MUI) | 6.3.0 | Component library |
-| **Styling** | Emotion | 11.14.0 | CSS-in-JS |
-| **Testing** | Vitest | 4.0.8 | Fast unit/component tests |
-| **Linting** | ESLint | 9.33.0 | TypeScript support, max warnings = 0 |
-| **Formatting** | Prettier | 3.4.2 | Consistent code style |
+| Category | Technology | Notes |
+|----------|-----------|-------|
+| **Language** | TypeScript | Strict mode enabled |
+| **Framework** | React | Latest stable with concurrent features |
+| **Build Tool** | Vite | Fast dev server, optimized builds |
+| **Routing** | TanStack Router | File-based routing with type safety |
+| **State (Global)** | Zustand | Lightweight with localStorage persistence |
+| **State (Server)** | TanStack Query | Async state, caching, mutations |
+| **Forms** | React Hook Form | Performant, uncontrolled inputs |
+| **Validation** | Zod | Runtime type safety for forms/API |
+| **UI Library** | Material-UI (MUI) | Component library |
+| **Styling** | Emotion | CSS-in-JS |
+| **Testing** | Vitest | Fast unit/component tests |
+| **Linting** | ESLint | TypeScript support, max warnings = 0 |
+| **Formatting** | Prettier | Consistent code style |
 
 ### DevOps & Tooling
 
@@ -86,62 +124,46 @@ This document provides a comprehensive guide for AI assistants working on the Wo
 wordfolio/
 ├── .github/
 │   └── workflows/          # CI/CD pipelines
-│       ├── backend.yml     # .NET build, test, format checks
-│       └── frontend.yml    # Node build, test, lint checks
 │
 ├── Wordfolio.Api/          # Backend API projects
 │   ├── Wordfolio.Api/      # Main API service (F#)
 │   │   ├── Handlers/       # HTTP endpoint handlers
-│   │   ├── IdentityIntegration.fs  # DI setup for auth
-│   │   └── Program.fs      # Entry point, service composition
+│   │   ├── Infrastructure/ # AppEnv implementation & DI
+│   │   └── Program.fs      # Entry point
 │   │
-│   ├── Wordfolio.Api.DataAccess/  # Data layer (F#)
+│   ├── Wordfolio.Api.Domain/      # Pure Domain Layer (F#)
+│   │   ├── Shared/                # Shared domain types
+│   │   ├── Collections/           # Collection capabilities & operations
+│   │   ├── Vocabularies/          # Vocabulary capabilities & operations
+│   │   └── Entries/               # Entry capabilities & operations
+│   │
+│   ├── Wordfolio.Api.DataAccess/  # Data Access Implementation (F#)
 │   │   ├── Dapper.fs       # Query execution helpers
 │   │   ├── Database.fs     # Connection/transaction management
 │   │   ├── Schema.fs       # Type-safe SQL column references
-│   │   ├── Users.fs        # User data access functions
-│   │   ├── Collections.fs  # Collection data access
-│   │   └── Vocabularies.fs # Vocabulary data access
+│   │   └── [Entity].fs     # Data access functions
 │   │
 │   ├── Wordfolio.Api.Identity/    # Auth system (C#)
-│   │   ├── User.cs, Role.cs       # Domain models
-│   │   ├── IdentityDbContext.cs   # EF Core context
-│   │   ├── UserStore.cs           # Custom user store
-│   │   └── Migrations/            # EF Core identity migrations
-│   │
 │   ├── Wordfolio.Api.Migrations/  # Business schema migrations (F#)
-│   │   ├── 20250831001_CreaseWordfolioSchema.fs
-│   │   ├── 20250831002_CreateUsersTable.fs
-│   │   ├── 20250831003_CreateCollectionsTable.fs
-│   │   └── 20250831004_CreateVocabulariesTable.fs
-│   │
-│   ├── Wordfolio.Api.Tests/       # Integration tests (F#)
-│   ├── Wordfolio.Api.DataAccess.Tests/  # Data layer unit tests (F#)
-│   └── Wordfolio.Api.Tests.Utils/ # Test utilities (F#)
+│   ├── Wordfolio.Api.Tests/       # Integration tests
+│   └── Wordfolio.Api.DataAccess.Tests/  # Data layer unit tests
 │
 ├── Wordfolio.Frontend/     # React SPA
 │   ├── src/
 │   │   ├── routes/         # TanStack Router file-based routes
 │   │   ├── pages/          # Page components
 │   │   ├── components/     # Reusable UI components
-│   │   ├── api/           # API client modules
-│   │   ├── stores/        # Zustand state stores
-│   │   ├── queries/       # React Query queries
-│   │   ├── mutations/     # React Query mutations
-│   │   ├── hooks/         # Custom React hooks
-│   │   ├── schemas/       # Zod validation schemas
-│   │   ├── contexts/      # React contexts
-│   │   └── utils/         # Utility functions
-│   ├── tests/             # Test files
+│   │   ├── api/            # API client modules
+│   │   ├── stores/         # Zustand state stores
+│   │   ├── queries/        # React Query queries
+│   │   ├── mutations/      # React Query mutations
+│   │   ├── hooks/          # Custom React hooks
+│   │   └── schemas/        # Zod validation schemas
+│   ├── tests/              # Test files
 │   └── package.json
 │
-├── Wordfolio.AppHost/      # .NET Aspire orchestration (C#)
-├── Wordfolio.ServiceDefaults/  # Shared infrastructure (F#)
-├── Wordfolio.Common/       # Shared utilities (F#)
-├── .editorconfig           # Code style rules
-├── fantomas-config.json    # F# formatting (Microsoft profile)
-├── Wordfolio.sln           # Solution file
-└── README.md               # Setup instructions
+├── Wordfolio.AppHost/      # .NET Aspire orchestration
+└── Wordfolio.sln           # Solution file
 ```
 
 ---
@@ -167,33 +189,14 @@ dotnet tool restore
 cd Wordfolio.AppHost
 dotnet user-secrets set Parameters:postgres-username myuser
 dotnet user-secrets set Parameters:postgres-password mypassword
+dotnet user-secrets set Parameters:groq-api-key <groq-api-key>
 cd ..
 
 # 3. Run Aspire AppHost (starts PostgreSQL, API, and frontend)
 dotnet run --project Wordfolio.AppHost
 ```
 
-This will:
-- Start PostgreSQL in a container
-- Start the API service
-- Start the frontend dev server
-- Open the Aspire dashboard
-
-**After starting Aspire, run database migrations manually:**
-
-```bash
-# Run Identity migrations (EF Core)
-dotnet ef database update \
-  --startup-project ./Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj \
-  --connection "Host=localhost;Port=5432;Database=wordfoliodb;User ID=myuser;Password=mypassword"
-
-# Run Wordfolio migrations (FluentMigrator)
-dotnet build Wordfolio.Api/Wordfolio.Api.Migrations
-dotnet fm migrate \
-  -p PostgreSQL15_0 \
-  -a "./Wordfolio.Api/Wordfolio.Api.Migrations/bin/Debug/net10.0/Wordfolio.Api.Migrations.dll" \
-  -c "Host=localhost;Port=5432;Database=wordfoliodb;User ID=myuser;Password=mypassword"
-```
+**Note:** Database migrations are applied automatically when the application starts via Aspire.
 
 ### Running Tests
 
@@ -224,225 +227,104 @@ npm test run          # Single run
 
 ### F# Conventions
 
-#### Naming
+#### Naming & Formatting
 
 - **Modules:** PascalCase, match file names exactly
 - **Types/Records:** PascalCase
-- **Functions:** camelCase (public and private)
+- **Functions:** camelCase
 - **Constants:** PascalCase
-- **Parameters:** camelCase
-
-#### Formatting
-
-Run formatter: `dotnet fantomas .` (fix) or `dotnet fantomas --check .` (check only)
+- **Run formatter:** `dotnet fantomas .`
 
 #### Import Organization
 
 F# modules should organize `open` statements in three groups, separated by blank lines:
 
 1. **System imports** (e.g., `System.*`, `Microsoft.*`)
-2. **Third-party imports** (e.g., `Dapper.*`, `Npgsql.*`)
+2. **Third-party imports** (e.g., `Dapper.*`)
 3. **Local imports** (e.g., `Wordfolio.*`)
 
 Within each group, sort imports alphabetically. Remove unused `open` statements.
 
-#### Function Signatures (Data Access Pattern)
-
-All data access functions follow this parameter order:
+#### Function Signatures (Data Access)
 
 - Business parameters first
 - Infrastructure parameters last (connection, transaction, cancellationToken)
 - Always suffix async functions with `Async`
-- Always return `Task<'T>` for async operations
-- Use `task { }` computation expression
-
-### C# Conventions
-
-#### Naming
-
-- **Classes/Interfaces:** PascalCase
-- **Methods:** PascalCase
-- **Parameters/Variables:** camelCase
-- **Constants:** PascalCase
-
-#### Formatting
-
-Run formatter: `dotnet format` (fix) or `dotnet format --verify-no-changes` (check only)
+- Return `Task<'T>` and use `task { }`
 
 ### TypeScript/React Conventions
 
-#### Naming
-
-- **Components:** PascalCase (files and exports)
-- **Hooks:** camelCase starting with `use` (e.g., `useTokenRefresh`)
-- **Utilities:** camelCase (files and functions)
-- **Types/Interfaces:** PascalCase
+- **Components:** PascalCase, Arrow functions (`const Component = () => {}`)
+- **Hooks:** camelCase starting with `use`
 - **Constants:** UPPER_SNAKE_CASE
-
-#### File Structure
-
-- **Component files:** `ComponentName.tsx`
-- **Hook files:** `useHookName.ts`
-- **Utility files:** `utilityName.ts`
-- **Test files:** `fileName.test.tsx` or `fileName.test.ts`
-
-#### Component Declaration Style
-
-**Always use arrow function expressions** for component declarations:
-
-```typescript
-// ✅ Correct
-export const MyComponent = () => {
-    return <div>Hello</div>;
-};
-
-// ❌ Wrong
-export function MyComponent() {
-    return <div>Hello</div>;
-}
-```
-
-#### Import Organization
-
-Organize imports with CSS imports after JavaScript/TypeScript imports, separated by a blank line.
-
-#### Formatting
-
-Run formatter: `npm run format` (fix) or `npm run format:check` (check only)
-
-#### Linting
-
-Run linter: `npm run lint`
-
-Max warnings: 0 (strict enforcement)
+- **Run formatter:** `npm run format`
 
 ### Database Conventions
 
-#### Schema Naming
-
 - **Schema:** `wordfolio` (lowercase)
-- **Tables:** PascalCase (e.g., `Users`, `Collections`, `Vocabularies`)
-- **Columns:** PascalCase (e.g., `Id`, `CreatedAt`, `UpdatedAt`)
-- **Foreign Keys:** `FK_{Table}_{ReferencedTable}_{Column}`
-- **Indexes:** `IX_{Table}_{Column(s)}`
-
-#### Timestamp Handling
-
-- **Always use `DateTimeOffset`** for timestamps (timezone-aware), never `DateTime`
-- Database stores UTC
-- Columns: `CreatedAt`, `UpdatedAt` (PascalCase)
-- Nullable in database, represented as `Option<DateTimeOffset>` in F#
-- Convert using `Option.ofNullable` (DB → Domain) and `Option.toNullable` (Domain → DB)
-
-### Project File Conventions
-
-- **Indentation:** Use 2 spaces (not 4) for indentation in `.csproj` and `.fsproj` files
-- **Blank lines:** Separate `PropertyGroup` and `ItemGroup` sections with blank lines
-- **Consistency:** Follow existing patterns in the project files
+- **Tables/Columns:** PascalCase
+- **Timestamps:** `DateTimeOffset` (never `DateTime`)
 
 ### Dependency Management
 
 **Use strict version numbers** without `^` or `~` prefixes in `package.json`:
 
-```json
-{
-  "dependencies": {
-    "react": "19.1.1",
-    "react-dom": "19.1.1"
-  }
-}
-```
-
-This ensures reproducible builds and prevents unexpected updates.
-
----
-
 ## Key Patterns & Practices
 
 ### Backend Patterns
 
-#### 1. Layered Architecture
+#### 1. Domain-Driven Layered Architecture
+
+The backend follows a strict flow to separate concerns:
 
 ```
-HTTP Request → Handler (Wordfolio.Api/Handlers)
-              ↓
-         Data Access Function (Wordfolio.Api.DataAccess)
-              ↓
-         Dapper.FSharp Query
-              ↓
-         PostgreSQL Database
+HTTP Request (Wordfolio.Api.Handlers)
+   ↓
+Domain Operation (Wordfolio.Api.Domain.*.Operations)
+   ↓ calls
+Capabilities Interface (Wordfolio.Api.Domain.*.Capabilities)
+   ↓ implemented by
+AppEnv (Wordfolio.Api.Infrastructure)
+   ↓ calls
+Data Access Function (Wordfolio.Api.DataAccess)
+   ↓
+PostgreSQL Database
 ```
 
-- **No business logic in handlers** (thin layer)
-- **Data access layer is pure functions** (no side effects except DB I/O)
-- **Clear separation from identity** (separate project)
+- **Handlers:** Thin layer, parse requests, call Domain Operations, return responses.
+- **Domain:** Pure business logic. Defines `Capabilities` (interfaces) for data access/side effects. `Operations` contain the business flow using these capabilities.
+- **Infrastructure (AppEnv):** Implements the `Capabilities` interfaces. Acts as an integration layer mapping Domain types to Data Access types.
+- **Data Access:** Pure functions performing DB operations.
 
-#### 2. Dependency Injection via Parameters
+#### 2. AppEnv Pattern
 
-F# doesn't use constructor injection heavily. Instead, services are retrieved explicitly from `app.Services` in `Program.fs` and passed to handlers as parameters.
+`AppEnv` methods in `Wordfolio.Api.Infrastructure` must be **thin integration layers**:
+- **Single database call per method** (ideal).
+- **Simple mapping** between Domain and Data Access types.
+- **No business logic.**
+- Use `TransactionalEnv` to wrap operations in database transactions.
 
-#### 3. Dapper.FSharp Query Composition
+#### 3. Data Access Layer
 
-Use Dapper.FSharp computation expressions: `select { }`, `insert { }`, `update { }`, `delete { }`
-
-#### 4. Transaction Management
-
-Connections and transactions are managed explicitly. Pass `null` for transaction parameter when no transaction is needed.
-
-#### 5. Identity Integration
-
-The custom `UserStore` coordinates between two databases using `IUserStoreExtension` interface to trigger side effects when users are created, ensuring both Identity and Wordfolio databases stay in sync.
-
-#### 6. AppEnv Implementation Pattern
-
-AppEnv methods serve as a thin integration layer between domain capabilities and data access. Follow these rules:
-
-- **Single database call per method** - Avoid multiple database calls within a single AppEnv method implementation
-- **Simple mapping only** - Map domain parameters to data access parameters, make the call, map the result back to domain types
-- **No business logic** - AppEnv is for integration, not logic or orchestration
-- **Use optimized queries** - Prefer specialized data access functions (e.g., `getEntryByIdWithHierarchyAsync`) over multiple individual calls
-
-Example of good AppEnv implementation:
-```fsharp
-interface IGetEntryById with
-    member _.GetEntryById(EntryId id) =
-        task {
-            let! maybeEntryWithHierarchy =
-                DataAccess.EntriesHierarchy.getEntryByIdWithHierarchyAsync
-                    id connection transaction cancellationToken
-
-            return maybeEntryWithHierarchy |> Option.map toDomain
-        }
-```
-
-Avoid: Multiple calls, orchestration logic, or complex transformations in AppEnv methods. Move those to the data access layer or domain operations.
+- Use `Dapper.FSharp` for queries.
+- Explicitly pass `connection` and `transaction`.
+- Return `Result` or `Option` types.
 
 ### Frontend Patterns
 
-#### 1. File-Based Routing (TanStack Router)
-
-Routes are auto-generated from `src/routes/` directory structure. Each route file exports a `Route` using `createFileRoute`.
-
-#### 2. State Management Strategy
+#### 1. State Management
 
 | State Type | Tool | Use Case |
 |-----------|------|----------|
 | **Global UI State** | Zustand | Auth tokens, user preferences |
-| **Server State** | React Query | API data, caching, mutations |
+| **Server State** | TanStack Query | API data, caching, mutations |
 | **Form State** | React Hook Form | Form inputs, validation |
 | **URL State** | TanStack Router | Route params, search params |
 
-#### 3. API Client Pattern
+#### 2. React Query Mutations
 
-Centralized API modules with typed requests/responses.
-
-#### 4. React Query Mutations
-
-Always invalidate relevant queries in `onSuccess` callback to ensure fresh data.
-
-#### 5. Form Handling (React Hook Form + Zod)
-
-Use `zodResolver` to integrate Zod schemas with React Hook Form for type-safe validation.
+- Always invalidate relevant queries in `onSuccess` to ensure data consistency.
+- Use typed API clients.
 
 ---
 
@@ -450,220 +332,44 @@ Use `zodResolver` to integrate Zod schemas with React Hook Form for type-safe va
 
 ### Backend Tests
 
-#### Integration Tests (Wordfolio.Api.Tests)
+- **Integration Tests (Wordfolio.Api.Tests):** End-to-end API tests using `WebApplicationFactory`.
+- **Data Access Tests (Wordfolio.Api.DataAccess.Tests):** Unit tests for DB functions.
 
-- **Framework:** XUnit
-- **Pattern:** WebApplicationFactory for in-memory API
-- **Database:** Real PostgreSQL (via test containers or local instance)
-- **Scope:** End-to-end API tests with database assertions
-
-#### Data Access Tests (Wordfolio.Api.DataAccess.Tests)
-
-- **Framework:** XUnit
-- **Fixtures:** Custom test fixtures with database reset
-- **Scope:** Unit tests for data access functions
-
-#### Database Testing Best Practices
-
-**CRITICAL RULES for database tests:**
-
-1. **Seeding:** Perform all initial database seeding via `DatabaseSeeder` only
-2. **No Tested Functions in Setup:** Do NOT use functions from tested modules for database seeding or assertions
-3. **Test Isolation:** Preferably make only ONE call to the tested function per test
-4. **Assertions via Seeder:** Query the database for assertions using `DatabaseSeeder` only
-5. **Compare Full Records:** Use tested records for assertions instead of asserting properties one at a time
+#### Critical Database Test Rules
+1. **Seeding:** Use `DatabaseSeeder` ONLY.
+2. **No Tested Functions in Setup:** Do not use the function being tested to set up data.
+3. **Assertions via Seeder:** Query the DB via `DatabaseSeeder` to verify writes.
+4. **Compare Full Records:** Assert against complete objects, not individual properties.
 
 ### Frontend Tests
 
-#### Unit/Component Tests (Vitest)
-
-- **Framework:** Vitest
-- **Library:** React Testing Library
-- **Environment:** happy-dom (lightweight)
-- **Location:** All tests MUST be in `Wordfolio.Frontend/tests/` directory
-- **Structure:** Mirror source directory structure (e.g., `tests/components/`, `tests/utils/`, `tests/contexts/`)
-- **File Extension:** Use `.test.ts` or `.test.tsx`
-- **Imports:** Use relative paths from tests directory (e.g., `../../src/components/MyComponent`)
-
-### Test Fixtures
-
-**WordfolioTestFixture:** Manages Wordfolio database lifecycle
-
-**WordfolioIdentityTestFixture:** Manages both databases for auth tests
-
----
-
-## Build & CI/CD Workflows
-
-### Local Build Commands
-
-#### Backend
-
-```bash
-dotnet tool restore         # Restore tools
-dotnet restore              # Restore dependencies
-dotnet build --configuration Release
-dotnet test --configuration Release
-dotnet fantomas --check .   # F# format check
-dotnet format --verify-no-changes  # C# format check
-dotnet fantomas .           # F# format fix
-dotnet format               # C# format fix
-```
-
-#### Frontend
-
-```bash
-npm ci                      # Clean install (CI)
-npm install                 # Regular install
-npm run build
-npm test                    # Watch mode
-npm test run                # Single run
-npm run lint
-npm run format:check        # Check
-npm run format              # Fix
-```
-
-### GitHub Actions CI/CD
-
-#### Backend CI (.github/workflows/backend.yml)
-
-**Triggers:** Pull requests to `main` branch with changes in backend code
-
-**Steps:** Checkout → Setup .NET → Restore tools → Restore deps → Build → Test → Format checks
-
-**Success criteria:** All steps pass, zero warnings
-
-#### Frontend CI (.github/workflows/frontend.yml)
-
-**Triggers:** Pull requests to `main` branch with changes in frontend code
-
-**Steps:** Checkout → Setup Node.js → Install deps → Format check → Lint → Test → Build
-
-**Success criteria:** All steps pass, zero lint warnings
-
-### Pre-Commit Checklist
-
-Before committing changes, **run ALL verification commands**:
-
-**Backend:**
-- [ ] `dotnet build` - Code builds without warnings
-- [ ] `dotnet test` - All tests pass
-- [ ] `dotnet fantomas --check .` - F# code is formatted
-- [ ] `dotnet format --verify-no-changes` - C# code is formatted
-
-**Frontend:**
-- [ ] `cd Wordfolio.Frontend && npm run build` - TypeScript compiles and Vite builds
-- [ ] `npm test` - All tests pass
-- [ ] `npm run lint` - No ESLint warnings (max warnings = 0)
-- [ ] `npm run format:check` - Code is formatted with Prettier
-
-**General:**
-- [ ] New code has tests (if applicable)
-- [ ] Commit message is clear and descriptive
-- [ ] Changes are minimal and focused (split large changes into separate commits)
-
----
-
-## Database Management
-
-### Two-Database Architecture
-
-Wordfolio uses a **single PostgreSQL database** with **two schemas**:
-
-1. **Identity Schema** (managed by EF Core)
-   - Tables: `AspNetUsers`, `AspNetRoles`, `AspNetUserTokens`, etc.
-   - Migration tool: Entity Framework Core
-   - Language: C#
-
-2. **Wordfolio Schema** (managed by FluentMigrator)
-   - Tables: `wordfolio.Users`, `wordfolio.Collections`, `wordfolio.Vocabularies`
-   - Migration tool: FluentMigrator
-   - Language: F#
-
-### Migration Workflows
-
-#### Identity Migrations (EF Core)
-
-```bash
-# Create new migration
-dotnet ef migrations add MigrationName \
-  --project Wordfolio.Api/Wordfolio.Api.Identity \
-  --startup-project Wordfolio.Api/Wordfolio.Api
-
-# Apply migrations
-dotnet ef database update \
-  --startup-project Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj \
-  --connection "Host=localhost;Port=5432;Database=wordfoliodb;User ID=user;Password=pass"
-
-# Rollback
-dotnet ef database update PreviousMigrationName \
-  --startup-project Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj
-```
-
-#### Wordfolio Migrations (FluentMigrator)
-
-**Create new migration:**
-
-1. Add new file in `Wordfolio.Api.Migrations/`
-2. Use naming: `YYYYMMDDNNN_Description.fs`
-3. Implement migration class inheriting from `AutoReversingMigration()`
-4. Add file to `.fsproj`
-
-**Apply migrations:**
-
-```bash
-dotnet build Wordfolio.Api/Wordfolio.Api.Migrations
-
-dotnet fm migrate \
-  -p PostgreSQL15_0 \
-  -a "./Wordfolio.Api/Wordfolio.Api.Migrations/bin/Debug/net10.0/Wordfolio.Api.Migrations.dll" \
-  -c "Host=localhost;Port=5432;Database=wordfoliodb;User ID=user;Password=pass"
-```
-
-**Rollback:**
-
-```bash
-dotnet fm rollback \
-  -p PostgreSQL15_0 \
-  -a "./Wordfolio.Api/Wordfolio.Api.Migrations/bin/Debug/net10.0/Wordfolio.Api.Migrations.dll" \
-  -c "Host=localhost;Port=5432;Database=wordfoliodb;User ID=user;Password=pass" \
-  --steps 1
-```
-
-### Schema Constants
-
-Always use `Schema.fs` for type-safe column references. Define tables using `table'<RecordType> "TableName" |> inSchema Constants.Schema`.
+- **Unit/Component:** Vitest + React Testing Library.
+- **Location:** `Wordfolio.Frontend/tests/`.
+- **Structure:** Mirror source directory structure.
 
 ---
 
 ## Common Tasks & Workflows
 
-### Adding a New API Endpoint
+### Adding a New Feature (Vertical Slice)
 
-1. **Define handler function** in `Wordfolio.Api/Handlers/`
-2. **Register in Program.fs** by adding to the endpoint mapping chain
-3. **Add data access function** (if needed) in `Wordfolio.Api.DataAccess/`
-4. **Add tests** in `Wordfolio.Api.Tests/` or `Wordfolio.Api.DataAccess.Tests/`
-
-### Adding a New Database Table
-
-1. **Create migration** in `Wordfolio.Api.Migrations/` with naming `YYYYMMDDNNN_Description.fs`
-2. **Define records** in `Wordfolio.Api.DataAccess/` (CLIMutable record for DB, domain type for business logic)
-3. **Add to Schema.fs** with table definition
-4. **Add migration to .fsproj** file
-5. **Run migration** using `dotnet fm migrate`
-
-### Adding a Frontend Route
-
-1. **Create route file** in `src/routes/` using `createFileRoute`
-2. **Create page component** in `src/pages/`
-3. **Add navigation** (if needed) using TanStack Router's `Link` component
-
-### Adding a React Query Mutation
-
-1. **Add API function** in `src/api/` with typed request/response interfaces
-2. **Create mutation hook** in `src/mutations/` with `useMutation` and invalidate queries in `onSuccess`
-3. **Use in component** by calling the mutation hook and using `mutate` method
+1.  **Database:**
+    *   Create migration (`Wordfolio.Api.Migrations`)
+    *   Add records/types (`Wordfolio.Api.DataAccess/Schema.fs`, `[Entity].fs`)
+    *   Add data access functions (`Wordfolio.Api.DataAccess/[Entity].fs`)
+2.  **Domain:**
+    *   Define types (`Wordfolio.Api.Domain/[Entity]/Types.fs`)
+    *   Define capabilities (`Wordfolio.Api.Domain/[Entity]/Capabilities.fs`)
+    *   Implement operations (`Wordfolio.Api.Domain/[Entity]/Operations.fs`)
+3.  **Infrastructure:**
+    *   Implement capabilities in `AppEnv` (`Wordfolio.Api/Infrastructure/Environment.fs`)
+4.  **API:**
+    *   Create Handler (`Wordfolio.Api/Handlers/[Entity].fs`)
+    *   Register endpoint (`Wordfolio.Api/Program.fs`)
+5.  **Frontend:**
+    *   Add API client functions (`src/api/`)
+    *   Add React Query hooks (`src/queries/`, `src/mutations/`)
+    *   Add Routes/Pages (`src/routes/`)
 
 ---
 
@@ -671,109 +377,21 @@ Always use `Schema.fs` for type-safe column references. Define tables using `tab
 
 ### What to Always Do
 
-1. **Read files before modifying** - Never propose changes to code you haven't seen
-2. **Follow existing patterns** - Match the style and structure of surrounding code
-3. **Maintain type safety** - Leverage F#/TypeScript types, avoid `any` or untyped code
-4. **Run formatters after changes** - Use `dotnet fantomas .` and `npm run format`
-5. **Update tests** - Add/modify tests when changing functionality
-6. **Use consistent naming** - Use descriptive names, avoid abbreviations; follow language conventions (F# = camelCase, C# = PascalCase, etc.)
-7. **Handle nullability correctly** - Use `Option<'T>` in F#, proper null checks in TypeScript
-8. **Use DateTimeOffset** - Never use `DateTime` for timestamps
-9. **Follow parameter order** - Business params → connection → transaction → cancellationToken
-10. **Compose functions** - Use F# pipeline operators (`|>`) for readability
-11. **Organize imports** - Group and sort imports (System → Third-party → Local)
-12. **Use arrow functions for React components** - `export const MyComponent = () => { ... }`
-13. **Keep commits atomic** - Split independent changes into separate commits
-14. **Avoid comments** - Write self-explanatory code instead
+1.  **Respect the Architecture:** Don't bypass the Domain layer. Handlers call Operations, Operations call Capabilities.
+2.  **Type Safety:** Use strict types everywhere.
+3.  **Format Code:** Always run `dotnet fantomas` and `npm run format`.
+4.  **Use DateTimeOffset:** For all timestamps.
+5.  **Follow Naming Conventions:** F# (camelCase), C# (PascalCase), React (PascalCase).
+6.  **Update Tests:** Ensure new functionality is covered.
 
 ### What to Avoid
 
-1. **❌ Don't use `DateTime`** - Always use `DateTimeOffset` for timestamps
-2. **❌ Don't skip formatters** - Code must be formatted before committing
-3. **❌ Don't ignore warnings** - CI fails on any warnings; fix them
-4. **❌ Don't break layering** - Keep handlers thin, logic in data access layer
-5. **❌ Don't use magic strings** - Use constants from `Schema.fs` or config
-6. **❌ Don't mix C# and F# unnecessarily** - F# is default; C# only for identity
-7. **❌ Don't create inconsistent APIs** - Follow RESTful conventions
-8. **❌ Don't forget transactions** - Coordinate writes across databases carefully
-9. **❌ Don't use `any` in TypeScript** - Provide proper types
-10. **❌ Don't skip tests** - New features need test coverage
-11. **❌ Don't add comments** - Write clear, self-explanatory code instead
-12. **❌ Don't use function declarations for React components** - Use arrow functions
-13. **❌ Don't use `^` or `~` in package.json versions** - Use strict versions only
-14. **❌ Don't use tested functions in database test seeding** - Use DatabaseSeeder only
-15. **❌ Don't make large, unfocused commits** - Keep changes minimal and atomic
-
-### Common Pitfalls
-
-#### Backend
-
-- Forgetting to add new migration to project file
-- Using `DateTime` instead of `DateTimeOffset`
-- Not handling `Option` types correctly (accessing `.Value` without checking)
-
-#### Frontend
-
-- Not invalidating queries after mutations (leads to stale data)
-- Storing server state in Zustand instead of React Query
-
-### File Organization Tips
-
-- **Backend:** One file per domain entity (e.g., `Users.fs`, `Collections.fs`)
-- **Frontend:** Group by feature, not by type (prefer `features/collections/` over `components/`, `hooks/` split)
-- **Tests:** Mirror source structure (e.g., `Collections.fs` → `CollectionsTests.fs`)
-- **Migrations:** Number sequentially with descriptive names
-
-### Performance Considerations
-
-1. **Use `task { }` in F#** - More efficient than `async { }`
-2. **Avoid N+1 queries** - Use joins or batching
-3. **Enable React Query caching** - Set appropriate `staleTime`
-4. **Use Zustand selectors** - Prevent unnecessary re-renders
-5. **Debounce user input** - For search/autocomplete features
-
----
-
-## Additional Resources
-
-### Official Documentation
-
-- [.NET 10.0 Docs](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-10)
-- [F# Language Guide](https://learn.microsoft.com/en-us/dotnet/fsharp/)
-- [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/)
-- [Dapper.FSharp](https://github.com/Dzoukr/Dapper.FSharp)
-- [FluentMigrator](https://fluentmigrator.github.io/)
-- [React 19 Docs](https://react.dev/)
-- [TanStack Router](https://tanstack.com/router/latest)
-- [TanStack Query](https://tanstack.com/query/latest)
-- [Zustand](https://docs.pmnd.rs/zustand/getting-started/introduction)
-- [Material-UI](https://mui.com/)
-- [Vitest](https://vitest.dev/)
-
-### Project-Specific Files
-
-- **Setup:** `README.md`
-- **AI Guidelines:** `.github/copilot-instructions.md` (concise version for GitHub Copilot)
-- **Code Style:** `.editorconfig`, `fantomas-config.json`
-- **Tools:** `.config/dotnet-tools.json`
-- **CI/CD:** `.github/workflows/`
-
-**Note:** This CLAUDE.md file is the comprehensive guide for AI assistants. The `.github/copilot-instructions.md` file contains a condensed version of these rules optimized for GitHub Copilot. Both should be kept in sync.
-
----
-
-## Changelog
-
-| Date | Changes |
-|------|---------|
-| 2025-12-06 | Initial version - Comprehensive codebase analysis and documentation |
-| 2025-12-06 | Updated with guidelines from `.github/copilot-instructions.md`: import organization, component declaration style, project file formatting, dependency management, database testing best practices, and enhanced pre-commit checklist |
-| 2025-12-06 | Optimized for size: Added migration commands to Quick Start, removed Manual Setup section, removed verbose formatting rules and code snippets |
-| 2025-12-06 | Fixed Quick Start section: Clarified that migrations must always be run manually after starting Aspire, not automatically |
-| 2025-12-29 | Added AppEnv Implementation Pattern guidelines: AppEnv methods should be thin integration layers with single database calls, simple parameter/result mapping, and no business logic |
+1.  ❌ Mixing business logic into Handlers or AppEnv.
+2.  ❌ Using `DateTime`.
+3.  ❌ Leaving "any" types in TypeScript.
+4.  ❌ Committing unformatted code.
+5.  ❌ Breaking the separation between `Wordfolio.Api.Domain` (pure) and `Wordfolio.Api.DataAccess` (impure).
 
 ---
 
 **End of Document**
-
-*This file should be updated whenever significant architectural changes are made to the codebase.*
