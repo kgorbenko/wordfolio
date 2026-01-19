@@ -17,6 +17,7 @@ import {
     InputAdornment,
     alpha,
     Paper,
+    ListSubheader,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -25,14 +26,13 @@ import "./WordEntrySheet.scss";
 
 import { useNotificationContext } from "../../contexts/NotificationContext";
 import { dictionaryApi, DictionaryResult } from "../../api/dictionaryApi";
-import { vocabulariesApi, VocabularyResponse } from "../../api/vocabulariesApi";
+import { useCollectionsHierarchyQuery } from "../../queries/useCollectionsHierarchyQuery";
+import { useCreateEntryMutation } from "../../mutations/useCreateEntryMutation";
 import {
-    entriesApi,
-    DefinitionRequest,
-    TranslationRequest,
-} from "../../api/entriesApi";
-import { DefinitionsSection, DefinitionItem } from "./DefinitionsSection";
-import { TranslationsSection, TranslationItem } from "./TranslationsSection";
+    EntryForm,
+    EntryFormValues,
+    EntryFormOutput,
+} from "../entries/EntryForm";
 
 interface WordEntrySheetProps {
     readonly open: boolean;
@@ -52,16 +52,14 @@ export const WordEntrySheet = ({
 
     const [word, setWord] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [vocabularies, setVocabularies] = useState<
-        Array<VocabularyResponse & { collectionName: string }>
-    >([]);
     const [selectedVocabularyId, setSelectedVocabularyId] = useState<number>(
         initialVocabularyId ?? 0
     );
 
-    const [definitions, setDefinitions] = useState<DefinitionItem[]>([]);
-    const [translations, setTranslations] = useState<TranslationItem[]>([]);
+    const [formValues, setFormValues] = useState<EntryFormValues | null>(null);
+    const [currentFormData, setCurrentFormData] =
+        useState<EntryFormOutput | null>(null);
+    const [isFormValid, setIsFormValid] = useState(false);
     const [streamingText, setStreamingText] = useState("");
     const [hasResults, setHasResults] = useState(false);
 
@@ -69,37 +67,30 @@ export const WordEntrySheet = ({
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const loadVocabularies = useCallback(async () => {
-        try {
-            const allVocabs = await vocabulariesApi.getAllVocabularies();
-            setVocabularies(allVocabs);
+    const { data: hierarchy } = useCollectionsHierarchyQuery();
 
-            if (
-                initialVocabularyId !== undefined &&
-                selectedVocabularyId === 0
-            ) {
-                setSelectedVocabularyId(allVocabs[0].id);
-            }
-        } catch {
-            const defaultVocab =
-                await vocabulariesApi.getOrCreateDefaultVocabulary();
-            setVocabularies([{ ...defaultVocab, collectionName: "Unsorted" }]);
-            setSelectedVocabularyId(defaultVocab.id);
-        }
-    }, [initialVocabularyId, selectedVocabularyId]);
+    const createEntryMutation = useCreateEntryMutation({
+        onSuccess: () => {
+            openSuccessNotification({ message: "Added to vocabulary" });
+            onClose();
+        },
+        onError: () => {
+            openErrorNotification({ message: "Failed to save entry" });
+        },
+    });
 
     useEffect(() => {
         if (open) {
-            loadVocabularies();
             setTimeout(() => inputRef.current?.focus(), 100);
         }
-    }, [open, loadVocabularies]);
+    }, [open]);
 
     useEffect(() => {
         if (!open) {
             setWord("");
-            setDefinitions([]);
-            setTranslations([]);
+            setFormValues(null);
+            setCurrentFormData(null);
+            setIsFormValid(false);
             setStreamingText("");
             setHasResults(false);
             setIsLoading(false);
@@ -120,8 +111,9 @@ export const WordEntrySheet = ({
 
             abortControllerRef.current = new AbortController();
             setIsLoading(true);
-            setDefinitions([]);
-            setTranslations([]);
+            setFormValues(null);
+            setCurrentFormData(null);
+            setIsFormValid(false);
             setStreamingText("");
             setHasResults(false);
 
@@ -130,37 +122,31 @@ export const WordEntrySheet = ({
                 {
                     onText: (text) => setStreamingText(text),
                     onResult: (result: DictionaryResult) => {
-                        const defs: DefinitionItem[] = result.definitions.map(
-                            (d, i) => ({
+                        const values: EntryFormValues = {
+                            entryText: searchWord,
+                            definitions: result.definitions.map((d, i) => ({
                                 id: `def-${i}`,
                                 definitionText: d.definition,
-                                partOfSpeech: d.partOfSpeech,
-                                selected: true,
+                                source: "Api" as const,
                                 examples: d.exampleSentences.map((ex, j) => ({
                                     id: `def-${i}-ex-${j}`,
                                     exampleText: ex,
                                     source: "Api" as const,
-                                    selected: true,
                                 })),
-                            })
-                        );
-
-                        const trans: TranslationItem[] =
-                            result.translations.map((t, i) => ({
+                            })),
+                            translations: result.translations.map((t, i) => ({
                                 id: `trans-${i}`,
                                 translationText: t.translation,
-                                partOfSpeech: t.partOfSpeech,
-                                selected: true,
+                                source: "Api" as const,
                                 examples: t.examples.map((ex, j) => ({
                                     id: `trans-${i}-ex-${j}`,
                                     exampleText: `${ex.russian} — ${ex.english}`,
                                     source: "Api" as const,
-                                    selected: true,
                                 })),
-                            }));
+                            })),
+                        };
 
-                        setDefinitions(defs);
-                        setTranslations(trans);
+                        setFormValues(values);
                         setHasResults(true);
                     },
                     onError: (error) => {
@@ -190,16 +176,18 @@ export const WordEntrySheet = ({
                 performLookup(value.trim());
             }, 500);
         } else {
-            setDefinitions([]);
-            setTranslations([]);
+            setFormValues(null);
+            setCurrentFormData(null);
+            setIsFormValid(false);
             setHasResults(false);
         }
     };
 
     const handleClear = () => {
         setWord("");
-        setDefinitions([]);
-        setTranslations([]);
+        setFormValues(null);
+        setCurrentFormData(null);
+        setIsFormValid(false);
         setStreamingText("");
         setHasResults(false);
         setIsLoading(false);
@@ -209,67 +197,29 @@ export const WordEntrySheet = ({
         inputRef.current?.focus();
     };
 
-    const getSelectedCount = () => {
-        const selectedDefs = definitions.filter((d) => d.selected).length;
-        const selectedTrans = translations.filter((t) => t.selected).length;
-        return selectedDefs + selectedTrans;
-    };
+    const handleFormChange = useCallback(
+        (data: EntryFormOutput, isValid: boolean) => {
+            setCurrentFormData(data);
+            setIsFormValid(isValid);
+        },
+        []
+    );
 
-    const handleSave = async () => {
-        const selectedDefs = definitions.filter((d) => d.selected);
-        const selectedTrans = translations.filter((t) => t.selected);
-
-        if (selectedDefs.length === 0 && selectedTrans.length === 0) {
+    const handleSave = () => {
+        if (!currentFormData || !isFormValid) {
             openErrorNotification({
-                message: "Please select at least one definition or translation",
+                message: "Please add at least one definition or translation",
             });
             return;
         }
 
-        setIsSaving(true);
-
-        try {
-            const definitionRequests: DefinitionRequest[] = selectedDefs.map(
-                (d) => ({
-                    definitionText: d.definitionText,
-                    source: "Api",
-                    examples: d.examples
-                        .filter((ex) => ex.selected)
-                        .map((ex) => ({
-                            exampleText: ex.exampleText,
-                            source: ex.source,
-                        })),
-                })
-            );
-
-            const translationRequests: TranslationRequest[] = selectedTrans.map(
-                (t) => ({
-                    translationText: t.translationText,
-                    source: "Api",
-                    examples: t.examples
-                        .filter((ex) => ex.selected)
-                        .map((ex) => ({
-                            exampleText: ex.exampleText,
-                            source: ex.source,
-                        })),
-                })
-            );
-
-            await entriesApi.createEntry({
-                vocabularyId:
-                    selectedVocabularyId === 0 ? null : selectedVocabularyId,
-                entryText: word.trim(),
-                definitions: definitionRequests,
-                translations: translationRequests,
-            });
-
-            openSuccessNotification({ message: "Added to vocabulary" });
-            onClose();
-        } catch {
-            openErrorNotification({ message: "Failed to save entry" });
-        } finally {
-            setIsSaving(false);
-        }
+        createEntryMutation.mutate({
+            vocabularyId:
+                selectedVocabularyId === 0 ? null : selectedVocabularyId,
+            entryText: word.trim(),
+            definitions: currentFormData.definitions,
+            translations: currentFormData.translations,
+        });
     };
 
     const content = (
@@ -310,11 +260,16 @@ export const WordEntrySheet = ({
                         }}
                     >
                         <MenuItem value={0}>Drafts — organize later</MenuItem>
-                        {vocabularies.map((v) => (
-                            <MenuItem key={v.id} value={v.id}>
-                                {v.collectionName} / {v.name}
-                            </MenuItem>
-                        ))}
+                        {hierarchy?.collections.map((collection) => [
+                            <ListSubheader key={`header-${collection.id}`}>
+                                {collection.name}
+                            </ListSubheader>,
+                            ...collection.vocabularies.map((vocab) => (
+                                <MenuItem key={vocab.id} value={vocab.id}>
+                                    {vocab.name}
+                                </MenuItem>
+                            )),
+                        ])}
                     </Select>
                 </FormControl>
 
@@ -376,17 +331,17 @@ export const WordEntrySheet = ({
                     </Box>
                 )}
 
-                {hasResults && (
-                    <>
-                        <DefinitionsSection
-                            definitions={definitions}
-                            onChange={setDefinitions}
-                        />
-                        <TranslationsSection
-                            translations={translations}
-                            onChange={setTranslations}
-                        />
-                    </>
+                {hasResults && formValues && (
+                    <EntryForm
+                        defaultValues={formValues}
+                        onSubmit={handleSave}
+                        onCancel={onClose}
+                        submitLabel="Save"
+                        isLoading={createEntryMutation.isPending}
+                        showEntryText={false}
+                        showFooter={false}
+                        onChange={handleFormChange}
+                    />
                 )}
 
                 {!isLoading && !hasResults && word.length >= 2 && (
@@ -420,17 +375,17 @@ export const WordEntrySheet = ({
                     size="large"
                     onClick={handleSave}
                     disabled={
-                        isSaving ||
+                        createEntryMutation.isPending ||
                         isLoading ||
                         !hasResults ||
-                        getSelectedCount() === 0
+                        !isFormValid
                     }
                     sx={{ py: 1.5 }}
                 >
-                    {isSaving ? (
+                    {createEntryMutation.isPending ? (
                         <CircularProgress size={24} color="inherit" />
                     ) : (
-                        `Save (${getSelectedCount()} items)`
+                        "Save"
                     )}
                 </Button>
             </Box>
