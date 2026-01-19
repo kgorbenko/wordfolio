@@ -326,6 +326,52 @@ PostgreSQL Database
 - Always invalidate relevant queries in `onSuccess` to ensure data consistency.
 - Use typed API clients.
 
+#### 3. Feature-Based Architecture (Vertical Slices)
+
+Organize code by **feature** rather than file type. Create a `src/features/<feature-name>/` directory containing:
+
+- `api/`: Feature-specific API clients
+- `components/`: UI components unique to this feature
+- `hooks/`: Custom hooks (queries/mutations)
+- `pages/`: Page components used by routes
+- `schemas/`: Zod validation schemas
+- `styles/`: SCSS modules (`*.module.scss`)
+
+**Exceptions:**
+- Shared UI components go to `src/components/common/`
+- Global configurations go to `src/config/` or `src/utils/`
+
+#### 4. Route-Page Separation
+
+- **Routes (`src/routes/`)**: Purely for configuration (paths, loaders, params). MUST NOT contain UI logic.
+- **Pages (`src/features/*/pages/`)**: Strictly for page implementation. Imported by routes.
+
+#### 5. Styling
+
+- Extract complex styles to SCSS modules (`.module.scss`) to maintain separation of concerns.
+- Avoid heavy inline `sx` props for structural layout.
+
+#### 6. Navigation
+
+- Use strict type-safe navigation via TanStack Router's `Link` component or `useNavigate` hook.
+- Avoid hardcoded URL strings.
+
+#### 7. General Frontend Principles
+
+1. **Separation of Concerns:**
+   - **Presentational Components:** Focus on *how things look*. Receive data via props.
+   - **Container/Page Components:** Focus on *how things work*. Handle data fetching and state, then pass data to Presentational components.
+   - **Custom Hooks:** Encapsulate reusable logic and side effects.
+
+2. **Single Responsibility:**
+   - Decompose large components. If a file exceeds 200 lines, it's a strong candidate for refactoring.
+
+3. **Colocation:**
+   - Styles, tests, and types specific to a feature should live within that feature's directory.
+
+4. **Strict Boundary Handling:**
+   - Every async operation must explicitly handle `Loading`, `Error`, and `Empty` states in the UI.
+
 ---
 
 ## Testing Strategy
@@ -367,9 +413,9 @@ PostgreSQL Database
     *   Create Handler (`Wordfolio.Api/Handlers/[Entity].fs`)
     *   Register endpoint (`Wordfolio.Api/Program.fs`)
 5.  **Frontend:**
-    *   Add API client functions (`src/api/`)
-    *   Add React Query hooks (`src/queries/`, `src/mutations/`)
-    *   Add Routes/Pages (`src/routes/`)
+    *   Create `src/features/[feature]/` directory.
+    *   Add API clients, hooks, components, schemas, and pages within that directory.
+    *   Register route in `src/routes/` importing the page from the feature directory.
 
 ---
 
