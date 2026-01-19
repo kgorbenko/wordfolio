@@ -59,6 +59,12 @@ export interface CreateEntryRequest {
     readonly translations: TranslationRequest[];
 }
 
+export interface UpdateEntryRequest {
+    readonly entryText: string;
+    readonly definitions: DefinitionRequest[];
+    readonly translations: TranslationRequest[];
+}
+
 export interface ApiError {
     readonly type?: string;
     readonly title?: string;
@@ -116,6 +122,24 @@ export const entriesApi = {
     ): Promise<EntryResponse> => {
         const response = await fetch(`${API_BASE_URL}/entries`, {
             method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify(request),
+        });
+
+        if (!response.ok) {
+            const error: ApiError = await response.json();
+            throw error;
+        }
+
+        return response.json();
+    },
+
+    updateEntry: async (
+        entryId: number,
+        request: UpdateEntryRequest
+    ): Promise<EntryResponse> => {
+        const response = await fetch(`${API_BASE_URL}/entries/${entryId}`, {
+            method: "PUT",
             headers: getAuthHeaders(),
             body: JSON.stringify(request),
         });

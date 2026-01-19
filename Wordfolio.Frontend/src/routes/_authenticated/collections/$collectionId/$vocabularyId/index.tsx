@@ -18,83 +18,11 @@ import { RetryOnError } from "../../../../../components/common/RetryOnError";
 import { useUiStore } from "../../../../../stores/uiStore";
 import { useCollectionQuery } from "../../../../../queries/useCollectionQuery";
 import { useVocabularyQuery } from "../../../../../queries/useVocabularyQuery";
+import { useEntriesQuery } from "../../../../../queries/useEntriesQuery";
 import { useDeleteVocabularyMutation } from "../../../../../mutations/useDeleteVocabularyMutation";
 import { useConfirmDialog } from "../../../../../contexts/ConfirmDialogContext";
 import { useNotificationContext } from "../../../../../contexts/NotificationContext";
 import { assertNonNullable } from "../../../../../utils/misc";
-
-interface Entry {
-    id: number;
-    vocabularyId: number;
-    entryText: string;
-    firstDefinition: string | null;
-    firstTranslation: string | null;
-    createdAt: string;
-}
-
-const stubEntries: Entry[] = [
-    {
-        id: 1,
-        vocabularyId: 1,
-        entryText: "serendipity",
-        firstDefinition:
-            "The occurrence and development of events by chance in a happy or beneficial way",
-        firstTranslation: "счастливая случайность",
-        createdAt: "2026-01-08T10:30:00Z",
-    },
-    {
-        id: 2,
-        vocabularyId: 1,
-        entryText: "ephemeral",
-        firstDefinition: "Lasting for a very short time",
-        firstTranslation: "мимолетный",
-        createdAt: "2026-01-07T14:20:00Z",
-    },
-    {
-        id: 3,
-        vocabularyId: 1,
-        entryText: "ubiquitous",
-        firstDefinition: "Present, appearing, or found everywhere",
-        firstTranslation: "вездесущий",
-        createdAt: "2026-01-06T09:00:00Z",
-    },
-    {
-        id: 4,
-        vocabularyId: 2,
-        entryText: "totalitarian",
-        firstDefinition:
-            "Relating to a system of government that is centralized and dictatorial",
-        firstTranslation: "тоталитарный",
-        createdAt: "2026-01-05T11:00:00Z",
-    },
-    {
-        id: 5,
-        vocabularyId: 2,
-        entryText: "doublethink",
-        firstDefinition:
-            "The acceptance of contrary opinions or beliefs at the same time",
-        firstTranslation: "двоемыслие",
-        createdAt: "2026-01-04T16:30:00Z",
-    },
-    {
-        id: 6,
-        vocabularyId: 6,
-        entryText: "refactoring",
-        firstDefinition:
-            "Restructuring existing code without changing its external behavior",
-        firstTranslation: "рефакторинг",
-        createdAt: "2026-01-03T09:15:00Z",
-    },
-    {
-        id: 7,
-        vocabularyId: 8,
-        entryText: "melancholy",
-        firstDefinition:
-            "A feeling of pensive sadness, typically with no obvious cause",
-        firstTranslation: "меланхолия",
-        createdAt: "2026-01-02T20:00:00Z",
-    },
-];
 
 const VocabularyDetailPage = () => {
     const { collectionId, vocabularyId } = Route.useParams();
@@ -120,6 +48,13 @@ const VocabularyDetailPage = () => {
         refetch: refetchVocabulary,
     } = useVocabularyQuery(numericCollectionId, numericVocabularyId);
 
+    const {
+        data: entries,
+        isLoading: isEntriesLoading,
+        isError: isEntriesError,
+        refetch: refetchEntries,
+    } = useEntriesQuery(numericVocabularyId);
+
     const deleteMutation = useDeleteVocabularyMutation({
         onSuccess: () => {
             void navigate({
@@ -133,10 +68,6 @@ const VocabularyDetailPage = () => {
             });
         },
     });
-
-    const entries = stubEntries.filter(
-        (e) => e.vocabularyId === numericVocabularyId
-    );
 
     const handleDeleteVocabulary = async () => {
         assertNonNullable(vocabulary);
@@ -156,8 +87,9 @@ const VocabularyDetailPage = () => {
         }
     };
 
-    const isLoading = isCollectionLoading || isVocabularyLoading;
-    const isError = isCollectionError || isVocabularyError;
+    const isLoading =
+        isCollectionLoading || isVocabularyLoading || isEntriesLoading;
+    const isError = isCollectionError || isVocabularyError || isEntriesError;
 
     const handleRetry = () => {
         if (isCollectionError) {
@@ -165,6 +97,9 @@ const VocabularyDetailPage = () => {
         }
         if (isVocabularyError) {
             void refetchVocabulary();
+        }
+        if (isEntriesError) {
+            void refetchEntries();
         }
     };
 
@@ -232,6 +167,7 @@ const VocabularyDetailPage = () => {
 
     assertNonNullable(collection);
     assertNonNullable(vocabulary);
+    assertNonNullable(entries);
 
     return (
         <Container maxWidth={false} sx={{ py: 4 }}>
@@ -329,12 +265,6 @@ const VocabularyDetailPage = () => {
                     actionLabel="Add Word"
                     onAction={() => openWordEntry(numericVocabularyId)}
                 />
-            ) : entries.length === 0 ? (
-                <Box sx={{ textAlign: "center", py: 4 }}>
-                    <Typography variant="body1" color="text.secondary">
-                        No words match your search.
-                    </Typography>
-                </Box>
             ) : (
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                     {entries.map((entry) => (
@@ -342,15 +272,21 @@ const VocabularyDetailPage = () => {
                             key={entry.id}
                             id={entry.id}
                             entryText={entry.entryText}
-                            firstDefinition={entry.firstDefinition ?? undefined}
+                            firstDefinition={
+                                entry.definitions[0]?.definitionText
+                            }
                             firstTranslation={
-                                entry.firstTranslation ?? undefined
+                                entry.translations[0]?.translationText
                             }
                             createdAt={entry.createdAt}
                             onClick={() =>
                                 void navigate({
-                                    to: "/entries/$entryId",
-                                    params: { entryId: String(entry.id) },
+                                    to: "/collections/$collectionId/$vocabularyId/entries/$entryId",
+                                    params: {
+                                        collectionId,
+                                        vocabularyId,
+                                        entryId: String(entry.id),
+                                    },
                                 })
                             }
                         />

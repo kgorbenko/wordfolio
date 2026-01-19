@@ -63,27 +63,27 @@
    - Replace stub vocabulary data in vocabulary detail route
    - Keep breadcrumb + header in sync with fetched data
 
-7. [ ] Integrate Entries List (GET /api/vocabularies/{vocabularyId}/entries)
+7. [x] Integrate Entries List (GET /api/vocabularies/{vocabularyId}/entries)
    - Add query hook
    - Replace stub entries data in vocabulary detail route
    - Ensure search/filter uses fetched data
 
-8. [ ] Integrate Entry Create (POST /api/entries)
+8. [x] Integrate Entry Create (POST /api/entries)
    - Add create entry mutation hook
    - Replace manual entry creation in WordEntrySheet
    - Use collections-hierarchy query to populate vocabulary selector
    - Invalidate entries + collections-hierarchy queries on success
 
-9. [ ] Integrate Entry Detail (GET /api/entries/{id})
+9. [x] Integrate Entry Detail (GET /api/entries/{id})
    - Add query hook
    - Replace stub entry data in entry detail route
 
-10. [ ] Integrate Entry Update (PUT /api/entries/{id})
+10. [x] Integrate Entry Update (PUT /api/entries/{id})
     - Add update entry API client + mutation hook
-    - Wire edit/save flow in entry detail route
+    - Wire edit/save flow in entry edit route (separate navigation route)
     - Invalidate entry + entries + collections-hierarchy queries
 
-11. [ ] Integrate Entry Delete (DELETE /api/entries/{id})
+11. [x] Integrate Entry Delete (DELETE /api/entries/{id})
     - Add delete entry mutation hook
     - Wire delete dialog in entry detail route
     - Invalidate entries + collections-hierarchy queries
