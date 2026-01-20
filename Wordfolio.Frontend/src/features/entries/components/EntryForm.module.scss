@@ -1,9 +1,12 @@
 .form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     max-width: 800px;
 }
 
 .entryTextField {
-    margin-bottom: 32px;
+    margin-bottom: 16px;
 }
 
 .errorMessage {
