@@ -1,5 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { vocabulariesApi, CreateVocabularyRequest, ApiError } from "../api/vocabulariesApi";
+import {
+    vocabulariesApi,
+    CreateVocabularyRequest,
+    ApiError,
+} from "../api/vocabulariesApi";
 import { mapVocabulary } from "../api/mappers";
 import { Vocabulary } from "../types";
 

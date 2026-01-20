@@ -1,0 +1,18 @@
+.form {
+    max-width: 800px;
+}
+
+.entryTextField {
+    margin-bottom: 32px;
+}
+
+.errorMessage {
+    margin-bottom: 16px;
+    text-align: right;
+}
+
+.actions {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+}

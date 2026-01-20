@@ -1,0 +1,28 @@
+.card {
+    padding: 20px;
+}
+
+.content {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.chip {
+    font-weight: 600;
+    min-width: 28px;
+}
+
+.body {
+    flex: 1;
+}
+
+.textRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.addButton {
+    margin-top: 8px;
+}

@@ -1,5 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { vocabulariesApi, UpdateVocabularyRequest, ApiError } from "../api/vocabulariesApi";
+import {
+    vocabulariesApi,
+    UpdateVocabularyRequest,
+    ApiError,
+} from "../api/vocabulariesApi";
 import { mapVocabulary } from "../api/mappers";
 import { Vocabulary } from "../types";
 
@@ -25,7 +29,11 @@ export const useUpdateVocabularyMutation = (
             vocabularyId,
             request,
         }: UpdateVocabularyMutationVariables) =>
-            vocabulariesApi.updateVocabulary(collectionId, vocabularyId, request),
+            vocabulariesApi.updateVocabulary(
+                collectionId,
+                vocabularyId,
+                request
+            ),
         onSuccess: (data, variables) => {
             void queryClient.invalidateQueries({
                 queryKey: [

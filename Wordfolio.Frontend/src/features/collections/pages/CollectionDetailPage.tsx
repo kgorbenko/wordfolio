@@ -76,12 +76,15 @@ export const CollectionDetailPage = () => {
         });
     };
 
-    const handleVocabularyClick = useCallback((vocabId: number) => {
-        void navigate({
-            to: "/collections/$collectionId/$vocabularyId",
-            params: { collectionId, vocabularyId: String(vocabId) },
-        });
-    }, [navigate, collectionId]);
+    const handleVocabularyClick = useCallback(
+        (vocabId: number) => {
+            void navigate({
+                to: "/collections/$collectionId/$vocabularyId",
+                params: { collectionId, vocabularyId: String(vocabId) },
+            });
+        },
+        [navigate, collectionId]
+    );
 
     const handleCreateVocabulary = useCallback(() => {
         void navigate({

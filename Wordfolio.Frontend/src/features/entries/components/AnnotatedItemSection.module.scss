@@ -1,0 +1,16 @@
+.section {
+    margin-bottom: 32px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
