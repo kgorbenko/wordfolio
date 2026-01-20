@@ -1,8 +1,9 @@
 import { useCallback } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { IconButton } from "@mui/material";
+import { IconButton, Button } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
 
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
@@ -75,12 +76,19 @@ export const CollectionDetailPage = () => {
         });
     };
 
-    const handleVocabularyClick = (vocabId: number) => {
+    const handleVocabularyClick = useCallback((vocabId: number) => {
         void navigate({
             to: "/collections/$collectionId/$vocabularyId",
             params: { collectionId, vocabularyId: String(vocabId) },
         });
-    };
+    }, [navigate, collectionId]);
+
+    const handleCreateVocabulary = useCallback(() => {
+        void navigate({
+            to: "/collections/$collectionId/vocabularies/new",
+            params: { collectionId },
+        });
+    }, [navigate, collectionId]);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { label: "Collections", to: "/collections" },
@@ -143,6 +151,14 @@ export const CollectionDetailPage = () => {
                 description={collection?.description ?? undefined}
                 actions={
                     <div className={styles.actions}>
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={handleCreateVocabulary}
+                            disabled={isLoading}
+                        >
+                            Create Vocabulary
+                        </Button>
                         <IconButton
                             onClick={handleEditClick}
                             disabled={isLoading}

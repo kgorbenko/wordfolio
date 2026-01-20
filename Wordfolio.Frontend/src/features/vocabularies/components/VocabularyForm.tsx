@@ -6,7 +6,8 @@ import {
     vocabularySchema,
     VocabularyFormInput,
     VocabularyFormData,
-} from "../../schemas/vocabularySchemas";
+} from "../schemas/vocabularySchemas";
+import styles from "./VocabularyForm.module.scss";
 
 export interface VocabularyFormValues {
     readonly name: string;
@@ -45,12 +46,7 @@ export const VocabularyForm = ({
             component="form"
             onSubmit={handleSubmit(onSubmit)}
             noValidate
-            sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                maxWidth: 800,
-            }}
+            className={styles.form}
         >
             <TextField
                 autoFocus
@@ -73,7 +69,7 @@ export const VocabularyForm = ({
                 {...register("description")}
             />
 
-            <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+            <Box className={styles.actions}>
                 <Button onClick={onCancel} disabled={isLoading}>
                     Cancel
                 </Button>

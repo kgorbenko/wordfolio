@@ -15,8 +15,8 @@ import {
 } from "../../../../../../../components/entries/EntryForm";
 import { RetryOnError } from "../../../../../../../components/common/RetryOnError";
 import { useEntryQuery } from "../../../../../../../queries/useEntryQuery";
-import { useCollectionQuery } from "../../../../../../../queries/useCollectionQuery";
-import { useVocabularyQuery } from "../../../../../../../queries/useVocabularyQuery";
+import { useCollectionQuery } from "../../../../../../../features/collections/hooks/useCollectionQuery";
+import { useVocabularyQuery } from "../../../../../../../features/vocabularies/hooks/useVocabularyQuery";
 import { useUpdateEntryMutation } from "../../../../../../../mutations/useUpdateEntryMutation";
 import { useNotificationContext } from "../../../../../../../contexts/NotificationContext";
 import { assertNonNullable } from "../../../../../../../utils/misc";
