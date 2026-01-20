@@ -1,0 +1,17 @@
+.listSkeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.formSkeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 600px;
+}
+
+.detailSkeleton {
+    display: flex;
+    flex-direction: column;
+}

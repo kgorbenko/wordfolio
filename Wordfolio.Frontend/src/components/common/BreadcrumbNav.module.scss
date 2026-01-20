@@ -1,0 +1,14 @@
+.breadcrumbs {
+    margin-bottom: 24px;
+}
+
+.link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.linkText {
+    &:hover {
+        color: var(--mui-palette-primary-main);
+    }
+}
