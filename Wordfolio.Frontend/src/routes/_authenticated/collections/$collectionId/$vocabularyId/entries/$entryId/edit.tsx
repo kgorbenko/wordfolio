@@ -12,7 +12,7 @@ import {
     EntryForm,
     EntryFormValues,
     EntryFormOutput,
-} from "../../../../../../../components/entries/EntryForm";
+} from "../../../../../../../features/entries/components/EntryForm";
 import { RetryOnError } from "../../../../../../../components/common/RetryOnError";
 import { useEntryQuery } from "../../../../../../../queries/useEntryQuery";
 import { useCollectionQuery } from "../../../../../../../features/collections/hooks/useCollectionQuery";

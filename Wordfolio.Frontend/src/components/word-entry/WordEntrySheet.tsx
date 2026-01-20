@@ -32,7 +32,7 @@ import {
     EntryForm,
     EntryFormValues,
     EntryFormOutput,
-} from "../entries/EntryForm";
+} from "../../features/entries/components/EntryForm";
 
 interface WordEntrySheetProps {
     readonly open: boolean;

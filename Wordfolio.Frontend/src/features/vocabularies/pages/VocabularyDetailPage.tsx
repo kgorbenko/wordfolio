@@ -1,8 +1,9 @@
 import { useCallback } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { Box, IconButton } from "@mui/material";
+import { IconButton, Button } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
 
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
@@ -20,6 +21,8 @@ import { useDeleteVocabularyMutation } from "../hooks/useDeleteVocabularyMutatio
 import { VocabularyDetailContent } from "../components/VocabularyDetailContent";
 
 import { useEntriesQuery } from "../hooks/useEntriesQuery";
+
+import styles from "./VocabularyDetailPage.module.scss";
 
 export const VocabularyDetailPage = () => {
     const { collectionId, vocabularyId } = useParams({ strict: false });
@@ -186,7 +189,15 @@ export const VocabularyDetailPage = () => {
                 }
                 description={vocabulary?.description ?? undefined}
                 actions={
-                    <Box sx={{ display: "flex", gap: 1 }}>
+                    <div className={styles.actions}>
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={handleAddWordClick}
+                            disabled={isLoading}
+                        >
+                            Create Entry
+                        </Button>
                         <IconButton
                             color="primary"
                             onClick={handleEditClick}
@@ -203,7 +214,7 @@ export const VocabularyDetailPage = () => {
                         >
                             <DeleteIcon />
                         </IconButton>
-                    </Box>
+                    </div>
                 }
             />
             {renderContent()}

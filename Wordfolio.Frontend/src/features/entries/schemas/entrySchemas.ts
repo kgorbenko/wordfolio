@@ -43,6 +43,40 @@ export const entrySchema = z
         }
     );
 
+export const exampleFormSchema = exampleSchema.extend({
+    id: z.string(),
+});
+
+export const definitionFormSchema = definitionSchema.extend({
+    id: z.string(),
+    examples: z.array(exampleFormSchema),
+});
+
+export const translationFormSchema = translationSchema.extend({
+    id: z.string(),
+    examples: z.array(exampleFormSchema),
+});
+
+export const entryFormSchema = z
+    .object({
+        entryText: z
+            .string()
+            .min(1, "Entry text is required")
+            .max(255, "Entry text must be at most 255 characters"),
+        definitions: z.array(definitionFormSchema),
+        translations: z.array(translationFormSchema),
+    })
+    .refine(
+        (data) => data.definitions.length > 0 || data.translations.length > 0,
+        {
+            message: "At least one definition or translation is required",
+            path: ["definitions"],
+        }
+    );
+
+export type ExampleSource = "Api" | "Custom";
+export type DefinitionSource = "Api" | "Manual";
+
 export type ExampleFormInput = z.input<typeof exampleSchema>;
 export type ExampleFormData = z.output<typeof exampleSchema>;
 
@@ -52,5 +86,5 @@ export type DefinitionFormData = z.output<typeof definitionSchema>;
 export type TranslationFormInput = z.input<typeof translationSchema>;
 export type TranslationFormData = z.output<typeof translationSchema>;
 
-export type EntryFormInput = z.input<typeof entrySchema>;
-export type EntryFormData = z.output<typeof entrySchema>;
+export type EntryFormInput = z.input<typeof entryFormSchema>;
+export type EntryFormData = z.output<typeof entryFormSchema>;

@@ -10,5 +10,6 @@ export const mapVocabulary = (response: VocabularyResponse): Vocabulary => ({
     updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
 });
 
-export const mapVocabularies = (responses: VocabularyResponse[]): Vocabulary[] =>
-    responses.map(mapVocabulary);
+export const mapVocabularies = (
+    responses: VocabularyResponse[]
+): Vocabulary[] => responses.map(mapVocabulary);
