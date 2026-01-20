@@ -6,7 +6,8 @@ import {
     collectionSchema,
     CollectionFormInput,
     CollectionFormData,
-} from "../../schemas/collectionSchemas";
+} from "../schemas/collectionSchemas";
+import styles from "./CollectionForm.module.scss";
 
 export interface CollectionFormValues {
     readonly name: string;
@@ -45,12 +46,7 @@ export const CollectionForm = ({
             component="form"
             onSubmit={handleSubmit(onSubmit)}
             noValidate
-            sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                maxWidth: 800,
-            }}
+            className={styles.form}
         >
             <TextField
                 autoFocus
@@ -73,7 +69,7 @@ export const CollectionForm = ({
                 {...register("description")}
             />
 
-            <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+            <Box className={styles.actions}>
                 <Button onClick={onCancel} disabled={isLoading}>
                     Cancel
                 </Button>
