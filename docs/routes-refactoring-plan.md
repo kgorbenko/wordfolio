@@ -39,7 +39,7 @@ Extract repeated patterns into reusable components in `src/components/common/`:
 | `<Container maxWidth={false} sx={{ py: 4 }}>` | 27+ | `<PageContainer>` |
 | Page header Typography (h4, fontWeight 600) | 12+ | `<PageHeader>` |
 | Breadcrumb navigation | 38+ | `<BreadcrumbNav>` |
-| Loading skeletons | 8 files | `<PageSkeleton variant="cards\|list\|form">` |
+| Loading skeletons | 8 files | `<PageSkeleton variant="cards|list|form">` |
 | Error state with retry | 8 files | `<RetryOnError>` |
 | Card grid layout | 4+ | `<CardGrid>` |
 
@@ -543,13 +543,13 @@ export const CollectionsPage = () => {
 - UI standards applied (Header actions, colored buttons)
 
 ### Phase 3: Vocabularies Feature
-Apply same pattern to vocabularies routes and related code.
-1. Create `src/features/vocabularies/` structure.
-2. Define readonly `types.ts` and mappers with TODOs for missing fields.
-3. Migrate API and Hooks (remove `enabled` checks, add `options`).
-4. Create strict SCSS-styled components.
-5. Refactor pages to use `PageContainer` (full width), `PageHeader` (with description/actions), and `RetryOnError`.
-6. Ensure "Create" buttons are in Header, not FAB.
+**Completed.**
+- Created `src/features/vocabularies/` structure.
+- Defined readonly `types.ts` and mappers.
+- Migrated API and Hooks.
+- Created strict SCSS-styled components.
+- Refactored pages to use `PageContainer`, `PageHeader`, `BreadcrumbNav`, and `RetryOnError`.
+- Ensured "Create" buttons are in Header.
 
 ### Phase 4: Entries Feature
 Apply same pattern to entries routes and related code.

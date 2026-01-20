@@ -8,12 +8,12 @@ import {
 } from "@mui/material";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 
-import "./VocabularyCard.scss";
+import styles from "./VocabularyCard.module.scss";
 
 interface VocabularyCardProps {
     readonly id: number;
     readonly name: string;
-    readonly description?: string;
+    readonly description?: string | null;
     readonly entryCount: number;
     readonly onClick?: () => void;
 }
@@ -25,10 +25,10 @@ export const VocabularyCard = ({
     onClick,
 }: VocabularyCardProps) => {
     return (
-        <Card className="vocabulary-card" sx={{ "&:hover": { boxShadow: 4 } }}>
-            <CardActionArea className="action-area" onClick={onClick}>
-                <CardContent className="content">
-                    <Box className="header">
+        <Card className={styles.container}>
+            <CardActionArea className={styles.actionArea} onClick={onClick}>
+                <CardContent className={styles.content}>
+                    <Box className={styles.header}>
                         <MenuBookIcon
                             sx={{ color: "secondary.main", fontSize: 24 }}
                         />
@@ -53,7 +53,7 @@ export const VocabularyCard = ({
                     </Box>
                     {description && (
                         <Typography
-                            className="description"
+                            className={styles.description}
                             variant="body2"
                             color="text.secondary"
                         >

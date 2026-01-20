@@ -1,0 +1,12 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 800px;
+}
+
+.actions {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+}

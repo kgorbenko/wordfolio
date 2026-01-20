@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import { vocabulariesApi, ApiError } from "../api/vocabulariesApi";
 
-interface DeleteVocabularyParams {
+interface DeleteVocabularyMutationVariables {
     collectionId: number;
     vocabularyId: number;
 }
@@ -12,23 +11,27 @@ interface UseDeleteVocabularyMutationOptions {
     onError?: (error: ApiError) => void;
 }
 
-export function useDeleteVocabularyMutation(
+export const useDeleteVocabularyMutation = (
     options?: UseDeleteVocabularyMutationOptions
-) {
+) => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ collectionId, vocabularyId }: DeleteVocabularyParams) =>
+        mutationFn: ({
+            collectionId,
+            vocabularyId,
+        }: DeleteVocabularyMutationVariables) =>
             vocabulariesApi.deleteVocabulary(collectionId, vocabularyId),
         onSuccess: (_data, variables) => {
             void queryClient.invalidateQueries({
                 queryKey: ["vocabularies", variables.collectionId],
             });
-            void queryClient.invalidateQueries({
-                queryKey: ["collections-hierarchy"],
-            });
-            options?.onSuccess?.();
+            void queryClient.invalidateQueries({ queryKey: ["collections"] });
+
+            if (options?.onSuccess) {
+                options.onSuccess();
+            }
         },
         onError: options?.onError,
     });
-}
+};
