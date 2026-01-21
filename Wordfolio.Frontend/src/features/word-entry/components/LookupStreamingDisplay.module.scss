@@ -1,0 +1,24 @@
+.paper {
+    padding: 16px;
+    background-color: rgba(var(--mui-palette-primary-mainChannel) / 0.02);
+    border-color: rgba(var(--mui-palette-primary-mainChannel) / 0.2);
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.cursor {
+    display: inline-block;
+    width: 8px;
+    height: 16px;
+    margin-left: 4px;
+    background-color: var(--mui-palette-primary-main);
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+}

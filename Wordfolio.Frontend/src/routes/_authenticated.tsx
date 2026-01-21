@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
     createFileRoute,
     Outlet,
@@ -10,7 +10,10 @@ import AddIcon from "@mui/icons-material/Add";
 
 import { useAuthStore } from "../stores/authStore";
 import { useUiStore } from "../stores/uiStore";
-import { WordEntrySheet } from "../components/word-entry/WordEntrySheet";
+import { useNotificationContext } from "../contexts/NotificationContext";
+import { useCreateEntryMutation } from "../mutations/useCreateEntryMutation";
+import { CreateEntryRequest } from "../api/entriesApi";
+import { WordEntrySheet } from "../features/word-entry";
 import { Sidebar } from "../components/layouts/Sidebar";
 import { TopBar } from "../components/layouts/TopBar";
 
@@ -20,13 +23,39 @@ const AuthenticatedLayout = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const { openWordEntry, isWordEntryOpen, closeWordEntry } = useUiStore();
     const { clearAuth } = useAuthStore();
+    const { openSuccessNotification, openErrorNotification } =
+        useNotificationContext();
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    const createEntryMutation = useCreateEntryMutation({
+        onSuccess: () => {
+            openSuccessNotification({ message: "Added to vocabulary" });
+            closeWordEntry();
+        },
+        onError: () => {
+            openErrorNotification({ message: "Failed to save entry" });
+        },
+    });
 
     const handleLogout = () => {
         clearAuth();
         void navigate({ to: "/login" });
     };
+
+    const handleSaveEntry = useCallback(
+        (request: CreateEntryRequest) => {
+            createEntryMutation.mutate(request);
+        },
+        [createEntryMutation]
+    );
+
+    const handleLookupError = useCallback(
+        (message: string) => {
+            openErrorNotification({ message });
+        },
+        [openErrorNotification]
+    );
 
     return (
         <Box
@@ -81,7 +110,13 @@ const AuthenticatedLayout = () => {
                 <AddIcon />
             </Fab>
 
-            <WordEntrySheet open={isWordEntryOpen} onClose={closeWordEntry} />
+            <WordEntrySheet
+                open={isWordEntryOpen}
+                onClose={closeWordEntry}
+                isSaving={createEntryMutation.isPending}
+                onSave={handleSaveEntry}
+                onLookupError={handleLookupError}
+            />
         </Box>
     );
 };
