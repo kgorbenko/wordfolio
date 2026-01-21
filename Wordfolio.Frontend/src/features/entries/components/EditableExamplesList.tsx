@@ -48,6 +48,7 @@ export const EditableExamplesList = ({
                         key={example.id}
                         className={styles.example}
                         sx={{ borderLeft: `2px solid ${borderColor}` }}
+                        data-testid="example"
                     >
                         <FormatQuoteIcon className={styles.quoteIcon} />
                         <TextField
@@ -64,12 +65,14 @@ export const EditableExamplesList = ({
                             helperText={error}
                             placeholder="Example sentence"
                             className={styles.textField}
+                            data-testid="example-text-field"
                         />
                         <IconButton
                             size="small"
                             onClick={() => onDelete(index)}
                             sx={{ color: "error.main" }}
                             disabled={isLoading}
+                            data-testid="example-delete-button"
                         >
                             <DeleteIcon fontSize="small" />
                         </IconButton>

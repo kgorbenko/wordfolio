@@ -34,7 +34,7 @@ export interface EntryFormHandle {
     submit: () => void;
 }
 
-interface EntryFormProps {
+export interface EntryFormProps {
     readonly defaultValues?: EntryFormValues;
     readonly onSubmit: (data: EntryFormOutput) => void;
     readonly onCancel: () => void;
@@ -330,6 +330,7 @@ export const EntryForm = forwardRef<EntryFormHandle, EntryFormProps>(
                         helperText={errors.entryText?.message}
                         {...register("entryText")}
                         className={styles.entryTextField}
+                        data-testid="entry-text-field"
                     />
                 )}
 
@@ -340,6 +341,7 @@ export const EntryForm = forwardRef<EntryFormHandle, EntryFormProps>(
                     itemCount={definitionFields.length}
                     isLoading={isLoading}
                     onAdd={handleAddDefinition}
+                    testId="definitions"
                 >
                     {definitionFields.map((field, index) => {
                         const watched = watchedDefinitions?.[index];
@@ -399,6 +401,7 @@ export const EntryForm = forwardRef<EntryFormHandle, EntryFormProps>(
                     itemCount={translationFields.length}
                     isLoading={isLoading}
                     onAdd={handleAddTranslation}
+                    testId="translations"
                 >
                     {translationFields.map((field, index) => {
                         const watched = watchedTranslations?.[index];
