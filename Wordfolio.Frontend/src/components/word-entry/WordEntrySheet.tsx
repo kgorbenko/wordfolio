@@ -30,6 +30,7 @@ import { useCollectionsHierarchyQuery } from "../../queries/useCollectionsHierar
 import { useCreateEntryMutation } from "../../mutations/useCreateEntryMutation";
 import {
     EntryForm,
+    EntryFormHandle,
     EntryFormValues,
     EntryFormOutput,
 } from "../../features/entries/components/EntryForm";
@@ -57,15 +58,13 @@ export const WordEntrySheet = ({
     );
 
     const [formValues, setFormValues] = useState<EntryFormValues | null>(null);
-    const [currentFormData, setCurrentFormData] =
-        useState<EntryFormOutput | null>(null);
-    const [isFormValid, setIsFormValid] = useState(false);
     const [streamingText, setStreamingText] = useState("");
     const [hasResults, setHasResults] = useState(false);
 
     const abortControllerRef = useRef<AbortController | null>(null);
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const entryFormRef = useRef<EntryFormHandle>(null);
 
     const { data: hierarchy } = useCollectionsHierarchyQuery();
 
@@ -89,8 +88,6 @@ export const WordEntrySheet = ({
         if (!open) {
             setWord("");
             setFormValues(null);
-            setCurrentFormData(null);
-            setIsFormValid(false);
             setStreamingText("");
             setHasResults(false);
             setIsLoading(false);
@@ -112,8 +109,6 @@ export const WordEntrySheet = ({
             abortControllerRef.current = new AbortController();
             setIsLoading(true);
             setFormValues(null);
-            setCurrentFormData(null);
-            setIsFormValid(false);
             setStreamingText("");
             setHasResults(false);
 
@@ -177,8 +172,6 @@ export const WordEntrySheet = ({
             }, 500);
         } else {
             setFormValues(null);
-            setCurrentFormData(null);
-            setIsFormValid(false);
             setHasResults(false);
         }
     };
@@ -186,8 +179,6 @@ export const WordEntrySheet = ({
     const handleClear = () => {
         setWord("");
         setFormValues(null);
-        setCurrentFormData(null);
-        setIsFormValid(false);
         setStreamingText("");
         setHasResults(false);
         setIsLoading(false);
@@ -197,28 +188,13 @@ export const WordEntrySheet = ({
         inputRef.current?.focus();
     };
 
-    const handleFormChange = useCallback(
-        (data: EntryFormOutput, isValid: boolean) => {
-            setCurrentFormData(data);
-            setIsFormValid(isValid);
-        },
-        []
-    );
-
-    const handleSave = () => {
-        if (!currentFormData || !isFormValid) {
-            openErrorNotification({
-                message: "Please add at least one definition or translation",
-            });
-            return;
-        }
-
+    const handleSave = (data: EntryFormOutput) => {
         createEntryMutation.mutate({
             vocabularyId:
                 selectedVocabularyId === 0 ? null : selectedVocabularyId,
             entryText: word.trim(),
-            definitions: currentFormData.definitions,
-            translations: currentFormData.translations,
+            definitions: data.definitions,
+            translations: data.translations,
         });
     };
 
@@ -333,6 +309,7 @@ export const WordEntrySheet = ({
 
                 {hasResults && formValues && (
                     <EntryForm
+                        ref={entryFormRef}
                         defaultValues={formValues}
                         onSubmit={handleSave}
                         onCancel={onClose}
@@ -340,7 +317,6 @@ export const WordEntrySheet = ({
                         isLoading={createEntryMutation.isPending}
                         showEntryText={false}
                         showFooter={false}
-                        onChange={handleFormChange}
                     />
                 )}
 
@@ -373,12 +349,11 @@ export const WordEntrySheet = ({
                     fullWidth
                     variant="contained"
                     size="large"
-                    onClick={handleSave}
+                    onClick={() => entryFormRef.current?.submit()}
                     disabled={
                         createEntryMutation.isPending ||
                         isLoading ||
-                        !hasResults ||
-                        !isFormValid
+                        !hasResults
                     }
                     sx={{ py: 1.5 }}
                 >
