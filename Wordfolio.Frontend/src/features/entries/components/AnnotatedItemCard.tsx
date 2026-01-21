@@ -60,7 +60,12 @@ export const AnnotatedItemCard = ({
             : alpha(theme.palette.secondary.main, 0.2);
 
     return (
-        <Paper variant="outlined" className={styles.card} sx={{ borderColor }}>
+        <Paper
+            variant="outlined"
+            className={styles.card}
+            sx={{ borderColor }}
+            data-testid="card"
+        >
             <Box className={styles.content}>
                 <Chip
                     label={index + 1}
@@ -80,12 +85,14 @@ export const AnnotatedItemCard = ({
                             disabled={isLoading}
                             error={!!error}
                             helperText={error}
+                            data-testid="text-field"
                         />
                         <IconButton
                             size="small"
                             onClick={onDelete}
                             sx={{ color: "error.main" }}
                             disabled={isLoading}
+                            data-testid="delete-button"
                         >
                             <DeleteIcon fontSize="small" />
                         </IconButton>
@@ -105,6 +112,7 @@ export const AnnotatedItemCard = ({
                         onClick={onAddExample}
                         className={styles.addButton}
                         disabled={isLoading}
+                        data-testid="add-example-button"
                     >
                         Add Example
                     </Button>
