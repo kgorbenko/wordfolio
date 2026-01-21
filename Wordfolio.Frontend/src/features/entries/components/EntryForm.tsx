@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, TextField, Button, Typography } from "@mui/material";
@@ -30,6 +30,10 @@ interface ExampleError {
 
 type ExampleErrorsArray = (ExampleError | undefined)[] | undefined;
 
+export interface EntryFormHandle {
+    submit: () => void;
+}
+
 interface EntryFormProps {
     readonly defaultValues?: EntryFormValues;
     readonly onSubmit: (data: EntryFormOutput) => void;
@@ -38,7 +42,6 @@ interface EntryFormProps {
     readonly isLoading?: boolean;
     readonly showEntryText?: boolean;
     readonly showFooter?: boolean;
-    readonly onChange?: (data: EntryFormOutput, isValid: boolean) => void;
 }
 
 interface AutoFocusState {
@@ -112,30 +115,33 @@ const mapToFormInput = (values?: EntryFormValues): EntryFormInput => {
     };
 };
 
-export const EntryForm = ({
-    defaultValues,
-    onSubmit,
-    onCancel,
-    submitLabel,
-    isLoading = false,
-    showEntryText = true,
-    showFooter = true,
-    onChange,
-}: EntryFormProps) => {
-    const [autoFocus, setAutoFocus] = useState<AutoFocusState>({});
+export const EntryForm = forwardRef<EntryFormHandle, EntryFormProps>(
+    (
+        {
+            defaultValues,
+            onSubmit,
+            onCancel,
+            submitLabel,
+            isLoading = false,
+            showEntryText = true,
+            showFooter = true,
+        },
+        ref
+    ) => {
+        const [autoFocus, setAutoFocus] = useState<AutoFocusState>({});
 
-    const {
-        register,
-        control,
-        handleSubmit,
-        setValue,
-        getValues,
-        formState: { errors },
-    } = useForm<EntryFormInput, unknown, EntryFormData>({
-        resolver: zodResolver(entryFormSchema),
-        defaultValues: mapToFormInput(defaultValues),
-        mode: "onChange",
-    });
+        const {
+            register,
+            control,
+            handleSubmit,
+            setValue,
+            getValues,
+            formState: { errors },
+        } = useForm<EntryFormInput, unknown, EntryFormData>({
+            resolver: zodResolver(entryFormSchema),
+            defaultValues: mapToFormInput(defaultValues),
+            mode: "onChange",
+        });
 
     const {
         fields: definitionFields,
@@ -160,15 +166,9 @@ export const EntryForm = ({
     const watchedDefinitions = useWatch({ control, name: "definitions" });
     const watchedTranslations = useWatch({ control, name: "translations" });
 
-    useEffect(() => {
-        if (onChange) {
-            const formData = getValues();
-            const hasContent =
-                formData.definitions.length > 0 ||
-                formData.translations.length > 0;
-            onChange(mapToOutput(formData as EntryFormData), hasContent);
-        }
-    }, [watchedDefinitions, watchedTranslations, onChange, getValues]);
+    useImperativeHandle(ref, () => ({
+        submit: () => handleSubmit(handleFormSubmit)(),
+    }));
 
     useEffect(() => {
         if (
@@ -468,6 +468,7 @@ export const EntryForm = ({
             )}
         </Box>
     );
-};
+    }
+);
 
 export type { EntryFormValues, EntryFormOutput };
