@@ -11,7 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview",
-    "test": "vitest run",
+    "test": "tsc -b && vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
