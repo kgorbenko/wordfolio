@@ -13,7 +13,6 @@ interface AnnotatedItemSectionProps {
     readonly isLoading?: boolean;
     readonly onAdd: () => void;
     readonly children: ReactNode;
-    readonly testId: string;
 }
 
 export const AnnotatedItemSection = ({
@@ -24,12 +23,11 @@ export const AnnotatedItemSection = ({
     isLoading = false,
     onAdd,
     children,
-    testId,
 }: AnnotatedItemSectionProps) => {
     const titleColor = color === "primary" ? "primary.main" : "secondary.main";
 
     return (
-        <Box className={styles.section} data-testid={`${testId}-section`}>
+        <Box className={styles.section}>
             <Box className={styles.header}>
                 <Typography
                     variant="h6"
@@ -43,7 +41,7 @@ export const AnnotatedItemSection = ({
                     startIcon={<AddIcon />}
                     onClick={onAdd}
                     disabled={isLoading}
-                    data-testid={`${testId}-add-button`}
+                    data-testid="add-button"
                 >
                     Add
                 </Button>
@@ -52,7 +50,7 @@ export const AnnotatedItemSection = ({
                 <Typography
                     variant="body2"
                     color="text.secondary"
-                    data-testid={`${testId}-empty-message`}
+                    data-testid="empty-message"
                 >
                     {emptyMessage}
                 </Typography>
