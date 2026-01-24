@@ -132,11 +132,13 @@ const getExamplesInCard = (card: HTMLElement): HTMLElement[] =>
     within(card).queryAllByTestId("example");
 
 export const getAddDefinitionButton = (): HTMLElement => {
-    return screen.getByTestId("definitions-add-button");
+    const section = screen.getByTestId("definitions-section");
+    return within(section).getByTestId("add-button");
 };
 
 export const getAddTranslationButton = (): HTMLElement => {
-    return screen.getByTestId("translations-add-button");
+    const section = screen.getByTestId("translations-section");
+    return within(section).getByTestId("add-button");
 };
 
 export const getDeleteDefinitionButton = (index: number): HTMLElement => {

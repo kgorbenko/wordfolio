@@ -334,125 +334,143 @@ export const EntryForm = forwardRef<EntryFormHandle, EntryFormProps>(
                     />
                 )}
 
-                <AnnotatedItemSection
-                    title="Definitions"
-                    color="primary"
-                    emptyMessage="No definitions yet"
-                    itemCount={definitionFields.length}
-                    isLoading={isLoading}
-                    onAdd={handleAddDefinition}
-                    testId="definitions"
-                >
-                    {definitionFields.map((field, index) => {
-                        const watched = watchedDefinitions?.[index];
-                        const shouldAutoFocus =
-                            autoFocus.definitionIndex === index;
-                        const exampleAutoFocusIndex =
-                            autoFocus.exampleInDefinition?.defIndex === index
-                                ? autoFocus.exampleInDefinition.exampleIndex
-                                : undefined;
-                        return (
-                            <AnnotatedItemCard
-                                key={field.id}
-                                index={index}
-                                color="primary"
-                                textValue={watched?.definitionText ?? ""}
-                                error={
-                                    errors.definitions?.[index]?.definitionText
-                                        ?.message
-                                }
-                                examples={watched?.examples ?? []}
-                                exampleErrors={
-                                    errors.definitions?.[index]
-                                        ?.examples as ExampleErrorsArray
-                                }
-                                autoFocus={shouldAutoFocus}
-                                autoFocusExampleIndex={exampleAutoFocusIndex}
-                                isLoading={isLoading}
-                                onTextChange={(value) =>
-                                    handleDefinitionTextChange(index, value)
-                                }
-                                onDelete={() => removeDefinition(index)}
-                                onAddExample={() =>
-                                    handleAddDefinitionExample(index)
-                                }
-                                onExampleTextChange={(exampleIndex, value) =>
-                                    handleDefinitionExampleTextChange(
-                                        index,
+                <div data-testid="definitions-section">
+                    <AnnotatedItemSection
+                        title="Definitions"
+                        color="primary"
+                        emptyMessage="No definitions yet"
+                        itemCount={definitionFields.length}
+                        isLoading={isLoading}
+                        onAdd={handleAddDefinition}
+                    >
+                        {definitionFields.map((field, index) => {
+                            const watched = watchedDefinitions?.[index];
+                            const shouldAutoFocus =
+                                autoFocus.definitionIndex === index;
+                            const exampleAutoFocusIndex =
+                                autoFocus.exampleInDefinition?.defIndex ===
+                                index
+                                    ? autoFocus.exampleInDefinition.exampleIndex
+                                    : undefined;
+                            return (
+                                <AnnotatedItemCard
+                                    key={field.id}
+                                    index={index}
+                                    color="primary"
+                                    textValue={watched?.definitionText ?? ""}
+                                    error={
+                                        errors.definitions?.[index]
+                                            ?.definitionText?.message
+                                    }
+                                    examples={watched?.examples ?? []}
+                                    exampleErrors={
+                                        errors.definitions?.[index]
+                                            ?.examples as ExampleErrorsArray
+                                    }
+                                    autoFocus={shouldAutoFocus}
+                                    autoFocusExampleIndex={
+                                        exampleAutoFocusIndex
+                                    }
+                                    isLoading={isLoading}
+                                    onTextChange={(value) =>
+                                        handleDefinitionTextChange(index, value)
+                                    }
+                                    onDelete={() => removeDefinition(index)}
+                                    onAddExample={() =>
+                                        handleAddDefinitionExample(index)
+                                    }
+                                    onExampleTextChange={(
                                         exampleIndex,
                                         value
-                                    )
-                                }
-                                onDeleteExample={(exampleIndex) =>
-                                    handleDeleteDefinitionExample(
-                                        index,
-                                        exampleIndex
-                                    )
-                                }
-                            />
-                        );
-                    })}
-                </AnnotatedItemSection>
+                                    ) =>
+                                        handleDefinitionExampleTextChange(
+                                            index,
+                                            exampleIndex,
+                                            value
+                                        )
+                                    }
+                                    onDeleteExample={(exampleIndex) =>
+                                        handleDeleteDefinitionExample(
+                                            index,
+                                            exampleIndex
+                                        )
+                                    }
+                                />
+                            );
+                        })}
+                    </AnnotatedItemSection>
+                </div>
 
-                <AnnotatedItemSection
-                    title="Translations"
-                    color="secondary"
-                    emptyMessage="No translations yet"
-                    itemCount={translationFields.length}
-                    isLoading={isLoading}
-                    onAdd={handleAddTranslation}
-                    testId="translations"
-                >
-                    {translationFields.map((field, index) => {
-                        const watched = watchedTranslations?.[index];
-                        const shouldAutoFocus =
-                            autoFocus.translationIndex === index;
-                        const exampleAutoFocusIndex =
-                            autoFocus.exampleInTranslation?.transIndex === index
-                                ? autoFocus.exampleInTranslation.exampleIndex
-                                : undefined;
-                        return (
-                            <AnnotatedItemCard
-                                key={field.id}
-                                index={index}
-                                color="secondary"
-                                textValue={watched?.translationText ?? ""}
-                                error={
-                                    errors.translations?.[index]
-                                        ?.translationText?.message
-                                }
-                                examples={watched?.examples ?? []}
-                                exampleErrors={
-                                    errors.translations?.[index]
-                                        ?.examples as ExampleErrorsArray
-                                }
-                                autoFocus={shouldAutoFocus}
-                                autoFocusExampleIndex={exampleAutoFocusIndex}
-                                isLoading={isLoading}
-                                onTextChange={(value) =>
-                                    handleTranslationTextChange(index, value)
-                                }
-                                onDelete={() => removeTranslation(index)}
-                                onAddExample={() =>
-                                    handleAddTranslationExample(index)
-                                }
-                                onExampleTextChange={(exampleIndex, value) =>
-                                    handleTranslationExampleTextChange(
-                                        index,
+                <div data-testid="translations-section">
+                    <AnnotatedItemSection
+                        title="Translations"
+                        color="secondary"
+                        emptyMessage="No translations yet"
+                        itemCount={translationFields.length}
+                        isLoading={isLoading}
+                        onAdd={handleAddTranslation}
+                    >
+                        {translationFields.map((field, index) => {
+                            const watched = watchedTranslations?.[index];
+                            const shouldAutoFocus =
+                                autoFocus.translationIndex === index;
+                            const exampleAutoFocusIndex =
+                                autoFocus.exampleInTranslation?.transIndex ===
+                                index
+                                    ? autoFocus.exampleInTranslation
+                                          .exampleIndex
+                                    : undefined;
+                            return (
+                                <AnnotatedItemCard
+                                    key={field.id}
+                                    index={index}
+                                    color="secondary"
+                                    textValue={watched?.translationText ?? ""}
+                                    error={
+                                        errors.translations?.[index]
+                                            ?.translationText?.message
+                                    }
+                                    examples={watched?.examples ?? []}
+                                    exampleErrors={
+                                        errors.translations?.[index]
+                                            ?.examples as ExampleErrorsArray
+                                    }
+                                    autoFocus={shouldAutoFocus}
+                                    autoFocusExampleIndex={
+                                        exampleAutoFocusIndex
+                                    }
+                                    isLoading={isLoading}
+                                    onTextChange={(value) =>
+                                        handleTranslationTextChange(
+                                            index,
+                                            value
+                                        )
+                                    }
+                                    onDelete={() => removeTranslation(index)}
+                                    onAddExample={() =>
+                                        handleAddTranslationExample(index)
+                                    }
+                                    onExampleTextChange={(
                                         exampleIndex,
                                         value
-                                    )
-                                }
-                                onDeleteExample={(exampleIndex) =>
-                                    handleDeleteTranslationExample(
-                                        index,
-                                        exampleIndex
-                                    )
-                                }
-                            />
-                        );
-                    })}
-                </AnnotatedItemSection>
+                                    ) =>
+                                        handleTranslationExampleTextChange(
+                                            index,
+                                            exampleIndex,
+                                            value
+                                        )
+                                    }
+                                    onDeleteExample={(exampleIndex) =>
+                                        handleDeleteTranslationExample(
+                                            index,
+                                            exampleIndex
+                                        )
+                                    }
+                                />
+                            );
+                        })}
+                    </AnnotatedItemSection>
+                </div>
 
                 {showFooter && (
                     <>
