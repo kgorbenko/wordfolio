@@ -585,7 +585,7 @@ describe("EntryForm", () => {
                     {...defaultProps}
                     onSubmit={onSubmit}
                     defaultValues={createFormValues({
-                        entryText: "  hello  ",
+                        entryText: "hello",
                         definitions: [
                             {
                                 text: "a greeting",
@@ -623,33 +623,6 @@ describe("EntryForm", () => {
             await user.click(getSubmitButton());
 
             expect(onSubmit).not.toHaveBeenCalled();
-        });
-
-        it("trims entry text in output", async () => {
-            const user = userEvent.setup();
-            const onSubmit = vi.fn();
-            render(<EntryForm {...defaultProps} onSubmit={onSubmit} />);
-
-            const entryTextInput = screen.getByLabelText("Word or Phrase");
-            await user.type(entryTextInput, "  hello world  ");
-            await user.click(getAddDefinitionButton());
-            await user.type(getDefinitionInput(0), "a greeting");
-
-            await user.click(getSubmitButton());
-
-            await waitFor(() => {
-                expect(onSubmit).toHaveBeenCalledWith({
-                    entryText: "hello world",
-                    definitions: [
-                        {
-                            definitionText: "a greeting",
-                            source: "Manual",
-                            examples: [],
-                        },
-                    ],
-                    translations: [],
-                });
-            });
         });
 
         it("maps definitions without id field", async () => {
@@ -809,6 +782,172 @@ describe("EntryForm", () => {
                     "At least one definition or translation is required"
                 )
             ).toBeInTheDocument();
+        });
+
+        it("shows error for entry text with leading or trailing whitespace", async () => {
+            const user = userEvent.setup();
+            const onSubmit = vi.fn();
+            render(<EntryForm {...defaultProps} onSubmit={onSubmit} />);
+
+            const entryTextInput = screen.getByLabelText("Word or Phrase");
+            await user.type(entryTextInput, "  hello world  ");
+            await user.click(getAddDefinitionButton());
+            await user.type(getDefinitionInput(0), "a greeting");
+
+            await user.click(getSubmitButton());
+
+            await waitFor(() => {
+                expect(readFormData()).toEqual({
+                    entryText: "  hello world  ",
+                    entryTextError:
+                        "Cannot have leading or trailing whitespace",
+                    definitions: [
+                        { text: "a greeting", error: null, examples: [] },
+                    ],
+                    translations: [],
+                });
+            });
+            expect(onSubmit).not.toHaveBeenCalled();
+        });
+
+        it("shows error for definition text with leading or trailing whitespace", async () => {
+            const user = userEvent.setup();
+            render(
+                <EntryForm
+                    {...defaultProps}
+                    defaultValues={createFormValues({
+                        entryText: "hello",
+                        definitions: [{ text: "  a greeting  " }],
+                    })}
+                />
+            );
+
+            await user.click(getSubmitButton());
+
+            await waitFor(() => {
+                expect(readFormData()).toEqual({
+                    entryText: "hello",
+                    entryTextError: null,
+                    definitions: [
+                        {
+                            text: "  a greeting  ",
+                            error: "Cannot have leading or trailing whitespace",
+                            examples: [],
+                        },
+                    ],
+                    translations: [],
+                });
+            });
+        });
+
+        it("shows error for translation text with leading or trailing whitespace", async () => {
+            const user = userEvent.setup();
+            render(
+                <EntryForm
+                    {...defaultProps}
+                    defaultValues={createFormValues({
+                        entryText: "hello",
+                        translations: [{ text: "  hola  " }],
+                    })}
+                />
+            );
+
+            await user.click(getSubmitButton());
+
+            await waitFor(() => {
+                expect(readFormData()).toEqual({
+                    entryText: "hello",
+                    entryTextError: null,
+                    definitions: [],
+                    translations: [
+                        {
+                            text: "  hola  ",
+                            error: "Cannot have leading or trailing whitespace",
+                            examples: [],
+                        },
+                    ],
+                });
+            });
+        });
+
+        it("shows error for example text with leading or trailing whitespace in definition", async () => {
+            const user = userEvent.setup();
+            render(
+                <EntryForm
+                    {...defaultProps}
+                    defaultValues={createFormValues({
+                        entryText: "hello",
+                        definitions: [
+                            {
+                                text: "a greeting",
+                                examples: [{ text: "  Hello!  " }],
+                            },
+                        ],
+                    })}
+                />
+            );
+
+            await user.click(getSubmitButton());
+
+            await waitFor(() => {
+                expect(readFormData()).toEqual({
+                    entryText: "hello",
+                    entryTextError: null,
+                    definitions: [
+                        {
+                            text: "a greeting",
+                            error: null,
+                            examples: [
+                                {
+                                    text: "  Hello!  ",
+                                    error: "Cannot have leading or trailing whitespace",
+                                },
+                            ],
+                        },
+                    ],
+                    translations: [],
+                });
+            });
+        });
+
+        it("shows error for example text with leading or trailing whitespace in translation", async () => {
+            const user = userEvent.setup();
+            render(
+                <EntryForm
+                    {...defaultProps}
+                    defaultValues={createFormValues({
+                        entryText: "hello",
+                        translations: [
+                            {
+                                text: "hola",
+                                examples: [{ text: "  ¡Hola!  " }],
+                            },
+                        ],
+                    })}
+                />
+            );
+
+            await user.click(getSubmitButton());
+
+            await waitFor(() => {
+                expect(readFormData()).toEqual({
+                    entryText: "hello",
+                    entryTextError: null,
+                    definitions: [],
+                    translations: [
+                        {
+                            text: "hola",
+                            error: null,
+                            examples: [
+                                {
+                                    text: "  ¡Hola!  ",
+                                    error: "Cannot have leading or trailing whitespace",
+                                },
+                            ],
+                        },
+                    ],
+                });
+            });
         });
 
         it("shows error for empty definition text", async () => {

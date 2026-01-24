@@ -1,10 +1,15 @@
 import { z } from "zod";
 
+const trimmed = (val: string) => val === val.trim();
+
 export const exampleSchema = z.object({
     exampleText: z
         .string()
         .min(1, "Example text is required")
-        .max(500, "Example must be at most 500 characters"),
+        .max(500, "Example must be at most 500 characters")
+        .refine(trimmed, {
+            message: "Cannot have leading or trailing whitespace",
+        }),
     source: z.enum(["Api", "Custom"]),
 });
 
@@ -12,7 +17,10 @@ export const definitionSchema = z.object({
     definitionText: z
         .string()
         .min(1, "Definition text is required")
-        .max(255, "Definition must be at most 255 characters"),
+        .max(255, "Definition must be at most 255 characters")
+        .refine(trimmed, {
+            message: "Cannot have leading or trailing whitespace",
+        }),
     source: z.enum(["Api", "Manual"]),
     examples: z.array(exampleSchema),
 });
@@ -21,7 +29,10 @@ export const translationSchema = z.object({
     translationText: z
         .string()
         .min(1, "Translation text is required")
-        .max(255, "Translation must be at most 255 characters"),
+        .max(255, "Translation must be at most 255 characters")
+        .refine(trimmed, {
+            message: "Cannot have leading or trailing whitespace",
+        }),
     source: z.enum(["Api", "Manual"]),
     examples: z.array(exampleSchema),
 });
@@ -31,7 +42,10 @@ export const entrySchema = z
         entryText: z
             .string()
             .min(1, "Entry text is required")
-            .max(255, "Entry text must be at most 255 characters"),
+            .max(255, "Entry text must be at most 255 characters")
+            .refine(trimmed, {
+                message: "Cannot have leading or trailing whitespace",
+            }),
         definitions: z.array(definitionSchema),
         translations: z.array(translationSchema),
     })
@@ -62,7 +76,10 @@ export const entryFormSchema = z
         entryText: z
             .string()
             .min(1, "Entry text is required")
-            .max(255, "Entry text must be at most 255 characters"),
+            .max(255, "Entry text must be at most 255 characters")
+            .refine(trimmed, {
+                message: "Cannot have leading or trailing whitespace",
+            }),
         definitions: z.array(definitionFormSchema),
         translations: z.array(translationFormSchema),
     })
