@@ -75,7 +75,7 @@ const mapToOutput = (data: EntryFormData): EntryFormOutput => {
     }));
 
     return {
-        entryText: data.entryText.trim(),
+        entryText: data.entryText,
         definitions,
         translations,
     };
