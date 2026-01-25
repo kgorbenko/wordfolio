@@ -96,7 +96,9 @@ export const EntryLookupForm = ({
     const isPageVariant = variant === "page";
 
     return (
-        <Box className={isPageVariant ? styles.containerPage : undefined}>
+        <Box
+            className={isPageVariant ? styles.containerPage : styles.container}
+        >
             <Box
                 className={
                     isPageVariant

@@ -18,6 +18,16 @@
         justify-content: center;
     }
 
+    .add-word-container {
+        padding: 12px 16px;
+    }
+
+    .add-word-button {
+        border-radius: 8px;
+        text-transform: none;
+        font-weight: 600;
+    }
+
     .content {
         flex: 1;
         overflow: auto;

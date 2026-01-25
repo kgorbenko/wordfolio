@@ -5,8 +5,7 @@ import {
     redirect,
     useNavigate,
 } from "@tanstack/react-router";
-import { Box, Fab, useMediaQuery, useTheme, Toolbar } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
+import { Box, useMediaQuery, useTheme, Toolbar } from "@mui/material";
 
 import { useAuthStore } from "../stores/authStore";
 import { useUiStore } from "../stores/uiStore";
@@ -78,9 +77,13 @@ const AuthenticatedLayout = () => {
                         variant="temporary"
                         open={sidebarOpen}
                         onClose={() => setSidebarOpen(false)}
+                        onAddWord={() => openWordEntry()}
                     />
                 ) : (
-                    <Sidebar variant="permanent" />
+                    <Sidebar
+                        variant="permanent"
+                        onAddWord={() => openWordEntry()}
+                    />
                 )}
 
                 <Box
@@ -94,21 +97,6 @@ const AuthenticatedLayout = () => {
                     <Outlet />
                 </Box>
             </Box>
-
-            <Fab
-                color="primary"
-                aria-label="Add word"
-                onClick={() => openWordEntry()}
-                sx={{
-                    position: "fixed",
-                    bottom: 24,
-                    right: 24,
-                    width: 56,
-                    height: 56,
-                }}
-            >
-                <AddIcon />
-            </Fab>
 
             <WordEntrySheet
                 open={isWordEntryOpen}
