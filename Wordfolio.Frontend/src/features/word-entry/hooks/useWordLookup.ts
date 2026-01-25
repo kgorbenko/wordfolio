@@ -72,6 +72,10 @@ export function useWordLookup(
                 clearTimeout(debounceTimerRef.current);
             }
 
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+
             if (value.trim().length >= MIN_WORD_LENGTH) {
                 debounceTimerRef.current = setTimeout(() => {
                     performLookup(value.trim());
