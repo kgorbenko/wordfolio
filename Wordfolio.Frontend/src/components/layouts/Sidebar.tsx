@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import {
     Box,
+    Button,
     Drawer,
     List,
     ListItemButton,
@@ -14,6 +15,7 @@ import {
     alpha,
     useTheme,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import FolderIcon from "@mui/icons-material/Folder";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import HomeIcon from "@mui/icons-material/Home";
@@ -36,6 +38,7 @@ interface SidebarProps {
     readonly variant: "permanent" | "temporary";
     readonly open?: boolean;
     readonly onClose?: () => void;
+    readonly onAddWord?: () => void;
 }
 
 const AllCollectionsButtonSkeleton = () => (
@@ -351,7 +354,12 @@ const CollectionsList = ({
     );
 };
 
-export const Sidebar = ({ variant, open, onClose }: SidebarProps) => {
+export const Sidebar = ({
+    variant,
+    open,
+    onClose,
+    onAddWord,
+}: SidebarProps) => {
     const theme = useTheme();
     const navigate = useNavigate();
     const params = useParams({ strict: false });
@@ -449,6 +457,18 @@ export const Sidebar = ({ variant, open, onClose }: SidebarProps) => {
                 >
                     Wordfolio
                 </Typography>
+            </Box>
+
+            <Box className="add-word-container">
+                <Button
+                    variant="contained"
+                    fullWidth
+                    startIcon={<AddIcon />}
+                    onClick={onAddWord}
+                    className="add-word-button"
+                >
+                    Add Word
+                </Button>
             </Box>
 
             <Box sx={{ py: 1 }}>

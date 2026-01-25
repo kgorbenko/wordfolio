@@ -89,7 +89,7 @@ export const WordEntrySheet = ({
         <Dialog
             open={open}
             onClose={onClose}
-            maxWidth="sm"
+            maxWidth="md"
             fullWidth
             PaperProps={{ className: styles.dialog }}
         >
