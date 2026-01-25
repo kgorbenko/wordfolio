@@ -12,7 +12,6 @@ import { RetryOnError } from "../../../components/common/RetryOnError";
 import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
 import { useNotificationContext } from "../../../contexts/NotificationContext";
 import { useConfirmDialog } from "../../../contexts/ConfirmDialogContext";
-import { useUiStore } from "../../../stores/uiStore";
 import { assertNonNullable } from "../../../utils/misc";
 
 import { useCollectionQuery } from "../../collections/hooks/useCollectionQuery";
@@ -29,7 +28,6 @@ export const VocabularyDetailPage = () => {
     const navigate = useNavigate();
     const { openErrorNotification } = useNotificationContext();
     const { raiseConfirmDialogAsync } = useConfirmDialog();
-    const { openWordEntry } = useUiStore();
 
     const numericCollectionId = Number(collectionId);
     const numericVocabularyId = Number(vocabularyId);
@@ -119,8 +117,14 @@ export const VocabularyDetailPage = () => {
     );
 
     const handleAddWordClick = useCallback(() => {
-        openWordEntry(numericVocabularyId);
-    }, [openWordEntry, numericVocabularyId]);
+        void navigate({
+            to: "/collections/$collectionId/$vocabularyId/new",
+            params: {
+                collectionId: String(collectionId),
+                vocabularyId: String(vocabularyId),
+            },
+        });
+    }, [navigate, collectionId, vocabularyId]);
 
     const isLoading =
         isCollectionLoading || isVocabularyLoading || isEntriesLoading;
