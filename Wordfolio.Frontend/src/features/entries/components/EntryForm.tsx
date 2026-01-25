@@ -1,5 +1,5 @@
-import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
-import { useForm, useFieldArray, useWatch } from "react-hook-form";
+import { forwardRef, useImperativeHandle } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, TextField, Button, Typography } from "@mui/material";
 
@@ -13,7 +13,6 @@ import {
     EntryFormOutput,
     DefinitionItem,
     TranslationItem,
-    ExampleItem,
 } from "../types";
 import {
     DefinitionRequest,
@@ -21,14 +20,8 @@ import {
     ExampleRequest,
 } from "../../../api/entriesApi";
 import { AnnotatedItemSection } from "./AnnotatedItemSection";
-import { AnnotatedItemCard } from "./AnnotatedItemCard";
+import { AnnotatedFieldArray } from "./AnnotatedFieldArray";
 import styles from "./EntryForm.module.scss";
-
-interface ExampleError {
-    exampleText?: { message?: string };
-}
-
-type ExampleErrorsArray = (ExampleError | undefined)[] | undefined;
 
 export interface EntryFormHandle {
     submit: () => void;
@@ -42,13 +35,6 @@ export interface EntryFormProps {
     readonly isLoading?: boolean;
     readonly showEntryText?: boolean;
     readonly showFooter?: boolean;
-}
-
-interface AutoFocusState {
-    definitionIndex?: number;
-    translationIndex?: number;
-    exampleInDefinition?: { defIndex: number; exampleIndex: number };
-    exampleInTranslation?: { transIndex: number; exampleIndex: number };
 }
 
 const mapToOutput = (data: EntryFormData): EntryFormOutput => {
@@ -128,14 +114,10 @@ export const EntryForm = forwardRef<EntryFormHandle, EntryFormProps>(
         },
         ref
     ) => {
-        const [autoFocus, setAutoFocus] = useState<AutoFocusState>({});
-
         const {
             register,
             control,
             handleSubmit,
-            setValue,
-            getValues,
             formState: { errors },
         } = useForm<EntryFormInput, unknown, EntryFormData>({
             resolver: zodResolver(entryFormSchema),
@@ -147,7 +129,6 @@ export const EntryForm = forwardRef<EntryFormHandle, EntryFormProps>(
             fields: definitionFields,
             append: appendDefinition,
             remove: removeDefinition,
-            update: updateDefinition,
         } = useFieldArray({
             control,
             name: "definitions",
@@ -157,30 +138,14 @@ export const EntryForm = forwardRef<EntryFormHandle, EntryFormProps>(
             fields: translationFields,
             append: appendTranslation,
             remove: removeTranslation,
-            update: updateTranslation,
         } = useFieldArray({
             control,
             name: "translations",
         });
 
-        const watchedDefinitions = useWatch({ control, name: "definitions" });
-        const watchedTranslations = useWatch({ control, name: "translations" });
-
         useImperativeHandle(ref, () => ({
             submit: () => handleSubmit(handleFormSubmit)(),
         }));
-
-        useEffect(() => {
-            if (
-                autoFocus.definitionIndex !== undefined ||
-                autoFocus.translationIndex !== undefined ||
-                autoFocus.exampleInDefinition !== undefined ||
-                autoFocus.exampleInTranslation !== undefined
-            ) {
-                const timer = setTimeout(() => setAutoFocus({}), 100);
-                return () => clearTimeout(timer);
-            }
-        }, [autoFocus]);
 
         const handleFormSubmit = (data: EntryFormData) => {
             onSubmit(mapToOutput(data));
@@ -193,8 +158,7 @@ export const EntryForm = forwardRef<EntryFormHandle, EntryFormProps>(
                 source: "Manual",
                 examples: [],
             };
-            appendDefinition(newDefinition);
-            setAutoFocus({ definitionIndex: definitionFields.length });
+            appendDefinition(newDefinition, { shouldFocus: true });
         };
 
         const handleAddTranslation = () => {
@@ -204,110 +168,7 @@ export const EntryForm = forwardRef<EntryFormHandle, EntryFormProps>(
                 source: "Manual",
                 examples: [],
             };
-            appendTranslation(newTranslation);
-            setAutoFocus({ translationIndex: translationFields.length });
-        };
-
-        const handleDefinitionTextChange = (index: number, value: string) => {
-            setValue(`definitions.${index}.definitionText`, value, {
-                shouldValidate: true,
-            });
-        };
-
-        const handleTranslationTextChange = (index: number, value: string) => {
-            setValue(`translations.${index}.translationText`, value, {
-                shouldValidate: true,
-            });
-        };
-
-        const handleAddDefinitionExample = (defIndex: number) => {
-            const definition = getValues(`definitions.${defIndex}`);
-            const newExample: ExampleItem = {
-                id: `ex-${Date.now()}`,
-                exampleText: "",
-                source: "Custom",
-            };
-            const newExampleIndex = definition.examples.length;
-            updateDefinition(defIndex, {
-                ...definition,
-                examples: [...definition.examples, newExample],
-            });
-            setAutoFocus({
-                exampleInDefinition: {
-                    defIndex,
-                    exampleIndex: newExampleIndex,
-                },
-            });
-        };
-
-        const handleAddTranslationExample = (transIndex: number) => {
-            const translation = getValues(`translations.${transIndex}`);
-            const newExample: ExampleItem = {
-                id: `ex-${Date.now()}`,
-                exampleText: "",
-                source: "Custom",
-            };
-            const newExampleIndex = translation.examples.length;
-            updateTranslation(transIndex, {
-                ...translation,
-                examples: [...translation.examples, newExample],
-            });
-            setAutoFocus({
-                exampleInTranslation: {
-                    transIndex,
-                    exampleIndex: newExampleIndex,
-                },
-            });
-        };
-
-        const handleDefinitionExampleTextChange = (
-            defIndex: number,
-            exampleIndex: number,
-            value: string
-        ) => {
-            setValue(
-                `definitions.${defIndex}.examples.${exampleIndex}.exampleText`,
-                value,
-                { shouldValidate: true }
-            );
-        };
-
-        const handleTranslationExampleTextChange = (
-            transIndex: number,
-            exampleIndex: number,
-            value: string
-        ) => {
-            setValue(
-                `translations.${transIndex}.examples.${exampleIndex}.exampleText`,
-                value,
-                { shouldValidate: true }
-            );
-        };
-
-        const handleDeleteDefinitionExample = (
-            defIndex: number,
-            exampleIndex: number
-        ) => {
-            const definition = getValues(`definitions.${defIndex}`);
-            updateDefinition(defIndex, {
-                ...definition,
-                examples: definition.examples.filter(
-                    (_, i) => i !== exampleIndex
-                ),
-            });
-        };
-
-        const handleDeleteTranslationExample = (
-            transIndex: number,
-            exampleIndex: number
-        ) => {
-            const translation = getValues(`translations.${transIndex}`);
-            updateTranslation(transIndex, {
-                ...translation,
-                examples: translation.examples.filter(
-                    (_, i) => i !== exampleIndex
-                ),
-            });
+            appendTranslation(newTranslation, { shouldFocus: true });
         };
 
         const hasContent =
@@ -343,61 +204,32 @@ export const EntryForm = forwardRef<EntryFormHandle, EntryFormProps>(
                         isLoading={isLoading}
                         onAdd={handleAddDefinition}
                     >
-                        {definitionFields.map((field, index) => {
-                            const watched = watchedDefinitions?.[index];
-                            const shouldAutoFocus =
-                                autoFocus.definitionIndex === index;
-                            const exampleAutoFocusIndex =
-                                autoFocus.exampleInDefinition?.defIndex ===
-                                index
-                                    ? autoFocus.exampleInDefinition.exampleIndex
-                                    : undefined;
-                            return (
-                                <AnnotatedItemCard
-                                    key={field.id}
-                                    index={index}
-                                    color="primary"
-                                    textValue={watched?.definitionText ?? ""}
-                                    error={
-                                        errors.definitions?.[index]
-                                            ?.definitionText?.message
-                                    }
-                                    examples={watched?.examples ?? []}
-                                    exampleErrors={
-                                        errors.definitions?.[index]
-                                            ?.examples as ExampleErrorsArray
-                                    }
-                                    autoFocus={shouldAutoFocus}
-                                    autoFocusExampleIndex={
-                                        exampleAutoFocusIndex
-                                    }
-                                    isLoading={isLoading}
-                                    onTextChange={(value) =>
-                                        handleDefinitionTextChange(index, value)
-                                    }
-                                    onDelete={() => removeDefinition(index)}
-                                    onAddExample={() =>
-                                        handleAddDefinitionExample(index)
-                                    }
-                                    onExampleTextChange={(
-                                        exampleIndex,
-                                        value
-                                    ) =>
-                                        handleDefinitionExampleTextChange(
-                                            index,
-                                            exampleIndex,
-                                            value
-                                        )
-                                    }
-                                    onDeleteExample={(exampleIndex) =>
-                                        handleDeleteDefinitionExample(
-                                            index,
-                                            exampleIndex
-                                        )
-                                    }
-                                />
-                            );
-                        })}
+                        {definitionFields.map((field, index) => (
+                            <AnnotatedFieldArray
+                                key={field.id}
+                                control={control}
+                                register={register}
+                                errors={errors}
+                                index={index}
+                                color="primary"
+                                textFieldPath={`definitions.${index}.definitionText`}
+                                examplesPath={`definitions.${index}.examples`}
+                                getExampleTextPath={(exIndex) =>
+                                    `definitions.${index}.examples.${exIndex}.exampleText`
+                                }
+                                getTextError={() =>
+                                    errors.definitions?.[index]?.definitionText
+                                        ?.message
+                                }
+                                getExampleError={(exIndex) =>
+                                    errors.definitions?.[index]?.examples?.[
+                                        exIndex
+                                    ]?.exampleText?.message
+                                }
+                                onRemove={() => removeDefinition(index)}
+                                isLoading={isLoading}
+                            />
+                        ))}
                     </AnnotatedItemSection>
                 </div>
 
@@ -410,65 +242,32 @@ export const EntryForm = forwardRef<EntryFormHandle, EntryFormProps>(
                         isLoading={isLoading}
                         onAdd={handleAddTranslation}
                     >
-                        {translationFields.map((field, index) => {
-                            const watched = watchedTranslations?.[index];
-                            const shouldAutoFocus =
-                                autoFocus.translationIndex === index;
-                            const exampleAutoFocusIndex =
-                                autoFocus.exampleInTranslation?.transIndex ===
-                                index
-                                    ? autoFocus.exampleInTranslation
-                                          .exampleIndex
-                                    : undefined;
-                            return (
-                                <AnnotatedItemCard
-                                    key={field.id}
-                                    index={index}
-                                    color="secondary"
-                                    textValue={watched?.translationText ?? ""}
-                                    error={
-                                        errors.translations?.[index]
-                                            ?.translationText?.message
-                                    }
-                                    examples={watched?.examples ?? []}
-                                    exampleErrors={
-                                        errors.translations?.[index]
-                                            ?.examples as ExampleErrorsArray
-                                    }
-                                    autoFocus={shouldAutoFocus}
-                                    autoFocusExampleIndex={
-                                        exampleAutoFocusIndex
-                                    }
-                                    isLoading={isLoading}
-                                    onTextChange={(value) =>
-                                        handleTranslationTextChange(
-                                            index,
-                                            value
-                                        )
-                                    }
-                                    onDelete={() => removeTranslation(index)}
-                                    onAddExample={() =>
-                                        handleAddTranslationExample(index)
-                                    }
-                                    onExampleTextChange={(
-                                        exampleIndex,
-                                        value
-                                    ) =>
-                                        handleTranslationExampleTextChange(
-                                            index,
-                                            exampleIndex,
-                                            value
-                                        )
-                                    }
-                                    onDeleteExample={(exampleIndex) =>
-                                        handleDeleteTranslationExample(
-                                            index,
-                                            exampleIndex
-                                        )
-                                    }
-                                />
-                            );
-                        })}
+                        {translationFields.map((field, index) => (
+                            <AnnotatedFieldArray
+                                key={field.id}
+                                control={control}
+                                register={register}
+                                errors={errors}
+                                index={index}
+                                color="secondary"
+                                textFieldPath={`translations.${index}.translationText`}
+                                examplesPath={`translations.${index}.examples`}
+                                getExampleTextPath={(exIndex) =>
+                                    `translations.${index}.examples.${exIndex}.exampleText`
+                                }
+                                getTextError={() =>
+                                    errors.translations?.[index]
+                                        ?.translationText?.message
+                                }
+                                getExampleError={(exIndex) =>
+                                    errors.translations?.[index]?.examples?.[
+                                        exIndex
+                                    ]?.exampleText?.message
+                                }
+                                onRemove={() => removeTranslation(index)}
+                                isLoading={isLoading}
+                            />
+                        ))}
                     </AnnotatedItemSection>
                 </div>
 

@@ -1,0 +1,50 @@
+.card {
+    padding: 20px;
+}
+
+.content {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.chip {
+    font-weight: 600;
+    min-width: 28px;
+}
+
+.body {
+    flex: 1;
+}
+
+.textRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.addButton {
+    margin-top: 8px;
+}
+
+.examplesContainer {
+    margin-top: 16px;
+}
+
+.example {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 8px;
+    padding-left: 8px;
+}
+
+.quoteIcon {
+    font-size: 16px;
+    color: var(--mui-palette-text-secondary);
+    margin-top: 10px;
+}
+
+.exampleTextField {
+    flex: 1;
+}
