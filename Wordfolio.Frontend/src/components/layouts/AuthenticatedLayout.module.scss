@@ -1,0 +1,16 @@
+.root {
+    min-height: 100vh;
+    background-color: var(--mui-palette-background-default);
+    display: flex;
+    flex-direction: column;
+}
+
+.contentWrapper {
+    display: flex;
+    flex: 1;
+}
+
+.main {
+    flex: 1;
+    min-width: 0;
+}
