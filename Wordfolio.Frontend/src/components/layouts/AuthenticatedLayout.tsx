@@ -7,7 +7,7 @@ import { useUiStore } from "../../stores/uiStore";
 import { useNotificationContext } from "../../contexts/NotificationContext";
 import { useCreateEntryMutation } from "../../features/entries/hooks/useCreateEntryMutation";
 import { CreateEntryRequest } from "../../features/entries/api/entriesApi";
-import { WordEntrySheet } from "../../features/word-entry";
+import { WordEntrySheet } from "../../features/entries";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import styles from "./AuthenticatedLayout.module.scss";

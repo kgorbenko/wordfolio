@@ -9,9 +9,9 @@ import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
 import { useNotificationContext } from "../../../contexts/NotificationContext";
 import { useCollectionQuery } from "../../collections/hooks/useCollectionQuery";
 import { useVocabularyQuery } from "../../vocabularies/hooks/useVocabularyQuery";
-import { useCreateEntryMutation } from "../../entries/hooks/useCreateEntryMutation";
-import { CreateEntryRequest } from "../../entries/api/entriesApi";
-import { EntryLookupForm } from "../../../components/common/EntryLookupForm";
+import { useCreateEntryMutation } from "../hooks/useCreateEntryMutation";
+import { CreateEntryRequest } from "../api/entriesApi";
+import { EntryLookupForm } from "../components/EntryLookupForm";
 
 export const CreateEntryPage = () => {
     const { collectionId, vocabularyId } = useParams({ strict: false });

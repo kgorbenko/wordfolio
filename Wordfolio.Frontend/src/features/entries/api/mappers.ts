@@ -1,10 +1,23 @@
 import {
+    DictionaryDefinition,
+    DictionaryTranslation,
+    DictionaryResult,
+} from "../../../api/dictionaryApi";
+import {
     EntryResponse,
     DefinitionResponse,
     TranslationResponse,
     ExampleResponse,
 } from "./entriesApi";
-import { Entry, Definition, Translation, Example } from "../types";
+import {
+    Entry,
+    Definition,
+    Translation,
+    Example,
+    WordLookupResult,
+    LookupDefinition,
+    LookupTranslation,
+} from "../types";
 
 export const mapExample = (response: ExampleResponse): Example => ({
     id: response.id,
@@ -36,4 +49,27 @@ export const mapEntry = (response: EntryResponse): Entry => ({
     updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
     definitions: response.definitions.map(mapDefinition),
     translations: response.translations.map(mapTranslation),
+});
+
+const mapLookupDefinition = (
+    response: DictionaryDefinition
+): LookupDefinition => ({
+    text: response.definition,
+    partOfSpeech: response.partOfSpeech,
+    examples: response.exampleSentences,
+});
+
+const mapLookupTranslation = (
+    response: DictionaryTranslation
+): LookupTranslation => ({
+    text: response.translation,
+    partOfSpeech: response.partOfSpeech,
+    examples: response.examples,
+});
+
+export const mapDictionaryResult = (
+    response: DictionaryResult
+): WordLookupResult => ({
+    definitions: response.definitions.map(mapLookupDefinition),
+    translations: response.translations.map(mapLookupTranslation),
 });

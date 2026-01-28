@@ -1,16 +1,13 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { Box, Button, CircularProgress } from "@mui/material";
 
-import { CreateEntryRequest } from "../../features/entries/api/entriesApi";
-import { useCollectionsHierarchyQuery } from "../../queries/useCollectionsHierarchyQuery";
-import {
-    EntryFormHandle,
-    EntryFormOutput,
-} from "../../features/entries/components/EntryForm";
-import { useWordLookup } from "../../features/word-entry/hooks/useWordLookup";
-import { VocabularySelector } from "../../features/word-entry/components/VocabularySelector";
-import { WordLookupInput } from "../../features/word-entry/components/WordLookupInput";
-import { LookupResultsSection } from "../../features/word-entry/components/LookupResultsSection";
+import { CreateEntryRequest } from "../api/entriesApi";
+import { useCollectionsHierarchyQuery } from "../../../queries/useCollectionsHierarchyQuery";
+import { EntryFormHandle, EntryFormOutput } from "./EntryForm";
+import { useWordLookup } from "../hooks/useWordLookup";
+import { VocabularySelector } from "./VocabularySelector";
+import { WordLookupInput } from "./WordLookupInput";
+import { LookupResultsSection } from "./LookupResultsSection";
 import styles from "./EntryLookupForm.module.scss";
 
 type EntryLookupFormVariant = "modal" | "page";
