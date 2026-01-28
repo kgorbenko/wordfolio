@@ -1,6 +1,11 @@
 import { useCallback } from "react";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 
+import { entryEditRouteApi } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
+import { collectionsPath } from "../../../routes/_authenticated/collections/routes";
+import { collectionDetailPath } from "../../../routes/_authenticated/collections/routes";
+import { vocabularyDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
+import { entryDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
@@ -40,9 +45,8 @@ const mapEntryToFormValues = (entry: Entry): EntryFormValues => ({
 });
 
 export const EditEntryPage = () => {
-    const { collectionId, vocabularyId, entryId } = useParams({
-        strict: false,
-    });
+    const { collectionId, vocabularyId, entryId } =
+        entryEditRouteApi.useParams();
     const navigate = useNavigate();
     const { openErrorNotification } = useNotificationContext();
 
@@ -73,14 +77,13 @@ export const EditEntryPage = () => {
 
     const updateMutation = useUpdateEntryMutation({
         onSuccess: () => {
-            void navigate({
-                to: "/collections/$collectionId/$vocabularyId/entries/$entryId",
-                params: {
-                    collectionId: String(collectionId),
-                    vocabularyId: String(vocabularyId),
-                    entryId: String(entryId),
-                },
-            });
+            void navigate(
+                entryDetailPath(
+                    numericCollectionId,
+                    numericVocabularyId,
+                    numericEntryId
+                )
+            );
         },
         onError: () => {
             openErrorNotification({
@@ -104,15 +107,14 @@ export const EditEntryPage = () => {
     );
 
     const handleCancel = useCallback(() => {
-        void navigate({
-            to: "/collections/$collectionId/$vocabularyId/entries/$entryId",
-            params: {
-                collectionId: String(collectionId),
-                vocabularyId: String(vocabularyId),
-                entryId: String(entryId),
-            },
-        });
-    }, [navigate, collectionId, vocabularyId, entryId]);
+        void navigate(
+            entryDetailPath(
+                numericCollectionId,
+                numericVocabularyId,
+                numericEntryId
+            )
+        );
+    }, [navigate, numericCollectionId, numericVocabularyId, numericEntryId]);
 
     const isLoading =
         isCollectionLoading || isVocabularyLoading || isEntryLoading;
@@ -167,28 +169,25 @@ export const EditEntryPage = () => {
         <PageContainer>
             <BreadcrumbNav
                 items={[
-                    { label: "Collections", to: "/collections" },
+                    { label: "Collections", ...collectionsPath() },
                     {
                         label: collection?.name ?? "...",
-                        to: "/collections/$collectionId",
-                        params: { collectionId: String(collectionId) },
+                        ...collectionDetailPath(numericCollectionId),
                     },
                     {
                         label: vocabulary?.name ?? "...",
-                        to: "/collections/$collectionId/$vocabularyId",
-                        params: {
-                            collectionId: String(collectionId),
-                            vocabularyId: String(vocabularyId),
-                        },
+                        ...vocabularyDetailPath(
+                            numericCollectionId,
+                            numericVocabularyId
+                        ),
                     },
                     {
                         label: entry?.entryText ?? "...",
-                        to: "/collections/$collectionId/$vocabularyId/entries/$entryId",
-                        params: {
-                            collectionId: String(collectionId),
-                            vocabularyId: String(vocabularyId),
-                            entryId: String(entryId),
-                        },
+                        ...entryDetailPath(
+                            numericCollectionId,
+                            numericVocabularyId,
+                            numericEntryId
+                        ),
                     },
                     { label: "Edit" },
                 ]}

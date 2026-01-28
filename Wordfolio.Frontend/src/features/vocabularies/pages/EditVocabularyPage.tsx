@@ -1,6 +1,10 @@
 import { useCallback } from "react";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 
+import { vocabularyEditRouteApi } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
+import { collectionsPath } from "../../../routes/_authenticated/collections/routes";
+import { collectionDetailPath } from "../../../routes/_authenticated/collections/routes";
+import { vocabularyDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
@@ -14,7 +18,7 @@ import { VocabularyForm } from "../components/VocabularyForm";
 import { VocabularyFormData } from "../schemas/vocabularySchemas";
 
 export const EditVocabularyPage = () => {
-    const { collectionId, vocabularyId } = useParams({ strict: false });
+    const { collectionId, vocabularyId } = vocabularyEditRouteApi.useParams();
     const navigate = useNavigate();
     const { openErrorNotification } = useNotificationContext();
     const numericCollectionId = Number(collectionId);
@@ -36,13 +40,9 @@ export const EditVocabularyPage = () => {
 
     const updateMutation = useUpdateVocabularyMutation({
         onSuccess: () => {
-            void navigate({
-                to: "/collections/$collectionId/$vocabularyId",
-                params: {
-                    collectionId: String(collectionId),
-                    vocabularyId: String(vocabularyId),
-                },
-            });
+            void navigate(
+                vocabularyDetailPath(numericCollectionId, numericVocabularyId)
+            );
         },
         onError: () => {
             openErrorNotification({
@@ -66,14 +66,10 @@ export const EditVocabularyPage = () => {
     );
 
     const handleCancel = useCallback(() => {
-        void navigate({
-            to: "/collections/$collectionId/$vocabularyId",
-            params: {
-                collectionId: String(collectionId),
-                vocabularyId: String(vocabularyId),
-            },
-        });
-    }, [navigate, collectionId, vocabularyId]);
+        void navigate(
+            vocabularyDetailPath(numericCollectionId, numericVocabularyId)
+        );
+    }, [navigate, numericCollectionId, numericVocabularyId]);
 
     const isLoading = isCollectionLoading || isVocabularyLoading;
     const isError = isCollectionError || isVocabularyError;
@@ -126,19 +122,17 @@ export const EditVocabularyPage = () => {
         <PageContainer>
             <BreadcrumbNav
                 items={[
-                    { label: "Collections", to: "/collections" },
+                    { label: "Collections", ...collectionsPath() },
                     {
                         label: collection?.name ?? "...",
-                        to: "/collections/$collectionId",
-                        params: { collectionId: String(collectionId) },
+                        ...collectionDetailPath(numericCollectionId),
                     },
                     {
                         label: vocabulary?.name ?? "...",
-                        to: "/collections/$collectionId/$vocabularyId",
-                        params: {
-                            collectionId: String(collectionId),
-                            vocabularyId: String(vocabularyId),
-                        },
+                        ...vocabularyDetailPath(
+                            numericCollectionId,
+                            numericVocabularyId
+                        ),
                     },
                     { label: "Edit" },
                 ]}

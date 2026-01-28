@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { Drawer, useTheme } from "@mui/material";
+
+import { collectionsPath } from "../../routes/_authenticated/collections/routes";
+import { collectionDetailPath } from "../../routes/_authenticated/collections/routes";
+import { vocabularyDetailPath } from "../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
 import { useCollectionsHierarchyQuery } from "../../queries/useCollectionsHierarchyQuery";
 import { SidebarContent } from "./sidebar/SidebarContent";
 import styles from "./Sidebar.module.scss";
@@ -59,10 +63,7 @@ export const Sidebar = ({
 
     const handleCollectionClick = (collectionId: number) => {
         handleNavigation(() => {
-            void navigate({
-                to: "/collections/$collectionId",
-                params: { collectionId: String(collectionId) },
-            });
+            void navigate(collectionDetailPath(collectionId));
         });
     };
 
@@ -71,19 +72,13 @@ export const Sidebar = ({
         vocabularyId: number
     ) => {
         handleNavigation(() => {
-            void navigate({
-                to: "/collections/$collectionId/$vocabularyId",
-                params: {
-                    collectionId: String(collectionId),
-                    vocabularyId: String(vocabularyId),
-                },
-            });
+            void navigate(vocabularyDetailPath(collectionId, vocabularyId));
         });
     };
 
     const handleHomeClick = () => {
         handleNavigation(() => {
-            void navigate({ to: "/collections" });
+            void navigate(collectionsPath());
         });
     };
 
