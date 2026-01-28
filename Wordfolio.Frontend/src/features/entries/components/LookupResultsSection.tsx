@@ -1,13 +1,8 @@
 import { RefObject } from "react";
 import { Box, CircularProgress, Typography } from "@mui/material";
 
-import {
-    EntryForm,
-    EntryFormHandle,
-    EntryFormOutput,
-} from "../../entries/components/EntryForm";
-import { EntryFormValues } from "../../entries/types";
-import { LookupState, WordLookupResult } from "../types";
+import { EntryForm, EntryFormHandle, EntryFormOutput } from "./EntryForm";
+import { EntryFormValues, LookupState, WordLookupResult } from "../types";
 import { LookupStreamingDisplay } from "./LookupStreamingDisplay";
 import styles from "./LookupResultsSection.module.scss";
 
