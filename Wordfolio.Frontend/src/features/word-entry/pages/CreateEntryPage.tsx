@@ -9,8 +9,8 @@ import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
 import { useNotificationContext } from "../../../contexts/NotificationContext";
 import { useCollectionQuery } from "../../collections/hooks/useCollectionQuery";
 import { useVocabularyQuery } from "../../vocabularies/hooks/useVocabularyQuery";
-import { useCreateEntryMutation } from "../../../mutations/useCreateEntryMutation";
-import { CreateEntryRequest } from "../../../api/entriesApi";
+import { useCreateEntryMutation } from "../../entries/hooks/useCreateEntryMutation";
+import { CreateEntryRequest } from "../../entries/api/entriesApi";
 import { EntryLookupForm } from "../../../components/common/EntryLookupForm";
 
 export const CreateEntryPage = () => {

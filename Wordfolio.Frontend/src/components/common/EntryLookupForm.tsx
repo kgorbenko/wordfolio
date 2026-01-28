@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { Box, Button, CircularProgress } from "@mui/material";
 
-import { CreateEntryRequest } from "../../api/entriesApi";
+import { CreateEntryRequest } from "../../features/entries/api/entriesApi";
 import { useCollectionsHierarchyQuery } from "../../queries/useCollectionsHierarchyQuery";
 import {
     EntryFormHandle,

@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
-import { CreateEntryRequest } from "../../../api/entriesApi";
+import { CreateEntryRequest } from "../../entries/api/entriesApi";
 import { EntryLookupForm } from "../../../components/common/EntryLookupForm";
 import styles from "./WordEntrySheet.module.scss";
 

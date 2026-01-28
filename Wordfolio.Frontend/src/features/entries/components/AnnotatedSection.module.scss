@@ -1,0 +1,13 @@
+.section {
+    margin-bottom: 32px;
+}
+
+.title {
+    margin-bottom: 16px;
+}
+
+.items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}

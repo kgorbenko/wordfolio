@@ -2,12 +2,12 @@ import { Box } from "@mui/material";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 
 import { EmptyState } from "../../../components/common/EmptyState";
-import { EntryListItem } from "../../../components/entries/EntryListItem";
-import { EntryResponse } from "../../../api/entriesApi"; // Use EntryResponse directly
+import { EntryListItem } from "../../entries/components/EntryListItem";
+import { Entry } from "../../entries/types";
 import styles from "./VocabularyDetailContent.module.scss";
 
 interface VocabularyDetailContentProps {
-    readonly entries: EntryResponse[];
+    readonly entries: Entry[];
     readonly onEntryClick: (id: number) => void;
     readonly onAddWordClick: () => void;
 }

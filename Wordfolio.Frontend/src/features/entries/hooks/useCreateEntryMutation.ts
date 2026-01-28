@@ -8,8 +8,8 @@ import {
 } from "../api/entriesApi";
 
 interface UseCreateEntryMutationOptions {
-    onSuccess?: (data: EntryResponse) => void;
-    onError?: (error: ApiError) => void;
+    readonly onSuccess?: (data: EntryResponse) => void;
+    readonly onError?: (error: ApiError) => void;
 }
 
 export function useCreateEntryMutation(

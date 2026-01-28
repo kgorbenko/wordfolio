@@ -3,13 +3,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { entriesApi, ApiError } from "../api/entriesApi";
 
 interface DeleteEntryParams {
-    entryId: number;
-    vocabularyId: number;
+    readonly entryId: number;
+    readonly vocabularyId: number;
 }
 
 interface UseDeleteEntryMutationOptions {
-    onSuccess?: () => void;
-    onError?: (error: ApiError) => void;
+    readonly onSuccess?: () => void;
+    readonly onError?: (error: ApiError) => void;
 }
 
 export function useDeleteEntryMutation(
