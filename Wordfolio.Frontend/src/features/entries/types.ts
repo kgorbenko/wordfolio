@@ -1,5 +1,37 @@
-import { ExampleSource, DefinitionSource } from "./schemas/entrySchemas";
-import { DefinitionRequest, TranslationRequest } from "../../api/entriesApi";
+import { DefinitionSource, ExampleSource } from "./api/entriesApi";
+import { DefinitionRequest, TranslationRequest } from "./api/entriesApi";
+
+export interface Example {
+    readonly id: number;
+    readonly exampleText: string;
+    readonly source: ExampleSource;
+}
+
+export interface Definition {
+    readonly id: number;
+    readonly definitionText: string;
+    readonly source: DefinitionSource;
+    readonly displayOrder: number;
+    readonly examples: Example[];
+}
+
+export interface Translation {
+    readonly id: number;
+    readonly translationText: string;
+    readonly source: DefinitionSource;
+    readonly displayOrder: number;
+    readonly examples: Example[];
+}
+
+export interface Entry {
+    readonly id: number;
+    readonly vocabularyId: number;
+    readonly entryText: string;
+    readonly createdAt: Date;
+    readonly updatedAt: Date | null;
+    readonly definitions: Definition[];
+    readonly translations: Translation[];
+}
 
 export interface ExampleItem {
     readonly id: string;

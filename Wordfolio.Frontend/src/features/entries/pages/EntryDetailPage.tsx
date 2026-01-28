@@ -1,9 +1,8 @@
 import { useCallback } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { IconButton, Button } from "@mui/material";
+import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
 
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
@@ -15,21 +14,24 @@ import { useConfirmDialog } from "../../../contexts/ConfirmDialogContext";
 import { assertNonNullable } from "../../../utils/misc";
 
 import { useCollectionQuery } from "../../collections/hooks/useCollectionQuery";
-import { useVocabularyQuery } from "../hooks/useVocabularyQuery";
-import { useDeleteVocabularyMutation } from "../hooks/useDeleteVocabularyMutation";
-import { VocabularyDetailContent } from "../components/VocabularyDetailContent";
-import { useEntriesQuery } from "../../entries/hooks/useEntriesQuery";
+import { useVocabularyQuery } from "../../vocabularies/hooks/useVocabularyQuery";
+import { useEntryQuery } from "../hooks/useEntryQuery";
+import { useDeleteEntryMutation } from "../hooks/useDeleteEntryMutation";
+import { EntryDetailContent } from "../components/EntryDetailContent";
 
-import styles from "./VocabularyDetailPage.module.scss";
+import styles from "./EntryDetailPage.module.scss";
 
-export const VocabularyDetailPage = () => {
-    const { collectionId, vocabularyId } = useParams({ strict: false });
+export const EntryDetailPage = () => {
+    const { collectionId, vocabularyId, entryId } = useParams({
+        strict: false,
+    });
     const navigate = useNavigate();
     const { openErrorNotification } = useNotificationContext();
     const { raiseConfirmDialogAsync } = useConfirmDialog();
 
     const numericCollectionId = Number(collectionId);
     const numericVocabularyId = Number(vocabularyId);
+    const numericEntryId = Number(entryId);
 
     const {
         data: collection,
@@ -46,128 +48,94 @@ export const VocabularyDetailPage = () => {
     } = useVocabularyQuery(numericCollectionId, numericVocabularyId);
 
     const {
-        data: entries,
-        isLoading: isEntriesLoading,
-        isError: isEntriesError,
-        refetch: refetchEntries,
-    } = useEntriesQuery(numericVocabularyId);
+        data: entry,
+        isLoading: isEntryLoading,
+        isError: isEntryError,
+        refetch: refetchEntry,
+    } = useEntryQuery(numericEntryId);
 
-    const deleteMutation = useDeleteVocabularyMutation({
+    const deleteMutation = useDeleteEntryMutation({
         onSuccess: () => {
             void navigate({
-                to: "/collections/$collectionId",
-                params: { collectionId: String(collectionId) },
+                to: "/collections/$collectionId/$vocabularyId",
+                params: {
+                    collectionId: String(collectionId),
+                    vocabularyId: String(vocabularyId),
+                },
             });
         },
         onError: () => {
             openErrorNotification({
-                message: "Failed to delete vocabulary. Please try again.",
+                message: "Failed to delete entry. Please try again.",
             });
         },
     });
 
     const handleEditClick = useCallback(() => {
         void navigate({
-            to: "/collections/$collectionId/$vocabularyId/edit",
+            to: "/collections/$collectionId/$vocabularyId/entries/$entryId/edit",
             params: {
                 collectionId: String(collectionId),
                 vocabularyId: String(vocabularyId),
+                entryId: String(entryId),
             },
         });
-    }, [navigate, collectionId, vocabularyId]);
+    }, [navigate, collectionId, vocabularyId, entryId]);
 
     const handleDeleteClick = useCallback(async () => {
-        assertNonNullable(vocabulary);
+        assertNonNullable(entry);
 
         const confirmed = await raiseConfirmDialogAsync({
-            title: "Delete Vocabulary",
-            message: `Are you sure you want to delete "${vocabulary.name}"? This will also delete all entries within it.`,
+            title: "Delete Entry",
+            message: `Are you sure you want to delete "${entry.entryText}"? This action cannot be undone.`,
             confirmLabel: "Delete",
             confirmColor: "error",
         });
 
         if (confirmed) {
             deleteMutation.mutate({
-                collectionId: numericCollectionId,
-                vocabularyId: numericVocabularyId,
+                entryId: entry.id,
+                vocabularyId: entry.vocabularyId,
             });
         }
-    }, [
-        vocabulary,
-        raiseConfirmDialogAsync,
-        deleteMutation,
-        numericCollectionId,
-        numericVocabularyId,
-    ]);
-
-    const handleEntryClick = useCallback(
-        (entryId: number) => {
-            void navigate({
-                to: "/collections/$collectionId/$vocabularyId/entries/$entryId",
-                params: {
-                    collectionId: String(collectionId),
-                    vocabularyId: String(vocabularyId),
-                    entryId: String(entryId),
-                },
-            });
-        },
-        [navigate, collectionId, vocabularyId]
-    );
-
-    const handleAddWordClick = useCallback(() => {
-        void navigate({
-            to: "/collections/$collectionId/$vocabularyId/new",
-            params: {
-                collectionId: String(collectionId),
-                vocabularyId: String(vocabularyId),
-            },
-        });
-    }, [navigate, collectionId, vocabularyId]);
+    }, [entry, raiseConfirmDialogAsync, deleteMutation]);
 
     const isLoading =
-        isCollectionLoading || isVocabularyLoading || isEntriesLoading;
-    const isError = isCollectionError || isVocabularyError || isEntriesError;
+        isCollectionLoading || isVocabularyLoading || isEntryLoading;
+    const isError = isCollectionError || isVocabularyError || isEntryError;
 
     const renderContent = useCallback(() => {
-        if (isLoading) return <ContentSkeleton variant="list" />;
+        if (isLoading) return <ContentSkeleton variant="detail" />;
 
-        if (isError || !collection || !vocabulary || !entries) {
+        if (isError || !collection || !vocabulary || !entry) {
             const handleRetry = () => {
                 if (isCollectionError) void refetchCollection();
                 if (isVocabularyError) void refetchVocabulary();
-                if (isEntriesError) void refetchEntries();
+                if (isEntryError) void refetchEntry();
             };
 
             return (
                 <RetryOnError
-                    title="Failed to Load Data"
-                    description="Something went wrong while loading the data. Please try again."
+                    title="Failed to Load Entry"
+                    description="Something went wrong while loading this entry. Please try again."
                     onRetry={handleRetry}
                 />
             );
         }
 
-        return (
-            <VocabularyDetailContent
-                entries={entries}
-                onEntryClick={handleEntryClick}
-                onAddWordClick={handleAddWordClick}
-            />
-        );
+        return <EntryDetailContent entry={entry} />;
     }, [
         isLoading,
         isError,
         collection,
         vocabulary,
-        entries,
+        entry,
         isCollectionError,
         isVocabularyError,
-        isEntriesError,
+        isEntryError,
         refetchCollection,
         refetchVocabulary,
-        refetchEntries,
-        handleEntryClick,
-        handleAddWordClick,
+        refetchEntry,
     ]);
 
     return (
@@ -180,31 +148,26 @@ export const VocabularyDetailPage = () => {
                         to: "/collections/$collectionId",
                         params: { collectionId: String(collectionId) },
                     },
-                    { label: vocabulary?.name ?? "Vocabulary" },
+                    {
+                        label: vocabulary?.name ?? "...",
+                        to: "/collections/$collectionId/$vocabularyId",
+                        params: {
+                            collectionId: String(collectionId),
+                            vocabularyId: String(vocabularyId),
+                        },
+                    },
+                    { label: entry?.entryText ?? "Entry" },
                 ]}
             />
             <PageHeader
-                title={
-                    isLoading
-                        ? "Loading..."
-                        : (vocabulary?.name ?? "Vocabulary")
-                }
-                description={vocabulary?.description ?? undefined}
+                title={isLoading ? "Loading..." : (entry?.entryText ?? "Entry")}
                 actions={
                     <div className={styles.actions}>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={handleAddWordClick}
-                            disabled={isLoading}
-                        >
-                            Create Entry
-                        </Button>
                         <IconButton
                             color="primary"
                             onClick={handleEditClick}
                             disabled={isLoading}
-                            aria-label="Edit vocabulary"
+                            aria-label="Edit entry"
                         >
                             <EditIcon />
                         </IconButton>
@@ -212,7 +175,7 @@ export const VocabularyDetailPage = () => {
                             color="error"
                             onClick={handleDeleteClick}
                             disabled={isLoading || deleteMutation.isPending}
-                            aria-label="Delete vocabulary"
+                            aria-label="Delete entry"
                         >
                             <DeleteIcon />
                         </IconButton>

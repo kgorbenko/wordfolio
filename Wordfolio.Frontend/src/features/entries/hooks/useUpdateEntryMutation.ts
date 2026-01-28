@@ -8,13 +8,13 @@ import {
 } from "../api/entriesApi";
 
 interface UpdateEntryParams {
-    entryId: number;
-    request: UpdateEntryRequest;
+    readonly entryId: number;
+    readonly request: UpdateEntryRequest;
 }
 
 interface UseUpdateEntryMutationOptions {
-    onSuccess?: (data: EntryResponse) => void;
-    onError?: (error: ApiError) => void;
+    readonly onSuccess?: (data: EntryResponse) => void;
+    readonly onError?: (error: ApiError) => void;
 }
 
 export function useUpdateEntryMutation(

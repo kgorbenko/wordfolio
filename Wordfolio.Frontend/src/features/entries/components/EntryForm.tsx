@@ -18,7 +18,7 @@ import {
     DefinitionRequest,
     TranslationRequest,
     ExampleRequest,
-} from "../../../api/entriesApi";
+} from "../api/entriesApi";
 import { AnnotatedItemSection } from "./AnnotatedItemSection";
 import { AnnotatedFieldArray } from "./AnnotatedFieldArray";
 import styles from "./EntryForm.module.scss";

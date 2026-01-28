@@ -7,19 +7,18 @@ import {
     Chip,
 } from "@mui/material";
 
-import "./EntryListItem.scss";
+import styles from "./EntryListItem.module.scss";
 
 interface EntryListItemProps {
     readonly id: number;
     readonly entryText: string;
     readonly firstDefinition?: string;
     readonly firstTranslation?: string;
-    readonly createdAt: string;
+    readonly createdAt: Date;
     readonly onClick?: () => void;
 }
 
-const formatRelativeTime = (dateString: string): string => {
-    const date = new Date(dateString);
+const formatRelativeTime = (date: Date): string => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -40,11 +39,14 @@ export const EntryListItem = ({
     onClick,
 }: EntryListItemProps) => {
     return (
-        <Card className="entry-list-item" sx={{ "&:hover": { boxShadow: 2 } }}>
+        <Card
+            className={styles.entryListItem}
+            sx={{ "&:hover": { boxShadow: 2 } }}
+        >
             <CardActionArea onClick={onClick}>
                 <CardContent sx={{ py: 2 }}>
-                    <Box className="content-wrapper">
-                        <Box className="text-content">
+                    <Box className={styles.contentWrapper}>
+                        <Box className={styles.textContent}>
                             <Typography
                                 variant="subtitle1"
                                 fontWeight={600}
@@ -64,7 +66,7 @@ export const EntryListItem = ({
                             )}
                             {firstTranslation && (
                                 <Typography
-                                    className="translation"
+                                    className={styles.translation}
                                     variant="body2"
                                     color="text.secondary"
                                     noWrap
@@ -74,7 +76,7 @@ export const EntryListItem = ({
                             )}
                         </Box>
                         <Chip
-                            className="date-chip"
+                            className={styles.dateChip}
                             label={formatRelativeTime(createdAt)}
                             size="small"
                             variant="outlined"

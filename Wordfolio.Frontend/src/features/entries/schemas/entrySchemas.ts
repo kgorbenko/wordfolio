@@ -91,8 +91,7 @@ export const entryFormSchema = z
         }
     );
 
-export type ExampleSource = "Api" | "Custom";
-export type DefinitionSource = "Api" | "Manual";
+export type { ExampleSource, DefinitionSource } from "../api/entriesApi";
 
 export type ExampleFormInput = z.input<typeof exampleSchema>;
 export type ExampleFormData = z.output<typeof exampleSchema>;

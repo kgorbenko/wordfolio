@@ -1,4 +1,4 @@
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore } from "../../../stores/authStore";
 
 export type DefinitionSource = "Api" | "Manual";
 export type ExampleSource = "Api" | "Custom";
