@@ -18,12 +18,12 @@ import { Route as AuthenticatedCollectionsIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedCollectionsNewRouteImport } from './routes/_authenticated/collections/new'
 import { Route as AuthenticatedCollectionsCollectionIdIndexRouteImport } from './routes/_authenticated/collections/$collectionId/index'
 import { Route as AuthenticatedCollectionsCollectionIdEditRouteImport } from './routes/_authenticated/collections/$collectionId/edit'
-import { Route as AuthenticatedCollectionsCollectionIdVocabularyIdIndexRouteImport } from './routes/_authenticated/collections/$collectionId/$vocabularyId/index'
 import { Route as AuthenticatedCollectionsCollectionIdVocabulariesNewRouteImport } from './routes/_authenticated/collections/$collectionId/vocabularies/new'
-import { Route as AuthenticatedCollectionsCollectionIdVocabularyIdNewRouteImport } from './routes/_authenticated/collections/$collectionId/$vocabularyId/new'
-import { Route as AuthenticatedCollectionsCollectionIdVocabularyIdEditRouteImport } from './routes/_authenticated/collections/$collectionId/$vocabularyId/edit'
-import { Route as AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdIndexRouteImport } from './routes/_authenticated/collections/$collectionId/$vocabularyId/entries/$entryId/index'
-import { Route as AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdEditRouteImport } from './routes/_authenticated/collections/$collectionId/$vocabularyId/entries/$entryId/edit'
+import { Route as AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdIndexRouteImport } from './routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/index'
+import { Route as AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEditRouteImport } from './routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/edit'
+import { Route as AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesNewRouteImport } from './routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/new'
+import { Route as AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdIndexRouteImport } from './routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/index'
+import { Route as AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdEditRouteImport } from './routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/edit'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -73,43 +73,49 @@ const AuthenticatedCollectionsCollectionIdEditRoute =
     path: '/collections/$collectionId/edit',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedCollectionsCollectionIdVocabularyIdIndexRoute =
-  AuthenticatedCollectionsCollectionIdVocabularyIdIndexRouteImport.update({
-    id: '/collections/$collectionId/$vocabularyId/',
-    path: '/collections/$collectionId/$vocabularyId/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedCollectionsCollectionIdVocabulariesNewRoute =
   AuthenticatedCollectionsCollectionIdVocabulariesNewRouteImport.update({
     id: '/collections/$collectionId/vocabularies/new',
     path: '/collections/$collectionId/vocabularies/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedCollectionsCollectionIdVocabularyIdNewRoute =
-  AuthenticatedCollectionsCollectionIdVocabularyIdNewRouteImport.update({
-    id: '/collections/$collectionId/$vocabularyId/new',
-    path: '/collections/$collectionId/$vocabularyId/new',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedCollectionsCollectionIdVocabularyIdEditRoute =
-  AuthenticatedCollectionsCollectionIdVocabularyIdEditRouteImport.update({
-    id: '/collections/$collectionId/$vocabularyId/edit',
-    path: '/collections/$collectionId/$vocabularyId/edit',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdIndexRoute =
-  AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdIndexRouteImport.update(
+const AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdIndexRoute =
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdIndexRouteImport.update(
     {
-      id: '/collections/$collectionId/$vocabularyId/entries/$entryId/',
-      path: '/collections/$collectionId/$vocabularyId/entries/$entryId/',
+      id: '/collections/$collectionId/vocabularies/$vocabularyId/',
+      path: '/collections/$collectionId/vocabularies/$vocabularyId/',
       getParentRoute: () => AuthenticatedRoute,
     } as any,
   )
-const AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdEditRoute =
-  AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdEditRouteImport.update(
+const AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEditRoute =
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEditRouteImport.update(
     {
-      id: '/collections/$collectionId/$vocabularyId/entries/$entryId/edit',
-      path: '/collections/$collectionId/$vocabularyId/entries/$entryId/edit',
+      id: '/collections/$collectionId/vocabularies/$vocabularyId/edit',
+      path: '/collections/$collectionId/vocabularies/$vocabularyId/edit',
+      getParentRoute: () => AuthenticatedRoute,
+    } as any,
+  )
+const AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesNewRoute =
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesNewRouteImport.update(
+    {
+      id: '/collections/$collectionId/vocabularies/$vocabularyId/entries/new',
+      path: '/collections/$collectionId/vocabularies/$vocabularyId/entries/new',
+      getParentRoute: () => AuthenticatedRoute,
+    } as any,
+  )
+const AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdIndexRoute =
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdIndexRouteImport.update(
+    {
+      id: '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/',
+      path: '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/',
+      getParentRoute: () => AuthenticatedRoute,
+    } as any,
+  )
+const AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdEditRoute =
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdEditRouteImport.update(
+    {
+      id: '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/edit',
+      path: '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/edit',
       getParentRoute: () => AuthenticatedRoute,
     } as any,
   )
@@ -123,12 +129,12 @@ export interface FileRoutesByFullPath {
   '/collections': typeof AuthenticatedCollectionsIndexRoute
   '/collections/$collectionId/edit': typeof AuthenticatedCollectionsCollectionIdEditRoute
   '/collections/$collectionId': typeof AuthenticatedCollectionsCollectionIdIndexRoute
-  '/collections/$collectionId/$vocabularyId/edit': typeof AuthenticatedCollectionsCollectionIdVocabularyIdEditRoute
-  '/collections/$collectionId/$vocabularyId/new': typeof AuthenticatedCollectionsCollectionIdVocabularyIdNewRoute
   '/collections/$collectionId/vocabularies/new': typeof AuthenticatedCollectionsCollectionIdVocabulariesNewRoute
-  '/collections/$collectionId/$vocabularyId': typeof AuthenticatedCollectionsCollectionIdVocabularyIdIndexRoute
-  '/collections/$collectionId/$vocabularyId/entries/$entryId/edit': typeof AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdEditRoute
-  '/collections/$collectionId/$vocabularyId/entries/$entryId': typeof AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdIndexRoute
+  '/collections/$collectionId/vocabularies/$vocabularyId/edit': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEditRoute
+  '/collections/$collectionId/vocabularies/$vocabularyId': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdIndexRoute
+  '/collections/$collectionId/vocabularies/$vocabularyId/entries/new': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesNewRoute
+  '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/edit': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdEditRoute
+  '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -139,12 +145,12 @@ export interface FileRoutesByTo {
   '/collections': typeof AuthenticatedCollectionsIndexRoute
   '/collections/$collectionId/edit': typeof AuthenticatedCollectionsCollectionIdEditRoute
   '/collections/$collectionId': typeof AuthenticatedCollectionsCollectionIdIndexRoute
-  '/collections/$collectionId/$vocabularyId/edit': typeof AuthenticatedCollectionsCollectionIdVocabularyIdEditRoute
-  '/collections/$collectionId/$vocabularyId/new': typeof AuthenticatedCollectionsCollectionIdVocabularyIdNewRoute
   '/collections/$collectionId/vocabularies/new': typeof AuthenticatedCollectionsCollectionIdVocabulariesNewRoute
-  '/collections/$collectionId/$vocabularyId': typeof AuthenticatedCollectionsCollectionIdVocabularyIdIndexRoute
-  '/collections/$collectionId/$vocabularyId/entries/$entryId/edit': typeof AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdEditRoute
-  '/collections/$collectionId/$vocabularyId/entries/$entryId': typeof AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdIndexRoute
+  '/collections/$collectionId/vocabularies/$vocabularyId/edit': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEditRoute
+  '/collections/$collectionId/vocabularies/$vocabularyId': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdIndexRoute
+  '/collections/$collectionId/vocabularies/$vocabularyId/entries/new': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesNewRoute
+  '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/edit': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdEditRoute
+  '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -157,12 +163,12 @@ export interface FileRoutesById {
   '/_authenticated/collections/': typeof AuthenticatedCollectionsIndexRoute
   '/_authenticated/collections/$collectionId/edit': typeof AuthenticatedCollectionsCollectionIdEditRoute
   '/_authenticated/collections/$collectionId/': typeof AuthenticatedCollectionsCollectionIdIndexRoute
-  '/_authenticated/collections/$collectionId/$vocabularyId/edit': typeof AuthenticatedCollectionsCollectionIdVocabularyIdEditRoute
-  '/_authenticated/collections/$collectionId/$vocabularyId/new': typeof AuthenticatedCollectionsCollectionIdVocabularyIdNewRoute
   '/_authenticated/collections/$collectionId/vocabularies/new': typeof AuthenticatedCollectionsCollectionIdVocabulariesNewRoute
-  '/_authenticated/collections/$collectionId/$vocabularyId/': typeof AuthenticatedCollectionsCollectionIdVocabularyIdIndexRoute
-  '/_authenticated/collections/$collectionId/$vocabularyId/entries/$entryId/edit': typeof AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdEditRoute
-  '/_authenticated/collections/$collectionId/$vocabularyId/entries/$entryId/': typeof AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdIndexRoute
+  '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/edit': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEditRoute
+  '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdIndexRoute
+  '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/new': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesNewRoute
+  '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/edit': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdEditRoute
+  '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/': typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -175,12 +181,12 @@ export interface FileRouteTypes {
     | '/collections'
     | '/collections/$collectionId/edit'
     | '/collections/$collectionId'
-    | '/collections/$collectionId/$vocabularyId/edit'
-    | '/collections/$collectionId/$vocabularyId/new'
     | '/collections/$collectionId/vocabularies/new'
-    | '/collections/$collectionId/$vocabularyId'
-    | '/collections/$collectionId/$vocabularyId/entries/$entryId/edit'
-    | '/collections/$collectionId/$vocabularyId/entries/$entryId'
+    | '/collections/$collectionId/vocabularies/$vocabularyId/edit'
+    | '/collections/$collectionId/vocabularies/$vocabularyId'
+    | '/collections/$collectionId/vocabularies/$vocabularyId/entries/new'
+    | '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/edit'
+    | '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -191,12 +197,12 @@ export interface FileRouteTypes {
     | '/collections'
     | '/collections/$collectionId/edit'
     | '/collections/$collectionId'
-    | '/collections/$collectionId/$vocabularyId/edit'
-    | '/collections/$collectionId/$vocabularyId/new'
     | '/collections/$collectionId/vocabularies/new'
-    | '/collections/$collectionId/$vocabularyId'
-    | '/collections/$collectionId/$vocabularyId/entries/$entryId/edit'
-    | '/collections/$collectionId/$vocabularyId/entries/$entryId'
+    | '/collections/$collectionId/vocabularies/$vocabularyId/edit'
+    | '/collections/$collectionId/vocabularies/$vocabularyId'
+    | '/collections/$collectionId/vocabularies/$vocabularyId/entries/new'
+    | '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/edit'
+    | '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId'
   id:
     | '__root__'
     | '/'
@@ -208,12 +214,12 @@ export interface FileRouteTypes {
     | '/_authenticated/collections/'
     | '/_authenticated/collections/$collectionId/edit'
     | '/_authenticated/collections/$collectionId/'
-    | '/_authenticated/collections/$collectionId/$vocabularyId/edit'
-    | '/_authenticated/collections/$collectionId/$vocabularyId/new'
     | '/_authenticated/collections/$collectionId/vocabularies/new'
-    | '/_authenticated/collections/$collectionId/$vocabularyId/'
-    | '/_authenticated/collections/$collectionId/$vocabularyId/entries/$entryId/edit'
-    | '/_authenticated/collections/$collectionId/$vocabularyId/entries/$entryId/'
+    | '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/edit'
+    | '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/'
+    | '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/new'
+    | '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/edit'
+    | '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -288,13 +294,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/collections/$collectionId/$vocabularyId/': {
-      id: '/_authenticated/collections/$collectionId/$vocabularyId/'
-      path: '/collections/$collectionId/$vocabularyId'
-      fullPath: '/collections/$collectionId/$vocabularyId'
-      preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdVocabularyIdIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/collections/$collectionId/vocabularies/new': {
       id: '/_authenticated/collections/$collectionId/vocabularies/new'
       path: '/collections/$collectionId/vocabularies/new'
@@ -302,32 +301,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdVocabulariesNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/collections/$collectionId/$vocabularyId/new': {
-      id: '/_authenticated/collections/$collectionId/$vocabularyId/new'
-      path: '/collections/$collectionId/$vocabularyId/new'
-      fullPath: '/collections/$collectionId/$vocabularyId/new'
-      preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdVocabularyIdNewRouteImport
+    '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/': {
+      id: '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/'
+      path: '/collections/$collectionId/vocabularies/$vocabularyId'
+      fullPath: '/collections/$collectionId/vocabularies/$vocabularyId'
+      preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/collections/$collectionId/$vocabularyId/edit': {
-      id: '/_authenticated/collections/$collectionId/$vocabularyId/edit'
-      path: '/collections/$collectionId/$vocabularyId/edit'
-      fullPath: '/collections/$collectionId/$vocabularyId/edit'
-      preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdVocabularyIdEditRouteImport
+    '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/edit': {
+      id: '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/edit'
+      path: '/collections/$collectionId/vocabularies/$vocabularyId/edit'
+      fullPath: '/collections/$collectionId/vocabularies/$vocabularyId/edit'
+      preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/collections/$collectionId/$vocabularyId/entries/$entryId/': {
-      id: '/_authenticated/collections/$collectionId/$vocabularyId/entries/$entryId/'
-      path: '/collections/$collectionId/$vocabularyId/entries/$entryId'
-      fullPath: '/collections/$collectionId/$vocabularyId/entries/$entryId'
-      preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdIndexRouteImport
+    '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/new': {
+      id: '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/new'
+      path: '/collections/$collectionId/vocabularies/$vocabularyId/entries/new'
+      fullPath: '/collections/$collectionId/vocabularies/$vocabularyId/entries/new'
+      preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/collections/$collectionId/$vocabularyId/entries/$entryId/edit': {
-      id: '/_authenticated/collections/$collectionId/$vocabularyId/entries/$entryId/edit'
-      path: '/collections/$collectionId/$vocabularyId/entries/$entryId/edit'
-      fullPath: '/collections/$collectionId/$vocabularyId/entries/$entryId/edit'
-      preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdEditRouteImport
+    '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/': {
+      id: '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/'
+      path: '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId'
+      fullPath: '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId'
+      preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/edit': {
+      id: '/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/edit'
+      path: '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/edit'
+      fullPath: '/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId/edit'
+      preLoaderRoute: typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
   }
@@ -339,12 +345,12 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCollectionsIndexRoute: typeof AuthenticatedCollectionsIndexRoute
   AuthenticatedCollectionsCollectionIdEditRoute: typeof AuthenticatedCollectionsCollectionIdEditRoute
   AuthenticatedCollectionsCollectionIdIndexRoute: typeof AuthenticatedCollectionsCollectionIdIndexRoute
-  AuthenticatedCollectionsCollectionIdVocabularyIdEditRoute: typeof AuthenticatedCollectionsCollectionIdVocabularyIdEditRoute
-  AuthenticatedCollectionsCollectionIdVocabularyIdNewRoute: typeof AuthenticatedCollectionsCollectionIdVocabularyIdNewRoute
   AuthenticatedCollectionsCollectionIdVocabulariesNewRoute: typeof AuthenticatedCollectionsCollectionIdVocabulariesNewRoute
-  AuthenticatedCollectionsCollectionIdVocabularyIdIndexRoute: typeof AuthenticatedCollectionsCollectionIdVocabularyIdIndexRoute
-  AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdEditRoute: typeof AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdEditRoute
-  AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdIndexRoute: typeof AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdIndexRoute
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEditRoute: typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEditRoute
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdIndexRoute: typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdIndexRoute
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesNewRoute: typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesNewRoute
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdEditRoute: typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdEditRoute
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdIndexRoute: typeof AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -355,18 +361,18 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedCollectionsCollectionIdEditRoute,
   AuthenticatedCollectionsCollectionIdIndexRoute:
     AuthenticatedCollectionsCollectionIdIndexRoute,
-  AuthenticatedCollectionsCollectionIdVocabularyIdEditRoute:
-    AuthenticatedCollectionsCollectionIdVocabularyIdEditRoute,
-  AuthenticatedCollectionsCollectionIdVocabularyIdNewRoute:
-    AuthenticatedCollectionsCollectionIdVocabularyIdNewRoute,
   AuthenticatedCollectionsCollectionIdVocabulariesNewRoute:
     AuthenticatedCollectionsCollectionIdVocabulariesNewRoute,
-  AuthenticatedCollectionsCollectionIdVocabularyIdIndexRoute:
-    AuthenticatedCollectionsCollectionIdVocabularyIdIndexRoute,
-  AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdEditRoute:
-    AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdEditRoute,
-  AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdIndexRoute:
-    AuthenticatedCollectionsCollectionIdVocabularyIdEntriesEntryIdIndexRoute,
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEditRoute:
+    AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEditRoute,
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdIndexRoute:
+    AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdIndexRoute,
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesNewRoute:
+    AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesNewRoute,
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdEditRoute:
+    AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdEditRoute,
+  AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdIndexRoute:
+    AuthenticatedCollectionsCollectionIdVocabulariesVocabularyIdEntriesEntryIdIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

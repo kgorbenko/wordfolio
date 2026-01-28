@@ -1,6 +1,10 @@
 import { useCallback } from "react";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 
+import { entryCreateRouteApi } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
+import { collectionsPath } from "../../../routes/_authenticated/collections/routes";
+import { collectionDetailPath } from "../../../routes/_authenticated/collections/routes";
+import { vocabularyDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
@@ -14,7 +18,7 @@ import { CreateEntryRequest } from "../api/entriesApi";
 import { EntryLookupForm } from "../components/EntryLookupForm";
 
 export const CreateEntryPage = () => {
-    const { collectionId, vocabularyId } = useParams({ strict: false });
+    const { collectionId, vocabularyId } = entryCreateRouteApi.useParams();
     const navigate = useNavigate();
     const { openSuccessNotification, openErrorNotification } =
         useNotificationContext();
@@ -39,13 +43,9 @@ export const CreateEntryPage = () => {
     const createMutation = useCreateEntryMutation({
         onSuccess: () => {
             openSuccessNotification({ message: "Entry created successfully" });
-            void navigate({
-                to: "/collections/$collectionId/$vocabularyId",
-                params: {
-                    collectionId: String(collectionId),
-                    vocabularyId: String(vocabularyId),
-                },
-            });
+            void navigate(
+                vocabularyDetailPath(numericCollectionId, numericVocabularyId)
+            );
         },
         onError: () => {
             openErrorNotification({
@@ -65,14 +65,10 @@ export const CreateEntryPage = () => {
     );
 
     const handleCancel = useCallback(() => {
-        void navigate({
-            to: "/collections/$collectionId/$vocabularyId",
-            params: {
-                collectionId: String(collectionId),
-                vocabularyId: String(vocabularyId),
-            },
-        });
-    }, [navigate, collectionId, vocabularyId]);
+        void navigate(
+            vocabularyDetailPath(numericCollectionId, numericVocabularyId)
+        );
+    }, [navigate, numericCollectionId, numericVocabularyId]);
 
     const handleLookupError = useCallback(
         (message: string) => {
@@ -134,19 +130,17 @@ export const CreateEntryPage = () => {
         <PageContainer>
             <BreadcrumbNav
                 items={[
-                    { label: "Collections", to: "/collections" },
+                    { label: "Collections", ...collectionsPath() },
                     {
                         label: collection?.name ?? "...",
-                        to: "/collections/$collectionId",
-                        params: { collectionId: String(collectionId) },
+                        ...collectionDetailPath(numericCollectionId),
                     },
                     {
                         label: vocabulary?.name ?? "...",
-                        to: "/collections/$collectionId/$vocabularyId",
-                        params: {
-                            collectionId: String(collectionId),
-                            vocabularyId: String(vocabularyId),
-                        },
+                        ...vocabularyDetailPath(
+                            numericCollectionId,
+                            numericVocabularyId
+                        ),
                     },
                     { label: "New Entry" },
                 ]}

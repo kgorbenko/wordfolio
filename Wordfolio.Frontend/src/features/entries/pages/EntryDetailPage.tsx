@@ -1,9 +1,14 @@
 import { useCallback } from "react";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+import { entryDetailRouteApi } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
+import { collectionsPath } from "../../../routes/_authenticated/collections/routes";
+import { collectionDetailPath } from "../../../routes/_authenticated/collections/routes";
+import { vocabularyDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
+import { entryEditPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
@@ -22,9 +27,8 @@ import { EntryDetailContent } from "../components/EntryDetailContent";
 import styles from "./EntryDetailPage.module.scss";
 
 export const EntryDetailPage = () => {
-    const { collectionId, vocabularyId, entryId } = useParams({
-        strict: false,
-    });
+    const { collectionId, vocabularyId, entryId } =
+        entryDetailRouteApi.useParams();
     const navigate = useNavigate();
     const { openErrorNotification } = useNotificationContext();
     const { raiseConfirmDialogAsync } = useConfirmDialog();
@@ -56,13 +60,9 @@ export const EntryDetailPage = () => {
 
     const deleteMutation = useDeleteEntryMutation({
         onSuccess: () => {
-            void navigate({
-                to: "/collections/$collectionId/$vocabularyId",
-                params: {
-                    collectionId: String(collectionId),
-                    vocabularyId: String(vocabularyId),
-                },
-            });
+            void navigate(
+                vocabularyDetailPath(numericCollectionId, numericVocabularyId)
+            );
         },
         onError: () => {
             openErrorNotification({
@@ -72,15 +72,14 @@ export const EntryDetailPage = () => {
     });
 
     const handleEditClick = useCallback(() => {
-        void navigate({
-            to: "/collections/$collectionId/$vocabularyId/entries/$entryId/edit",
-            params: {
-                collectionId: String(collectionId),
-                vocabularyId: String(vocabularyId),
-                entryId: String(entryId),
-            },
-        });
-    }, [navigate, collectionId, vocabularyId, entryId]);
+        void navigate(
+            entryEditPath(
+                numericCollectionId,
+                numericVocabularyId,
+                numericEntryId
+            )
+        );
+    }, [navigate, numericCollectionId, numericVocabularyId, numericEntryId]);
 
     const handleDeleteClick = useCallback(async () => {
         assertNonNullable(entry);
@@ -142,19 +141,17 @@ export const EntryDetailPage = () => {
         <PageContainer>
             <BreadcrumbNav
                 items={[
-                    { label: "Collections", to: "/collections" },
+                    { label: "Collections", ...collectionsPath() },
                     {
                         label: collection?.name ?? "...",
-                        to: "/collections/$collectionId",
-                        params: { collectionId: String(collectionId) },
+                        ...collectionDetailPath(numericCollectionId),
                     },
                     {
                         label: vocabulary?.name ?? "...",
-                        to: "/collections/$collectionId/$vocabularyId",
-                        params: {
-                            collectionId: String(collectionId),
-                            vocabularyId: String(vocabularyId),
-                        },
+                        ...vocabularyDetailPath(
+                            numericCollectionId,
+                            numericVocabularyId
+                        ),
                     },
                     { label: entry?.entryText ?? "Entry" },
                 ]}

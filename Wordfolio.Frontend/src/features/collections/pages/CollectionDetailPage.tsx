@@ -1,10 +1,15 @@
 import { useCallback } from "react";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { IconButton, Button } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 
+import { collectionDetailRouteApi } from "../../../routes/_authenticated/collections/routes";
+import { collectionsPath } from "../../../routes/_authenticated/collections/routes";
+import { collectionEditPath } from "../../../routes/_authenticated/collections/routes";
+import { vocabularyDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
+import { vocabularyCreatePath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import {
@@ -24,9 +29,7 @@ import { assertNonNullable } from "../../../utils/misc";
 import styles from "./CollectionDetailPage.module.scss";
 
 export const CollectionDetailPage = () => {
-    const { collectionId } = useParams({
-        from: "/_authenticated/collections/$collectionId/",
-    });
+    const { collectionId } = collectionDetailRouteApi.useParams();
     const navigate = useNavigate();
     const { raiseConfirmDialogAsync } = useConfirmDialog();
     const { openErrorNotification } = useNotificationContext();
@@ -51,7 +54,7 @@ export const CollectionDetailPage = () => {
     const isError = isCollectionError || isVocabulariesError;
 
     const deleteMutation = useDeleteCollectionMutation({
-        onSuccess: () => void navigate({ to: "/collections" }),
+        onSuccess: () => void navigate(collectionsPath()),
         onError: () =>
             openErrorNotification({ message: "Failed to delete collection" }),
     });
@@ -70,31 +73,22 @@ export const CollectionDetailPage = () => {
     };
 
     const handleEditClick = () => {
-        void navigate({
-            to: "/collections/$collectionId/edit",
-            params: { collectionId },
-        });
+        void navigate(collectionEditPath(numericId));
     };
 
     const handleVocabularyClick = useCallback(
         (vocabId: number) => {
-            void navigate({
-                to: "/collections/$collectionId/$vocabularyId",
-                params: { collectionId, vocabularyId: String(vocabId) },
-            });
+            void navigate(vocabularyDetailPath(numericId, vocabId));
         },
-        [navigate, collectionId]
+        [navigate, numericId]
     );
 
     const handleCreateVocabulary = useCallback(() => {
-        void navigate({
-            to: "/collections/$collectionId/vocabularies/new",
-            params: { collectionId },
-        });
-    }, [navigate, collectionId]);
+        void navigate(vocabularyCreatePath(numericId));
+    }, [navigate, numericId]);
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { label: "Collections", to: "/collections" },
+        { label: "Collections", ...collectionsPath() },
         isLoading
             ? { label: "Loading..." }
             : { label: collection?.name ?? "Collection" },
@@ -122,12 +116,7 @@ export const CollectionDetailPage = () => {
             <CollectionDetailContent
                 vocabularies={vocabularies}
                 onVocabularyClick={handleVocabularyClick}
-                onCreateVocabularyClick={() =>
-                    void navigate({
-                        to: "/collections/$collectionId/vocabularies/new",
-                        params: { collectionId },
-                    })
-                }
+                onCreateVocabularyClick={handleCreateVocabulary}
             />
         );
     }, [
@@ -138,8 +127,7 @@ export const CollectionDetailPage = () => {
         refetchCollection,
         refetchVocabularies,
         handleVocabularyClick,
-        navigate,
-        collectionId,
+        handleCreateVocabulary,
     ]);
 
     return (

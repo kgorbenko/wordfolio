@@ -1,9 +1,17 @@
 import { useCallback } from "react";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { IconButton, Button } from "@mui/material";
+
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+
+import { vocabularyDetailRouteApi } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
+import { collectionDetailPath } from "../../../routes/_authenticated/collections/routes";
+import { vocabularyEditPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
+import { entryDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
+import { entryCreatePath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
+import { collectionsPath } from "../../../routes/_authenticated/collections/routes";
 
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
@@ -23,7 +31,7 @@ import { useEntriesQuery } from "../../entries/hooks/useEntriesQuery";
 import styles from "./VocabularyDetailPage.module.scss";
 
 export const VocabularyDetailPage = () => {
-    const { collectionId, vocabularyId } = useParams({ strict: false });
+    const { collectionId, vocabularyId } = vocabularyDetailRouteApi.useParams();
     const navigate = useNavigate();
     const { openErrorNotification } = useNotificationContext();
     const { raiseConfirmDialogAsync } = useConfirmDialog();
@@ -54,10 +62,7 @@ export const VocabularyDetailPage = () => {
 
     const deleteMutation = useDeleteVocabularyMutation({
         onSuccess: () => {
-            void navigate({
-                to: "/collections/$collectionId",
-                params: { collectionId: String(collectionId) },
-            });
+            void navigate(collectionDetailPath(numericCollectionId));
         },
         onError: () => {
             openErrorNotification({
@@ -67,14 +72,10 @@ export const VocabularyDetailPage = () => {
     });
 
     const handleEditClick = useCallback(() => {
-        void navigate({
-            to: "/collections/$collectionId/$vocabularyId/edit",
-            params: {
-                collectionId: String(collectionId),
-                vocabularyId: String(vocabularyId),
-            },
-        });
-    }, [navigate, collectionId, vocabularyId]);
+        void navigate(
+            vocabularyEditPath(numericCollectionId, numericVocabularyId)
+        );
+    }, [navigate, numericCollectionId, numericVocabularyId]);
 
     const handleDeleteClick = useCallback(async () => {
         assertNonNullable(vocabulary);
@@ -102,27 +103,22 @@ export const VocabularyDetailPage = () => {
 
     const handleEntryClick = useCallback(
         (entryId: number) => {
-            void navigate({
-                to: "/collections/$collectionId/$vocabularyId/entries/$entryId",
-                params: {
-                    collectionId: String(collectionId),
-                    vocabularyId: String(vocabularyId),
-                    entryId: String(entryId),
-                },
-            });
+            void navigate(
+                entryDetailPath(
+                    numericCollectionId,
+                    numericVocabularyId,
+                    entryId
+                )
+            );
         },
-        [navigate, collectionId, vocabularyId]
+        [navigate, numericCollectionId, numericVocabularyId]
     );
 
     const handleAddWordClick = useCallback(() => {
-        void navigate({
-            to: "/collections/$collectionId/$vocabularyId/new",
-            params: {
-                collectionId: String(collectionId),
-                vocabularyId: String(vocabularyId),
-            },
-        });
-    }, [navigate, collectionId, vocabularyId]);
+        void navigate(
+            entryCreatePath(numericCollectionId, numericVocabularyId)
+        );
+    }, [navigate, numericCollectionId, numericVocabularyId]);
 
     const isLoading =
         isCollectionLoading || isVocabularyLoading || isEntriesLoading;
@@ -174,11 +170,10 @@ export const VocabularyDetailPage = () => {
         <PageContainer>
             <BreadcrumbNav
                 items={[
-                    { label: "Collections", to: "/collections" },
+                    { label: "Collections", ...collectionsPath() },
                     {
                         label: collection?.name ?? "...",
-                        to: "/collections/$collectionId",
-                        params: { collectionId: String(collectionId) },
+                        ...collectionDetailPath(numericCollectionId),
                     },
                     { label: vocabulary?.name ?? "Vocabulary" },
                 ]}
