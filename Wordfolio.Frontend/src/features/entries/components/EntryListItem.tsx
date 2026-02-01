@@ -44,13 +44,13 @@ export const EntryListItem = ({
             sx={{ "&:hover": { boxShadow: 2 } }}
         >
             <CardActionArea onClick={onClick}>
-                <CardContent sx={{ py: 2 }}>
+                <CardContent className={styles.cardContent}>
                     <Box className={styles.contentWrapper}>
                         <Box className={styles.textContent}>
                             <Typography
                                 variant="subtitle1"
                                 fontWeight={600}
-                                sx={{ mb: 0.5 }}
+                                className={styles.entryText}
                             >
                                 {entryText}
                             </Typography>
@@ -59,7 +59,7 @@ export const EntryListItem = ({
                                     variant="body2"
                                     color="text.secondary"
                                     noWrap
-                                    sx={{ mb: 0.25 }}
+                                    className={styles.definition}
                                 >
                                     {firstDefinition}
                                 </Typography>

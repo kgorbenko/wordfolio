@@ -31,6 +31,10 @@
     margin-bottom: 8px;
 }
 
+.title {
+    flex: 1;
+}
+
 .description {
     overflow: hidden;
     text-overflow: ellipsis;
