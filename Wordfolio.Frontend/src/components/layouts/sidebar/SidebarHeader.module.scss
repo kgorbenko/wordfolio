@@ -1,0 +1,28 @@
+.logoContainer {
+    height: 64px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    box-sizing: content-box;
+}
+
+.logoIconWrapper {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.addWordContainer {
+    padding: 12px 16px;
+}
+
+.addWordButton {
+    border-radius: 8px;
+    text-transform: none;
+    font-weight: 600;
+}
