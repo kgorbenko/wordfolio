@@ -9,7 +9,7 @@ interface EntryFooterProps {
 
 export const EntryFooter = ({ createdAt, updatedAt }: EntryFooterProps) => (
     <>
-        <Divider sx={{ my: 4 }} />
+        <Divider className={styles.divider} />
         <Box className={styles.footer}>
             <Typography variant="caption" color="text.secondary">
                 Added {createdAt.toLocaleDateString()}

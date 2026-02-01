@@ -6,6 +6,11 @@
     }
 }
 
+.cardContent {
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+
 .contentWrapper {
     display: flex;
     justify-content: space-between;
@@ -16,6 +21,14 @@
 .textContent {
     flex: 1;
     min-width: 0;
+}
+
+.entryText {
+    margin-bottom: 4px;
+}
+
+.definition {
+    margin-bottom: 2px;
 }
 
 .translation {

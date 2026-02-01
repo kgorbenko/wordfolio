@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 
 import { CollectionsHierarchyResponse } from "../../../api/vocabulariesApi";
+import styles from "./VocabularySelector.module.scss";
 
 interface VocabularySelectorProps {
     readonly value: number;
@@ -19,7 +20,7 @@ export const VocabularySelector = ({
     hierarchy,
     onChange,
 }: VocabularySelectorProps) => (
-    <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+    <FormControl fullWidth size="small" className={styles.formControl}>
         <InputLabel>Vocabulary</InputLabel>
         <Select<number>
             value={value}

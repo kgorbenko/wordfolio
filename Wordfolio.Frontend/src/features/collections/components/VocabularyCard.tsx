@@ -36,7 +36,7 @@ export const VocabularyCard = ({
                             variant="h6"
                             fontWeight={600}
                             noWrap
-                            sx={{ flex: 1 }}
+                            className={styles.title}
                         >
                             {name}
                         </Typography>
