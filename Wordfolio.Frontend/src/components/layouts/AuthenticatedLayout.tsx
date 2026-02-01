@@ -66,12 +66,12 @@ export const AuthenticatedLayout = () => {
                         variant="temporary"
                         open={sidebarOpen}
                         onClose={() => setSidebarOpen(false)}
-                        onAddWord={() => openWordEntry()}
+                        onAddEntry={() => openWordEntry()}
                     />
                 ) : (
                     <Sidebar
                         variant="permanent"
-                        onAddWord={() => openWordEntry()}
+                        onAddEntry={() => openWordEntry()}
                     />
                 )}
 
