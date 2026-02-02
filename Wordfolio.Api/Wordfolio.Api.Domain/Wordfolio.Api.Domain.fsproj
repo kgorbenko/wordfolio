@@ -26,6 +26,9 @@
     <Compile Include="Entries\Errors.fs" />
     <Compile Include="Entries\Capabilities.fs" />
     <Compile Include="Entries\Operations.fs" />
+    <Compile Include="Drafts\Types.fs" />
+    <Compile Include="Drafts\Capabilities.fs" />
+    <Compile Include="Drafts\Operations.fs" />
   </ItemGroup>
 
 </Project>

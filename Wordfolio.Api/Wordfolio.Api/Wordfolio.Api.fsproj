@@ -21,6 +21,7 @@
     <Compile Include="Handlers\CollectionsHierarchy.fs" />
     <Compile Include="Handlers\Vocabularies.fs" />
     <Compile Include="Handlers\Entries.fs" />
+    <Compile Include="Handlers\Drafts.fs" />
     <Compile Include="Handlers\Dictionary.fs" />
     <Compile Include="OpenApi.fs" />
     <Compile Include="Program.fs" />

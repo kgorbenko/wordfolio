@@ -211,3 +211,175 @@ let clearEntryChildrenAsync
 
         return deletedDefinitions + deletedTranslations
     }
+
+let private assembleEntriesWithHierarchy
+    (entries: seq<EntryRecord>)
+    (definitions: seq<DefinitionRecord>)
+    (translations: seq<TranslationRecord>)
+    (examples: seq<ExampleRecord>)
+    : EntryWithHierarchy list =
+    let examplesByDefinition =
+        examples
+        |> Seq.choose(fun e ->
+            e.DefinitionId
+            |> Option.map(fun defId -> (defId, e)))
+        |> Seq.groupBy fst
+        |> Seq.map(fun (defId, pairs) -> (defId, pairs |> Seq.map snd |> Seq.toList))
+        |> Map.ofSeq
+
+    let examplesByTranslation =
+        examples
+        |> Seq.choose(fun e ->
+            e.TranslationId
+            |> Option.map(fun transId -> (transId, e)))
+        |> Seq.groupBy fst
+        |> Seq.map(fun (transId, pairs) -> (transId, pairs |> Seq.map snd |> Seq.toList))
+        |> Map.ofSeq
+
+    let definitionsByEntry =
+        definitions
+        |> Seq.groupBy(fun d -> d.EntryId)
+        |> Map.ofSeq
+
+    let translationsByEntry =
+        translations
+        |> Seq.groupBy(fun t -> t.EntryId)
+        |> Map.ofSeq
+
+    entries
+    |> Seq.map(fun entryRec ->
+        let entry: Entries.Entry =
+            { Id = entryRec.Id
+              VocabularyId = entryRec.VocabularyId
+              EntryText = entryRec.EntryText
+              CreatedAt = entryRec.CreatedAt
+              UpdatedAt = entryRec.UpdatedAt |> Option.ofNullable }
+
+        let definitionsWithExamples =
+            match definitionsByEntry.TryFind(entryRec.Id) with
+            | Some defs ->
+                defs
+                |> Seq.map(fun defRec ->
+                    let definition: Definitions.Definition =
+                        { Id = defRec.Id
+                          EntryId = defRec.EntryId
+                          DefinitionText = defRec.DefinitionText
+                          Source = EnumOfValue<int16, Definitions.DefinitionSource>(defRec.Source)
+                          DisplayOrder = defRec.DisplayOrder }
+
+                    let exampleList =
+                        match examplesByDefinition.TryFind(defRec.Id) with
+                        | Some exs ->
+                            exs
+                            |> List.map(fun exRec ->
+                                { Examples.Example.Id = exRec.Id
+                                  Examples.Example.DefinitionId = Some defRec.Id
+                                  Examples.Example.TranslationId = None
+                                  Examples.Example.ExampleText = exRec.ExampleText
+                                  Examples.Example.Source = EnumOfValue<int16, Examples.ExampleSource>(exRec.Source) })
+                        | None -> []
+
+                    { Definition = definition
+                      Examples = exampleList })
+                |> Seq.toList
+            | None -> []
+
+        let translationsWithExamples =
+            match translationsByEntry.TryFind(entryRec.Id) with
+            | Some trans ->
+                trans
+                |> Seq.map(fun transRec ->
+                    let translation: Translations.Translation =
+                        { Id = transRec.Id
+                          EntryId = transRec.EntryId
+                          TranslationText = transRec.TranslationText
+                          Source = EnumOfValue<int16, Translations.TranslationSource>(transRec.Source)
+                          DisplayOrder = transRec.DisplayOrder }
+
+                    let exampleList =
+                        match examplesByTranslation.TryFind(transRec.Id) with
+                        | Some exs ->
+                            exs
+                            |> List.map(fun exRec ->
+                                { Examples.Example.Id = exRec.Id
+                                  Examples.Example.DefinitionId = None
+                                  Examples.Example.TranslationId = Some transRec.Id
+                                  Examples.Example.ExampleText = exRec.ExampleText
+                                  Examples.Example.Source = EnumOfValue<int16, Examples.ExampleSource>(exRec.Source) })
+                        | None -> []
+
+                    { Translation = translation
+                      Examples = exampleList })
+                |> Seq.toList
+            | None -> []
+
+        { Entry = entry
+          Definitions = definitionsWithExamples
+          Translations = translationsWithExamples })
+    |> Seq.toList
+
+let getEntriesHierarchyByVocabularyIdAsync
+    (vocabularyId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<EntryWithHierarchy list> =
+    task {
+        let sql =
+            """
+            SELECT "Id", "VocabularyId", "EntryText", "CreatedAt", "UpdatedAt"
+            FROM wordfolio."Entries"
+            WHERE "VocabularyId" = @vocabularyId
+            ORDER BY "CreatedAt" DESC;
+
+            SELECT "Id", "EntryId", "DefinitionText", "Source", "DisplayOrder"
+            FROM wordfolio."Definitions"
+            WHERE "EntryId" IN (
+                SELECT "Id" FROM wordfolio."Entries"
+                WHERE "VocabularyId" = @vocabularyId
+            )
+            ORDER BY "EntryId", "DisplayOrder";
+
+            SELECT "Id", "EntryId", "TranslationText", "Source", "DisplayOrder"
+            FROM wordfolio."Translations"
+            WHERE "EntryId" IN (
+                SELECT "Id" FROM wordfolio."Entries"
+                WHERE "VocabularyId" = @vocabularyId
+            )
+            ORDER BY "EntryId", "DisplayOrder";
+
+            SELECT "Id", "DefinitionId", "TranslationId", "ExampleText", "Source"
+            FROM wordfolio."Examples"
+            WHERE "DefinitionId" IN (
+                SELECT "Id" FROM wordfolio."Definitions"
+                WHERE "EntryId" IN (
+                    SELECT "Id" FROM wordfolio."Entries"
+                    WHERE "VocabularyId" = @vocabularyId
+                )
+            )
+            OR "TranslationId" IN (
+                SELECT "Id" FROM wordfolio."Translations"
+                WHERE "EntryId" IN (
+                    SELECT "Id" FROM wordfolio."Entries"
+                    WHERE "VocabularyId" = @vocabularyId
+                )
+            );
+        """
+
+        let commandDefinition =
+            CommandDefinition(
+                commandText = sql,
+                parameters = {| vocabularyId = vocabularyId |},
+                transaction = transaction,
+                cancellationToken = cancellationToken
+            )
+
+        use! reader = connection.QueryMultipleAsync(commandDefinition)
+
+        let! entries = reader.ReadAsync<EntryRecord>()
+        let! definitions = reader.ReadAsync<DefinitionRecord>()
+        let! translations = reader.ReadAsync<TranslationRecord>()
+        let! examples = reader.ReadAsync<ExampleRecord>()
+
+        return assembleEntriesWithHierarchy entries definitions translations examples
+    }

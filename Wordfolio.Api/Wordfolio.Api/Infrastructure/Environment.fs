@@ -11,6 +11,7 @@ open Npgsql
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.CollectionsHierarchy
+open Wordfolio.Api.Domain.Drafts
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Shared
 open Wordfolio.Api.Domain.Vocabularies
@@ -587,6 +588,40 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                           CreatedAt = v.CreatedAt
                           UpdatedAt = v.UpdatedAt
                           EntryCount = v.EntryCount })
+            }
+
+    interface IGetEntriesHierarchy with
+        member _.GetEntriesHierarchy(VocabularyId vocabularyId) =
+            task {
+                let! entries =
+                    Wordfolio.Api.DataAccess.EntriesHierarchy.getEntriesHierarchyByVocabularyIdAsync
+                        vocabularyId
+                        connection
+                        transaction
+                        cancellationToken
+
+                return
+                    entries
+                    |> List.map(fun entryWithHierarchy ->
+                        let definitionsWithExamples =
+                            entryWithHierarchy.Definitions
+                            |> List.map(fun dwithEx ->
+                                let examples =
+                                    dwithEx.Examples
+                                    |> List.map toExampleDomain
+
+                                toDefinitionDomain(dwithEx.Definition, examples))
+
+                        let translationsWithExamples =
+                            entryWithHierarchy.Translations
+                            |> List.map(fun twithEx ->
+                                let examples =
+                                    twithEx.Examples
+                                    |> List.map toExampleDomain
+
+                                toTranslationDomain(twithEx.Translation, examples))
+
+                        toEntryDomain(entryWithHierarchy.Entry, definitionsWithExamples, translationsWithExamples))
             }
 
 type TransactionalEnv(dataSource: NpgsqlDataSource, cancellationToken: CancellationToken) =
