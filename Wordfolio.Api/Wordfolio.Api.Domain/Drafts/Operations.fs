@@ -7,11 +7,9 @@ open Wordfolio.Api.Domain.Transactions
 let get (env: #ITransactional<#IGetDefaultVocabulary & #IGetEntriesHierarchy>) (userId: UserId) =
     runInTransaction env (fun appEnv ->
         task {
-            // First check if default vocabulary exists
             match! Shared.Capabilities.getDefaultVocabulary appEnv userId with
-            | None -> return Ok None // Valid case - no default vocabulary yet
+            | None -> return Ok None
             | Some vocabulary ->
-                // Load entries by vocabulary ID
                 let! entries = Capabilities.getEntriesHierarchy appEnv vocabulary.Id
 
                 return

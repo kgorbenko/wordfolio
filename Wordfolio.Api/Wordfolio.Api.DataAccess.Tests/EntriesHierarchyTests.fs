@@ -1031,3 +1031,18 @@ type EntriesHierarchyTests(fixture: WordfolioTestFixture) =
 
             Assert.Equal<EntriesHierarchy.EntryWithHierarchy list>(expected, actual)
         }
+
+    [<Fact>]
+    member _.``getEntriesHierarchyByVocabularyIdAsync returns empty list for non-existent vocabulary``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let! actual =
+                EntriesHierarchy.getEntriesHierarchyByVocabularyIdAsync 999
+                |> fixture.WithConnectionAsync
+
+            let expected: EntriesHierarchy.EntryWithHierarchy list =
+                []
+
+            Assert.Equal<EntriesHierarchy.EntryWithHierarchy list>(expected, actual)
+        }
