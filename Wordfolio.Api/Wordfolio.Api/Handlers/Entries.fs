@@ -160,7 +160,7 @@ let private toTranslationResponse(trans: Translation) : TranslationResponse =
         trans.Examples
         |> List.map toExampleResponse }
 
-let private toResponse(entry: Entry) : EntryResponse =
+let toEntryResponse(entry: Entry) : EntryResponse =
     { Id = EntryId.value entry.Id
       VocabularyId = VocabularyId.value entry.VocabularyId
       EntryText = entry.EntryText
@@ -217,7 +217,7 @@ let mapEntriesByVocabularyEndpoint(app: IEndpointRouteBuilder) =
                                 match result with
                                 | Ok entries ->
                                     let response =
-                                        entries |> List.map toResponse
+                                        entries |> List.map toEntryResponse
 
                                     Results.Ok(response)
                                 | Error error -> toErrorResponse error
@@ -260,7 +260,8 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
 
                             return
                                 match result with
-                                | Ok entry -> Results.Created(Urls.entryById(EntryId.value entry.Id), toResponse entry)
+                                | Ok entry ->
+                                    Results.Created(Urls.entryById(EntryId.value entry.Id), toEntryResponse entry)
                                 | Error error -> toErrorResponse error
                     })
         )
@@ -287,7 +288,7 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
 
                             return
                                 match result with
-                                | Ok entry -> Results.Ok(toResponse entry)
+                                | Ok entry -> Results.Ok(toEntryResponse entry)
                                 | Error error -> toErrorResponse error
                     })
         )
@@ -353,7 +354,7 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
 
                             return
                                 match result with
-                                | Ok entry -> Results.Ok(toResponse entry)
+                                | Ok entry -> Results.Ok(toEntryResponse entry)
                                 | Error error -> toErrorResponse error
                     })
         )

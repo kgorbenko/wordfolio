@@ -3,6 +3,7 @@ namespace Wordfolio.Api.Domain.Entries
 open System
 
 open Wordfolio.Api.Domain
+open Wordfolio.Api.Domain.Shared
 
 type DefinitionSource =
     | Api
@@ -65,3 +66,7 @@ type CreateEntryParameters =
       Definitions: DefinitionInput list
       Translations: TranslationInput list
       CreatedAt: DateTimeOffset }
+
+type DraftsVocabularyData =
+    { Vocabulary: Vocabulary
+      Entries: Entry list }

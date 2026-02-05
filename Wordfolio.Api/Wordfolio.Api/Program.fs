@@ -11,6 +11,7 @@ open Wordfolio.Api.Handlers.Auth
 open Wordfolio.Api.Handlers.Collections
 open Wordfolio.Api.Handlers.CollectionsHierarchy
 open Wordfolio.Api.Handlers.Dictionary
+open Wordfolio.Api.Handlers.Drafts
 open Wordfolio.Api.Handlers.Entries
 open Wordfolio.Api.Handlers.Vocabularies
 open Wordfolio.Api.IdentityIntegration
@@ -42,6 +43,8 @@ let mapEndpoints(app: IEndpointRouteBuilder) =
     |> mapEntriesEndpoints
 
     mapEntriesByVocabularyEndpoint app
+
+    mapDraftsEndpoints app |> ignore
 
     app.MapGroup(Urls.Auth.Path).WithTags("Auth")
     |> mapAuthEndpoints

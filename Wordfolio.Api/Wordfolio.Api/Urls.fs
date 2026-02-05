@@ -35,6 +35,10 @@ module Entries =
 
     let entriesByVocabulary(vocabularyId: int) = $"/vocabularies/{vocabularyId}/entries"
 
+module Drafts =
+    [<Literal>]
+    let Path = "/drafts"
+
 module Auth =
     [<Literal>]
     let Path = "/auth"

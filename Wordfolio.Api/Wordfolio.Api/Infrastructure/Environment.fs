@@ -589,6 +589,40 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                           EntryCount = v.EntryCount })
             }
 
+    interface IGetEntriesHierarchyByVocabularyId with
+        member _.GetEntriesHierarchyByVocabularyId(VocabularyId vocabularyId) =
+            task {
+                let! entries =
+                    Wordfolio.Api.DataAccess.EntriesHierarchy.getEntriesHierarchyByVocabularyIdAsync
+                        vocabularyId
+                        connection
+                        transaction
+                        cancellationToken
+
+                return
+                    entries
+                    |> List.map(fun entryWithHierarchy ->
+                        let definitionsWithExamples =
+                            entryWithHierarchy.Definitions
+                            |> List.map(fun dwithEx ->
+                                let examples =
+                                    dwithEx.Examples
+                                    |> List.map toExampleDomain
+
+                                toDefinitionDomain(dwithEx.Definition, examples))
+
+                        let translationsWithExamples =
+                            entryWithHierarchy.Translations
+                            |> List.map(fun twithEx ->
+                                let examples =
+                                    twithEx.Examples
+                                    |> List.map toExampleDomain
+
+                                toTranslationDomain(twithEx.Translation, examples))
+
+                        toEntryDomain(entryWithHierarchy.Entry, definitionsWithExamples, translationsWithExamples))
+            }
+
 type TransactionalEnv(dataSource: NpgsqlDataSource, cancellationToken: CancellationToken) =
     interface ITransactional<AppEnv> with
         member _.RunInTransaction(operation) =

@@ -29,6 +29,7 @@
     <Compile Include="CollectionsHierarchyTests.fs" />
     <Compile Include="VocabulariesTests.fs" />
     <Compile Include="EntriesTests.fs" />
+    <Compile Include="DraftsTests.fs" />
     <Compile Include="DictionaryTests.fs" />
     <Compile Include="StatusTests.fs" />
     <Compile Include="OpenApiTests.fs" />
