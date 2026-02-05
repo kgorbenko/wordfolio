@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate, useParams, useMatch } from "@tanstack/react-router";
 import { Drawer, useTheme } from "@mui/material";
 
 import { collectionsPath } from "../../routes/_authenticated/collections/routes";
 import { collectionDetailPath } from "../../routes/_authenticated/collections/routes";
 import { vocabularyDetailPath } from "../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
+import {
+    draftsPath,
+    draftsRouteIds,
+} from "../../routes/_authenticated/drafts/routes";
 import { useCollectionsHierarchyQuery } from "../../queries/useCollectionsHierarchyQuery";
 import { SidebarContent } from "./sidebar/SidebarContent";
 import styles from "./Sidebar.module.scss";
@@ -82,6 +86,18 @@ export const Sidebar = ({
         });
     };
 
+    const handleDraftsClick = () => {
+        handleNavigation(() => {
+            void navigate(draftsPath());
+        });
+    };
+
+    const draftsMatch = useMatch({
+        from: draftsRouteIds.list,
+        shouldThrow: false,
+    });
+    const isDraftsVocabularyActive = draftsMatch !== undefined;
+
     const drawerContent = (
         <div className={styles.sidebar}>
             <SidebarContent
@@ -90,10 +106,12 @@ export const Sidebar = ({
                 activeCollectionId={activeCollectionId}
                 activeVocabularyId={activeVocabularyId}
                 expandedCollections={expandedCollections}
+                isDraftsVocabularyActive={isDraftsVocabularyActive}
                 onToggleCollection={toggleCollection}
                 onCollectionClick={handleCollectionClick}
                 onVocabularyClick={handleVocabularyClick}
                 onHomeClick={handleHomeClick}
+                onDraftsClick={handleDraftsClick}
                 onAddEntry={onAddEntry}
                 onRetry={() => void refetch()}
                 isLoading={isLoading}

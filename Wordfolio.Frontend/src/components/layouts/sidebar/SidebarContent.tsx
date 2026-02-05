@@ -16,6 +16,7 @@ interface SidebarContentProps {
     readonly activeCollectionId: number | undefined;
     readonly activeVocabularyId: number | undefined;
     readonly expandedCollections: readonly number[];
+    readonly isDraftsVocabularyActive: boolean;
     readonly onToggleCollection: (collectionId: number) => void;
     readonly onCollectionClick: (collectionId: number) => void;
     readonly onVocabularyClick: (
@@ -23,6 +24,7 @@ interface SidebarContentProps {
         vocabularyId: number
     ) => void;
     readonly onHomeClick: () => void;
+    readonly onDraftsClick: () => void;
     readonly onAddEntry?: () => void;
     readonly onRetry: () => void;
     readonly isLoading: boolean;
@@ -35,17 +37,17 @@ export const SidebarContent = ({
     activeCollectionId,
     activeVocabularyId,
     expandedCollections,
+    isDraftsVocabularyActive,
     onToggleCollection,
     onCollectionClick,
     onVocabularyClick,
     onHomeClick,
+    onDraftsClick,
     onAddEntry,
     onRetry,
     isLoading,
     isError,
 }: SidebarContentProps) => {
-    const isDefaultVocabularySelected = false;
-
     return (
         <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
             <SidebarHeader onHomeClick={onHomeClick} onAddEntry={onAddEntry} />
@@ -53,8 +55,8 @@ export const SidebarContent = ({
             <QuickAccessSection
                 draftsVocabulary={draftsVocabulary}
                 isLoading={isLoading}
-                isDefaultVocabularySelected={isDefaultVocabularySelected}
-                onDraftsClick={() => {}}
+                isDraftsVocabularyActive={isDraftsVocabularyActive}
+                onDraftsClick={onDraftsClick}
                 onAllCollectionsClick={onHomeClick}
             />
 

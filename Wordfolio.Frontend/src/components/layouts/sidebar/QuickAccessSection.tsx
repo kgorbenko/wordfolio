@@ -18,7 +18,7 @@ import {
 interface QuickAccessSectionProps {
     readonly draftsVocabulary: VocabularySummaryResponse | null;
     readonly isLoading: boolean;
-    readonly isDefaultVocabularySelected: boolean;
+    readonly isDraftsVocabularyActive: boolean;
     readonly onDraftsClick: () => void;
     readonly onAllCollectionsClick: () => void;
 }
@@ -26,7 +26,7 @@ interface QuickAccessSectionProps {
 export const QuickAccessSection = ({
     draftsVocabulary,
     isLoading,
-    isDefaultVocabularySelected,
+    isDraftsVocabularyActive,
     onDraftsClick,
     onAllCollectionsClick,
 }: QuickAccessSectionProps) => {
@@ -45,7 +45,7 @@ export const QuickAccessSection = ({
         <Box sx={{ py: 1 }}>
             {draftsVocabulary && (
                 <ListItemButton
-                    selected={isDefaultVocabularySelected}
+                    selected={isDraftsVocabularyActive}
                     onClick={onDraftsClick}
                     sx={{
                         px: 2,
@@ -68,7 +68,7 @@ export const QuickAccessSection = ({
                     <ListItemIcon sx={{ minWidth: 36 }}>
                         <StarIcon
                             sx={{
-                                color: isDefaultVocabularySelected
+                                color: isDraftsVocabularyActive
                                     ? "primary.main"
                                     : "warning.main",
                                 fontSize: 20,
@@ -78,9 +78,9 @@ export const QuickAccessSection = ({
                     <ListItemText
                         primary="Drafts"
                         primaryTypographyProps={{
-                            fontWeight: isDefaultVocabularySelected ? 600 : 500,
+                            fontWeight: isDraftsVocabularyActive ? 600 : 500,
                             fontSize: "0.9rem",
-                            color: isDefaultVocabularySelected
+                            color: isDraftsVocabularyActive
                                 ? "primary.main"
                                 : "text.secondary",
                         }}

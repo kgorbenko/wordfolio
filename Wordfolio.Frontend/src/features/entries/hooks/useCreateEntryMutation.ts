@@ -27,6 +27,9 @@ export function useCreateEntryMutation(
             void queryClient.invalidateQueries({
                 queryKey: ["collections-hierarchy"],
             });
+            void queryClient.invalidateQueries({
+                queryKey: ["drafts"],
+            });
             options?.onSuccess?.(data);
         },
         onError: options?.onError,

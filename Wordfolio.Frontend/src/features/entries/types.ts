@@ -1,37 +1,16 @@
-import { DefinitionSource, ExampleSource } from "./api/entriesApi";
 import { DefinitionRequest, TranslationRequest } from "./api/entriesApi";
 
-export interface Example {
-    readonly id: number;
-    readonly exampleText: string;
-    readonly source: ExampleSource;
-}
+export {
+    type DefinitionSource,
+    type TranslationSource,
+    type ExampleSource,
+    type Example,
+    type Definition,
+    type Translation,
+    type Entry,
+} from "../../types/entry";
 
-export interface Definition {
-    readonly id: number;
-    readonly definitionText: string;
-    readonly source: DefinitionSource;
-    readonly displayOrder: number;
-    readonly examples: Example[];
-}
-
-export interface Translation {
-    readonly id: number;
-    readonly translationText: string;
-    readonly source: DefinitionSource;
-    readonly displayOrder: number;
-    readonly examples: Example[];
-}
-
-export interface Entry {
-    readonly id: number;
-    readonly vocabularyId: number;
-    readonly entryText: string;
-    readonly createdAt: Date;
-    readonly updatedAt: Date | null;
-    readonly definitions: Definition[];
-    readonly translations: Translation[];
-}
+import type { DefinitionSource, ExampleSource } from "../../types/entry";
 
 export interface ExampleItem {
     readonly id: string;
