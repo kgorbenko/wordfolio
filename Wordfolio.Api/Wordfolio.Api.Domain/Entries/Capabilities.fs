@@ -41,6 +41,9 @@ type IGetVocabularyByIdAndUserId =
 type IDeleteEntry =
     abstract DeleteEntry: EntryId -> Task<int>
 
+type IGetEntriesHierarchy =
+    abstract member GetEntriesHierarchy: VocabularyId -> Task<Entry list>
+
 module Capabilities =
     let getEntryById (env: #IGetEntryById) entryId = env.GetEntryById(entryId)
 
@@ -74,3 +77,5 @@ module Capabilities =
         env.GetVocabularyByIdAndUserId(vocabularyId, userId)
 
     let deleteEntry (env: #IDeleteEntry) entryId = env.DeleteEntry(entryId)
+
+    let getEntriesHierarchy (env: #IGetEntriesHierarchy) vocabularyId = env.GetEntriesHierarchy(vocabularyId)

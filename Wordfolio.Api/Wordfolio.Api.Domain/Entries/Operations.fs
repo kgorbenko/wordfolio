@@ -3,6 +3,7 @@ module Wordfolio.Api.Domain.Entries.Operations
 open System
 open System.Threading.Tasks
 
+open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries.Capabilities
 open Wordfolio.Api.Domain.Shared
 open Wordfolio.Api.Domain.Transactions
@@ -245,4 +246,20 @@ let delete env userId entryId =
                 | Ok _ ->
                     let! _ = deleteEntry appEnv entryId
                     return Ok()
+        })
+
+let getDrafts (env: #ITransactional<#IGetDefaultVocabulary & #IGetEntriesHierarchy>) (userId: UserId) =
+    runInTransaction env (fun appEnv ->
+        task {
+            match! Shared.Capabilities.getDefaultVocabulary appEnv userId with
+            | None -> return Ok None
+            | Some vocabulary ->
+                let! entries = getEntriesHierarchy appEnv vocabulary.Id
+
+                return
+                    Ok(
+                        Some
+                            { Vocabulary = vocabulary
+                              Entries = entries }
+                    )
         })

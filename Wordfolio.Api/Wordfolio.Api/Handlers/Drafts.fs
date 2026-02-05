@@ -11,7 +11,7 @@ open Microsoft.AspNetCore.Routing
 open Npgsql
 
 open Wordfolio.Api.Domain
-open Wordfolio.Api.Domain.Drafts
+open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Handlers.Entries
 open Wordfolio.Api.Infrastructure.Environment
 
@@ -51,7 +51,7 @@ let mapDraftsEndpoints(endpoints: IEndpointRouteBuilder) =
                         let env =
                             TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result = Operations.get env (UserId userId)
+                        let! result = Operations.getDrafts env (UserId userId)
 
                         return
                             match result with

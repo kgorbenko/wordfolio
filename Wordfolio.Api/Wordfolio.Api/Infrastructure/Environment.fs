@@ -11,7 +11,6 @@ open Npgsql
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.CollectionsHierarchy
-open Wordfolio.Api.Domain.Drafts
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Shared
 open Wordfolio.Api.Domain.Vocabularies
