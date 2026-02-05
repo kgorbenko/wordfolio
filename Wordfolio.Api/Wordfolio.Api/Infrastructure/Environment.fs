@@ -589,8 +589,8 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                           EntryCount = v.EntryCount })
             }
 
-    interface IGetEntriesHierarchy with
-        member _.GetEntriesHierarchy(VocabularyId vocabularyId) =
+    interface IGetEntriesHierarchyByVocabularyId with
+        member _.GetEntriesHierarchyByVocabularyId(VocabularyId vocabularyId) =
             task {
                 let! entries =
                     Wordfolio.Api.DataAccess.EntriesHierarchy.getEntriesHierarchyByVocabularyIdAsync

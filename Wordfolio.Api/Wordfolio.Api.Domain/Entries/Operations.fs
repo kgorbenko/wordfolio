@@ -248,13 +248,13 @@ let delete env userId entryId =
                     return Ok()
         })
 
-let getDrafts (env: #ITransactional<#IGetDefaultVocabulary & #IGetEntriesHierarchy>) (userId: UserId) =
+let getDrafts (env: #ITransactional<#IGetDefaultVocabulary & #IGetEntriesHierarchyByVocabularyId>) (userId: UserId) =
     runInTransaction env (fun appEnv ->
         task {
             match! Shared.Capabilities.getDefaultVocabulary appEnv userId with
             | None -> return Ok None
             | Some vocabulary ->
-                let! entries = getEntriesHierarchy appEnv vocabulary.Id
+                let! entries = getEntriesHierarchyByVocabularyId appEnv vocabulary.Id
 
                 return
                     Ok(

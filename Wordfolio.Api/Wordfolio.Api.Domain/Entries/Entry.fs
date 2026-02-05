@@ -67,6 +67,6 @@ type CreateEntryParameters =
       Translations: TranslationInput list
       CreatedAt: DateTimeOffset }
 
-type DraftsData =
+type DraftsVocabularyData =
     { Vocabulary: Vocabulary
       Entries: Entry list }

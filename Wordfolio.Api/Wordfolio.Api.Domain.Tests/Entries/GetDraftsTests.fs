@@ -10,29 +10,36 @@ open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.Operations
 open Wordfolio.Api.Domain.Shared
 
+let private shouldNotBeCalled<'a, 'b> : 'a -> Task<'b> =
+    fun _ -> failwith "Should not be called"
+
 type TestEnv
-    (getDefaultVocabulary: UserId -> Task<Vocabulary option>, getEntriesHierarchy: VocabularyId -> Task<Entry list>) =
+    (
+        getDefaultVocabulary: UserId -> Task<Vocabulary option>,
+        getEntriesHierarchyByVocabularyId: VocabularyId -> Task<Entry list>
+    ) =
     let getDefaultVocabularyCalls =
         ResizeArray<UserId>()
 
-    let getEntriesHierarchyCalls =
+    let getEntriesHierarchyByVocabularyIdCalls =
         ResizeArray<VocabularyId>()
 
     member _.GetDefaultVocabularyCalls =
         getDefaultVocabularyCalls |> Seq.toList
 
-    member _.GetEntriesHierarchyCalls =
-        getEntriesHierarchyCalls |> Seq.toList
+    member _.GetEntriesHierarchyByVocabularyIdCalls =
+        getEntriesHierarchyByVocabularyIdCalls
+        |> Seq.toList
 
     interface IGetDefaultVocabulary with
         member _.GetDefaultVocabulary(userId) =
             getDefaultVocabularyCalls.Add(userId)
             getDefaultVocabulary userId
 
-    interface IGetEntriesHierarchy with
-        member _.GetEntriesHierarchy(vocabularyId) =
-            getEntriesHierarchyCalls.Add(vocabularyId)
-            getEntriesHierarchy vocabularyId
+    interface IGetEntriesHierarchyByVocabularyId with
+        member _.GetEntriesHierarchyByVocabularyId(vocabularyId) =
+            getEntriesHierarchyByVocabularyIdCalls.Add(vocabularyId)
+            getEntriesHierarchyByVocabularyId vocabularyId
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -72,88 +79,52 @@ let ``returns None when no default vocabulary exists``() =
         let env =
             TestEnv(
                 getDefaultVocabulary = (fun _ -> Task.FromResult None),
-                getEntriesHierarchy = (fun _ -> Task.FromResult [])
+                getEntriesHierarchyByVocabularyId = shouldNotBeCalled
             )
 
         let! result = getDrafts env userId
 
         Assert.Equal(Ok None, result)
-    }
-
-[<Fact>]
-let ``does not call getEntriesHierarchy when no default vocabulary exists``() =
-    task {
-        let env =
-            TestEnv(
-                getDefaultVocabulary = (fun _ -> Task.FromResult None),
-                getEntriesHierarchy = (fun _ -> Task.FromResult [])
-            )
-
-        let! _ = getDrafts env userId
-
-        Assert.Empty(env.GetEntriesHierarchyCalls)
-    }
-
-[<Fact>]
-let ``calls getDefaultVocabulary with correct userId``() =
-    task {
-        let env =
-            TestEnv(
-                getDefaultVocabulary = (fun _ -> Task.FromResult None),
-                getEntriesHierarchy = (fun _ -> Task.FromResult [])
-            )
-
-        let! _ = getDrafts env userId
-
         Assert.Equal<UserId list>([ userId ], env.GetDefaultVocabularyCalls)
+        Assert.Empty(env.GetEntriesHierarchyByVocabularyIdCalls)
     }
 
 [<Fact>]
-let ``returns DraftsData with empty entries when vocabulary has no entries``() =
+let ``returns DraftsVocabularyData with empty entries when vocabulary has no entries``() =
     task {
         let env =
             TestEnv(
                 getDefaultVocabulary = (fun _ -> Task.FromResult(Some vocabulary)),
-                getEntriesHierarchy = (fun _ -> Task.FromResult [])
+                getEntriesHierarchyByVocabularyId = (fun _ -> Task.FromResult [])
             )
 
         let! result = getDrafts env userId
 
-        let expected: DraftsData =
+        let expected: DraftsVocabularyData =
             { Vocabulary = vocabulary
               Entries = [] }
 
         Assert.Equal(Ok(Some expected), result)
+        Assert.Equal<UserId list>([ userId ], env.GetDefaultVocabularyCalls)
+        Assert.Equal<VocabularyId list>([ vocabulary.Id ], env.GetEntriesHierarchyByVocabularyIdCalls)
     }
 
 [<Fact>]
-let ``returns DraftsData with entries when vocabulary has entries``() =
+let ``returns DraftsVocabularyData with entries when vocabulary has entries``() =
     task {
         let env =
             TestEnv(
                 getDefaultVocabulary = (fun _ -> Task.FromResult(Some vocabulary)),
-                getEntriesHierarchy = (fun _ -> Task.FromResult [ entry ])
+                getEntriesHierarchyByVocabularyId = (fun _ -> Task.FromResult [ entry ])
             )
 
         let! result = getDrafts env userId
 
-        let expected: DraftsData =
+        let expected: DraftsVocabularyData =
             { Vocabulary = vocabulary
               Entries = [ entry ] }
 
         Assert.Equal(Ok(Some expected), result)
-    }
-
-[<Fact>]
-let ``calls getEntriesHierarchy with vocabulary id from default vocabulary``() =
-    task {
-        let env =
-            TestEnv(
-                getDefaultVocabulary = (fun _ -> Task.FromResult(Some vocabulary)),
-                getEntriesHierarchy = (fun _ -> Task.FromResult [])
-            )
-
-        let! _ = getDrafts env userId
-
-        Assert.Equal<VocabularyId list>([ vocabulary.Id ], env.GetEntriesHierarchyCalls)
+        Assert.Equal<UserId list>([ userId ], env.GetDefaultVocabularyCalls)
+        Assert.Equal<VocabularyId list>([ vocabulary.Id ], env.GetEntriesHierarchyByVocabularyIdCalls)
     }
