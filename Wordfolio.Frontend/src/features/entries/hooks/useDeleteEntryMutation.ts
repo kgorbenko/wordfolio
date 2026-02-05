@@ -27,6 +27,9 @@ export function useDeleteEntryMutation(
             void queryClient.invalidateQueries({
                 queryKey: ["collections-hierarchy"],
             });
+            void queryClient.invalidateQueries({
+                queryKey: ["drafts"],
+            });
             options?.onSuccess?.();
         },
         onError: options?.onError,
