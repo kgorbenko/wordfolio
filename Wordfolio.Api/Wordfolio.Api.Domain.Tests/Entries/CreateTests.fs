@@ -21,7 +21,7 @@ type TestEnv
         createTranslation: EntryId * string * TranslationSource * int -> Task<TranslationId>,
         createExamplesForDefinition: DefinitionId * ExampleInput list -> Task<unit>,
         createExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>,
-        getVocabularyByIdAndUserId: VocabularyId * UserId -> Task<Vocabulary option>
+        hasVocabularyAccess: VocabularyId * UserId -> Task<bool>
     ) =
     let getEntryByIdCalls =
         ResizeArray<EntryId>()
@@ -44,7 +44,7 @@ type TestEnv
     let createExamplesForTranslationCalls =
         ResizeArray<TranslationId * ExampleInput list>()
 
-    let getVocabularyByIdAndUserIdCalls =
+    let hasVocabularyAccessCalls =
         ResizeArray<VocabularyId * UserId>()
 
     member _.GetEntryByIdCalls =
@@ -71,9 +71,8 @@ type TestEnv
         createExamplesForTranslationCalls
         |> Seq.toList
 
-    member _.GetVocabularyByIdAndUserIdCalls =
-        getVocabularyByIdAndUserIdCalls
-        |> Seq.toList
+    member _.HasVocabularyAccessCalls =
+        hasVocabularyAccessCalls |> Seq.toList
 
     interface IGetEntryById with
         member _.GetEntryById(id) =
@@ -110,10 +109,10 @@ type TestEnv
             createExamplesForTranslationCalls.Add(translationId, examples)
             createExamplesForTranslation(translationId, examples)
 
-    interface IGetVocabularyByIdAndUserId with
-        member _.GetVocabularyByIdAndUserId(vocabularyId, userId) =
-            getVocabularyByIdAndUserIdCalls.Add(vocabularyId, userId)
-            getVocabularyByIdAndUserId(vocabularyId, userId)
+    interface IHasVocabularyAccess with
+        member _.HasVocabularyAccess(vocabularyId, userId) =
+            hasVocabularyAccessCalls.Add(vocabularyId, userId)
+            hasVocabularyAccess(vocabularyId, userId)
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -216,7 +215,7 @@ let ``creates entry with definitions only``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> Task.FromResult(())),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
+                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
         let! result = create env (makeCreateParams (UserId 1) (VocabularyId 1) "test word" definitionInputs [] now)
@@ -258,7 +257,7 @@ let ``creates entry with translations only``() =
                 createTranslation = (fun _ -> Task.FromResult(TranslationId 1)),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> Task.FromResult(())),
-                getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
+                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
         let! result = create env (makeCreateParams (UserId 1) (VocabularyId 1) "test word" [] translationInputs now)
@@ -306,7 +305,7 @@ let ``creates entry with both definitions and translations``() =
                 createTranslation = (fun _ -> Task.FromResult(TranslationId 1)),
                 createExamplesForDefinition = (fun _ -> Task.FromResult(())),
                 createExamplesForTranslation = (fun _ -> Task.FromResult(())),
-                getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
+                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
         let! result =
@@ -355,7 +354,7 @@ let ``trims whitespace from entry text``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> Task.FromResult(())),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
+                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
         let! result = create env (makeCreateParams (UserId 1) (VocabularyId 1) "  test word  " definitionInputs [] now)
@@ -375,7 +374,7 @@ let ``returns error when entry text is empty``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                getVocabularyByIdAndUserId = (fun _ -> failwith "Should not be called")
+                hasVocabularyAccess = (fun _ -> failwith "Should not be called")
             )
 
         let! result =
@@ -405,7 +404,7 @@ let ``returns error when entry text is whitespace only``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                getVocabularyByIdAndUserId = (fun _ -> failwith "Should not be called")
+                hasVocabularyAccess = (fun _ -> failwith "Should not be called")
             )
 
         let! result =
@@ -436,7 +435,7 @@ let ``returns error when entry text exceeds max length``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                getVocabularyByIdAndUserId = (fun _ -> failwith "Should not be called")
+                hasVocabularyAccess = (fun _ -> failwith "Should not be called")
             )
 
         let! result =
@@ -465,7 +464,7 @@ let ``returns error when both definitions and translations are empty``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                getVocabularyByIdAndUserId = (fun _ -> failwith "Should not be called")
+                hasVocabularyAccess = (fun _ -> failwith "Should not be called")
             )
 
         let! result = create env (makeCreateParams (UserId 1) (VocabularyId 1) "test word" [] [] DateTimeOffset.UtcNow)
@@ -485,7 +484,7 @@ let ``returns error when vocabulary is not found``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(None))
+                hasVocabularyAccess = (fun _ -> Task.FromResult(false))
             )
 
         let! result =
@@ -520,7 +519,7 @@ let ``returns error when duplicate entry exists``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
+                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
         let! result =
@@ -561,7 +560,7 @@ let ``returns error when example text is too long``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
+                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
         let! result =
@@ -594,7 +593,7 @@ let ``returns error when too many examples in definition``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
+                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
         let! result =
@@ -627,7 +626,7 @@ let ``returns error when too many examples in translation``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                getVocabularyByIdAndUserId = (fun _ -> Task.FromResult(Some vocabulary))
+                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
         let! result =

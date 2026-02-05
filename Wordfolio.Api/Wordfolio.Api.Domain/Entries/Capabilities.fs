@@ -3,7 +3,6 @@ namespace Wordfolio.Api.Domain.Entries
 open System.Threading.Tasks
 
 open Wordfolio.Api.Domain
-open Wordfolio.Api.Domain.Vocabularies
 
 type IGetEntryById =
     abstract GetEntryById: EntryId -> Task<Entry option>
@@ -35,8 +34,8 @@ type IUpdateEntry =
 type IClearEntryChildren =
     abstract ClearEntryChildren: EntryId -> Task<unit>
 
-type IGetVocabularyByIdAndUserId =
-    abstract GetVocabularyByIdAndUserId: VocabularyId * UserId -> Task<Vocabulary option>
+type IHasVocabularyAccess =
+    abstract HasVocabularyAccess: VocabularyId * UserId -> Task<bool>
 
 type IDeleteEntry =
     abstract DeleteEntry: EntryId -> Task<int>
@@ -73,8 +72,8 @@ module Capabilities =
 
     let clearEntryChildren (env: #IClearEntryChildren) entryId = env.ClearEntryChildren(entryId)
 
-    let getVocabularyByIdAndUserId (env: #IGetVocabularyByIdAndUserId) vocabularyId userId =
-        env.GetVocabularyByIdAndUserId(vocabularyId, userId)
+    let hasVocabularyAccess (env: #IHasVocabularyAccess) vocabularyId userId =
+        env.HasVocabularyAccess(vocabularyId, userId)
 
     let deleteEntry (env: #IDeleteEntry) entryId = env.DeleteEntry(entryId)
 

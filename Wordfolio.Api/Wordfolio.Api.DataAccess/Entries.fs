@@ -161,3 +161,31 @@ let deleteEntryAsync
 
         return affectedRows
     }
+
+[<CLIMutable>]
+type private CollectionRecord =
+    { Id: int; UserId: int; IsSystem: bool }
+
+let private collectionsTable =
+    table'<CollectionRecord> Schema.CollectionsTable.Name
+    |> inSchema Schema.Name
+
+let hasVocabularyAccessAsync
+    (vocabularyId: int)
+    (userId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<bool> =
+    task {
+        let! result =
+            (select {
+                for v in Vocabularies.vocabulariesTable do
+                    innerJoin c in collectionsTable on (v.CollectionId = c.Id)
+                    where(v.Id = vocabularyId && c.UserId = userId)
+             }
+             |> trySelectFirstAsync connection transaction cancellationToken)
+            : Task<Vocabularies.VocabularyRecord option>
+
+        return result |> Option.isSome
+    }

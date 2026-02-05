@@ -67,12 +67,13 @@ let private validateTranslations(translations: TranslationInput list) : Result<T
 
 let private checkVocabularyAccess env userId vocabularyId =
     task {
-        let! maybeVocabulary = getVocabularyByIdAndUserId env vocabularyId userId
+        let! hasAccess = hasVocabularyAccess env vocabularyId userId
 
         return
-            match maybeVocabulary with
-            | None -> Error(VocabularyNotFoundOrAccessDenied vocabularyId)
-            | Some _ -> Ok()
+            if not hasAccess then
+                Error(VocabularyNotFoundOrAccessDenied vocabularyId)
+            else
+                Ok()
     }
 
 let createDefinitionsAsync env entryId (definitions: DefinitionInput list) : Task<unit> =

@@ -408,119 +408,6 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
         }
 
     [<Fact>]
-    member _.``getVocabularyByIdAndUserIdAsync returns vocabulary when it belongs to user``() =
-        task {
-            do! fixture.ResetDatabaseAsync()
-
-            let createdAt =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-
-            let user = Entities.makeUser 205
-
-            let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
-
-            let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" (Some "Description") createdAt None false
-
-            do!
-                fixture.Seeder
-                |> Seeder.addUsers [ user ]
-                |> Seeder.saveChangesAsync
-
-            let! actual =
-                Vocabularies.getVocabularyByIdAndUserIdAsync vocabulary.Id user.Id
-                |> fixture.WithConnectionAsync
-
-            let expected: Vocabularies.Vocabulary option =
-                Some
-                    { Id = vocabulary.Id
-                      CollectionId = collection.Id
-                      Name = "Vocabulary 1"
-                      Description = Some "Description"
-                      CreatedAt = createdAt
-                      UpdatedAt = None }
-
-            Assert.Equal(expected, actual)
-        }
-
-    [<Fact>]
-    member _.``getVocabularyByIdAndUserIdAsync returns None when vocabulary does not belong to user``() =
-        task {
-            do! fixture.ResetDatabaseAsync()
-
-            let createdAt =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-
-            let user1 = Entities.makeUser 206
-            let user2 = Entities.makeUser 207
-
-            let collection =
-                Entities.makeCollection user1 "Collection 1" None createdAt None false
-
-            let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
-
-            do!
-                fixture.Seeder
-                |> Seeder.addUsers [ user1; user2 ]
-                |> Seeder.saveChangesAsync
-
-            let! actual =
-                Vocabularies.getVocabularyByIdAndUserIdAsync vocabulary.Id user2.Id
-                |> fixture.WithConnectionAsync
-
-            Assert.Equal(None, actual)
-        }
-
-    [<Fact>]
-    member _.``getVocabularyByIdAndUserIdAsync returns None when vocabulary does not exist``() =
-        task {
-            do! fixture.ResetDatabaseAsync()
-
-            let user = Entities.makeUser 208
-
-            do!
-                fixture.Seeder
-                |> Seeder.addUsers [ user ]
-                |> Seeder.saveChangesAsync
-
-            let! actual =
-                Vocabularies.getVocabularyByIdAndUserIdAsync 999 user.Id
-                |> fixture.WithConnectionAsync
-
-            Assert.Equal(None, actual)
-        }
-
-    [<Fact>]
-    member _.``getVocabularyByIdAndUserIdAsync returns None when user does not exist``() =
-        task {
-            do! fixture.ResetDatabaseAsync()
-
-            let createdAt =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-
-            let user = Entities.makeUser 209
-
-            let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
-
-            let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
-
-            do!
-                fixture.Seeder
-                |> Seeder.addUsers [ user ]
-                |> Seeder.saveChangesAsync
-
-            let! actual =
-                Vocabularies.getVocabularyByIdAndUserIdAsync vocabulary.Id 999
-                |> fixture.WithConnectionAsync
-
-            Assert.Equal(None, actual)
-        }
-
-    [<Fact>]
     member _.``getVocabularyByIdAsync returns None when vocabulary is default``() =
         task {
             do! fixture.ResetDatabaseAsync()
@@ -589,36 +476,6 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                     UpdatedAt = None } ]
 
             Assert.Equal<Vocabularies.Vocabulary list>(expected, actual)
-        }
-
-    [<Fact>]
-    member _.``getVocabularyByIdAndUserIdAsync returns None when vocabulary is default``() =
-        task {
-            do! fixture.ResetDatabaseAsync()
-
-            let createdAt =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-
-            let user = Entities.makeUser 100
-
-            let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
-
-            let defaultVocabulary =
-                Entities.makeVocabulary collection "Default" None createdAt None true
-
-            do!
-                fixture.Seeder
-                |> Seeder.addUsers [ user ]
-                |> Seeder.addCollections [ collection ]
-                |> Seeder.addVocabularies [ defaultVocabulary ]
-                |> Seeder.saveChangesAsync
-
-            let! actual =
-                Vocabularies.getVocabularyByIdAndUserIdAsync defaultVocabulary.Id user.Id
-                |> fixture.WithConnectionAsync
-
-            Assert.Equal(None, actual)
         }
 
     [<Fact>]
@@ -774,36 +631,6 @@ type VocabulariesTests(fixture: WordfolioTestFixture) =
                 |> fixture.WithConnectionAsync
 
             Assert.Empty(actual)
-        }
-
-    [<Fact>]
-    member _.``getVocabularyByIdAndUserIdAsync returns None when vocabulary is in system collection``() =
-        task {
-            do! fixture.ResetDatabaseAsync()
-
-            let createdAt =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-
-            let user = Entities.makeUser 100
-
-            let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
-
-            let vocabulary =
-                Entities.makeVocabulary systemCollection "Vocabulary" None createdAt None false
-
-            do!
-                fixture.Seeder
-                |> Seeder.addUsers [ user ]
-                |> Seeder.addCollections [ systemCollection ]
-                |> Seeder.addVocabularies [ vocabulary ]
-                |> Seeder.saveChangesAsync
-
-            let! actual =
-                Vocabularies.getVocabularyByIdAndUserIdAsync vocabulary.Id user.Id
-                |> fixture.WithConnectionAsync
-
-            Assert.Equal(None, actual)
         }
 
     [<Fact>]

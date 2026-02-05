@@ -8,9 +8,6 @@ open System.Threading.Tasks
 open Dapper
 open Dapper.FSharp.PostgreSQL
 
-open Wordfolio.Api.DataAccess.Dapper
-open Wordfolio.Common
-
 [<CLIMutable>]
 type internal VocabularyRecord =
     { Id: int
@@ -148,31 +145,6 @@ let getVocabulariesByCollectionIdAsync
             |> selectAsync connection transaction cancellationToken
 
         return results |> List.map fromRecord
-    }
-
-let getVocabularyByIdAndUserIdAsync
-    (vocabularyId: int)
-    (userId: int)
-    (connection: IDbConnection)
-    (transaction: IDbTransaction)
-    (cancellationToken: CancellationToken)
-    : Task<Vocabulary option> =
-    task {
-        let! result =
-            select {
-                for v in vocabulariesTable do
-                    innerJoin c in collectionsTable on (v.CollectionId = c.Id)
-
-                    where(
-                        v.Id = vocabularyId
-                        && c.UserId = userId
-                        && v.IsDefault = false
-                        && c.IsSystem = false
-                    )
-            }
-            |> trySelectFirstAsync connection transaction cancellationToken
-
-        return result |> Option.map fromRecord
     }
 
 let updateVocabularyAsync

@@ -517,20 +517,18 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                 return ()
             }
 
-    interface IGetVocabularyByIdAndUserId with
-        member _.GetVocabularyByIdAndUserId(VocabularyId vocabularyId, UserId userId) =
+    interface IHasVocabularyAccess with
+        member _.HasVocabularyAccess(VocabularyId vocabularyId, UserId userId) =
             task {
-                let! maybeVocabulary =
-                    Wordfolio.Api.DataAccess.Vocabularies.getVocabularyByIdAndUserIdAsync
+                let! hasAccess =
+                    Wordfolio.Api.DataAccess.Entries.hasVocabularyAccessAsync
                         vocabularyId
                         userId
                         connection
                         transaction
                         cancellationToken
 
-                return
-                    maybeVocabulary
-                    |> Option.map toVocabularyDomain
+                return hasAccess
             }
 
     interface IDeleteEntry with
