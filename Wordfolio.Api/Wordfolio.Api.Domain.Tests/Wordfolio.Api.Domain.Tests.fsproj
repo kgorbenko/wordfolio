@@ -33,6 +33,10 @@
     <Compile Include="CollectionsHierarchy\GetByUserIdTests.fs" />
     <Compile Include="Entries\CreateTests.fs" />
     <Compile Include="Entries\GetDraftsTests.fs" />
+    <Compile Include="Entries\GetByIdTests.fs" />
+    <Compile Include="Entries\GetByVocabularyIdTests.fs" />
+    <Compile Include="Entries\UpdateTests.fs" />
+    <Compile Include="Entries\DeleteTests.fs" />
   </ItemGroup>
 
 </Project>
