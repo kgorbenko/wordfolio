@@ -50,7 +50,7 @@ let insertOutputSingleAsync<'TInput, 'TOutput>
             |> Option.defaultWith(fun () -> failwith "Insert operation failed: no records were returned")
     }
 
-let selectAsync
+let selectAsync<'a>
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)

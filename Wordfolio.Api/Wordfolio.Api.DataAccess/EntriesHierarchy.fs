@@ -5,9 +5,12 @@ open System.Data
 open System.Threading
 open System.Threading.Tasks
 
+open Microsoft.FSharp.Core.LanguagePrimitives
+
 open Dapper
 open Dapper.FSharp.PostgreSQL
-open Microsoft.FSharp.Core.LanguagePrimitives
+
+open Wordfolio.Api.DataAccess.Dapper
 
 type DefinitionWithExamples =
     { Definition: Definitions.Definition
@@ -53,6 +56,22 @@ type private ExampleRecord =
       TranslationId: int option
       ExampleText: string
       Source: int16 }
+
+let private entriesTable =
+    table'<EntryRecord> Schema.EntriesTable.Name
+    |> inSchema Schema.Name
+
+let private definitionsTable =
+    table'<DefinitionRecord> Schema.DefinitionsTable.Name
+    |> inSchema Schema.Name
+
+let private translationsTable =
+    table'<TranslationRecord> Schema.TranslationsTable.Name
+    |> inSchema Schema.Name
+
+let private examplesTable =
+    table'<ExampleRecord> Schema.ExamplesTable.Name
+    |> inSchema Schema.Name
 
 let private assembleEntriesWithHierarchy
     (entries: seq<EntryRecord>)
@@ -160,6 +179,139 @@ let private assembleEntriesWithHierarchy
           Translations = translationsWithExamples })
     |> Seq.toList
 
+let private getEntryRecordByIdAsync
+    (entryId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<EntryRecord option> =
+    task {
+        return!
+            select {
+                for e in entriesTable do
+                    where(e.Id = entryId)
+            }
+            |> trySelectFirstAsync connection transaction cancellationToken
+    }
+
+let private getEntryRecordsByVocabularyIdAsync
+    (vocabularyId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<EntryRecord list> =
+    task {
+        return!
+            select {
+                for e in entriesTable do
+                    where(e.VocabularyId = vocabularyId)
+                    orderByDescending e.CreatedAt
+            }
+            |> selectAsync connection transaction cancellationToken
+    }
+
+let private getDefinitionRecordsByEntryIdsAsync
+    (entryIds: int list)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<DefinitionRecord list> =
+    task {
+        if entryIds.IsEmpty then
+            return []
+        else
+            return!
+                select {
+                    for d in definitionsTable do
+                        where(isIn d.EntryId entryIds)
+                        orderBy d.EntryId
+                        thenBy d.DisplayOrder
+                }
+                |> selectAsync<DefinitionRecord> connection transaction cancellationToken
+    }
+
+let private getTranslationRecordsByEntryIdsAsync
+    (entryIds: int list)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<TranslationRecord list> =
+    task {
+        if entryIds.IsEmpty then
+            return []
+        else
+            return!
+                select {
+                    for t in translationsTable do
+                        where(isIn t.EntryId entryIds)
+                        orderBy t.EntryId
+                        thenBy t.DisplayOrder
+                }
+                |> selectAsync<TranslationRecord> connection transaction cancellationToken
+    }
+
+let private getExampleRecordsByDefinitionIdsAsync
+    (definitionIds: int list)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<ExampleRecord list> =
+    task {
+        if definitionIds.IsEmpty then
+            return []
+        else
+            let sql =
+                """
+                SELECT "Id", "DefinitionId", "TranslationId", "ExampleText", "Source"
+                FROM wordfolio."Examples"
+                WHERE "DefinitionId" = ANY(@definitionIds)
+                ORDER BY "Id";
+                """
+
+            let commandDefinition =
+                CommandDefinition(
+                    commandText = sql,
+                    parameters = {| definitionIds = definitionIds |> List.toArray |},
+                    transaction = transaction,
+                    cancellationToken = cancellationToken
+                )
+
+            let! examples = connection.QueryAsync<ExampleRecord>(commandDefinition)
+
+            return examples |> Seq.toList
+    }
+
+let private getExampleRecordsByTranslationIdsAsync
+    (translationIds: int list)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<ExampleRecord list> =
+    task {
+        if translationIds.IsEmpty then
+            return []
+        else
+            let sql =
+                """
+                SELECT "Id", "DefinitionId", "TranslationId", "ExampleText", "Source"
+                FROM wordfolio."Examples"
+                WHERE "TranslationId" = ANY(@translationIds)
+                ORDER BY "Id";
+                """
+
+            let commandDefinition =
+                CommandDefinition(
+                    commandText = sql,
+                    parameters = {| translationIds = translationIds |> List.toArray |},
+                    transaction = transaction,
+                    cancellationToken = cancellationToken
+                )
+
+            let! examples = connection.QueryAsync<ExampleRecord>(commandDefinition)
+
+            return examples |> Seq.toList
+    }
+
 let getEntryByIdWithHierarchyAsync
     (entryId: int)
     (connection: IDbConnection)
@@ -167,46 +319,32 @@ let getEntryByIdWithHierarchyAsync
     (cancellationToken: CancellationToken)
     : Task<EntryWithHierarchy option> =
     task {
-        let sql =
-            """
-            SELECT "Id", "VocabularyId", "EntryText", "CreatedAt", "UpdatedAt"
-            FROM wordfolio."Entries"
-            WHERE "Id" = @entryId;
+        let! entryRecord = getEntryRecordByIdAsync entryId connection transaction cancellationToken
 
-            SELECT "Id", "EntryId", "DefinitionText", "Source", "DisplayOrder"
-            FROM wordfolio."Definitions"
-            WHERE "EntryId" = @entryId
-            ORDER BY "DisplayOrder";
-
-            SELECT "Id", "EntryId", "TranslationText", "Source", "DisplayOrder"
-            FROM wordfolio."Translations"
-            WHERE "EntryId" = @entryId
-            ORDER BY "DisplayOrder";
-
-            SELECT "Id", "DefinitionId", "TranslationId", "ExampleText", "Source"
-            FROM wordfolio."Examples"
-            WHERE "DefinitionId" IN (SELECT "Id" FROM wordfolio."Definitions" WHERE "EntryId" = @entryId)
-               OR "TranslationId" IN (SELECT "Id" FROM wordfolio."Translations" WHERE "EntryId" = @entryId);
-            """
-
-        let commandDefinition =
-            CommandDefinition(
-                commandText = sql,
-                parameters = {| entryId = entryId |},
-                transaction = transaction,
-                cancellationToken = cancellationToken
-            )
-
-        use! reader = connection.QueryMultipleAsync(commandDefinition)
-
-        let! entryRecord = reader.ReadFirstOrDefaultAsync<EntryRecord>()
-
-        match entryRecord |> Option.ofObj with
+        match entryRecord with
         | None -> return None
         | Some entryRecord ->
-            let! definitions = reader.ReadAsync<DefinitionRecord>()
-            let! translations = reader.ReadAsync<TranslationRecord>()
-            let! examples = reader.ReadAsync<ExampleRecord>()
+            let! definitions = getDefinitionRecordsByEntryIdsAsync [ entryId ] connection transaction cancellationToken
+
+            let! translations =
+                getTranslationRecordsByEntryIdsAsync [ entryId ] connection transaction cancellationToken
+
+            let definitionIds =
+                definitions
+                |> List.map(fun definition -> definition.Id)
+
+            let translationIds =
+                translations
+                |> List.map(fun translation -> translation.Id)
+
+            let! definitionExamples =
+                getExampleRecordsByDefinitionIdsAsync definitionIds connection transaction cancellationToken
+
+            let! translationExamples =
+                getExampleRecordsByTranslationIdsAsync translationIds connection transaction cancellationToken
+
+            let examples =
+                definitionExamples @ translationExamples
 
             let entries =
                 assembleEntriesWithHierarchy [ entryRecord ] definitions translations examples
@@ -226,14 +364,14 @@ let clearEntryChildrenAsync
                 for d in Definitions.definitionsTable do
                     where(d.EntryId = entryId)
             }
-            |> Dapper.deleteAsync connection transaction cancellationToken
+            |> deleteAsync connection transaction cancellationToken
 
         let! deletedTranslations =
             delete {
                 for t in Translations.translationsTable do
                     where(t.EntryId = entryId)
             }
-            |> Dapper.deleteAsync connection transaction cancellationToken
+            |> deleteAsync connection transaction cancellationToken
 
         return deletedDefinitions + deletedTranslations
     }
@@ -245,55 +383,35 @@ let getEntriesHierarchyByVocabularyIdAsync
     (cancellationToken: CancellationToken)
     : Task<EntryWithHierarchy list> =
     task {
-        let sql =
-            """
-            SELECT "Id", "VocabularyId", "EntryText", "CreatedAt", "UpdatedAt"
-            FROM wordfolio."Entries"
-            WHERE "VocabularyId" = @vocabularyId
-            ORDER BY "CreatedAt" DESC;
+        let! entries = getEntryRecordsByVocabularyIdAsync vocabularyId connection transaction cancellationToken
 
-            SELECT d."Id", d."EntryId", d."DefinitionText", d."Source", d."DisplayOrder"
-            FROM wordfolio."Definitions" d
-            JOIN wordfolio."Entries" e ON d."EntryId" = e."Id"
-            WHERE e."VocabularyId" = @vocabularyId
-            ORDER BY d."EntryId", d."DisplayOrder";
+        if entries.IsEmpty then
+            return []
+        else
+            let entryIds =
+                entries
+                |> List.map(fun entry -> entry.Id)
 
-            SELECT t."Id", t."EntryId", t."TranslationText", t."Source", t."DisplayOrder"
-            FROM wordfolio."Translations" t
-            JOIN wordfolio."Entries" e ON t."EntryId" = e."Id"
-            WHERE e."VocabularyId" = @vocabularyId
-            ORDER BY t."EntryId", t."DisplayOrder";
+            let! definitions = getDefinitionRecordsByEntryIdsAsync entryIds connection transaction cancellationToken
 
-            SELECT ex."Id", ex."DefinitionId", ex."TranslationId", ex."ExampleText", ex."Source"
-            FROM wordfolio."Examples" ex
-            WHERE ex."DefinitionId" IN (
-                SELECT d."Id"
-                FROM wordfolio."Definitions" d
-                JOIN wordfolio."Entries" e ON d."EntryId" = e."Id"
-                WHERE e."VocabularyId" = @vocabularyId
-            )
-            OR ex."TranslationId" IN (
-                SELECT t."Id"
-                FROM wordfolio."Translations" t
-                JOIN wordfolio."Entries" e ON t."EntryId" = e."Id"
-                WHERE e."VocabularyId" = @vocabularyId
-            );
-        """
+            let! translations = getTranslationRecordsByEntryIdsAsync entryIds connection transaction cancellationToken
 
-        let commandDefinition =
-            CommandDefinition(
-                commandText = sql,
-                parameters = {| vocabularyId = vocabularyId |},
-                transaction = transaction,
-                cancellationToken = cancellationToken
-            )
+            let definitionIds =
+                definitions
+                |> List.map(fun definition -> definition.Id)
 
-        use! reader = connection.QueryMultipleAsync(commandDefinition)
+            let translationIds =
+                translations
+                |> List.map(fun translation -> translation.Id)
 
-        let! entries = reader.ReadAsync<EntryRecord>()
-        let! definitions = reader.ReadAsync<DefinitionRecord>()
-        let! translations = reader.ReadAsync<TranslationRecord>()
-        let! examples = reader.ReadAsync<ExampleRecord>()
+            let! definitionExamples =
+                getExampleRecordsByDefinitionIdsAsync definitionIds connection transaction cancellationToken
 
-        return assembleEntriesWithHierarchy entries definitions translations examples
+            let! translationExamples =
+                getExampleRecordsByTranslationIdsAsync translationIds connection transaction cancellationToken
+
+            let examples =
+                definitionExamples @ translationExamples
+
+            return assembleEntriesWithHierarchy entries definitions translations examples
     }
