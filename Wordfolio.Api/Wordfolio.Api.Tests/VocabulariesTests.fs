@@ -225,11 +225,12 @@ type VocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<VocabularyResponse>()
+            let! actual = response.Content.ReadFromJsonAsync<VocabularyDetailResponse>()
 
-            let expected: VocabularyResponse =
+            let expected: VocabularyDetailResponse =
                 { Id = vocabulary.Id
                   CollectionId = collection.Id
+                  CollectionName = "Test Collection"
                   Name = "Test Vocabulary"
                   Description = Some "Test Description"
                   CreatedAt = actual.CreatedAt

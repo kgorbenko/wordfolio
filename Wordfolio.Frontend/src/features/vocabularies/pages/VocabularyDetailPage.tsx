@@ -22,7 +22,6 @@ import { useNotificationContext } from "../../../contexts/NotificationContext";
 import { useConfirmDialog } from "../../../contexts/ConfirmDialogContext";
 import { assertNonNullable } from "../../../utils/misc";
 
-import { useCollectionQuery } from "../../collections/hooks/useCollectionQuery";
 import { useVocabularyQuery } from "../hooks/useVocabularyQuery";
 import { useDeleteVocabularyMutation } from "../hooks/useDeleteVocabularyMutation";
 import { VocabularyDetailContent } from "../components/VocabularyDetailContent";
@@ -38,13 +37,6 @@ export const VocabularyDetailPage = () => {
 
     const numericCollectionId = Number(collectionId);
     const numericVocabularyId = Number(vocabularyId);
-
-    const {
-        data: collection,
-        isLoading: isCollectionLoading,
-        isError: isCollectionError,
-        refetch: refetchCollection,
-    } = useCollectionQuery(numericCollectionId);
 
     const {
         data: vocabulary,
@@ -120,16 +112,14 @@ export const VocabularyDetailPage = () => {
         );
     }, [navigate, numericCollectionId, numericVocabularyId]);
 
-    const isLoading =
-        isCollectionLoading || isVocabularyLoading || isEntriesLoading;
-    const isError = isCollectionError || isVocabularyError || isEntriesError;
+    const isLoading = isVocabularyLoading || isEntriesLoading;
+    const isError = isVocabularyError || isEntriesError;
 
     const renderContent = useCallback(() => {
         if (isLoading) return <ContentSkeleton variant="list" />;
 
-        if (isError || !collection || !vocabulary || !entries) {
+        if (isError || !vocabulary || !entries) {
             const handleRetry = () => {
-                if (isCollectionError) void refetchCollection();
                 if (isVocabularyError) void refetchVocabulary();
                 if (isEntriesError) void refetchEntries();
             };
@@ -153,13 +143,10 @@ export const VocabularyDetailPage = () => {
     }, [
         isLoading,
         isError,
-        collection,
         vocabulary,
         entries,
-        isCollectionError,
         isVocabularyError,
         isEntriesError,
-        refetchCollection,
         refetchVocabulary,
         refetchEntries,
         handleEntryClick,
@@ -172,7 +159,7 @@ export const VocabularyDetailPage = () => {
                 items={[
                     { label: "Collections", ...collectionsPath() },
                     {
-                        label: collection?.name ?? "...",
+                        label: vocabulary?.collectionName ?? "...",
                         ...collectionDetailPath(numericCollectionId),
                     },
                     { label: vocabulary?.name ?? "Vocabulary" },

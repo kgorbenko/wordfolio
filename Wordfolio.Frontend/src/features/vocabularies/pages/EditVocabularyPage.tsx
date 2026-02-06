@@ -11,7 +11,6 @@ import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
 import { RetryOnError } from "../../../components/common/RetryOnError";
 import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
 import { useNotificationContext } from "../../../contexts/NotificationContext";
-import { useCollectionQuery } from "../../collections/hooks/useCollectionQuery";
 import { useVocabularyQuery } from "../hooks/useVocabularyQuery";
 import { useUpdateVocabularyMutation } from "../hooks/useUpdateVocabularyMutation";
 import { VocabularyForm } from "../components/VocabularyForm";
@@ -23,13 +22,6 @@ export const EditVocabularyPage = () => {
     const { openErrorNotification } = useNotificationContext();
     const numericCollectionId = Number(collectionId);
     const numericVocabularyId = Number(vocabularyId);
-
-    const {
-        data: collection,
-        isLoading: isCollectionLoading,
-        isError: isCollectionError,
-        refetch: refetchCollection,
-    } = useCollectionQuery(numericCollectionId);
 
     const {
         data: vocabulary,
@@ -71,23 +63,15 @@ export const EditVocabularyPage = () => {
         );
     }, [navigate, numericCollectionId, numericVocabularyId]);
 
-    const isLoading = isCollectionLoading || isVocabularyLoading;
-    const isError = isCollectionError || isVocabularyError;
-
     const renderContent = useCallback(() => {
-        if (isLoading) return <ContentSkeleton variant="form" />;
+        if (isVocabularyLoading) return <ContentSkeleton variant="form" />;
 
-        if (isError || !collection || !vocabulary) {
-            const handleRetry = () => {
-                if (isCollectionError) void refetchCollection();
-                if (isVocabularyError) void refetchVocabulary();
-            };
-
+        if (isVocabularyError || !vocabulary) {
             return (
                 <RetryOnError
                     title="Failed to Load Data"
                     description="Something went wrong while loading the data. Please try again."
-                    onRetry={handleRetry}
+                    onRetry={() => void refetchVocabulary()}
                 />
             );
         }
@@ -105,13 +89,9 @@ export const EditVocabularyPage = () => {
             />
         );
     }, [
-        isLoading,
-        isError,
-        collection,
-        vocabulary,
-        isCollectionError,
+        isVocabularyLoading,
         isVocabularyError,
-        refetchCollection,
+        vocabulary,
         refetchVocabulary,
         handleSubmit,
         handleCancel,
@@ -124,7 +104,7 @@ export const EditVocabularyPage = () => {
                 items={[
                     { label: "Collections", ...collectionsPath() },
                     {
-                        label: collection?.name ?? "...",
+                        label: vocabulary?.collectionName ?? "...",
                         ...collectionDetailPath(numericCollectionId),
                     },
                     {

@@ -39,12 +39,23 @@ let getById env userId vocabularyId =
             match maybeVocabulary with
             | None -> return Error(VocabularyNotFound vocabularyId)
             | Some vocabulary ->
-                let! ownershipResult = checkCollectionOwnership appEnv userId vocabulary.CollectionId
+                let! maybeCollection = getCollectionById appEnv vocabulary.CollectionId
 
-                return
-                    match ownershipResult with
-                    | Error _ -> Error(VocabularyAccessDenied vocabularyId)
-                    | Ok _ -> Ok vocabulary
+                match maybeCollection with
+                | None -> return Error(VocabularyCollectionNotFound vocabulary.CollectionId)
+                | Some collection ->
+                    if collection.UserId <> userId then
+                        return Error(VocabularyAccessDenied vocabularyId)
+                    else
+                        return
+                            Ok
+                                { Id = vocabulary.Id
+                                  CollectionId = vocabulary.CollectionId
+                                  CollectionName = collection.Name
+                                  Name = vocabulary.Name
+                                  Description = vocabulary.Description
+                                  CreatedAt = vocabulary.CreatedAt
+                                  UpdatedAt = vocabulary.UpdatedAt }
         })
 
 let getByCollectionId env userId collectionId =

@@ -83,7 +83,16 @@ let ``returns vocabulary when found and collection owned by user``() =
 
         let! result = getById env (UserId 1) (VocabularyId 1)
 
-        Assert.Equal(Ok vocabulary, result)
+        let expected: VocabularyDetail =
+            { Id = vocabulary.Id
+              CollectionId = vocabulary.CollectionId
+              CollectionName = collection.Name
+              Name = vocabulary.Name
+              Description = vocabulary.Description
+              CreatedAt = vocabulary.CreatedAt
+              UpdatedAt = vocabulary.UpdatedAt }
+
+        Assert.Equal(Ok expected, result)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }
@@ -139,7 +148,7 @@ let ``returns AccessDenied when collection owned by different user``() =
     }
 
 [<Fact>]
-let ``returns AccessDenied when collection does not exist``() =
+let ``returns CollectionNotFound when collection does not exist``() =
     task {
         let vocabulary =
             makeVocabulary 1 1 "Test Vocabulary"
@@ -152,5 +161,5 @@ let ``returns AccessDenied when collection does not exist``() =
 
         let! result = getById env (UserId 1) (VocabularyId 1)
 
-        Assert.Equal(Error(VocabularyAccessDenied(VocabularyId 1)), result)
+        Assert.Equal(Error(VocabularyCollectionNotFound(CollectionId 1)), result)
     }
