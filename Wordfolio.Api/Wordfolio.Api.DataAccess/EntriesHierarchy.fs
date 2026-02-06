@@ -201,16 +201,24 @@ let private getEntryRecordsByVocabularyIdAsync
     (cancellationToken: CancellationToken)
     : Task<EntryRecord list> =
     task {
-        let! entries =
-            select {
-                for e in entriesTable do
-                    where(e.VocabularyId = vocabularyId)
-            }
-            |> selectAsync connection transaction cancellationToken
+        let sql =
+            """
+            SELECT "Id", "VocabularyId", "EntryText", "CreatedAt", "UpdatedAt"
+            FROM wordfolio."Entries"
+            WHERE "VocabularyId" = @vocabularyId
+            ORDER BY "CreatedAt" DESC;
+            """
 
-        return
-            entries
-            |> List.sortByDescending(fun entry -> entry.CreatedAt)
+        let commandDefinition =
+            CommandDefinition(
+                commandText = sql,
+                parameters = {| vocabularyId = vocabularyId |},
+                transaction = transaction,
+                cancellationToken = cancellationToken
+            )
+
+        let! entries = connection.QueryAsync<EntryRecord>(commandDefinition)
+        return entries |> Seq.toList
     }
 
 let private getDefinitionRecordsByEntryIdsAsync
@@ -224,12 +232,11 @@ let private getDefinitionRecordsByEntryIdsAsync
             return []
         else
             let! definitions =
-                (select {
+                select {
                     for d in definitionsTable do
                         where(isIn d.EntryId entryIds)
-                 }
-                 |> selectAsync connection transaction cancellationToken
-                : Task<DefinitionRecord list>)
+                }
+                |> selectAsync<DefinitionRecord> connection transaction cancellationToken
 
             return
                 definitions
@@ -247,12 +254,11 @@ let private getTranslationRecordsByEntryIdsAsync
             return []
         else
             let! translations =
-                (select {
+                select {
                     for t in translationsTable do
                         where(isIn t.EntryId entryIds)
-                 }
-                 |> selectAsync connection transaction cancellationToken
-                : Task<TranslationRecord list>)
+                }
+                |> selectAsync<TranslationRecord> connection transaction cancellationToken
 
             return
                 translations
