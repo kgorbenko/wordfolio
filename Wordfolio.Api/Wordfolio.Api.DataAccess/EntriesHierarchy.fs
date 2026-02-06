@@ -201,24 +201,13 @@ let private getEntryRecordsByVocabularyIdAsync
     (cancellationToken: CancellationToken)
     : Task<EntryRecord list> =
     task {
-        let sql =
-            """
-            SELECT "Id", "VocabularyId", "EntryText", "CreatedAt", "UpdatedAt"
-            FROM wordfolio."Entries"
-            WHERE "VocabularyId" = @vocabularyId
-            ORDER BY "CreatedAt" DESC;
-            """
-
-        let commandDefinition =
-            CommandDefinition(
-                commandText = sql,
-                parameters = {| vocabularyId = vocabularyId |},
-                transaction = transaction,
-                cancellationToken = cancellationToken
-            )
-
-        let! entries = connection.QueryAsync<EntryRecord>(commandDefinition)
-        return entries |> Seq.toList
+        return!
+            select {
+                for e in entriesTable do
+                    where(e.VocabularyId = vocabularyId)
+                    orderByDescending e.CreatedAt
+            }
+            |> selectAsync connection transaction cancellationToken
     }
 
 let private getDefinitionRecordsByEntryIdsAsync
@@ -231,16 +220,14 @@ let private getDefinitionRecordsByEntryIdsAsync
         if entryIds.IsEmpty then
             return []
         else
-            let! definitions =
+            return!
                 select {
                     for d in definitionsTable do
                         where(isIn d.EntryId entryIds)
+                        orderBy d.EntryId
+                        thenBy d.DisplayOrder
                 }
                 |> selectAsync<DefinitionRecord> connection transaction cancellationToken
-
-            return
-                definitions
-                |> List.sortBy(fun definition -> (definition.EntryId, definition.DisplayOrder))
     }
 
 let private getTranslationRecordsByEntryIdsAsync
@@ -253,16 +240,14 @@ let private getTranslationRecordsByEntryIdsAsync
         if entryIds.IsEmpty then
             return []
         else
-            let! translations =
+            return!
                 select {
                     for t in translationsTable do
                         where(isIn t.EntryId entryIds)
+                        orderBy t.EntryId
+                        thenBy t.DisplayOrder
                 }
                 |> selectAsync<TranslationRecord> connection transaction cancellationToken
-
-            return
-                translations
-                |> List.sortBy(fun translation -> (translation.EntryId, translation.DisplayOrder))
     }
 
 let private getExampleRecordsByDefinitionIdsAsync
