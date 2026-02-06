@@ -26,6 +26,15 @@ type VocabularyResponse =
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option }
 
+type VocabularyDetailResponse =
+    { Id: int
+      CollectionId: int
+      CollectionName: string
+      Name: string
+      Description: string option
+      CreatedAt: DateTimeOffset
+      UpdatedAt: DateTimeOffset option }
+
 type CreateVocabularyRequest =
     { Name: string
       Description: string option }
@@ -41,6 +50,15 @@ let private toResponse(vocabulary: Vocabulary) : VocabularyResponse =
       Description = vocabulary.Description
       CreatedAt = vocabulary.CreatedAt
       UpdatedAt = vocabulary.UpdatedAt }
+
+let private toDetailResponse(detail: VocabularyDetail) : VocabularyDetailResponse =
+    { Id = VocabularyId.value detail.Id
+      CollectionId = CollectionId.value detail.CollectionId
+      CollectionName = detail.CollectionName
+      Name = detail.Name
+      Description = detail.Description
+      CreatedAt = detail.CreatedAt
+      UpdatedAt = detail.UpdatedAt }
 
 let private getUserId(user: ClaimsPrincipal) : int option =
     let claim =
@@ -145,11 +163,11 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
 
                             return
                                 match result with
-                                | Ok vocabulary -> Results.Ok(toResponse vocabulary)
+                                | Ok detail -> Results.Ok(toDetailResponse detail)
                                 | Error error -> toErrorResponse error
                     })
         )
-        .Produces<VocabularyResponse>(StatusCodes.Status200OK)
+        .Produces<VocabularyDetailResponse>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)

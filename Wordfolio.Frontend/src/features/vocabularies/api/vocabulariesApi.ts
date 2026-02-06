@@ -9,6 +9,16 @@ export interface VocabularyResponse {
     readonly updatedAt: string | null;
 }
 
+export interface VocabularyDetailResponse {
+    readonly id: number;
+    readonly collectionId: number;
+    readonly collectionName: string;
+    readonly name: string;
+    readonly description: string | null;
+    readonly createdAt: string;
+    readonly updatedAt: string | null;
+}
+
 export interface CreateVocabularyRequest {
     readonly name: string;
     readonly description?: string | null;
@@ -83,7 +93,7 @@ export const vocabulariesApi = {
     getVocabulary: async (
         collectionId: number,
         vocabularyId: number
-    ): Promise<VocabularyResponse> => {
+    ): Promise<VocabularyDetailResponse> => {
         const response = await fetch(
             `${API_BASE_URL}/collections/${collectionId}/vocabularies/${vocabularyId}`,
             {
