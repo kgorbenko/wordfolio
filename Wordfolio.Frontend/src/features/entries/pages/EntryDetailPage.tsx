@@ -3,12 +3,17 @@ import { useNavigate } from "@tanstack/react-router";
 import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 
 import { entryDetailRouteApi } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
 import { collectionsPath } from "../../../routes/_authenticated/collections/routes";
 import { collectionDetailPath } from "../../../routes/_authenticated/collections/routes";
 import { vocabularyDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
-import { entryEditPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
+import {
+    entryEditPath,
+    entryDetailPath,
+} from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
+import { draftsEntryDetailPath } from "../../../routes/_authenticated/drafts/routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
@@ -22,6 +27,8 @@ import { useCollectionQuery } from "../../collections/hooks/useCollectionQuery";
 import { useVocabularyQuery } from "../../vocabularies/hooks/useVocabularyQuery";
 import { useEntryQuery } from "../hooks/useEntryQuery";
 import { useDeleteEntryMutation } from "../hooks/useDeleteEntryMutation";
+import { useMoveEntryMutation } from "../hooks/useMoveEntryMutation";
+import { useMoveEntryDialog } from "../hooks/useMoveEntryDialog";
 import { EntryDetailContent } from "../components/EntryDetailContent";
 
 import styles from "./EntryDetailPage.module.scss";
@@ -32,6 +39,7 @@ export const EntryDetailPage = () => {
     const navigate = useNavigate();
     const { openErrorNotification } = useNotificationContext();
     const { raiseConfirmDialogAsync } = useConfirmDialog();
+    const { raiseMoveEntryDialogAsync, dialogElement } = useMoveEntryDialog();
 
     const numericCollectionId = Number(collectionId);
     const numericVocabularyId = Number(vocabularyId);
@@ -71,6 +79,14 @@ export const EntryDetailPage = () => {
         },
     });
 
+    const moveMutation = useMoveEntryMutation({
+        onError: () => {
+            openErrorNotification({
+                message: "Failed to move entry. Please try again.",
+            });
+        },
+    });
+
     const handleEditClick = useCallback(() => {
         void navigate(
             entryEditPath(
@@ -98,6 +114,44 @@ export const EntryDetailPage = () => {
             });
         }
     }, [entry, raiseConfirmDialogAsync, deleteMutation]);
+
+    const handleMoveClick = useCallback(async () => {
+        assertNonNullable(entry);
+
+        const moveSelection = await raiseMoveEntryDialogAsync({
+            currentVocabularyId: entry.vocabularyId,
+        });
+
+        if (!moveSelection) {
+            return;
+        }
+
+        moveMutation.mutate(
+            {
+                entryId: entry.id,
+                sourceVocabularyId: entry.vocabularyId,
+                targetVocabularyId: moveSelection.vocabularyId,
+            },
+            {
+                onSuccess: (movedEntry) => {
+                    if (moveSelection.isDefault) {
+                        void navigate(draftsEntryDetailPath(movedEntry.id));
+                        return;
+                    }
+
+                    assertNonNullable(moveSelection.collectionId);
+
+                    void navigate(
+                        entryDetailPath(
+                            moveSelection.collectionId,
+                            moveSelection.vocabularyId,
+                            movedEntry.id
+                        )
+                    );
+                },
+            }
+        );
+    }, [entry, raiseMoveEntryDialogAsync, moveMutation, navigate]);
 
     const isLoading =
         isCollectionLoading || isVocabularyLoading || isEntryLoading;
@@ -162,6 +216,14 @@ export const EntryDetailPage = () => {
                     <div className={styles.actions}>
                         <IconButton
                             color="primary"
+                            onClick={handleMoveClick}
+                            disabled={isLoading || moveMutation.isPending}
+                            aria-label="Move entry"
+                        >
+                            <DriveFileMoveIcon />
+                        </IconButton>
+                        <IconButton
+                            color="primary"
                             onClick={handleEditClick}
                             disabled={isLoading}
                             aria-label="Edit entry"
@@ -180,6 +242,7 @@ export const EntryDetailPage = () => {
                 }
             />
             {renderContent()}
+            {dialogElement}
         </PageContainer>
     );
 };

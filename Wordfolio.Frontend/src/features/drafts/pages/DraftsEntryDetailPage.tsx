@@ -3,12 +3,15 @@ import { useNavigate } from "@tanstack/react-router";
 import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 
 import {
     draftsEntryDetailRouteApi,
     draftsPath,
     draftsEntryEditPath,
+    draftsEntryDetailPath,
 } from "../../../routes/_authenticated/drafts/routes";
+import { entryDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
@@ -20,6 +23,8 @@ import { assertNonNullable } from "../../../utils/misc";
 
 import { useEntryQuery } from "../../entries/hooks/useEntryQuery";
 import { useDeleteEntryMutation } from "../../entries/hooks/useDeleteEntryMutation";
+import { useMoveEntryMutation } from "../../entries/hooks/useMoveEntryMutation";
+import { useMoveEntryDialog } from "../../entries/hooks/useMoveEntryDialog";
 import { EntryDetailContent } from "../../entries/components/EntryDetailContent";
 
 import styles from "./DraftsEntryDetailPage.module.scss";
@@ -29,6 +34,7 @@ export const DraftsEntryDetailPage = () => {
     const navigate = useNavigate();
     const { openErrorNotification } = useNotificationContext();
     const { raiseConfirmDialogAsync } = useConfirmDialog();
+    const { raiseMoveEntryDialogAsync, dialogElement } = useMoveEntryDialog();
 
     const numericEntryId = Number(entryId);
 
@@ -46,6 +52,14 @@ export const DraftsEntryDetailPage = () => {
         onError: () => {
             openErrorNotification({
                 message: "Failed to delete entry. Please try again.",
+            });
+        },
+    });
+
+    const moveMutation = useMoveEntryMutation({
+        onError: () => {
+            openErrorNotification({
+                message: "Failed to move entry. Please try again.",
             });
         },
     });
@@ -71,6 +85,44 @@ export const DraftsEntryDetailPage = () => {
             });
         }
     }, [entry, raiseConfirmDialogAsync, deleteMutation]);
+
+    const handleMoveClick = useCallback(async () => {
+        assertNonNullable(entry);
+
+        const moveSelection = await raiseMoveEntryDialogAsync({
+            currentVocabularyId: entry.vocabularyId,
+        });
+
+        if (!moveSelection) {
+            return;
+        }
+
+        moveMutation.mutate(
+            {
+                entryId: entry.id,
+                sourceVocabularyId: entry.vocabularyId,
+                targetVocabularyId: moveSelection.vocabularyId,
+            },
+            {
+                onSuccess: (movedEntry) => {
+                    if (moveSelection.isDefault) {
+                        void navigate(draftsEntryDetailPath(movedEntry.id));
+                        return;
+                    }
+
+                    assertNonNullable(moveSelection.collectionId);
+
+                    void navigate(
+                        entryDetailPath(
+                            moveSelection.collectionId,
+                            moveSelection.vocabularyId,
+                            movedEntry.id
+                        )
+                    );
+                },
+            }
+        );
+    }, [entry, raiseMoveEntryDialogAsync, moveMutation, navigate]);
 
     const isLoading = isEntryLoading;
     const isError = isEntryError;
@@ -109,6 +161,14 @@ export const DraftsEntryDetailPage = () => {
                     <div className={styles.actions}>
                         <IconButton
                             color="primary"
+                            onClick={handleMoveClick}
+                            disabled={isLoading || moveMutation.isPending}
+                            aria-label="Move entry"
+                        >
+                            <DriveFileMoveIcon />
+                        </IconButton>
+                        <IconButton
+                            color="primary"
                             onClick={handleEditClick}
                             disabled={isLoading}
                             aria-label="Edit entry"
@@ -127,6 +187,7 @@ export const DraftsEntryDetailPage = () => {
                 }
             />
             {renderContent()}
+            {dialogElement}
         </PageContainer>
     );
 };
