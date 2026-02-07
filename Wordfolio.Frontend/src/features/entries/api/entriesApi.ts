@@ -46,6 +46,10 @@ export interface UpdateEntryRequest {
     readonly translations: TranslationRequest[];
 }
 
+export interface MoveEntryRequest {
+    readonly vocabularyId: number;
+}
+
 export interface ApiError {
     readonly type?: string;
     readonly title?: string;
@@ -124,6 +128,27 @@ export const entriesApi = {
             headers: getAuthHeaders(),
             body: JSON.stringify(request),
         });
+
+        if (!response.ok) {
+            const error: ApiError = await response.json();
+            throw error;
+        }
+
+        return response.json();
+    },
+
+    moveEntry: async (
+        entryId: number,
+        request: MoveEntryRequest
+    ): Promise<EntryResponse> => {
+        const response = await fetch(
+            `${API_BASE_URL}/entries/${entryId}/move`,
+            {
+                method: "POST",
+                headers: getAuthHeaders(),
+                body: JSON.stringify(request),
+            }
+        );
 
         if (!response.ok) {
             const error: ApiError = await response.json();
