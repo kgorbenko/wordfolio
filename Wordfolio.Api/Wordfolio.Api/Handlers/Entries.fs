@@ -59,6 +59,8 @@ type UpdateEntryRequest =
       Definitions: DefinitionRequest list
       Translations: TranslationRequest list }
 
+type MoveEntryRequest = { VocabularyId: int }
+
 type ExampleResponse =
     { Id: int
       ExampleText: string
@@ -363,4 +365,35 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
+    |> ignore
+
+    group
+        .MapPost(
+            UrlTokens.ById + "/move",
+            Func<int, MoveEntryRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id request user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
+
+                            let! result =
+                                move
+                                    env
+                                    (UserId userId)
+                                    (EntryId id)
+                                    (VocabularyId request.VocabularyId)
+                                    DateTimeOffset.UtcNow
+
+                            return
+                                match result with
+                                | Ok entry -> Results.Ok(toEntryResponse entry)
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .Produces<EntryResponse>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status404NotFound)
     |> ignore

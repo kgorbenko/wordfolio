@@ -36,6 +36,7 @@
     <Compile Include="Entries\GetByIdTests.fs" />
     <Compile Include="Entries\GetByVocabularyIdTests.fs" />
     <Compile Include="Entries\UpdateTests.fs" />
+    <Compile Include="Entries\MoveTests.fs" />
     <Compile Include="Entries\DeleteTests.fs" />
   </ItemGroup>
 

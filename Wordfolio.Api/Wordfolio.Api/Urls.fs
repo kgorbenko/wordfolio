@@ -33,6 +33,8 @@ module Entries =
 
     let entryById(id: int) = $"{Path}/{id}"
 
+    let moveEntryById(id: int) = $"{entryById id}/move"
+
     let entriesByVocabulary(vocabularyId: int) = $"/vocabularies/{vocabularyId}/entries"
 
 module Drafts =

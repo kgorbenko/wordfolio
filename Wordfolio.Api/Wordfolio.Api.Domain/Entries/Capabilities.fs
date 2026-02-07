@@ -31,6 +31,9 @@ type ICreateExamplesForTranslation =
 type IUpdateEntry =
     abstract UpdateEntry: EntryId * string * System.DateTimeOffset -> Task<unit>
 
+type IMoveEntry =
+    abstract MoveEntry: EntryId * VocabularyId * VocabularyId * System.DateTimeOffset -> Task<unit>
+
 type IClearEntryChildren =
     abstract ClearEntryChildren: EntryId -> Task<unit>
 
@@ -69,6 +72,9 @@ module Capabilities =
 
     let updateEntry (env: #IUpdateEntry) entryId entryText updatedAt =
         env.UpdateEntry(entryId, entryText, updatedAt)
+
+    let moveEntry (env: #IMoveEntry) entryId oldVocabularyId newVocabularyId updatedAt =
+        env.MoveEntry(entryId, oldVocabularyId, newVocabularyId, updatedAt)
 
     let clearEntryChildren (env: #IClearEntryChildren) entryId = env.ClearEntryChildren(entryId)
 

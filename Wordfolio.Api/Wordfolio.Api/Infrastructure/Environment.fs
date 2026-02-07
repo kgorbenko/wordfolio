@@ -504,6 +504,21 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                 return ()
             }
 
+    interface IMoveEntry with
+        member _.MoveEntry(EntryId id, VocabularyId oldVocabularyId, VocabularyId newVocabularyId, updatedAt) =
+            task {
+                let parameters: Wordfolio.Api.DataAccess.Entries.EntryMoveParameters =
+                    { Id = id
+                      OldVocabularyId = oldVocabularyId
+                      NewVocabularyId = newVocabularyId
+                      UpdatedAt = updatedAt }
+
+                let! _ =
+                    Wordfolio.Api.DataAccess.Entries.moveEntryAsync parameters connection transaction cancellationToken
+
+                return ()
+            }
+
     interface IClearEntryChildren with
         member _.ClearEntryChildren(EntryId id) =
             task {

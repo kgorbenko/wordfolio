@@ -1523,3 +1523,255 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             let! examples = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
             Assert.Empty(examples)
         }
+
+    [<Fact>]
+    member _.``POST move updates entry vocabulary for owned source and target``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(500, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let sourceVocabulary =
+                Entities.makeVocabulary collection "Source" None DateTimeOffset.UtcNow None false
+
+            let targetVocabulary =
+                Entities.makeVocabulary collection "Target" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry sourceVocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ sourceVocabulary; targetVocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: MoveEntryRequest =
+                { VocabularyId = targetVocabulary.Id }
+
+            let url =
+                Urls.Entries.moveEntryById entry.Id
+
+            let! response = client.PostAsJsonAsync(url, request)
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode)
+
+            let! actual = response.Content.ReadFromJsonAsync<EntryResponse>()
+
+            let expected: EntryResponse =
+                { Id = entry.Id
+                  VocabularyId = targetVocabulary.Id
+                  EntryText = "hello"
+                  CreatedAt = actual.CreatedAt
+                  UpdatedAt = actual.UpdatedAt
+                  Definitions = []
+                  Translations = [] }
+
+            Assert.Equal(expected, actual)
+
+            let! movedEntry = Seeder.getEntryByIdAsync entry.Id fixture.WordfolioSeeder
+
+            let expectedMovedEntry: Entry option =
+                Some
+                    { Id = entry.Id
+                      VocabularyId = targetVocabulary.Id
+                      EntryText = "hello"
+                      CreatedAt = actual.CreatedAt
+                      UpdatedAt = actual.UpdatedAt }
+
+            Assert.Equal(expectedMovedEntry, movedEntry)
+        }
+
+    [<Fact>]
+    member _.``POST move without authentication fails``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            use client = factory.CreateClient()
+
+            let request: MoveEntryRequest =
+                { VocabularyId = 1 }
+
+            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById 1, request)
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``POST move for non-existent entry returns 404``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(501, "user@example.com", "P@ssw0rd!")
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: MoveEntryRequest =
+                { VocabularyId = 999 }
+
+            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById 999999, request)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``POST move returns 404 when target vocabulary does not exist``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(502, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let sourceVocabulary =
+                Entities.makeVocabulary collection "Source" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry sourceVocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ sourceVocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: MoveEntryRequest =
+                { VocabularyId = 999999 }
+
+            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById entry.Id, request)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``POST move returns 404 when target vocabulary belongs to another user``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser1, wordfolioUser1 = factory.CreateUserAsync(503, "user1@example.com", "P@ssw0rd!")
+            let! _, wordfolioUser2 = factory.CreateUserAsync(504, "user2@example.com", "P@ssw0rd!")
+
+            let collection1 =
+                Entities.makeCollection wordfolioUser1 "Collection 1" None DateTimeOffset.UtcNow None false
+
+            let sourceVocabulary =
+                Entities.makeVocabulary collection1 "Source" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry sourceVocabulary "hello" DateTimeOffset.UtcNow None
+
+            let collection2 =
+                Entities.makeCollection wordfolioUser2 "Collection 2" None DateTimeOffset.UtcNow None false
+
+            let foreignTargetVocabulary =
+                Entities.makeVocabulary collection2 "Target" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser1; wordfolioUser2 ]
+                |> Seeder.addCollections [ collection1; collection2 ]
+                |> Seeder.addVocabularies [ sourceVocabulary; foreignTargetVocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser1)
+
+            let request: MoveEntryRequest =
+                { VocabularyId = foreignTargetVocabulary.Id }
+
+            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById entry.Id, request)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``POST move to default vocabulary succeeds``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(505, "user@example.com", "P@ssw0rd!")
+
+            let systemCollection =
+                Entities.makeCollection wordfolioUser "[System] Unsorted" None DateTimeOffset.UtcNow None true
+
+            let defaultVocabulary =
+                Entities.makeVocabulary systemCollection "[Default]" None DateTimeOffset.UtcNow None true
+
+            let regularCollection =
+                Entities.makeCollection wordfolioUser "Regular Collection" None DateTimeOffset.UtcNow None false
+
+            let regularVocabulary =
+                Entities.makeVocabulary regularCollection "Regular Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry regularVocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ systemCollection; regularCollection ]
+                |> Seeder.addVocabularies [ defaultVocabulary; regularVocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: MoveEntryRequest =
+                { VocabularyId = defaultVocabulary.Id }
+
+            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById entry.Id, request)
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode)
+
+            let! actual = response.Content.ReadFromJsonAsync<EntryResponse>()
+
+            let expected: EntryResponse =
+                { Id = entry.Id
+                  VocabularyId = defaultVocabulary.Id
+                  EntryText = "hello"
+                  CreatedAt = actual.CreatedAt
+                  UpdatedAt = actual.UpdatedAt
+                  Definitions = []
+                  Translations = [] }
+
+            Assert.Equal(expected, actual)
+        }
