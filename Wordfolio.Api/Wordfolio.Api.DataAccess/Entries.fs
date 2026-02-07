@@ -35,6 +35,12 @@ type EntryUpdateParameters =
       EntryText: string
       UpdatedAt: DateTimeOffset }
 
+type EntryMoveParameters =
+    { Id: int
+      OldVocabularyId: int
+      NewVocabularyId: int
+      UpdatedAt: DateTimeOffset }
+
 let private fromRecord(record: EntryRecord) : Entry =
     { Id = record.Id
       VocabularyId = record.VocabularyId
@@ -139,6 +145,29 @@ let updateEntryAsync
                     setColumn e.EntryText parameters.EntryText
                     setColumn e.UpdatedAt (Nullable parameters.UpdatedAt)
                     where(e.Id = parameters.Id)
+            }
+            |> updateAsync connection transaction cancellationToken
+
+        return affectedRows
+    }
+
+let moveEntryAsync
+    (parameters: EntryMoveParameters)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<int> =
+    task {
+        let! affectedRows =
+            update {
+                for e in entriesTable do
+                    setColumn e.VocabularyId parameters.NewVocabularyId
+                    setColumn e.UpdatedAt (Nullable parameters.UpdatedAt)
+
+                    where(
+                        e.Id = parameters.Id
+                        && e.VocabularyId = parameters.OldVocabularyId
+                    )
             }
             |> updateAsync connection transaction cancellationToken
 
