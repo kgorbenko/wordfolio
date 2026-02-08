@@ -131,11 +131,27 @@ let create env (parameters: CreateEntryParameters) =
                     match vocabularyIdResult with
                     | Error error -> return Error error
                     | Ok vocabularyId ->
-                        let! maybeExistingEntry = getEntryByTextAndVocabularyId appEnv vocabularyId (validText.Trim())
+                        let! shouldProceed =
+                            if parameters.AllowDuplicate then
+                                Task.FromResult(Ok())
+                            else
+                                task {
+                                    let! maybeExistingEntry =
+                                        getEntryByTextAndVocabularyId appEnv vocabularyId (validText.Trim())
 
-                        match maybeExistingEntry with
-                        | Some existing -> return Error(DuplicateEntry existing.Id)
-                        | None ->
+                                    match maybeExistingEntry with
+                                    | Some existing ->
+                                        let! maybeFullEntry = getEntryById appEnv existing.Id
+
+                                        match maybeFullEntry with
+                                        | Some fullEntry -> return Error(DuplicateEntry fullEntry)
+                                        | None -> return Ok()
+                                    | None -> return Ok()
+                                }
+
+                        match shouldProceed with
+                        | Error error -> return Error error
+                        | Ok() ->
                             match validateDefinitions parameters.Definitions with
                             | Error error -> return Error error
                             | Ok validDefinitions ->
@@ -207,29 +223,23 @@ let update env userId entryId entryText (definitions: DefinitionInput list) (tra
                         else
                             let trimmedText = validText.Trim()
 
-                            let! maybeDuplicate =
-                                getEntryByTextAndVocabularyId appEnv existingEntry.VocabularyId trimmedText
-
-                            match maybeDuplicate with
-                            | Some dup when dup.Id <> entryId -> return Error(DuplicateEntry dup.Id)
-                            | _ ->
-                                match validateDefinitions definitions with
+                            match validateDefinitions definitions with
+                            | Error error -> return Error error
+                            | Ok validDefinitions ->
+                                match validateTranslations translations with
                                 | Error error -> return Error error
-                                | Ok validDefinitions ->
-                                    match validateTranslations translations with
-                                    | Error error -> return Error error
-                                    | Ok validTranslations ->
-                                        do! clearEntryChildren appEnv entryId
-                                        do! updateEntry appEnv entryId trimmedText now
+                                | Ok validTranslations ->
+                                    do! clearEntryChildren appEnv entryId
+                                    do! updateEntry appEnv entryId trimmedText now
 
-                                        do! createTranslationsAsync appEnv entryId validTranslations
-                                        do! createDefinitionsAsync appEnv entryId validDefinitions
+                                    do! createTranslationsAsync appEnv entryId validTranslations
+                                    do! createDefinitionsAsync appEnv entryId validDefinitions
 
-                                        let! maybeUpdated = getEntryById appEnv entryId
+                                    let! maybeUpdated = getEntryById appEnv entryId
 
-                                        match maybeUpdated with
-                                        | Some entry -> return Ok entry
-                                        | None -> return Error(EntryNotFound entryId)
+                                    match maybeUpdated with
+                                    | Some entry -> return Ok entry
+                                    | None -> return Error(EntryNotFound entryId)
         })
 
 let move env userId entryId targetVocabularyId now =

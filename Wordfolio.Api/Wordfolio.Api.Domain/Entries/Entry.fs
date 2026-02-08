@@ -65,6 +65,7 @@ type CreateEntryParameters =
       EntryText: string
       Definitions: DefinitionInput list
       Translations: TranslationInput list
+      AllowDuplicate: bool
       CreatedAt: DateTimeOffset }
 
 type DraftsVocabularyData =

@@ -57,7 +57,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                         Source = TranslationSourceDto.Manual
                         Examples =
                           [ { ExampleText = "Hola, mundo!"
-                              Source = ExampleSourceDto.Custom } ] } ] }
+                              Source = ExampleSourceDto.Custom } ] } ]
+                  AllowDuplicate = None }
 
             let url = Urls.Entries.Path
 
@@ -167,7 +168,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                     [ { DefinitionText = "a greeting"
                         Source = DefinitionSourceDto.Manual
                         Examples = [] } ]
-                  Translations = [] }
+                  Translations = []
+                  AllowDuplicate = None }
 
             let url = Urls.Entries.Path
 
@@ -208,7 +210,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                     [ { DefinitionText = "a greeting"
                         Source = DefinitionSourceDto.Manual
                         Examples = [] } ]
-                  Translations = [] }
+                  Translations = []
+                  AllowDuplicate = None }
 
             let url = Urls.Entries.Path
 
@@ -246,7 +249,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                 { VocabularyId = Some vocabulary.Id
                   EntryText = "hello"
                   Definitions = []
-                  Translations = [] }
+                  Translations = []
+                  AllowDuplicate = None }
 
             let url = Urls.Entries.Path
 
@@ -299,7 +303,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                               Source = ExampleSourceDto.Custom }
                             { ExampleText = "Example 6"
                               Source = ExampleSourceDto.Custom } ] } ]
-                  Translations = [] }
+                  Translations = []
+                  AllowDuplicate = None }
 
             let url = Urls.Entries.Path
 
@@ -344,13 +349,97 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                     [ { DefinitionText = "a greeting"
                         Source = DefinitionSourceDto.Manual
                         Examples = [] } ]
-                  Translations = [] }
+                  Translations = []
+                  AllowDuplicate = None }
 
             let url = Urls.Entries.Path
 
             let! response = client.PostAsJsonAsync(url, request)
 
             Assert.Equal(HttpStatusCode.Conflict, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``POST creates duplicate entry when AllowDuplicate is true``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(319, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let existingEntry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ existingEntry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: CreateEntryRequest =
+                { VocabularyId = Some vocabulary.Id
+                  EntryText = "hello"
+                  Definitions =
+                    [ { DefinitionText = "a greeting"
+                        Source = DefinitionSourceDto.Manual
+                        Examples = [] } ]
+                  Translations = []
+                  AllowDuplicate = Some true }
+
+            let url = Urls.Entries.Path
+
+            let! response = client.PostAsJsonAsync(url, request)
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode)
+
+            let! actual = response.Content.ReadFromJsonAsync<EntryResponse>()
+
+            let expectedDefinition: DefinitionResponse =
+                { Id = actual.Definitions.[0].Id
+                  DefinitionText = "a greeting"
+                  Source = DefinitionSourceDto.Manual
+                  DisplayOrder = 0
+                  Examples = [] }
+
+            let expected: EntryResponse =
+                { Id = actual.Id
+                  VocabularyId = vocabulary.Id
+                  EntryText = "hello"
+                  CreatedAt = actual.CreatedAt
+                  UpdatedAt = None
+                  Definitions = [ expectedDefinition ]
+                  Translations = [] }
+
+            Assert.Equal(expected, actual)
+
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+
+            let dbEntriesSorted =
+                dbEntries |> List.sortBy(fun e -> e.Id)
+
+            let expectedDbEntries =
+                [ { dbEntriesSorted.[0] with
+                      EntryText = "hello"
+                      VocabularyId = vocabulary.Id }
+                  { dbEntriesSorted.[1] with
+                      EntryText = "hello"
+                      VocabularyId = vocabulary.Id } ]
+
+            Assert.Equal<Entry list>(expectedDbEntries, dbEntriesSorted)
         }
 
     [<Fact>]
@@ -377,7 +466,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                     [ { DefinitionText = "a greeting"
                         Source = DefinitionSourceDto.Manual
                         Examples = [] } ]
-                  Translations = [] }
+                  Translations = []
+                  AllowDuplicate = None }
 
             let url = Urls.Entries.Path
 
@@ -967,53 +1057,6 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
         }
 
     [<Fact>]
-    member _.``PUT with duplicate entry text in same vocabulary fails``() : Task =
-        task {
-            do! fixture.ResetDatabaseAsync()
-
-            use factory =
-                new WebApplicationFactory(fixture)
-
-            let! identityUser, wordfolioUser = factory.CreateUserAsync(315, "user@example.com", "P@ssw0rd!")
-
-            let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
-
-            let vocabulary =
-                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
-
-            let entry1 =
-                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
-
-            let entry2 =
-                Entities.makeEntry vocabulary "world" DateTimeOffset.UtcNow None
-
-            do!
-                fixture.WordfolioSeeder
-                |> Seeder.addUsers [ wordfolioUser ]
-                |> Seeder.addCollections [ collection ]
-                |> Seeder.addVocabularies [ vocabulary ]
-                |> Seeder.addEntries [ entry1; entry2 ]
-                |> Seeder.saveChangesAsync
-
-            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
-
-            let request: UpdateEntryRequest =
-                { EntryText = "hello"
-                  Definitions =
-                    [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
-                        Examples = [] } ]
-                  Translations = [] }
-
-            let url = Urls.Entries.entryById entry2.Id
-
-            let! response = client.PutAsJsonAsync(url, request)
-
-            Assert.Equal(HttpStatusCode.Conflict, response.StatusCode)
-        }
-
-    [<Fact>]
     member _.``PUT with same entry text succeeds``() : Task =
         task {
             do! fixture.ResetDatabaseAsync()
@@ -1174,7 +1217,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                     [ { DefinitionText = "a greeting"
                         Source = DefinitionSourceDto.Manual
                         Examples = [] } ]
-                  Translations = [] }
+                  Translations = []
+                  AllowDuplicate = None }
 
             let url = Urls.Entries.Path
 
@@ -1260,7 +1304,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                     [ { DefinitionText = "a greeting"
                         Source = DefinitionSourceDto.Manual
                         Examples = [] } ]
-                  Translations = [] }
+                  Translations = []
+                  AllowDuplicate = None }
 
             let url = Urls.Entries.Path
 

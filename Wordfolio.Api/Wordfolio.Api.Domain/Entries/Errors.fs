@@ -7,7 +7,7 @@ type EntryError =
     | EntryTextRequired
     | EntryTextTooLong of maxLength: int
     | VocabularyNotFoundOrAccessDenied of VocabularyId
-    | DuplicateEntry of existingEntryId: EntryId
+    | DuplicateEntry of existingEntry: Entry
     | NoDefinitionsOrTranslations
     | TooManyExamples of maxCount: int
     | ExampleTextTooLong of maxLength: int
