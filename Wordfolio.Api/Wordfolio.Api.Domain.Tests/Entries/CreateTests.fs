@@ -187,6 +187,7 @@ let makeCreateParams userId vocabularyId entryText definitions translations crea
       EntryText = entryText
       Definitions = definitions
       Translations = translations
+      AllowDuplicate = false
       CreatedAt = createdAt }
 
 [<Fact>]
@@ -504,15 +505,17 @@ let ``returns error when vocabulary is not found``() =
 [<Fact>]
 let ``returns error when duplicate entry exists``() =
     task {
-        let vocabulary =
-            makeVocabulary 1 1 "Test Vocabulary"
+        let now = DateTimeOffset.UtcNow
+
+        let existingDefinition =
+            makeDefinition 1 "existing definition" DefinitionSource.Manual 0 []
 
         let existingEntry =
-            makeEntry 1 1 "test word" DateTimeOffset.UtcNow [] []
+            makeEntry 1 1 "test word" now [ existingDefinition ] []
 
         let env =
             TestEnv(
-                getEntryById = (fun _ -> failwith "Should not be called"),
+                getEntryById = (fun _ -> Task.FromResult(Some existingEntry)),
                 getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(Some existingEntry)),
                 createEntry = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -531,9 +534,50 @@ let ``returns error when duplicate entry exists``() =
                     "test word"
                     [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
                     []
-                    DateTimeOffset.UtcNow)
+                    now)
 
-        Assert.Equal(Error(DuplicateEntry(EntryId 1)), result)
+        Assert.Equal(Error(DuplicateEntry existingEntry), result)
+    }
+
+[<Fact>]
+let ``creates entry when duplicate exists and AllowDuplicate is true``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+
+        let existingEntry =
+            makeEntry 1 1 "test word" now [] []
+
+        let definitionInputs =
+            [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]
+
+        let expectedDefinition =
+            makeDefinition 2 "A test definition" DefinitionSource.Manual 0 []
+
+        let createdEntry =
+            makeEntry 2 1 "test word" now [ expectedDefinition ] []
+
+        let env =
+            TestEnv(
+                getEntryById = (fun _ -> Task.FromResult(Some createdEntry)),
+                getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(Some existingEntry)),
+                createEntry = (fun _ -> Task.FromResult(EntryId 2)),
+                createDefinition = (fun _ -> Task.FromResult(DefinitionId 2)),
+                createTranslation = (fun _ -> failwith "Should not be called"),
+                createExamplesForDefinition = (fun _ -> Task.FromResult(())),
+                createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
+            )
+
+        let parameters =
+            { makeCreateParams (UserId 1) (VocabularyId 1) "test word" definitionInputs [] now with
+                AllowDuplicate = true }
+
+        let! result = create env parameters
+
+        Assert.Equal(Ok createdEntry, result)
+
+        Assert.Single(env.CreateEntryCalls)
+        |> ignore
     }
 
 [<Fact>]

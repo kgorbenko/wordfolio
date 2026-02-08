@@ -52,7 +52,8 @@ type CreateEntryRequest =
     { VocabularyId: int option
       EntryText: string
       Definitions: DefinitionRequest list
-      Translations: TranslationRequest list }
+      Translations: TranslationRequest list
+      AllowDuplicate: bool option }
 
 type UpdateEntryRequest =
     { EntryText: string
@@ -191,8 +192,11 @@ let private toErrorResponse(error: EntryError) : IResult =
     | EntryTextTooLong maxLength ->
         Results.BadRequest({| error = $"Entry text must be at most {maxLength} characters" |})
     | VocabularyNotFoundOrAccessDenied _ -> Results.NotFound({| error = "Vocabulary not found" |})
-    | DuplicateEntry existingId ->
-        Results.Conflict({| error = $"Duplicate entry exists with ID {EntryId.value existingId}" |})
+    | DuplicateEntry existingEntry ->
+        Results.Conflict(
+            {| error = "An entry with this text already exists in the vocabulary"
+               existingEntry = toEntryResponse existingEntry |}
+        )
     | NoDefinitionsOrTranslations -> Results.BadRequest({| error = "At least one definition or translation required" |})
     | TooManyExamples maxCount -> Results.BadRequest({| error = $"Too many examples (max {maxCount} per item)" |})
     | ExampleTextTooLong maxLength ->
@@ -254,6 +258,9 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                                   Translations =
                                     request.Translations
                                     |> List.map toTranslationInput
+                                  AllowDuplicate =
+                                    request.AllowDuplicate
+                                    |> Option.defaultValue false
                                   CreatedAt = DateTimeOffset.UtcNow }
 
                             let! result = create env parameters
@@ -362,5 +369,4 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status404NotFound)
-        .Produces(StatusCodes.Status409Conflict)
     |> ignore
