@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
 import { entryCreateRouteApi } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
@@ -11,6 +11,7 @@ import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
 import { RetryOnError } from "../../../components/common/RetryOnError";
 import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
 import { useNotificationContext } from "../../../contexts/NotificationContext";
+import { useDuplicateEntryDialog } from "../hooks/useDuplicateEntryDialog";
 import { useVocabularyQuery } from "../../vocabularies/hooks/useVocabularyQuery";
 import { useCreateEntryMutation } from "../hooks/useCreateEntryMutation";
 import { CreateEntryRequest } from "../api/entriesApi";
@@ -21,9 +22,12 @@ export const CreateEntryPage = () => {
     const navigate = useNavigate();
     const { openSuccessNotification, openErrorNotification } =
         useNotificationContext();
+    const { raiseDuplicateEntryDialogAsync, dialogElement } =
+        useDuplicateEntryDialog();
 
     const numericCollectionId = Number(collectionId);
     const numericVocabularyId = Number(vocabularyId);
+    const pendingRequestRef = useRef<CreateEntryRequest | null>(null);
 
     const {
         data: vocabulary,
@@ -44,14 +48,26 @@ export const CreateEntryPage = () => {
                 message: "Failed to create entry. Please try again.",
             });
         },
+        onDuplicateEntry: async (existingEntry) => {
+            const addAnyway =
+                await raiseDuplicateEntryDialogAsync(existingEntry);
+            if (addAnyway && pendingRequestRef.current) {
+                createMutation.mutate({
+                    ...pendingRequestRef.current,
+                    allowDuplicate: true,
+                });
+            }
+        },
     });
 
     const handleSave = useCallback(
         (request: CreateEntryRequest) => {
-            createMutation.mutate({
+            const fullRequest = {
                 ...request,
                 vocabularyId: numericVocabularyId,
-            });
+            };
+            pendingRequestRef.current = fullRequest;
+            createMutation.mutate(fullRequest);
         },
         [createMutation, numericVocabularyId]
     );
@@ -127,6 +143,7 @@ export const CreateEntryPage = () => {
             />
             <PageHeader title="Create Entry" />
             {renderContent()}
+            {dialogElement}
         </PageContainer>
     );
 };

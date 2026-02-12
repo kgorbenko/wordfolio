@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
 import { draftsPath } from "../../../routes/_authenticated/drafts/routes";
@@ -6,6 +6,7 @@ import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
 import { useNotificationContext } from "../../../contexts/NotificationContext";
+import { useDuplicateEntryDialog } from "../../entries/hooks/useDuplicateEntryDialog";
 import { useCreateEntryMutation } from "../../entries/hooks/useCreateEntryMutation";
 import { CreateEntryRequest } from "../../entries/api/entriesApi";
 import { EntryLookupForm } from "../../entries/components/EntryLookupForm";
@@ -14,6 +15,9 @@ export const CreateDraftPage = () => {
     const navigate = useNavigate();
     const { openSuccessNotification, openErrorNotification } =
         useNotificationContext();
+    const { raiseDuplicateEntryDialogAsync, dialogElement } =
+        useDuplicateEntryDialog();
+    const pendingRequestRef = useRef<CreateEntryRequest | null>(null);
 
     const createMutation = useCreateEntryMutation({
         onSuccess: () => {
@@ -25,10 +29,21 @@ export const CreateDraftPage = () => {
                 message: "Failed to create draft. Please try again.",
             });
         },
+        onDuplicateEntry: async (existingEntry) => {
+            const addAnyway =
+                await raiseDuplicateEntryDialogAsync(existingEntry);
+            if (addAnyway && pendingRequestRef.current) {
+                createMutation.mutate({
+                    ...pendingRequestRef.current,
+                    allowDuplicate: true,
+                });
+            }
+        },
     });
 
     const handleSave = useCallback(
         (request: CreateEntryRequest) => {
+            pendingRequestRef.current = request;
             createMutation.mutate(request);
         },
         [createMutation]
@@ -63,6 +78,7 @@ export const CreateDraftPage = () => {
                 autoFocus={true}
                 variant="page"
             />
+            {dialogElement}
         </PageContainer>
     );
 };

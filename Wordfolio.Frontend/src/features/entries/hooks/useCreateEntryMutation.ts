@@ -5,11 +5,13 @@ import {
     CreateEntryRequest,
     EntryResponse,
     ApiError,
+    isDuplicateEntryError,
 } from "../api/entriesApi";
 
 interface UseCreateEntryMutationOptions {
     readonly onSuccess?: (data: EntryResponse) => void;
     readonly onError?: (error: ApiError) => void;
+    readonly onDuplicateEntry?: (existingEntry: EntryResponse) => void;
 }
 
 export function useCreateEntryMutation(
@@ -32,6 +34,12 @@ export function useCreateEntryMutation(
             });
             options?.onSuccess?.(data);
         },
-        onError: options?.onError,
+        onError: (error: ApiError) => {
+            if (isDuplicateEntryError(error) && options?.onDuplicateEntry) {
+                options.onDuplicateEntry(error.existingEntry!);
+            } else {
+                options?.onError?.(error);
+            }
+        },
     });
 }
