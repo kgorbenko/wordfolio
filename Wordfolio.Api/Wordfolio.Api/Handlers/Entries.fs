@@ -194,7 +194,7 @@ let private toErrorResponse(error: EntryError) : IResult =
     | VocabularyNotFoundOrAccessDenied _ -> Results.NotFound({| error = "Vocabulary not found" |})
     | DuplicateEntry existingEntry ->
         Results.Conflict(
-            {| error = "An entry with this text already exists in the vocabulary"
+            {| error = "A matching entry already exists in this vocabulary"
                existingEntry = toEntryResponse existingEntry |}
         )
     | NoDefinitionsOrTranslations -> Results.BadRequest({| error = "At least one definition or translation required" |})

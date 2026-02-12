@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Outlet, useNavigate } from "@tanstack/react-router";
 import { Box, useMediaQuery, useTheme, Toolbar } from "@mui/material";
 
 import { useAuthStore } from "../../stores/authStore";
 import { useUiStore } from "../../stores/uiStore";
 import { useNotificationContext } from "../../contexts/NotificationContext";
+import { useDuplicateEntryDialog } from "../../features/entries/hooks/useDuplicateEntryDialog";
 import { useCreateEntryMutation } from "../../features/entries/hooks/useCreateEntryMutation";
 import { CreateEntryRequest } from "../../features/entries/api/entriesApi";
 import { WordEntrySheet } from "../../features/entries";
@@ -20,8 +21,11 @@ export const AuthenticatedLayout = () => {
     const { clearAuth } = useAuthStore();
     const { openSuccessNotification, openErrorNotification } =
         useNotificationContext();
+    const { raiseDuplicateEntryDialogAsync, dialogElement } =
+        useDuplicateEntryDialog();
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const pendingRequestRef = useRef<CreateEntryRequest | null>(null);
 
     const createEntryMutation = useCreateEntryMutation({
         onSuccess: () => {
@@ -30,6 +34,16 @@ export const AuthenticatedLayout = () => {
         },
         onError: () => {
             openErrorNotification({ message: "Failed to save entry" });
+        },
+        onDuplicateEntry: async (existingEntry) => {
+            const addAnyway =
+                await raiseDuplicateEntryDialogAsync(existingEntry);
+            if (addAnyway && pendingRequestRef.current) {
+                createEntryMutation.mutate({
+                    ...pendingRequestRef.current,
+                    allowDuplicate: true,
+                });
+            }
         },
     });
 
@@ -40,6 +54,7 @@ export const AuthenticatedLayout = () => {
 
     const handleSaveEntry = useCallback(
         (request: CreateEntryRequest) => {
+            pendingRequestRef.current = request;
             createEntryMutation.mutate(request);
         },
         [createEntryMutation]
@@ -88,6 +103,7 @@ export const AuthenticatedLayout = () => {
                 onSave={handleSaveEntry}
                 onLookupError={handleLookupError}
             />
+            {dialogElement}
         </Box>
     );
 };

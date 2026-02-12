@@ -38,6 +38,7 @@ export interface CreateEntryRequest {
     readonly entryText: string;
     readonly definitions: DefinitionRequest[];
     readonly translations: TranslationRequest[];
+    readonly allowDuplicate?: boolean;
 }
 
 export interface UpdateEntryRequest {
@@ -51,7 +52,12 @@ export interface ApiError {
     readonly title?: string;
     readonly status?: number;
     readonly errors?: Record<string, string[]>;
+    readonly error?: string;
+    readonly existingEntry?: EntryResponse;
 }
+
+export const isDuplicateEntryError = (error: ApiError): boolean =>
+    error.status === 409 && error.existingEntry !== undefined;
 
 const API_BASE_URL = "/api";
 
@@ -108,7 +114,11 @@ export const entriesApi = {
         });
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
+            const errorBody = await response.json();
+            const error: ApiError = {
+                ...errorBody,
+                status: response.status,
+            };
             throw error;
         }
 
