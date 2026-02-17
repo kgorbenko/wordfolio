@@ -10,16 +10,23 @@ import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
 import { RetryOnError } from "../../../components/common/RetryOnError";
 import { CollectionsContent } from "../components/CollectionsContent";
 import { useCollectionsQuery } from "../hooks/useCollectionsQuery";
+import { CollectionSortBy, SortDirection } from "../api/collectionsApi";
 
 export const CollectionsPage = () => {
     const navigate = useNavigate();
+
+    const collectionsQuery = {
+        search: "",
+        sortBy: CollectionSortBy.UpdatedAt,
+        sortDirection: SortDirection.Desc,
+    };
 
     const {
         data: collections,
         isLoading,
         isError,
         refetch,
-    } = useCollectionsQuery();
+    } = useCollectionsQuery(collectionsQuery);
 
     const handleCollectionClick = useCallback(
         (id: number) => {

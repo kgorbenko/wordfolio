@@ -1,12 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { collectionsApi } from "../api/collectionsApi";
-import { mapCollections } from "../api/mappers";
+import {
+    collectionsApi,
+    SearchUserCollectionsQuery,
+} from "../api/collectionsApi";
+import { mapCollectionOverview } from "../api/mappers";
 
-export const useCollectionsQuery = () =>
+export const useCollectionsQuery = (query: SearchUserCollectionsQuery) =>
     useQuery({
-        queryKey: ["collections"],
+        queryKey: ["collections", query],
         queryFn: async () => {
-            const response = await collectionsApi.getAll();
-            return mapCollections(response);
+            const response =
+                await collectionsApi.getHierarchyCollections(query);
+            return response.map(mapCollectionOverview);
         },
     });

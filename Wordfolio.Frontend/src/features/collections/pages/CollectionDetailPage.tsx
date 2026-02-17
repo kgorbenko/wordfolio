@@ -20,11 +20,12 @@ import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
 import { RetryOnError } from "../../../components/common/RetryOnError";
 import { CollectionDetailContent } from "../components/CollectionDetailContent";
 import { useCollectionQuery } from "../hooks/useCollectionQuery";
-import { useVocabulariesQuery } from "../hooks/useVocabulariesQuery";
+import { useVocabulariesSummaryQuery } from "../hooks/useVocabulariesSummaryQuery";
 import { useDeleteCollectionMutation } from "../hooks/useDeleteCollectionMutation";
 import { useConfirmDialog } from "../../../contexts/ConfirmDialogContext";
 import { useNotificationContext } from "../../../contexts/NotificationContext";
 import { assertNonNullable } from "../../../utils/misc";
+import { SortDirection, VocabularySummarySortBy } from "../api/collectionsApi";
 
 import styles from "./CollectionDetailPage.module.scss";
 
@@ -48,7 +49,11 @@ export const CollectionDetailPage = () => {
         isLoading: isVocabulariesLoading,
         isError: isVocabulariesError,
         refetch: refetchVocabularies,
-    } = useVocabulariesQuery(numericId);
+    } = useVocabulariesSummaryQuery({
+        collectionId: numericId,
+        sortBy: VocabularySummarySortBy.UpdatedAt,
+        sortDirection: SortDirection.Desc,
+    });
 
     const isLoading = isCollectionLoading || isVocabulariesLoading;
     const isError = isCollectionError || isVocabulariesError;
@@ -89,7 +94,7 @@ export const CollectionDetailPage = () => {
 
     const breadcrumbs: BreadcrumbItem[] = [
         { label: "Collections", ...collectionsPath() },
-        isLoading
+        isCollectionLoading
             ? { label: "Loading..." }
             : { label: collection?.name ?? "Collection" },
     ];
@@ -99,14 +104,14 @@ export const CollectionDetailPage = () => {
             return <ContentSkeleton variant="detail" />;
         }
 
-        if (isError || !collection || !vocabularies) {
+        if (isError || !collection) {
             return (
                 <RetryOnError
                     title="Failed to Load Collection"
                     description="Something went wrong while loading this collection."
                     onRetry={() => {
-                        void refetchCollection();
-                        void refetchVocabularies();
+                        if (isCollectionError) void refetchCollection();
+                        if (isVocabulariesError) void refetchVocabularies();
                     }}
                 />
             );
@@ -114,7 +119,7 @@ export const CollectionDetailPage = () => {
 
         return (
             <CollectionDetailContent
-                vocabularies={vocabularies}
+                vocabularies={vocabularies ?? []}
                 onVocabularyClick={handleVocabularyClick}
                 onCreateVocabularyClick={handleCreateVocabulary}
             />
@@ -122,6 +127,8 @@ export const CollectionDetailPage = () => {
     }, [
         isLoading,
         isError,
+        isCollectionError,
+        isVocabulariesError,
         collection,
         vocabularies,
         refetchCollection,
@@ -135,7 +142,7 @@ export const CollectionDetailPage = () => {
             <BreadcrumbNav items={breadcrumbs} />
             <PageHeader
                 title={
-                    isLoading
+                    isCollectionLoading
                         ? "Loading..."
                         : (collection?.name ?? "Collection")
                 }
