@@ -112,6 +112,75 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
           Definitions = definitions
           Translations = translations }
 
+    let toVocabularySummaryDomain
+        (v: Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummary)
+        : Wordfolio.Api.Domain.CollectionsHierarchy.VocabularySummary =
+        { Id = VocabularyId v.Id
+          Name = v.Name
+          Description = v.Description
+          CreatedAt = v.CreatedAt
+          UpdatedAt = v.UpdatedAt
+          EntryCount = v.EntryCount }
+
+    let toCollectionSummaryDomain
+        (c: Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionSummary)
+        : Wordfolio.Api.Domain.CollectionsHierarchy.CollectionSummary =
+        { Id = CollectionId c.Id
+          Name = c.Name
+          Description = c.Description
+          CreatedAt = c.CreatedAt
+          UpdatedAt = c.UpdatedAt
+          Vocabularies =
+            c.Vocabularies
+            |> List.map toVocabularySummaryDomain }
+
+    let toCollectionOverviewDomain
+        (c: Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionOverview)
+        : Wordfolio.Api.Domain.CollectionsHierarchy.CollectionOverview =
+        { Id = CollectionId c.Id
+          Name = c.Name
+          Description = c.Description
+          CreatedAt = c.CreatedAt
+          UpdatedAt = c.UpdatedAt
+          VocabularyCount = c.VocabularyCount }
+
+    let toCollectionSortByDataAccess(sortBy: CollectionSortBy) =
+        match sortBy with
+        | CollectionSortBy.Name -> Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionSortBy.Name
+        | CollectionSortBy.CreatedAt -> Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionSortBy.CreatedAt
+        | CollectionSortBy.UpdatedAt -> Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionSortBy.UpdatedAt
+        | CollectionSortBy.VocabularyCount ->
+            Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionSortBy.VocabularyCount
+
+    let toSortDirectionDataAccess(sortDirection: SortDirection) =
+        match sortDirection with
+        | SortDirection.Asc -> Wordfolio.Api.DataAccess.CollectionsHierarchy.SortDirection.Asc
+        | SortDirection.Desc -> Wordfolio.Api.DataAccess.CollectionsHierarchy.SortDirection.Desc
+
+    let toSearchUserCollectionsQueryDataAccess
+        (query: SearchUserCollectionsQuery)
+        : Wordfolio.Api.DataAccess.CollectionsHierarchy.SearchUserCollectionsQuery =
+        { Search = query.Search
+          SortBy = toCollectionSortByDataAccess query.SortBy
+          SortDirection = toSortDirectionDataAccess query.SortDirection }
+
+    let toVocabularySummarySortByDataAccess(sortBy: VocabularySummarySortBy) =
+        match sortBy with
+        | VocabularySummarySortBy.Name -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.Name
+        | VocabularySummarySortBy.CreatedAt ->
+            Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.CreatedAt
+        | VocabularySummarySortBy.UpdatedAt ->
+            Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.UpdatedAt
+        | VocabularySummarySortBy.EntryCount ->
+            Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.EntryCount
+
+    let toVocabularySummaryQueryDataAccess
+        (query: VocabularySummaryQuery)
+        : Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummaryQuery =
+        { Search = query.Search
+          SortBy = toVocabularySummarySortByDataAccess query.SortBy
+          SortDirection = toSortDirectionDataAccess query.SortDirection }
+
     interface IGetCollectionById with
         member _.GetCollectionById(CollectionId id) =
             task {
@@ -564,21 +633,42 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
 
                 return
                     results
-                    |> List.map(fun c ->
-                        { Id = CollectionId c.Id
-                          Name = c.Name
-                          Description = c.Description
-                          CreatedAt = c.CreatedAt
-                          UpdatedAt = c.UpdatedAt
-                          Vocabularies =
-                            c.Vocabularies
-                            |> List.map(fun v ->
-                                { Id = VocabularyId v.Id
-                                  Name = v.Name
-                                  Description = v.Description
-                                  CreatedAt = v.CreatedAt
-                                  UpdatedAt = v.UpdatedAt
-                                  EntryCount = v.EntryCount }) })
+                    |> List.map toCollectionSummaryDomain
+            }
+
+    interface ISearchUserCollections with
+        member _.SearchUserCollections(UserId userId, query) =
+            task {
+                let! results =
+                    Wordfolio.Api.DataAccess.CollectionsHierarchy.searchUserCollectionsAsync
+                        userId
+                        (query
+                         |> toSearchUserCollectionsQueryDataAccess)
+                        connection
+                        transaction
+                        cancellationToken
+
+                return
+                    results
+                    |> List.map toCollectionOverviewDomain
+            }
+
+    interface ISearchCollectionVocabularies with
+        member _.SearchCollectionVocabularies(UserId userId, CollectionId collectionId, query) =
+            task {
+                let! results =
+                    Wordfolio.Api.DataAccess.CollectionsHierarchy.searchCollectionVocabulariesAsync
+                        userId
+                        collectionId
+                        (query
+                         |> toVocabularySummaryQueryDataAccess)
+                        connection
+                        transaction
+                        cancellationToken
+
+                return
+                    results
+                    |> List.map toVocabularySummaryDomain
             }
 
     interface IGetDefaultVocabularySummary with

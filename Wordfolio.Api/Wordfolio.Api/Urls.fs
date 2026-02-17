@@ -16,6 +16,18 @@ module CollectionsHierarchy =
     [<Literal>]
     let Path = "/collections-hierarchy"
 
+    [<Literal>]
+    let CollectionsPath = "/collections"
+
+    [<Literal>]
+    let VocabulariesByCollectionPath =
+        "/collections/{collectionId:int}/vocabularies"
+
+    let collections() = $"{Path}{CollectionsPath}"
+
+    let vocabulariesByCollection(collectionId: int) =
+        $"{collections()}/{collectionId}/vocabularies"
+
 module Vocabularies =
     [<Literal>]
     let Path =
