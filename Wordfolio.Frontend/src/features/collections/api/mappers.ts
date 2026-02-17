@@ -1,7 +1,9 @@
 import {
     CollectionSummaryResponse,
+    CollectionOverviewResponse,
     CollectionResponse,
     VocabularyResponse,
+    VocabularySummaryResponse,
 } from "./collectionsApi";
 import { Collection, Vocabulary } from "../types";
 
@@ -30,6 +32,30 @@ export const mapCollectionDetail = (
 export const mapCollections = (
     responses: CollectionSummaryResponse[]
 ): Collection[] => responses.map(mapCollectionSummary);
+
+export const mapVocabularySummary = (
+    collectionId: number,
+    response: VocabularySummaryResponse
+): Vocabulary => ({
+    id: response.id,
+    collectionId,
+    name: response.name,
+    description: response.description,
+    entryCount: response.entryCount,
+    createdAt: new Date(response.createdAt),
+    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
+});
+
+export const mapCollectionOverview = (
+    response: CollectionOverviewResponse
+): Collection => ({
+    id: response.id,
+    name: response.name,
+    description: response.description,
+    vocabularyCount: response.vocabularyCount,
+    createdAt: new Date(response.createdAt),
+    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
+});
 
 export const mapVocabularyResponse = (
     response: VocabularyResponse

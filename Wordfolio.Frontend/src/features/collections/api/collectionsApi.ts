@@ -47,6 +47,47 @@ export interface CollectionSummaryResponse {
     readonly vocabularies: VocabularySummaryResponse[];
 }
 
+export interface CollectionOverviewResponse {
+    readonly id: number;
+    readonly name: string;
+    readonly description: string | null;
+    readonly createdAt: string;
+    readonly updatedAt: string | null;
+    readonly vocabularyCount: number;
+}
+
+export enum CollectionSortBy {
+    Name = 0,
+    CreatedAt = 1,
+    UpdatedAt = 2,
+    VocabularyCount = 3,
+}
+
+export enum VocabularySummarySortBy {
+    Name = 0,
+    CreatedAt = 1,
+    UpdatedAt = 2,
+    EntryCount = 3,
+}
+
+export enum SortDirection {
+    Asc = 0,
+    Desc = 1,
+}
+
+export interface SearchUserCollectionsQuery {
+    readonly search?: string;
+    readonly sortBy: CollectionSortBy;
+    readonly sortDirection: SortDirection;
+}
+
+export interface GetVocabulariesSummaryQuery {
+    readonly collectionId: number;
+    readonly search?: string;
+    readonly sortBy: VocabularySummarySortBy;
+    readonly sortDirection: SortDirection;
+}
+
 export interface CollectionsHierarchyResponse {
     readonly collections: CollectionSummaryResponse[];
     readonly defaultVocabulary: VocabularySummaryResponse | null;
@@ -84,6 +125,60 @@ export const collectionsApi = {
 
         const data: CollectionsHierarchyResponse = await response.json();
         return data.collections;
+    },
+
+    getHierarchyCollections: async (
+        query: SearchUserCollectionsQuery
+    ): Promise<CollectionOverviewResponse[]> => {
+        const params = new URLSearchParams();
+        if (query.search && query.search.trim().length > 0) {
+            params.set("search", query.search.trim());
+        }
+
+        params.set("sortBy", String(query.sortBy));
+        params.set("sortDirection", String(query.sortDirection));
+
+        const response = await fetch(
+            `${API_BASE_URL}/collections-hierarchy/collections?${params.toString()}`,
+            {
+                method: "GET",
+                headers: getAuthHeaders(),
+            }
+        );
+
+        if (!response.ok) {
+            const error: ApiError = await response.json();
+            throw error;
+        }
+
+        return response.json();
+    },
+
+    getVocabulariesSummary: async (
+        query: GetVocabulariesSummaryQuery
+    ): Promise<VocabularySummaryResponse[]> => {
+        const params = new URLSearchParams();
+        if (query.search && query.search.trim().length > 0) {
+            params.set("search", query.search.trim());
+        }
+
+        params.set("sortBy", String(query.sortBy));
+        params.set("sortDirection", String(query.sortDirection));
+
+        const response = await fetch(
+            `${API_BASE_URL}/collections-hierarchy/collections/${query.collectionId}/vocabularies?${params.toString()}`,
+            {
+                method: "GET",
+                headers: getAuthHeaders(),
+            }
+        );
+
+        if (!response.ok) {
+            const error: ApiError = await response.json();
+            throw error;
+        }
+
+        return response.json();
     },
 
     getById: async (id: number): Promise<CollectionResponse> => {
