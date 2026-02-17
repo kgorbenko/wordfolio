@@ -31,6 +31,8 @@
     <Compile Include="Vocabularies\DeleteTests.fs" />
     <Compile Include="Shared\GetOrCreateDefaultVocabularyTests.fs" />
     <Compile Include="CollectionsHierarchy\GetByUserIdTests.fs" />
+    <Compile Include="CollectionsHierarchy\SearchUserCollectionsTests.fs" />
+    <Compile Include="CollectionsHierarchy\SearchCollectionVocabulariesTests.fs" />
     <Compile Include="Entries\CreateTests.fs" />
     <Compile Include="Entries\GetDraftsTests.fs" />
     <Compile Include="Entries\GetByIdTests.fs" />

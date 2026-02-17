@@ -1,12 +1,12 @@
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Routing
-open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 
 open Wordfolio.Api
 open Wordfolio.Api.Configuration.GroqApi
+open Wordfolio.Api.DataAccess
 open Wordfolio.Api.Handlers.Auth
 open Wordfolio.Api.Handlers.Collections
 open Wordfolio.Api.Handlers.CollectionsHierarchy
@@ -34,7 +34,8 @@ let mapEndpoints(app: IEndpointRouteBuilder) =
 
     mapCollectionsEndpoints collectionsGroup
 
-    mapCollectionsHierarchyEndpoint app
+    app.MapGroup(Urls.CollectionsHierarchy.Path).WithTags("CollectionsHierarchy")
+    |> mapCollectionsHierarchyEndpoints
 
     collectionsGroup.MapGroup(Urls.Vocabularies.Path).WithTags("Vocabularies")
     |> mapVocabulariesEndpoints
@@ -71,6 +72,8 @@ let main args =
 
     builder.Services.AddSingleton<IChatClient, GroqChatClient>()
     |> ignore
+
+    Dapper.registerTypes()
 
     let app = builder.Build()
 
