@@ -126,16 +126,16 @@ let private toTranslationSourceDto(source: TranslationSource) : TranslationSourc
     | TranslationSource.Api -> TranslationSourceDto.Api
     | TranslationSource.Manual -> TranslationSourceDto.Manual
 
-let private toExampleInput(req: ExampleRequest) : ExampleInput =
+let toExampleInput(req: ExampleRequest) : ExampleInput =
     { ExampleText = req.ExampleText
       Source = toExampleSourceDomain req.Source }
 
-let private toDefinitionInput(req: DefinitionRequest) : DefinitionInput =
+let toDefinitionInput(req: DefinitionRequest) : DefinitionInput =
     { DefinitionText = req.DefinitionText
       Source = toDefinitionSourceDomain req.Source
       Examples = req.Examples |> List.map toExampleInput }
 
-let private toTranslationInput(req: TranslationRequest) : TranslationInput =
+let toTranslationInput(req: TranslationRequest) : TranslationInput =
     { TranslationText = req.TranslationText
       Source = toTranslationSourceDomain req.Source
       Examples = req.Examples |> List.map toExampleInput }
@@ -187,7 +187,7 @@ let private getUserId(user: ClaimsPrincipal) : int option =
         | true, id -> Some id
         | false, _ -> None
 
-let private toErrorResponse(error: EntryError) : IResult =
+let toErrorResponse(error: EntryError) : IResult =
     match error with
     | EntryNotFound _ -> Results.NotFound()
     | EntryTextRequired -> Results.BadRequest({| error = "Entry text is required" |})

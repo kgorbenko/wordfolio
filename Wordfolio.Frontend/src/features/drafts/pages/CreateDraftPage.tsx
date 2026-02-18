@@ -7,7 +7,7 @@ import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
 import { useNotificationContext } from "../../../contexts/NotificationContext";
 import { useDuplicateEntryDialog } from "../../entries/hooks/useDuplicateEntryDialog";
-import { useCreateEntryMutation } from "../../entries/hooks/useCreateEntryMutation";
+import { useCreateDraftMutation } from "../hooks/useCreateDraftMutation";
 import { CreateEntryRequest } from "../../entries/api/entriesApi";
 import { EntryLookupForm } from "../../entries/components/EntryLookupForm";
 
@@ -19,7 +19,7 @@ export const CreateDraftPage = () => {
         useDuplicateEntryDialog();
     const pendingRequestRef = useRef<CreateEntryRequest | null>(null);
 
-    const createMutation = useCreateEntryMutation({
+    const createMutation = useCreateDraftMutation({
         onSuccess: () => {
             openSuccessNotification({ message: "Draft created successfully" });
             void navigate(draftsPath());

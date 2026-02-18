@@ -13,8 +13,8 @@ import { RetryOnError } from "../../../components/common/RetryOnError";
 import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
 import { useNotificationContext } from "../../../contexts/NotificationContext";
 
-import { useEntryQuery } from "../../entries/hooks/useEntryQuery";
-import { useUpdateEntryMutation } from "../../entries/hooks/useUpdateEntryMutation";
+import { useDraftEntryQuery } from "../hooks/useDraftEntryQuery";
+import { useUpdateDraftEntryMutation } from "../hooks/useUpdateDraftEntryMutation";
 import { EntryForm } from "../../entries/components/EntryForm";
 import { EntryFormValues, EntryFormOutput, Entry } from "../../entries/types";
 
@@ -54,9 +54,9 @@ export const DraftsEntryEditPage = () => {
         isLoading: isEntryLoading,
         isError: isEntryError,
         refetch: refetchEntry,
-    } = useEntryQuery(numericEntryId);
+    } = useDraftEntryQuery(numericEntryId);
 
-    const updateMutation = useUpdateEntryMutation({
+    const updateMutation = useUpdateDraftEntryMutation({
         onSuccess: () => {
             void navigate(draftsEntryDetailPath(numericEntryId));
         },
