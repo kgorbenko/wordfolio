@@ -7,9 +7,6 @@ open Wordfolio.Api.Domain
 type IGetEntryById =
     abstract GetEntryById: EntryId -> Task<Entry option>
 
-type IGetEntriesByVocabularyId =
-    abstract GetEntriesByVocabularyId: VocabularyId -> Task<Entry list>
-
 type IGetEntryByTextAndVocabularyId =
     abstract GetEntryByTextAndVocabularyId: VocabularyId * string -> Task<Entry option>
 
@@ -48,9 +45,6 @@ type IGetEntriesHierarchyByVocabularyId =
 
 module Capabilities =
     let getEntryById (env: #IGetEntryById) entryId = env.GetEntryById(entryId)
-
-    let getEntriesByVocabularyId (env: #IGetEntriesByVocabularyId) vocabularyId =
-        env.GetEntriesByVocabularyId(vocabularyId)
 
     let getEntryByTextAndVocabularyId (env: #IGetEntryByTextAndVocabularyId) vocabularyId entryText =
         env.GetEntryByTextAndVocabularyId(vocabularyId, entryText)
