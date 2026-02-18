@@ -53,6 +53,16 @@ module Drafts =
     [<Literal>]
     let Path = "/drafts"
 
+    [<Literal>]
+    let All = "/all"
+
+    [<Literal>]
+    let Move = "/move"
+
+    let allDrafts() = $"{Path}{All}"
+    let draftById(id: int) = $"{Path}/{id}"
+    let moveDraftById(id: int) = $"{draftById id}{Move}"
+
 module Auth =
     [<Literal>]
     let Path = "/auth"

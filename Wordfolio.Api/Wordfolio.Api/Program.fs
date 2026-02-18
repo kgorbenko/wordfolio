@@ -45,7 +45,8 @@ let mapEndpoints(app: IEndpointRouteBuilder) =
 
     mapEntriesByVocabularyEndpoint app
 
-    mapDraftsEndpoints app |> ignore
+    app.MapGroup(Urls.Drafts.Path).WithTags("Drafts")
+    |> mapDraftsEndpoints
 
     app.MapGroup(Urls.Auth.Path).WithTags("Auth")
     |> mapAuthEndpoints

@@ -15,7 +15,15 @@ open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Handlers.Entries
 open Wordfolio.Api.Infrastructure.Environment
 
+module EntryUrls = Wordfolio.Api.Urls.Entries
+module UrlTokens = Wordfolio.Api.Urls
 module Urls = Wordfolio.Api.Urls.Drafts
+
+type CreateDraftRequest =
+    { EntryText: string
+      Definitions: DefinitionRequest list
+      Translations: TranslationRequest list
+      AllowDuplicate: bool option }
 
 type VocabularyResponse =
     { Id: int
@@ -39,10 +47,10 @@ let private getUserId(user: ClaimsPrincipal) : int option =
         | true, id -> Some id
         | false, _ -> None
 
-let mapDraftsEndpoints(endpoints: IEndpointRouteBuilder) =
-    endpoints
+let mapDraftsEndpoints(group: RouteGroupBuilder) =
+    group
         .MapGet(
-            Urls.Path,
+            Urls.All,
             Func<ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun user dataSource cancellationToken ->
                 task {
                     match getUserId user with
@@ -73,10 +81,177 @@ let mapDraftsEndpoints(endpoints: IEndpointRouteBuilder) =
                 })
         )
         .RequireAuthorization()
-        .WithTags("Drafts")
         .Produces<DraftsResponse>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status404NotFound)
     |> ignore
 
-    endpoints
+    group
+        .MapPost(
+            UrlTokens.Root,
+            Func<CreateDraftRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun request user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
+
+                            let parameters: CreateEntryParameters =
+                                { UserId = UserId userId
+                                  VocabularyId = None
+                                  EntryText = request.EntryText
+                                  Definitions =
+                                    request.Definitions
+                                    |> List.map toDefinitionInput
+                                  Translations =
+                                    request.Translations
+                                    |> List.map toTranslationInput
+                                  AllowDuplicate =
+                                    request.AllowDuplicate
+                                    |> Option.defaultValue false
+                                  CreatedAt = DateTimeOffset.UtcNow }
+
+                            let! result = Operations.create env parameters
+
+                            return
+                                match result with
+                                | Ok entry ->
+                                    Results.Created(EntryUrls.entryById(EntryId.value entry.Id), toEntryResponse entry)
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .RequireAuthorization()
+        .Produces<EntryResponse>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status409Conflict)
+    |> ignore
+
+    group
+        .MapGet(
+            UrlTokens.ById,
+            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
+
+                            let! result = Operations.getById env (UserId userId) (EntryId id)
+
+                            return
+                                match result with
+                                | Ok entry -> Results.Ok(toEntryResponse entry)
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .RequireAuthorization()
+        .Produces<EntryResponse>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status404NotFound)
+    |> ignore
+
+    group
+        .MapPut(
+            UrlTokens.ById,
+            Func<int, UpdateEntryRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id request user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
+
+                            let definitions =
+                                request.Definitions
+                                |> List.map toDefinitionInput
+
+                            let translations =
+                                request.Translations
+                                |> List.map toTranslationInput
+
+                            let! result =
+                                Operations.update
+                                    env
+                                    (UserId userId)
+                                    (EntryId id)
+                                    request.EntryText
+                                    definitions
+                                    translations
+                                    DateTimeOffset.UtcNow
+
+                            return
+                                match result with
+                                | Ok entry -> Results.Ok(toEntryResponse entry)
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .RequireAuthorization()
+        .Produces<EntryResponse>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status404NotFound)
+    |> ignore
+
+    group
+        .MapDelete(
+            UrlTokens.ById,
+            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
+
+                            let! result = Operations.delete env (UserId userId) (EntryId id)
+
+                            return
+                                match result with
+                                | Ok() -> Results.NoContent()
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .RequireAuthorization()
+        .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status404NotFound)
+    |> ignore
+
+    group
+        .MapPost(
+            UrlTokens.ById + Urls.Move,
+            Func<int, MoveEntryRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun id request user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
+
+                            let! result =
+                                Operations.move
+                                    env
+                                    (UserId userId)
+                                    (EntryId id)
+                                    (VocabularyId request.VocabularyId)
+                                    DateTimeOffset.UtcNow
+
+                            return
+                                match result with
+                                | Ok entry -> Results.Ok(toEntryResponse entry)
+                                | Error error -> toErrorResponse error
+                    })
+        )
+        .RequireAuthorization()
+        .Produces<EntryResponse>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status404NotFound)
+    |> ignore

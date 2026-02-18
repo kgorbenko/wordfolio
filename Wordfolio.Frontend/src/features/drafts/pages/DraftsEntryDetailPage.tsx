@@ -21,9 +21,9 @@ import { useNotificationContext } from "../../../contexts/NotificationContext";
 import { useConfirmDialog } from "../../../contexts/ConfirmDialogContext";
 import { assertNonNullable } from "../../../utils/misc";
 
-import { useEntryQuery } from "../../entries/hooks/useEntryQuery";
-import { useDeleteEntryMutation } from "../../entries/hooks/useDeleteEntryMutation";
-import { useMoveEntryMutation } from "../../entries/hooks/useMoveEntryMutation";
+import { useDraftEntryQuery } from "../hooks/useDraftEntryQuery";
+import { useDeleteDraftEntryMutation } from "../hooks/useDeleteDraftEntryMutation";
+import { useMoveDraftEntryMutation } from "../hooks/useMoveDraftEntryMutation";
 import { useMoveEntryDialog } from "../../entries/hooks/useMoveEntryDialog";
 import { EntryDetailContent } from "../../entries/components/EntryDetailContent";
 
@@ -43,9 +43,9 @@ export const DraftsEntryDetailPage = () => {
         isLoading: isEntryLoading,
         isError: isEntryError,
         refetch: refetchEntry,
-    } = useEntryQuery(numericEntryId);
+    } = useDraftEntryQuery(numericEntryId);
 
-    const deleteMutation = useDeleteEntryMutation({
+    const deleteMutation = useDeleteDraftEntryMutation({
         onSuccess: () => {
             void navigate(draftsPath());
         },
@@ -56,7 +56,7 @@ export const DraftsEntryDetailPage = () => {
         },
     });
 
-    const moveMutation = useMoveEntryMutation({
+    const moveMutation = useMoveDraftEntryMutation({
         onError: () => {
             openErrorNotification({
                 message: "Failed to move entry. Please try again.",
