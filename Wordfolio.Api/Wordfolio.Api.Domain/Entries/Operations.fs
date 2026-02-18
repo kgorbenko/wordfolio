@@ -195,7 +195,7 @@ let getByVocabularyId env userId vocabularyId =
             match vocabAccessResult with
             | Error error -> return Error error
             | Ok _ ->
-                let! entries = getEntriesByVocabularyId appEnv vocabularyId
+                let! entries = getEntriesHierarchyByVocabularyId appEnv vocabularyId
                 return Ok entries
         })
 

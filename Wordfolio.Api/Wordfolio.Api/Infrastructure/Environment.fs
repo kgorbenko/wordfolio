@@ -426,21 +426,6 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                         Some(toEntryDomain(entryWithHierarchy.Entry, definitionsWithExamples, translationsWithExamples))
             }
 
-    interface IGetEntriesByVocabularyId with
-        member _.GetEntriesByVocabularyId(VocabularyId vocabularyId) =
-            task {
-                let! entries =
-                    Wordfolio.Api.DataAccess.Entries.getEntriesByVocabularyIdAsync
-                        vocabularyId
-                        connection
-                        transaction
-                        cancellationToken
-
-                return
-                    entries
-                    |> List.map(fun e -> toEntryDomain(e, [], []))
-            }
-
     interface IGetEntryByTextAndVocabularyId with
         member _.GetEntryByTextAndVocabularyId(VocabularyId vocabularyId, entryText) =
             task {
