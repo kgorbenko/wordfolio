@@ -11,7 +11,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 
 import { CreateEntryRequest } from "../api/entriesApi";
-import { EntryLookupForm } from "./EntryLookupForm";
+import { EntryLookupForm, VocabularyContext } from "./EntryLookupForm";
 import styles from "./WordEntrySheet.module.scss";
 
 interface WordEntrySheetProps {
@@ -19,7 +19,10 @@ interface WordEntrySheetProps {
     readonly initialVocabularyId?: number;
     readonly isSaving: boolean;
     readonly onClose: () => void;
-    readonly onSave: (request: CreateEntryRequest) => void;
+    readonly onSave: (
+        context: VocabularyContext | null,
+        request: CreateEntryRequest
+    ) => void;
     readonly onLookupError?: (message: string) => void;
 }
 
@@ -35,8 +38,8 @@ export const WordEntrySheet = ({
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
     const handleSave = useCallback(
-        (request: CreateEntryRequest) => {
-            onSave(request);
+        (context: VocabularyContext | null, request: CreateEntryRequest) => {
+            onSave(context, request);
         },
         [onSave]
     );

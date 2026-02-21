@@ -7,11 +7,20 @@ import { useUiStore } from "../../stores/uiStore";
 import { useNotificationContext } from "../../contexts/NotificationContext";
 import { useDuplicateEntryDialog } from "../../features/entries/hooks/useDuplicateEntryDialog";
 import { useCreateEntryMutation } from "../../features/entries/hooks/useCreateEntryMutation";
+import { useCreateDraftMutation } from "../../features/drafts/hooks/useCreateDraftMutation";
 import { CreateEntryRequest } from "../../features/entries/api/entriesApi";
+import { VocabularyContext } from "../../features/entries/components/EntryLookupForm";
 import { WordEntrySheet } from "../../features/entries";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
+import { assertNonNullable } from '../../utils/misc.ts';
+
 import styles from "./AuthenticatedLayout.module.scss";
+
+interface PendingEntry {
+    readonly context: VocabularyContext | null;
+    readonly request: CreateEntryRequest;
+}
 
 export const AuthenticatedLayout = () => {
     const theme = useTheme();
@@ -25,7 +34,7 @@ export const AuthenticatedLayout = () => {
         useDuplicateEntryDialog();
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const pendingRequestRef = useRef<CreateEntryRequest | null>(null);
+    const pendingRequestRef = useRef<PendingEntry | null>(null);
 
     const createEntryMutation = useCreateEntryMutation({
         onSuccess: () => {
@@ -39,8 +48,31 @@ export const AuthenticatedLayout = () => {
             const addAnyway =
                 await raiseDuplicateEntryDialogAsync(existingEntry);
             if (addAnyway && pendingRequestRef.current) {
+                const { context, request } = pendingRequestRef.current;
+                assertNonNullable(context);
                 createEntryMutation.mutate({
-                    ...pendingRequestRef.current,
+                    collectionId: context.collectionId,
+                    vocabularyId: context.vocabularyId,
+                    request: { ...request, allowDuplicate: true },
+                });
+            }
+        },
+    });
+
+    const createDraftMutation = useCreateDraftMutation({
+        onSuccess: () => {
+            openSuccessNotification({ message: "Added to drafts" });
+            closeWordEntry();
+        },
+        onError: () => {
+            openErrorNotification({ message: "Failed to save entry" });
+        },
+        onDuplicateEntry: async (existingEntry) => {
+            const addAnyway =
+                await raiseDuplicateEntryDialogAsync(existingEntry);
+            if (addAnyway && pendingRequestRef.current) {
+                createDraftMutation.mutate({
+                    ...pendingRequestRef.current.request,
                     allowDuplicate: true,
                 });
             }
@@ -53,11 +85,19 @@ export const AuthenticatedLayout = () => {
     };
 
     const handleSaveEntry = useCallback(
-        (request: CreateEntryRequest) => {
-            pendingRequestRef.current = request;
-            createEntryMutation.mutate(request);
+        (context: VocabularyContext | null, request: CreateEntryRequest) => {
+            pendingRequestRef.current = { context, request };
+            if (context === null) {
+                createDraftMutation.mutate(request);
+            } else {
+                createEntryMutation.mutate({
+                    collectionId: context.collectionId,
+                    vocabularyId: context.vocabularyId,
+                    request,
+                });
+            }
         },
-        [createEntryMutation]
+        [createEntryMutation, createDraftMutation]
     );
 
     const handleLookupError = useCallback(
@@ -99,7 +139,10 @@ export const AuthenticatedLayout = () => {
             <WordEntrySheet
                 open={isWordEntryOpen}
                 onClose={closeWordEntry}
-                isSaving={createEntryMutation.isPending}
+                isSaving={
+                    createEntryMutation.isPending ||
+                    createDraftMutation.isPending
+                }
                 onSave={handleSaveEntry}
                 onLookupError={handleLookupError}
             />

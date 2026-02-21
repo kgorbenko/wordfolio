@@ -64,7 +64,7 @@ export const EntryDetailPage = () => {
         isLoading: isEntryLoading,
         isError: isEntryError,
         refetch: refetchEntry,
-    } = useEntryQuery(numericEntryId);
+    } = useEntryQuery(numericCollectionId, numericVocabularyId, numericEntryId);
 
     const deleteMutation = useDeleteEntryMutation({
         onSuccess: () => {
@@ -109,11 +109,12 @@ export const EntryDetailPage = () => {
 
         if (confirmed) {
             deleteMutation.mutate({
-                entryId: entry.id,
+                collectionId: numericCollectionId,
                 vocabularyId: entry.vocabularyId,
+                entryId: entry.id,
             });
         }
-    }, [entry, raiseConfirmDialogAsync, deleteMutation]);
+    }, [entry, raiseConfirmDialogAsync, deleteMutation, numericCollectionId]);
 
     const handleMoveClick = useCallback(async () => {
         assertNonNullable(entry);
@@ -128,6 +129,7 @@ export const EntryDetailPage = () => {
 
         moveMutation.mutate(
             {
+                collectionId: numericCollectionId,
                 entryId: entry.id,
                 sourceVocabularyId: entry.vocabularyId,
                 targetVocabularyId: moveSelection.vocabularyId,
@@ -151,7 +153,13 @@ export const EntryDetailPage = () => {
                 },
             }
         );
-    }, [entry, raiseMoveEntryDialogAsync, moveMutation, navigate]);
+    }, [
+        entry,
+        raiseMoveEntryDialogAsync,
+        moveMutation,
+        navigate,
+        numericCollectionId,
+    ]);
 
     const isLoading =
         isCollectionLoading || isVocabularyLoading || isEntryLoading;

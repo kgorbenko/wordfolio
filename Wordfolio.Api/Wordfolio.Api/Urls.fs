@@ -41,13 +41,16 @@ module Vocabularies =
 
 module Entries =
     [<Literal>]
-    let Path = "/entries"
+    let Path = "/{vocabularyId:int}/entries"
 
-    let entryById(id: int) = $"{Path}/{id}"
+    let entriesByVocabulary(collectionId: int, vocabularyId: int) =
+        $"/collections/{collectionId}/vocabularies/{vocabularyId}/entries"
 
-    let moveEntryById(id: int) = $"{entryById id}/move"
+    let entryById(collectionId: int, vocabularyId: int, id: int) =
+        $"{entriesByVocabulary(collectionId, vocabularyId)}/{id}"
 
-    let entriesByVocabulary(vocabularyId: int) = $"/vocabularies/{vocabularyId}/entries"
+    let moveEntryById(collectionId: int, vocabularyId: int, id: int) =
+        $"{entryById(collectionId, vocabularyId, id)}/move"
 
 module Drafts =
     [<Literal>]

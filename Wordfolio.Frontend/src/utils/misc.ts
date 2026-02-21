@@ -7,3 +7,8 @@
         );
     }
 }
+
+export function ensureNonNullable<T>(value: T): NonNullable<T> {
+    assertNonNullable(value);
+    return value;
+}

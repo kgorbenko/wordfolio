@@ -49,8 +49,7 @@ type TranslationRequest =
       Examples: ExampleRequest list }
 
 type CreateEntryRequest =
-    { VocabularyId: int option
-      EntryText: string
+    { EntryText: string
       Definitions: DefinitionRequest list
       Translations: TranslationRequest list
       AllowDuplicate: bool option }
@@ -204,12 +203,12 @@ let toErrorResponse(error: EntryError) : IResult =
     | ExampleTextTooLong maxLength ->
         Results.BadRequest({| error = $"Example text must be at most {maxLength} characters" |})
 
-let mapEntriesByVocabularyEndpoint(app: IEndpointRouteBuilder) =
-    app
+let mapEntriesEndpoints(group: RouteGroupBuilder) =
+    group
         .MapGet(
-            "/vocabularies/{vocabularyId}/entries",
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun vocabularyId user dataSource cancellationToken ->
+            UrlTokens.Root,
+            Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId vocabularyId user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized()
@@ -229,18 +228,16 @@ let mapEntriesByVocabularyEndpoint(app: IEndpointRouteBuilder) =
                                 | Error error -> toErrorResponse error
                     })
         )
-        .WithTags("Entries")
         .Produces<EntryResponse list>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status404NotFound)
     |> ignore
 
-let mapEntriesEndpoints(group: RouteGroupBuilder) =
     group
         .MapPost(
             UrlTokens.Root,
-            Func<CreateEntryRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun request user dataSource cancellationToken ->
+            Func<int, int, CreateEntryRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId vocabularyId request user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized()
@@ -250,9 +247,7 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
 
                             let parameters: CreateEntryParameters =
                                 { UserId = UserId userId
-                                  VocabularyId =
-                                    request.VocabularyId
-                                    |> Option.map VocabularyId
+                                  VocabularyId = Some(VocabularyId vocabularyId)
                                   EntryText = request.EntryText
                                   Definitions =
                                     request.Definitions
@@ -270,7 +265,10 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                             return
                                 match result with
                                 | Ok entry ->
-                                    Results.Created(Urls.entryById(EntryId.value entry.Id), toEntryResponse entry)
+                                    Results.Created(
+                                        Urls.entryById(collectionId, vocabularyId, EntryId.value entry.Id),
+                                        toEntryResponse entry
+                                    )
                                 | Error error -> toErrorResponse error
                     })
         )
@@ -284,8 +282,8 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
     group
         .MapGet(
             UrlTokens.ById,
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id user dataSource cancellationToken ->
+            Func<int, int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId vocabularyId id user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized()
@@ -309,8 +307,8 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
     group
         .MapDelete(
             UrlTokens.ById,
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id user dataSource cancellationToken ->
+            Func<int, int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId vocabularyId id user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized()
@@ -334,8 +332,8 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
     group
         .MapPut(
             UrlTokens.ById,
-            Func<int, UpdateEntryRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id request user dataSource cancellationToken ->
+            Func<int, int, int, UpdateEntryRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId vocabularyId id request user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized()
@@ -376,8 +374,8 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
     group
         .MapPost(
             UrlTokens.ById + "/move",
-            Func<int, MoveEntryRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id request user dataSource cancellationToken ->
+            Func<int, int, int, MoveEntryRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId vocabularyId id request user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized()

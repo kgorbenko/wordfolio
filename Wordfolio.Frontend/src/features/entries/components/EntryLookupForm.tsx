@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { Box, Button, CircularProgress } from "@mui/material";
 
 import { CreateEntryRequest } from "../api/entriesApi";
+import { ensureNonNullable } from "../../../utils/misc";
 import { useCollectionsHierarchyQuery } from "../../../queries/useCollectionsHierarchyQuery";
 import { EntryFormHandle, EntryFormOutput } from "./EntryForm";
 import { useWordLookup } from "../hooks/useWordLookup";
@@ -12,11 +13,19 @@ import styles from "./EntryLookupForm.module.scss";
 
 type EntryLookupFormVariant = "modal" | "page";
 
+export interface VocabularyContext {
+    readonly collectionId: number;
+    readonly vocabularyId: number;
+}
+
 interface EntryLookupFormProps {
     readonly vocabularyId?: number;
     readonly showVocabularySelector?: boolean;
     readonly isSaving: boolean;
-    readonly onSave: (request: CreateEntryRequest) => void;
+    readonly onSave: (
+        context: VocabularyContext | null,
+        request: CreateEntryRequest
+    ) => void;
     readonly onCancel: () => void;
     readonly onLookupError?: (message: string) => void;
     readonly autoFocus?: boolean;
@@ -33,9 +42,9 @@ export const EntryLookupForm = ({
     autoFocus = false,
     variant = "modal",
 }: EntryLookupFormProps) => {
-    const [selectedVocabularyId, setSelectedVocabularyId] = useState<number>(
-        vocabularyId ?? 0
-    );
+    const [selectedVocabularyId, setSelectedVocabularyId] = useState<
+        number | undefined
+    >(vocabularyId);
 
     const inputRef = useRef<HTMLInputElement>(null);
     const entryFormRef = useRef<EntryFormHandle>(null);
@@ -65,24 +74,26 @@ export const EntryLookupForm = ({
                 ? selectedVocabularyId
                 : vocabularyId;
 
-            onSave({
-                vocabularyId:
-                    effectiveVocabularyId === 0 ||
-                    effectiveVocabularyId === undefined
-                        ? null
-                        : effectiveVocabularyId,
+            const context = effectiveVocabularyId !== undefined
+                ? {
+                    collectionId: ensureNonNullable(
+                        ensureNonNullable(hierarchy).collections.find((c) =>
+                            c.vocabularies.some(
+                                (v) => v.id === selectedVocabularyId
+                            )
+                        )
+                    ).id,
+                    vocabularyId: effectiveVocabularyId,
+                }
+                : null;
+
+            onSave(context, {
                 entryText: word.trim(),
                 definitions: data.definitions,
                 translations: data.translations,
             });
         },
-        [
-            onSave,
-            showVocabularySelector,
-            selectedVocabularyId,
-            vocabularyId,
-            word,
-        ]
+        [onSave, showVocabularySelector, selectedVocabularyId, hierarchy, word]
     );
 
     const canSave =

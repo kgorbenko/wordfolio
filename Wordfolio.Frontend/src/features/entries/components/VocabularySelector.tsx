@@ -9,10 +9,12 @@ import {
 import { CollectionsHierarchyResponse } from "../../../api/vocabulariesApi";
 import styles from "./VocabularySelector.module.scss";
 
+const DRAFTS_SENTINEL = 0;
+
 interface VocabularySelectorProps {
-    readonly value: number;
+    readonly value: number | undefined;
     readonly hierarchy: CollectionsHierarchyResponse | undefined;
-    readonly onChange: (vocabularyId: number) => void;
+    readonly onChange: (vocabularyId: number | undefined) => void;
 }
 
 export const VocabularySelector = ({
@@ -23,11 +25,14 @@ export const VocabularySelector = ({
     <FormControl fullWidth size="small" className={styles.formControl}>
         <InputLabel>Vocabulary</InputLabel>
         <Select<number>
-            value={value}
+            value={value ?? DRAFTS_SENTINEL}
             label="Vocabulary"
-            onChange={(e) => onChange(Number(e.target.value))}
+            onChange={(e) => {
+                const numValue = Number(e.target.value);
+                onChange(numValue === DRAFTS_SENTINEL ? undefined : numValue);
+            }}
         >
-            <MenuItem value={0}>Drafts — organize later</MenuItem>
+            <MenuItem value={DRAFTS_SENTINEL}>Drafts — organize later</MenuItem>
             {hierarchy?.collections.map((collection) => [
                 <ListSubheader key={`header-${collection.id}`}>
                     {collection.name}

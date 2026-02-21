@@ -34,7 +34,6 @@ export interface TranslationRequest {
 }
 
 export interface CreateEntryRequest {
-    readonly vocabularyId?: number | null;
     readonly entryText: string;
     readonly definitions: DefinitionRequest[];
     readonly translations: TranslationRequest[];
@@ -76,10 +75,16 @@ const getAuthHeaders = (): HeadersInit => {
     };
 };
 
+const entriesBasePath = (collectionId: number, vocabularyId: number) =>
+    `${API_BASE_URL}/collections/${collectionId}/vocabularies/${vocabularyId}/entries`;
+
 export const entriesApi = {
-    getEntries: async (vocabularyId: number): Promise<EntryResponse[]> => {
+    getEntries: async (
+        collectionId: number,
+        vocabularyId: number
+    ): Promise<EntryResponse[]> => {
         const response = await fetch(
-            `${API_BASE_URL}/vocabularies/${vocabularyId}/entries`,
+            entriesBasePath(collectionId, vocabularyId),
             {
                 method: "GET",
                 headers: getAuthHeaders(),
@@ -94,11 +99,18 @@ export const entriesApi = {
         return response.json();
     },
 
-    getEntry: async (entryId: number): Promise<EntryResponse> => {
-        const response = await fetch(`${API_BASE_URL}/entries/${entryId}`, {
-            method: "GET",
-            headers: getAuthHeaders(),
-        });
+    getEntry: async (
+        collectionId: number,
+        vocabularyId: number,
+        entryId: number
+    ): Promise<EntryResponse> => {
+        const response = await fetch(
+            `${entriesBasePath(collectionId, vocabularyId)}/${entryId}`,
+            {
+                method: "GET",
+                headers: getAuthHeaders(),
+            }
+        );
 
         if (!response.ok) {
             const error: ApiError = await response.json();
@@ -109,13 +121,18 @@ export const entriesApi = {
     },
 
     createEntry: async (
+        collectionId: number,
+        vocabularyId: number,
         request: CreateEntryRequest
     ): Promise<EntryResponse> => {
-        const response = await fetch(`${API_BASE_URL}/entries`, {
-            method: "POST",
-            headers: getAuthHeaders(),
-            body: JSON.stringify(request),
-        });
+        const response = await fetch(
+            entriesBasePath(collectionId, vocabularyId),
+            {
+                method: "POST",
+                headers: getAuthHeaders(),
+                body: JSON.stringify(request),
+            }
+        );
 
         if (!response.ok) {
             const errorBody = await response.json();
@@ -130,14 +147,19 @@ export const entriesApi = {
     },
 
     updateEntry: async (
+        collectionId: number,
+        vocabularyId: number,
         entryId: number,
         request: UpdateEntryRequest
     ): Promise<EntryResponse> => {
-        const response = await fetch(`${API_BASE_URL}/entries/${entryId}`, {
-            method: "PUT",
-            headers: getAuthHeaders(),
-            body: JSON.stringify(request),
-        });
+        const response = await fetch(
+            `${entriesBasePath(collectionId, vocabularyId)}/${entryId}`,
+            {
+                method: "PUT",
+                headers: getAuthHeaders(),
+                body: JSON.stringify(request),
+            }
+        );
 
         if (!response.ok) {
             const error: ApiError = await response.json();
@@ -148,11 +170,13 @@ export const entriesApi = {
     },
 
     moveEntry: async (
+        collectionId: number,
+        vocabularyId: number,
         entryId: number,
         request: MoveEntryRequest
     ): Promise<EntryResponse> => {
         const response = await fetch(
-            `${API_BASE_URL}/entries/${entryId}/move`,
+            `${entriesBasePath(collectionId, vocabularyId)}/${entryId}/move`,
             {
                 method: "POST",
                 headers: getAuthHeaders(),
@@ -168,11 +192,18 @@ export const entriesApi = {
         return response.json();
     },
 
-    deleteEntry: async (entryId: number): Promise<void> => {
-        const response = await fetch(`${API_BASE_URL}/entries/${entryId}`, {
-            method: "DELETE",
-            headers: getAuthHeaders(),
-        });
+    deleteEntry: async (
+        collectionId: number,
+        vocabularyId: number,
+        entryId: number
+    ): Promise<void> => {
+        const response = await fetch(
+            `${entriesBasePath(collectionId, vocabularyId)}/${entryId}`,
+            {
+                method: "DELETE",
+                headers: getAuthHeaders(),
+            }
+        );
 
         if (!response.ok) {
             const error: ApiError = await response.json();
