@@ -73,7 +73,7 @@ export const EditEntryPage = () => {
         isLoading: isEntryLoading,
         isError: isEntryError,
         refetch: refetchEntry,
-    } = useEntryQuery(numericEntryId);
+    } = useEntryQuery(numericCollectionId, numericVocabularyId, numericEntryId);
 
     const updateMutation = useUpdateEntryMutation({
         onSuccess: () => {
@@ -95,6 +95,8 @@ export const EditEntryPage = () => {
     const handleSubmit = useCallback(
         (data: EntryFormOutput) => {
             updateMutation.mutate({
+                collectionId: numericCollectionId,
+                vocabularyId: numericVocabularyId,
                 entryId: numericEntryId,
                 request: {
                     entryText: data.entryText,
@@ -103,7 +105,12 @@ export const EditEntryPage = () => {
                 },
             });
         },
-        [updateMutation, numericEntryId]
+        [
+            updateMutation,
+            numericCollectionId,
+            numericVocabularyId,
+            numericEntryId,
+        ]
     );
 
     const handleCancel = useCallback(() => {

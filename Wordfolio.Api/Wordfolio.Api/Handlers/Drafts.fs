@@ -118,7 +118,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                             return
                                 match result with
                                 | Ok entry ->
-                                    Results.Created(EntryUrls.entryById(EntryId.value entry.Id), toEntryResponse entry)
+                                    Results.Created(Urls.draftById(EntryId.value entry.Id), toEntryResponse entry)
                                 | Error error -> toErrorResponse error
                     })
         )

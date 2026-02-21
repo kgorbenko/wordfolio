@@ -44,8 +44,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: CreateEntryRequest =
-                { VocabularyId = Some vocabulary.Id
-                  EntryText = "hello"
+                { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
                         Source = DefinitionSourceDto.Manual
@@ -60,7 +59,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                               Source = ExampleSourceDto.Custom } ] } ]
                   AllowDuplicate = None }
 
-            let url = Urls.Entries.Path
+            let url =
+                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -162,8 +162,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use client = factory.CreateClient()
 
             let request: CreateEntryRequest =
-                { VocabularyId = Some 1
-                  EntryText = "hello"
+                { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
                         Source = DefinitionSourceDto.Manual
@@ -171,7 +170,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = []
                   AllowDuplicate = None }
 
-            let url = Urls.Entries.Path
+            let url =
+                Urls.Entries.entriesByVocabulary(1, 1)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -204,8 +204,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: CreateEntryRequest =
-                { VocabularyId = Some vocabulary.Id
-                  EntryText = ""
+                { EntryText = ""
                   Definitions =
                     [ { DefinitionText = "a greeting"
                         Source = DefinitionSourceDto.Manual
@@ -213,7 +212,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = []
                   AllowDuplicate = None }
 
-            let url = Urls.Entries.Path
+            let url =
+                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -246,13 +246,13 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: CreateEntryRequest =
-                { VocabularyId = Some vocabulary.Id
-                  EntryText = "hello"
+                { EntryText = "hello"
                   Definitions = []
                   Translations = []
                   AllowDuplicate = None }
 
-            let url = Urls.Entries.Path
+            let url =
+                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -285,8 +285,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: CreateEntryRequest =
-                { VocabularyId = Some vocabulary.Id
-                  EntryText = "hello"
+                { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
                         Source = DefinitionSourceDto.Manual
@@ -306,7 +305,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = []
                   AllowDuplicate = None }
 
-            let url = Urls.Entries.Path
+            let url =
+                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -343,8 +343,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: CreateEntryRequest =
-                { VocabularyId = Some vocabulary.Id
-                  EntryText = "hello"
+                { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
                         Source = DefinitionSourceDto.Manual
@@ -352,7 +351,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = []
                   AllowDuplicate = None }
 
-            let url = Urls.Entries.Path
+            let url =
+                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -389,8 +389,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: CreateEntryRequest =
-                { VocabularyId = Some vocabulary.Id
-                  EntryText = "hello"
+                { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
                         Source = DefinitionSourceDto.Manual
@@ -398,7 +397,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = []
                   AllowDuplicate = Some true }
 
-            let url = Urls.Entries.Path
+            let url =
+                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -460,8 +460,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: CreateEntryRequest =
-                { VocabularyId = Some 999999
-                  EntryText = "hello"
+                { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
                         Source = DefinitionSourceDto.Manual
@@ -469,7 +468,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = []
                   AllowDuplicate = None }
 
-            let url = Urls.Entries.Path
+            let url =
+                Urls.Entries.entriesByVocabulary(1, 999999)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -530,7 +530,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url = Urls.Entries.entryById entry.Id
+            let url =
+                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
 
             let! response = client.GetAsync(url)
             let! body = response.Content.ReadAsStringAsync()
@@ -592,7 +593,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url = Urls.Entries.entryById 999999
+            let url =
+                Urls.Entries.entryById(1, 1, 999999)
 
             let! response = client.GetAsync(url)
 
@@ -609,7 +611,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let url = Urls.Entries.entryById 1
+            let url = Urls.Entries.entryById(1, 1, 1)
 
             let! response = client.GetAsync(url)
 
@@ -649,7 +651,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                Urls.Entries.entriesByVocabulary vocabulary.Id
+                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
 
             let! response = client.GetAsync(url)
             let! body = response.Content.ReadAsStringAsync()
@@ -708,7 +710,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                Urls.Entries.entriesByVocabulary vocabulary.Id
+                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
 
             let! response = client.GetAsync(url)
             let! body = response.Content.ReadAsStringAsync()
@@ -731,7 +733,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let url = Urls.Entries.entriesByVocabulary 1
+            let url =
+                Urls.Entries.entriesByVocabulary(1, 1)
 
             let! response = client.GetAsync(url)
 
@@ -756,7 +759,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                Urls.Entries.entriesByVocabulary 999999
+                Urls.Entries.entriesByVocabulary(1, 999999)
 
             let! response = client.GetAsync(url)
 
@@ -823,7 +826,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                           [ { ExampleText = "Hola ahi!"
                               Source = ExampleSourceDto.Custom } ] } ] }
 
-            let url = Urls.Entries.entryById entry.Id
+            let url =
+                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
 
             let! response = client.PutAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -932,7 +936,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                         Examples = [] } ]
                   Translations = [] }
 
-            let url = Urls.Entries.entryById 1
+            let url = Urls.Entries.entryById(1, 1, 1)
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -976,7 +980,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                         Examples = [] } ]
                   Translations = [] }
 
-            let url = Urls.Entries.entryById entry.Id
+            let url =
+                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -1017,7 +1022,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                   Definitions = []
                   Translations = [] }
 
-            let url = Urls.Entries.entryById entry.Id
+            let url =
+                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -1049,7 +1055,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                         Examples = [] } ]
                   Translations = [] }
 
-            let url = Urls.Entries.entryById 999999
+            let url =
+                Urls.Entries.entryById(1, 1, 999999)
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -1093,7 +1100,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                         Examples = [] } ]
                   Translations = [] }
 
-            let url = Urls.Entries.entryById entry.Id
+            let url =
+                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
 
             let! response = client.PutAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -1186,7 +1194,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                         Examples = [] } ]
                   Translations = [] }
 
-            let url = Urls.Entries.entryById entry.Id
+            let url =
+                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -1222,7 +1231,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url = Urls.Entries.entryById entry.Id
+            let url =
+                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
 
             let! response = client.DeleteAsync(url)
 
@@ -1263,7 +1273,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let url = Urls.Entries.entryById entry.Id
+            let url =
+                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
 
             let! response = client.DeleteAsync(url)
 
@@ -1287,7 +1298,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url = Urls.Entries.entryById 999999
+            let url =
+                Urls.Entries.entryById(1, 1, 999999)
 
             let! response = client.DeleteAsync(url)
 
@@ -1324,7 +1336,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser2)
 
-            let url = Urls.Entries.entryById entry.Id
+            let url =
+                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
 
             let! response = client.DeleteAsync(url)
 
@@ -1385,7 +1398,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url = Urls.Entries.entryById entry.Id
+            let url =
+                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
 
             let! response = client.DeleteAsync(url)
 
@@ -1440,7 +1454,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                 { VocabularyId = targetVocabulary.Id }
 
             let url =
-                Urls.Entries.moveEntryById entry.Id
+                Urls.Entries.moveEntryById(collection.Id, sourceVocabulary.Id, entry.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -1487,7 +1501,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             let request: MoveEntryRequest =
                 { VocabularyId = 1 }
 
-            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById 1, request)
+            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById(1, 1, 1), request)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
         }
@@ -1512,7 +1526,7 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             let request: MoveEntryRequest =
                 { VocabularyId = 999 }
 
-            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById 999999, request)
+            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById(1, 1, 999999), request)
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -1549,7 +1563,11 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             let request: MoveEntryRequest =
                 { VocabularyId = 999999 }
 
-            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById entry.Id, request)
+            let! response =
+                client.PostAsJsonAsync(
+                    Urls.Entries.moveEntryById(collection.Id, sourceVocabulary.Id, entry.Id),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -1593,7 +1611,11 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             let request: MoveEntryRequest =
                 { VocabularyId = foreignTargetVocabulary.Id }
 
-            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById entry.Id, request)
+            let! response =
+                client.PostAsJsonAsync(
+                    Urls.Entries.moveEntryById(collection1.Id, sourceVocabulary.Id, entry.Id),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -1636,7 +1658,12 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
             let request: MoveEntryRequest =
                 { VocabularyId = defaultVocabulary.Id }
 
-            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById entry.Id, request)
+            let! response =
+                client.PostAsJsonAsync(
+                    Urls.Entries.moveEntryById(regularCollection.Id, regularVocabulary.Id, entry.Id),
+                    request
+                )
+
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")

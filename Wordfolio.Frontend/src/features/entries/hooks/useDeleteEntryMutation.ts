@@ -3,8 +3,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { entriesApi, ApiError } from "../api/entriesApi";
 
 interface DeleteEntryParams {
-    readonly entryId: number;
+    readonly collectionId: number;
     readonly vocabularyId: number;
+    readonly entryId: number;
 }
 
 interface UseDeleteEntryMutationOptions {
@@ -18,11 +19,19 @@ export function useDeleteEntryMutation(
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ entryId }: DeleteEntryParams) =>
-            entriesApi.deleteEntry(entryId),
+        mutationFn: ({
+            collectionId,
+            vocabularyId,
+            entryId,
+        }: DeleteEntryParams) =>
+            entriesApi.deleteEntry(collectionId, vocabularyId, entryId),
         onSuccess: (_data, variables) => {
             void queryClient.invalidateQueries({
-                queryKey: ["entries", variables.vocabularyId],
+                queryKey: [
+                    "entries",
+                    variables.collectionId,
+                    variables.vocabularyId,
+                ],
             });
             void queryClient.invalidateQueries({
                 queryKey: ["collections-hierarchy"],

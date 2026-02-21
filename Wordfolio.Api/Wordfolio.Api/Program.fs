@@ -37,13 +37,13 @@ let mapEndpoints(app: IEndpointRouteBuilder) =
     app.MapGroup(Urls.CollectionsHierarchy.Path).WithTags("CollectionsHierarchy")
     |> mapCollectionsHierarchyEndpoints
 
-    collectionsGroup.MapGroup(Urls.Vocabularies.Path).WithTags("Vocabularies")
-    |> mapVocabulariesEndpoints
+    let vocabulariesGroup =
+        collectionsGroup.MapGroup(Urls.Vocabularies.Path).WithTags("Vocabularies")
 
-    app.MapGroup(Urls.Entries.Path).WithTags("Entries")
+    mapVocabulariesEndpoints vocabulariesGroup
+
+    vocabulariesGroup.MapGroup(Urls.Entries.Path).WithTags("Entries")
     |> mapEntriesEndpoints
-
-    mapEntriesByVocabularyEndpoint app
 
     app.MapGroup(Urls.Drafts.Path).WithTags("Drafts")
     |> mapDraftsEndpoints

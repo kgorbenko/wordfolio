@@ -8,6 +8,8 @@ import {
 } from "../api/entriesApi";
 
 interface UpdateEntryParams {
+    readonly collectionId: number;
+    readonly vocabularyId: number;
     readonly entryId: number;
     readonly request: UpdateEntryRequest;
 }
@@ -23,14 +25,34 @@ export function useUpdateEntryMutation(
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ entryId, request }: UpdateEntryParams) =>
-            entriesApi.updateEntry(entryId, request),
-        onSuccess: (data) => {
+        mutationFn: ({
+            collectionId,
+            vocabularyId,
+            entryId,
+            request,
+        }: UpdateEntryParams) =>
+            entriesApi.updateEntry(
+                collectionId,
+                vocabularyId,
+                entryId,
+                request
+            ),
+        onSuccess: (data, variables) => {
             void queryClient.invalidateQueries({
-                queryKey: ["entries", data.vocabularyId],
+                queryKey: [
+                    "entries",
+                    variables.collectionId,
+                    variables.vocabularyId,
+                ],
             });
             void queryClient.invalidateQueries({
-                queryKey: ["entries", "detail", data.id],
+                queryKey: [
+                    "entries",
+                    "detail",
+                    variables.collectionId,
+                    variables.vocabularyId,
+                    variables.entryId,
+                ],
             });
             void queryClient.invalidateQueries({
                 queryKey: ["collections-hierarchy"],

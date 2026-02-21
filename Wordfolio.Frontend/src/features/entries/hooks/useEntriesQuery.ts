@@ -5,13 +5,17 @@ import { mapEntry } from "../api/mappers";
 import { Entry } from "../types";
 
 export const useEntriesQuery = (
+    collectionId: number,
     vocabularyId: number,
     options?: Partial<UseQueryOptions<Entry[]>>
 ) =>
     useQuery({
-        queryKey: ["entries", vocabularyId],
+        queryKey: ["entries", collectionId, vocabularyId],
         queryFn: async () => {
-            const response = await entriesApi.getEntries(vocabularyId);
+            const response = await entriesApi.getEntries(
+                collectionId,
+                vocabularyId
+            );
             return response.map(mapEntry);
         },
         ...options,

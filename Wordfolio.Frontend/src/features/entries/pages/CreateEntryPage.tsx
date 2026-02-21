@@ -15,7 +15,10 @@ import { useDuplicateEntryDialog } from "../hooks/useDuplicateEntryDialog";
 import { useVocabularyQuery } from "../../vocabularies/hooks/useVocabularyQuery";
 import { useCreateEntryMutation } from "../hooks/useCreateEntryMutation";
 import { CreateEntryRequest } from "../api/entriesApi";
-import { EntryLookupForm } from "../components/EntryLookupForm";
+import {
+    EntryLookupForm,
+    VocabularyContext,
+} from "../components/EntryLookupForm";
 
 export const CreateEntryPage = () => {
     const { collectionId, vocabularyId } = entryCreateRouteApi.useParams();
@@ -53,23 +56,27 @@ export const CreateEntryPage = () => {
                 await raiseDuplicateEntryDialogAsync(existingEntry);
             if (addAnyway && pendingRequestRef.current) {
                 createMutation.mutate({
-                    ...pendingRequestRef.current,
-                    allowDuplicate: true,
+                    collectionId: numericCollectionId,
+                    vocabularyId: numericVocabularyId,
+                    request: {
+                        ...pendingRequestRef.current,
+                        allowDuplicate: true,
+                    },
                 });
             }
         },
     });
 
     const handleSave = useCallback(
-        (request: CreateEntryRequest) => {
-            const fullRequest = {
-                ...request,
-                vocabularyId: numericVocabularyId,
-            };
-            pendingRequestRef.current = fullRequest;
-            createMutation.mutate(fullRequest);
+        (context: VocabularyContext | null, request: CreateEntryRequest) => {
+            pendingRequestRef.current = request;
+            createMutation.mutate({
+                collectionId: context?.collectionId ?? numericCollectionId,
+                vocabularyId: context?.vocabularyId ?? numericVocabularyId,
+                request,
+            });
         },
-        [createMutation, numericVocabularyId]
+        [createMutation, numericCollectionId, numericVocabularyId]
     );
 
     const handleCancel = useCallback(() => {

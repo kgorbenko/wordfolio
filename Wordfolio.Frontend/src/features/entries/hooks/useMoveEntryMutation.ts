@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { entriesApi, EntryResponse, ApiError } from "../api/entriesApi";
 
 interface MoveEntryParams {
+    readonly collectionId: number;
     readonly entryId: number;
     readonly sourceVocabularyId: number;
     readonly targetVocabularyId: number;
@@ -17,14 +18,22 @@ export function useMoveEntryMutation(options?: UseMoveEntryMutationOptions) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ entryId, targetVocabularyId }: MoveEntryParams) =>
-            entriesApi.moveEntry(entryId, { vocabularyId: targetVocabularyId }),
+        mutationFn: ({
+            collectionId,
+            entryId,
+            sourceVocabularyId,
+            targetVocabularyId,
+        }: MoveEntryParams) =>
+            entriesApi.moveEntry(collectionId, sourceVocabularyId, entryId, {
+                vocabularyId: targetVocabularyId,
+            }),
         onSuccess: (data, variables) => {
             void queryClient.invalidateQueries({
-                queryKey: ["entries", variables.sourceVocabularyId],
-            });
-            void queryClient.invalidateQueries({
-                queryKey: ["entries", variables.targetVocabularyId],
+                queryKey: [
+                    "entries",
+                    variables.collectionId,
+                    variables.sourceVocabularyId,
+                ],
             });
             void queryClient.invalidateQueries({
                 queryKey: ["entries", "detail", data.id],

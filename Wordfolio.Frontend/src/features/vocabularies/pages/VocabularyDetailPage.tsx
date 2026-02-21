@@ -50,7 +50,7 @@ export const VocabularyDetailPage = () => {
         isLoading: isEntriesLoading,
         isError: isEntriesError,
         refetch: refetchEntries,
-    } = useEntriesQuery(numericVocabularyId);
+    } = useEntriesQuery(numericCollectionId, numericVocabularyId);
 
     const deleteMutation = useDeleteVocabularyMutation({
         onSuccess: () => {
