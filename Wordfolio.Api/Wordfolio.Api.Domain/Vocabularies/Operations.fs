@@ -85,9 +85,10 @@ let create env userId collectionId name description now =
                     let! vocabularyId = createVocabulary appEnv collectionId trimmedName description now
                     let! maybeVocabulary = getVocabularyById appEnv vocabularyId
 
-                    match maybeVocabulary with
-                    | Some vocabulary -> return Ok vocabulary
-                    | None -> return Error VocabularyNameRequired
+                    return
+                        match maybeVocabulary with
+                        | Some vocabulary -> Ok vocabulary
+                        | None -> failwith $"Vocabulary {vocabularyId} not found after creation"
         })
 
 let update env userId vocabularyId name description now =

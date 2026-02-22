@@ -311,7 +311,7 @@ let ``accepts name at exact max length``() =
     }
 
 [<Fact>]
-let ``returns error when getVocabularyById returns None after creation``() =
+let ``throws when post-creation vocabulary fetch returns None``() =
     task {
         let now = DateTimeOffset.UtcNow
         let collection = makeCollection 1 1
@@ -323,9 +323,9 @@ let ``returns error when getVocabularyById returns None after creation``() =
                 getVocabularyById = (fun _ -> Task.FromResult(None))
             )
 
-        let! result = create env (UserId 1) (CollectionId 1) "Test Vocabulary" None now
+        let! ex =
+            Assert.ThrowsAsync<Exception>(fun () ->
+                create env (UserId 1) (CollectionId 1) "Test Vocabulary" None now :> Task)
 
-        Assert.Equal(Error VocabularyNameRequired, result)
-        Assert.Equal(1, env.CreateVocabularyCalls.Length)
-        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal("Vocabulary VocabularyId 1 not found after creation", ex.Message)
     }

@@ -153,7 +153,7 @@ let createEntryWithChildren
         return
             match maybeEntry with
             | Some entry -> Ok entry
-            | None -> Error EntryTextRequired
+            | None -> failwith $"Entry {entryId} not found after creation"
     }
 
 let updateEntryWithChildren
@@ -176,5 +176,5 @@ let updateEntryWithChildren
         return
             match maybeUpdated with
             | Some entry -> Ok entry
-            | None -> Error(EntryNotFound entryId)
+            | None -> failwith $"Entry {entryId} not found after update"
     }

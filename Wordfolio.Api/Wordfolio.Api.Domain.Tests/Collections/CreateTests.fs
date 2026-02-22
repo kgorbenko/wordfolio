@@ -229,7 +229,7 @@ let ``accepts name at exact max length``() =
     }
 
 [<Fact>]
-let ``returns error when getCollectionById returns None after creation``() =
+let ``throws when post-creation collection fetch returns None``() =
     task {
         let now = DateTimeOffset.UtcNow
 
@@ -239,9 +239,7 @@ let ``returns error when getCollectionById returns None after creation``() =
                 getCollectionById = (fun _ -> Task.FromResult(None))
             )
 
-        let! result = create env (UserId 1) "Test Collection" None now
+        let! ex = Assert.ThrowsAsync<Exception>(fun () -> create env (UserId 1) "Test Collection" None now :> Task)
 
-        Assert.Equal(Error CollectionNameRequired, result)
-        Assert.Equal(1, env.CreateCollectionCalls.Length)
-        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal("Collection CollectionId 1 not found after creation", ex.Message)
     }

@@ -206,6 +206,37 @@ let ``returns VocabularyNotFoundOrAccessDenied when target vocabulary access is 
     }
 
 [<Fact>]
+let ``throws when post-move entry fetch returns None``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+
+        let existingEntry =
+            makeEntry 10 100 "hello" now None
+
+        let getEntryByIdCallCount = ref 0
+
+        let env =
+            TestEnv(
+                getEntryById =
+                    (fun _ ->
+                        let callIndex = getEntryByIdCallCount.Value
+                        getEntryByIdCallCount.Value <- callIndex + 1
+
+                        if callIndex = 0 then
+                            Task.FromResult(Some existingEntry)
+                        else
+                            Task.FromResult(None)),
+                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
+                moveEntry = (fun _ -> Task.FromResult(()))
+            )
+
+        let! ex =
+            Assert.ThrowsAsync<Exception>(fun () -> move env (UserId 1) (EntryId 10) (VocabularyId 200) now :> Task)
+
+        Assert.Equal("Entry EntryId 10 not found after move", ex.Message)
+    }
+
+[<Fact>]
 let ``move succeeds without duplicate checks in target vocabulary``() =
     task {
         let now = DateTimeOffset.UtcNow

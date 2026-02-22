@@ -163,7 +163,8 @@ let move env userId collectionId vocabularyId entryId targetVocabularyId now =
 
                             let! maybeUpdatedEntry = getEntryById appEnv entryId
 
-                            match maybeUpdatedEntry with
-                            | None -> return Error(EntryNotFound entryId)
-                            | Some updatedEntry -> return Ok updatedEntry
+                            return
+                                match maybeUpdatedEntry with
+                                | None -> failwith $"Entry {entryId} not found after move"
+                                | Some updatedEntry -> Ok updatedEntry
         })
