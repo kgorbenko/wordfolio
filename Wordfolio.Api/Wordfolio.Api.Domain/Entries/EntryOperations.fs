@@ -1,8 +1,5 @@
 module Wordfolio.Api.Domain.Entries.EntryOperations
 
-open System.Threading.Tasks
-
-open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries.Capabilities
 open Wordfolio.Api.Domain.Entries.Helpers
 open Wordfolio.Api.Domain.Transactions
@@ -10,17 +7,6 @@ open Wordfolio.Api.Domain.Transactions
 let private checkVocabularyAccessInCollection env userId collectionId vocabularyId =
     task {
         let! hasAccess = hasVocabularyAccessInCollection env vocabularyId collectionId userId
-
-        return
-            if not hasAccess then
-                Error(VocabularyNotFoundOrAccessDenied vocabularyId)
-            else
-                Ok()
-    }
-
-let private checkVocabularyAccess env userId vocabularyId =
-    task {
-        let! hasAccess = hasVocabularyAccess env vocabularyId userId
 
         return
             if not hasAccess then
@@ -50,68 +36,29 @@ let getByVocabularyId env userId collectionId vocabularyId =
 let create env collectionId (parameters: CreateEntryParameters) =
     runInTransaction env (fun appEnv ->
         task {
-            match validateEntryText parameters.EntryText with
+            match validateEntryInputs parameters.EntryText parameters.Definitions parameters.Translations with
             | Error error -> return Error error
-            | Ok validText ->
-                if
-                    parameters.Definitions.IsEmpty
-                    && parameters.Translations.IsEmpty
-                then
-                    return Error NoDefinitionsOrTranslations
-                else
-                    match validateDefinitions parameters.Definitions with
+            | Ok(validText, validDefinitions, validTranslations) ->
+                let! accessResult =
+                    checkVocabularyAccessInCollection appEnv parameters.UserId collectionId parameters.VocabularyId
+
+                match accessResult with
+                | Error error -> return Error error
+                | Ok() ->
+                    let! duplicateResult =
+                        checkForDuplicate appEnv parameters.VocabularyId (validText.Trim()) parameters.AllowDuplicate
+
+                    match duplicateResult with
                     | Error error -> return Error error
-                    | Ok validDefinitions ->
-                        match validateTranslations parameters.Translations with
-                        | Error error -> return Error error
-                        | Ok validTranslations ->
-                            let! accessResult =
-                                checkVocabularyAccessInCollection
-                                    appEnv
-                                    parameters.UserId
-                                    collectionId
-                                    parameters.VocabularyId
-
-                            match accessResult with
-                            | Error error -> return Error error
-                            | Ok() ->
-                                let! shouldProceed =
-                                    if parameters.AllowDuplicate then
-                                        Task.FromResult(Ok())
-                                    else
-                                        task {
-                                            let! maybeExistingEntry =
-                                                getEntryByTextAndVocabularyId
-                                                    appEnv
-                                                    parameters.VocabularyId
-                                                    (validText.Trim())
-
-                                            match maybeExistingEntry with
-                                            | Some existing ->
-                                                let! maybeFullEntry = getEntryById appEnv existing.Id
-
-                                                match maybeFullEntry with
-                                                | Some fullEntry -> return Error(DuplicateEntry fullEntry)
-                                                | None -> return Ok()
-                                            | None -> return Ok()
-                                        }
-
-                                match shouldProceed with
-                                | Error error -> return Error error
-                                | Ok() ->
-                                    let trimmedText = validText.Trim()
-
-                                    let! entryId =
-                                        createEntry appEnv parameters.VocabularyId trimmedText parameters.CreatedAt
-
-                                    do! createTranslationsAsync appEnv entryId validTranslations
-                                    do! createDefinitionsAsync appEnv entryId validDefinitions
-
-                                    let! maybeEntry = getEntryById appEnv entryId
-
-                                    match maybeEntry with
-                                    | Some entry -> return Ok entry
-                                    | None -> return Error EntryTextRequired
+                    | Ok() ->
+                        return!
+                            createEntryWithChildren
+                                appEnv
+                                parameters.VocabularyId
+                                (validText.Trim())
+                                parameters.CreatedAt
+                                validDefinitions
+                                validTranslations
         })
 
 let getById env userId collectionId vocabularyId entryId =
@@ -145,48 +92,30 @@ let update
     =
     runInTransaction env (fun appEnv ->
         task {
-            match validateEntryText entryText with
+            match validateEntryInputs entryText definitions translations with
             | Error error -> return Error error
-            | Ok validText ->
-                if
-                    definitions.IsEmpty
-                    && translations.IsEmpty
-                then
-                    return Error NoDefinitionsOrTranslations
-                else
-                    match validateDefinitions definitions with
-                    | Error error -> return Error error
-                    | Ok validDefinitions ->
-                        match validateTranslations translations with
+            | Ok(validText, validDefinitions, validTranslations) ->
+                let! accessResult = checkVocabularyAccessInCollection appEnv userId collectionId vocabularyId
+
+                match accessResult with
+                | Error error -> return Error error
+                | Ok _ ->
+                    let! maybeEntry = getEntryById appEnv entryId
+
+                    match maybeEntry with
+                    | None -> return Error(EntryNotFound entryId)
+                    | Some existingEntry ->
+                        match checkEntryBelongsToVocabulary entryId existingEntry vocabularyId with
                         | Error error -> return Error error
-                        | Ok validTranslations ->
-                            let! accessResult =
-                                checkVocabularyAccessInCollection appEnv userId collectionId vocabularyId
-
-                            match accessResult with
-                            | Error error -> return Error error
-                            | Ok _ ->
-                                let! maybeEntry = getEntryById appEnv entryId
-
-                                match maybeEntry with
-                                | None -> return Error(EntryNotFound entryId)
-                                | Some existingEntry ->
-                                    match checkEntryBelongsToVocabulary entryId existingEntry vocabularyId with
-                                    | Error error -> return Error error
-                                    | Ok _ ->
-                                        let trimmedText = validText.Trim()
-
-                                        do! clearEntryChildren appEnv entryId
-                                        do! updateEntry appEnv entryId trimmedText now
-
-                                        do! createTranslationsAsync appEnv entryId validTranslations
-                                        do! createDefinitionsAsync appEnv entryId validDefinitions
-
-                                        let! maybeUpdated = getEntryById appEnv entryId
-
-                                        match maybeUpdated with
-                                        | Some entry -> return Ok entry
-                                        | None -> return Error(EntryNotFound entryId)
+                        | Ok _ ->
+                            return!
+                                updateEntryWithChildren
+                                    appEnv
+                                    entryId
+                                    (validText.Trim())
+                                    now
+                                    validDefinitions
+                                    validTranslations
         })
 
 let delete env userId collectionId vocabularyId entryId =
