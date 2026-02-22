@@ -688,7 +688,7 @@ let ``proceeds when duplicate text match finds a stale record``() =
     }
 
 [<Fact>]
-let ``returns EntryTextRequired when post-create entry fetch returns None``() =
+let ``throws when post-create entry fetch returns None``() =
     task {
         let now = DateTimeOffset.UtcNow
 
@@ -710,9 +710,11 @@ let ``returns EntryTextRequired when post-create entry fetch returns None``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
+        let! ex =
+            Assert.ThrowsAsync<Exception>(fun () ->
+                create env (makeCreateParams (UserId 1) "test word" definitionInputs [] now) :> Task)
 
-        Assert.Equal(Error EntryTextRequired, result)
+        Assert.Equal("Entry EntryId 1 not found after creation", ex.Message)
     }
 
 [<Fact>]

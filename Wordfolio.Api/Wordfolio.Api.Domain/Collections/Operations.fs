@@ -59,9 +59,10 @@ let create env userId name description now =
                 let! collectionId = createCollection appEnv userId trimmedName description now
                 let! maybeCollection = getCollectionById appEnv collectionId
 
-                match maybeCollection with
-                | Some collection -> return Ok collection
-                | None -> return Error CollectionNameRequired
+                return
+                    match maybeCollection with
+                    | Some collection -> Ok collection
+                    | None -> failwith $"Collection {collectionId} not found after creation"
         })
 
 let update env userId collectionId name description now =
