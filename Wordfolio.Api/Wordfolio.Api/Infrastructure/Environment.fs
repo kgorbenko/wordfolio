@@ -600,6 +600,21 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                 return hasAccess
             }
 
+    interface IHasVocabularyAccessInCollection with
+        member _.HasVocabularyAccessInCollection(VocabularyId vocabularyId, CollectionId collectionId, UserId userId) =
+            task {
+                let! hasAccess =
+                    Wordfolio.Api.DataAccess.Entries.hasVocabularyAccessInCollectionAsync
+                        vocabularyId
+                        collectionId
+                        userId
+                        connection
+                        transaction
+                        cancellationToken
+
+                return hasAccess
+            }
+
     interface IDeleteEntry with
         member _.DeleteEntry(EntryId id) =
             task {

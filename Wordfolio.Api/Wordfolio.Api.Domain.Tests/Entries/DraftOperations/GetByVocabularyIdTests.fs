@@ -1,4 +1,4 @@
-module Wordfolio.Api.Domain.Tests.Entries.GetByVocabularyIdTests
+module Wordfolio.Api.Domain.Tests.Entries.DraftOperations.GetByVocabularyIdTests
 
 open System.Threading.Tasks
 
@@ -6,7 +6,7 @@ open Xunit
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
-open Wordfolio.Api.Domain.Entries.Operations
+open Wordfolio.Api.Domain.Entries.DraftOperations
 
 type TestEnv
     (

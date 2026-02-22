@@ -1,4 +1,4 @@
-module Wordfolio.Api.Domain.Tests.Entries.UpdateTests
+module Wordfolio.Api.Domain.Tests.Entries.EntryOperations.UpdateTests
 
 open System
 open System.Threading.Tasks
@@ -7,7 +7,8 @@ open Xunit
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
-open Wordfolio.Api.Domain.Entries.Operations
+open Wordfolio.Api.Domain.Entries.EntryOperations
+open Wordfolio.Api.Domain.Entries.Helpers
 
 type UpdateEntryCall =
     { EntryId: EntryId
@@ -37,7 +38,7 @@ type CreateExamplesForTranslationCall =
 type TestEnv
     (
         getEntryById: EntryId -> Task<Entry option>,
-        hasVocabularyAccess: VocabularyId * UserId -> Task<bool>,
+        hasVocabularyAccessInCollection: VocabularyId * CollectionId * UserId -> Task<bool>,
         updateEntry: EntryId * string * DateTimeOffset -> Task<unit>,
         clearEntryChildren: EntryId -> Task<unit>,
         createDefinition: EntryId * string * DefinitionSource * int -> Task<DefinitionId>,
@@ -48,8 +49,8 @@ type TestEnv
     let getEntryByIdCalls =
         ResizeArray<EntryId>()
 
-    let hasVocabularyAccessCalls =
-        ResizeArray<VocabularyId * UserId>()
+    let hasVocabularyAccessInCollectionCalls =
+        ResizeArray<VocabularyId * CollectionId * UserId>()
 
     let updateEntryCalls =
         ResizeArray<UpdateEntryCall>()
@@ -72,8 +73,9 @@ type TestEnv
     member _.GetEntryByIdCalls =
         getEntryByIdCalls |> Seq.toList
 
-    member _.HasVocabularyAccessCalls =
-        hasVocabularyAccessCalls |> Seq.toList
+    member _.HasVocabularyAccessInCollectionCalls =
+        hasVocabularyAccessInCollectionCalls
+        |> Seq.toList
 
     member _.UpdateEntryCalls =
         updateEntryCalls |> Seq.toList
@@ -100,10 +102,10 @@ type TestEnv
             getEntryByIdCalls.Add(id)
             getEntryById id
 
-    interface IHasVocabularyAccess with
-        member _.HasVocabularyAccess(vocabularyId, userId) =
-            hasVocabularyAccessCalls.Add(vocabularyId, userId)
-            hasVocabularyAccess(vocabularyId, userId)
+    interface IHasVocabularyAccessInCollection with
+        member _.HasVocabularyAccessInCollection(vocabularyId, collectionId, userId) =
+            hasVocabularyAccessInCollectionCalls.Add(vocabularyId, collectionId, userId)
+            hasVocabularyAccessInCollection(vocabularyId, collectionId, userId)
 
     interface IUpdateEntry with
         member _.UpdateEntry(entryId, text, updatedAt) =
@@ -238,7 +240,7 @@ let ``updates entry with new definitions and translations``() =
                             Task.FromResult(Some updatedEntry)
                         else
                             failwith "Unexpected getEntryById call"),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
                 updateEntry =
                     (fun (_, text, updatedAt) ->
                         if text <> "new" then
@@ -267,12 +269,16 @@ let ``updates entry with new definitions and translations``() =
                   TranslationSource.Manual
                   [ makeExampleInput "example" ExampleSource.Custom ] ]
 
-        let! result = update env (UserId 3) (EntryId 1) "  new  " definitions translations now
+        let! result =
+            update env (UserId 3) (CollectionId 5) (VocabularyId 10) (EntryId 1) "  new  " definitions translations now
 
         Assert.Equal(Ok updatedEntry, result)
         Assert.Equal<EntryId list>([ EntryId 1; EntryId 1 ], env.GetEntryByIdCalls)
 
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 10, UserId 3 ], env.HasVocabularyAccessCalls)
+        Assert.Equal<(VocabularyId * CollectionId * UserId) list>(
+            [ VocabularyId 10, CollectionId 5, UserId 3 ],
+            env.HasVocabularyAccessInCollectionCalls
+        )
 
         Assert.Equal<EntryId list>([ EntryId 1 ], env.ClearEntryChildrenCalls)
 
@@ -313,12 +319,52 @@ let ``updates entry with new definitions and translations``() =
     }
 
 [<Fact>]
+let ``returns VocabularyNotFoundOrAccessDenied when vocabulary is not in collection``() =
+    task {
+        let env =
+            TestEnv(
+                getEntryById = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(false)),
+                updateEntry = (fun _ -> failwith "Should not be called"),
+                clearEntryChildren = (fun _ -> failwith "Should not be called"),
+                createDefinition = (fun _ -> failwith "Should not be called"),
+                createTranslation = (fun _ -> failwith "Should not be called"),
+                createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
+                createExamplesForTranslation = (fun _ -> failwith "Should not be called")
+            )
+
+        let definitions =
+            [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
+
+        let! result =
+            update
+                env
+                (UserId 1)
+                (CollectionId 5)
+                (VocabularyId 10)
+                (EntryId 1)
+                "text"
+                definitions
+                []
+                DateTimeOffset.UtcNow
+
+        Assert.Equal(Error(VocabularyNotFoundOrAccessDenied(VocabularyId 10)), result)
+        Assert.Empty(env.GetEntryByIdCalls)
+        Assert.Empty(env.UpdateEntryCalls)
+
+        Assert.Equal<(VocabularyId * CollectionId * UserId) list>(
+            [ VocabularyId 10, CollectionId 5, UserId 1 ],
+            env.HasVocabularyAccessInCollectionCalls
+        )
+    }
+
+[<Fact>]
 let ``returns EntryNotFound when entry does not exist``() =
     task {
         let env =
             TestEnv(
                 getEntryById = (fun _ -> Task.FromResult(None)),
-                hasVocabularyAccess = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -327,23 +373,36 @@ let ``returns EntryNotFound when entry does not exist``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = update env (UserId 1) (EntryId 99) "text" [] [] DateTimeOffset.UtcNow
+        let definitions =
+            [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
+
+        let! result =
+            update
+                env
+                (UserId 1)
+                (CollectionId 5)
+                (VocabularyId 10)
+                (EntryId 99)
+                "text"
+                definitions
+                []
+                DateTimeOffset.UtcNow
 
         Assert.Equal(Error(EntryNotFound(EntryId 99)), result)
         Assert.Equal<EntryId list>([ EntryId 99 ], env.GetEntryByIdCalls)
-        Assert.Empty(env.HasVocabularyAccessCalls)
+        Assert.Empty(env.UpdateEntryCalls)
     }
 
 [<Fact>]
-let ``returns EntryNotFound when user has no access``() =
+let ``returns EntryNotFound when entry belongs to different vocabulary``() =
     task {
         let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
+            makeEntry 1 99 "text" [] [] DateTimeOffset.UtcNow None
 
         let env =
             TestEnv(
                 getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(false)),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -352,11 +411,23 @@ let ``returns EntryNotFound when user has no access``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = update env (UserId 2) (EntryId 1) "text" [] [] DateTimeOffset.UtcNow
+        let definitions =
+            [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
+
+        let! result =
+            update
+                env
+                (UserId 1)
+                (CollectionId 5)
+                (VocabularyId 10)
+                (EntryId 1)
+                "text"
+                definitions
+                []
+                DateTimeOffset.UtcNow
 
         Assert.Equal(Error(EntryNotFound(EntryId 1)), result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 10, UserId 2 ], env.HasVocabularyAccessCalls)
         Assert.Empty(env.UpdateEntryCalls)
     }
 
@@ -369,7 +440,7 @@ let ``returns error when no definitions or translations``() =
         let env =
             TestEnv(
                 getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -378,73 +449,10 @@ let ``returns error when no definitions or translations``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = update env (UserId 2) (EntryId 1) "text" [] [] DateTimeOffset.UtcNow
+        let! result =
+            update env (UserId 1) (CollectionId 5) (VocabularyId 10) (EntryId 1) "text" [] [] DateTimeOffset.UtcNow
 
         Assert.Equal(Error NoDefinitionsOrTranslations, result)
-        Assert.Empty(env.UpdateEntryCalls)
-    }
-
-[<Fact>]
-let ``returns error when example text is too long``() =
-    task {
-        let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
-
-        let longExample =
-            String.replicate (MaxExampleTextLength + 1) "a"
-
-        let env =
-            TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
-                updateEntry = (fun _ -> failwith "Should not be called"),
-                clearEntryChildren = (fun _ -> failwith "Should not be called"),
-                createDefinition = (fun _ -> failwith "Should not be called"),
-                createTranslation = (fun _ -> failwith "Should not be called"),
-                createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
-                createExamplesForTranslation = (fun _ -> failwith "Should not be called")
-            )
-
-        let definitions =
-            [ makeDefinitionInput
-                  "definition"
-                  DefinitionSource.Manual
-                  [ makeExampleInput longExample ExampleSource.Custom ] ]
-
-        let! result = update env (UserId 2) (EntryId 1) "text" definitions [] DateTimeOffset.UtcNow
-
-        Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
-        Assert.Empty(env.UpdateEntryCalls)
-    }
-
-[<Fact>]
-let ``returns error when too many examples``() =
-    task {
-        let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
-
-        let examples =
-            [ 1 .. MaxExamplesPerItem + 1 ]
-            |> List.map(fun i -> makeExampleInput $"example {i}" ExampleSource.Custom)
-
-        let env =
-            TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
-                updateEntry = (fun _ -> failwith "Should not be called"),
-                clearEntryChildren = (fun _ -> failwith "Should not be called"),
-                createDefinition = (fun _ -> failwith "Should not be called"),
-                createTranslation = (fun _ -> failwith "Should not be called"),
-                createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
-                createExamplesForTranslation = (fun _ -> failwith "Should not be called")
-            )
-
-        let definitions =
-            [ makeDefinitionInput "definition" DefinitionSource.Manual examples ]
-
-        let! result = update env (UserId 2) (EntryId 1) "text" definitions [] DateTimeOffset.UtcNow
-
-        Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
         Assert.Empty(env.UpdateEntryCalls)
     }
 
@@ -454,7 +462,7 @@ let ``returns error when entry text is empty``() =
         let env =
             TestEnv(
                 getEntryById = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> failwith "Should not be called"),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -466,31 +474,8 @@ let ``returns error when entry text is empty``() =
         let definitions =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
-        let! result = update env (UserId 1) (EntryId 1) "" definitions [] DateTimeOffset.UtcNow
-
-        Assert.Equal(Error EntryTextRequired, result)
-        Assert.Empty(env.GetEntryByIdCalls)
-    }
-
-[<Fact>]
-let ``returns error when entry text is whitespace only``() =
-    task {
-        let env =
-            TestEnv(
-                getEntryById = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> failwith "Should not be called"),
-                updateEntry = (fun _ -> failwith "Should not be called"),
-                clearEntryChildren = (fun _ -> failwith "Should not be called"),
-                createDefinition = (fun _ -> failwith "Should not be called"),
-                createTranslation = (fun _ -> failwith "Should not be called"),
-                createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
-                createExamplesForTranslation = (fun _ -> failwith "Should not be called")
-            )
-
-        let definitions =
-            [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
-
-        let! result = update env (UserId 1) (EntryId 1) "   " definitions [] DateTimeOffset.UtcNow
+        let! result =
+            update env (UserId 1) (CollectionId 5) (VocabularyId 10) (EntryId 1) "" definitions [] DateTimeOffset.UtcNow
 
         Assert.Equal(Error EntryTextRequired, result)
         Assert.Empty(env.GetEntryByIdCalls)
@@ -505,7 +490,7 @@ let ``returns error when entry text exceeds max length``() =
         let env =
             TestEnv(
                 getEntryById = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> failwith "Should not be called"),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -517,10 +502,111 @@ let ``returns error when entry text exceeds max length``() =
         let definitions =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
-        let! result = update env (UserId 1) (EntryId 1) longText definitions [] DateTimeOffset.UtcNow
+        let! result =
+            update
+                env
+                (UserId 1)
+                (CollectionId 5)
+                (VocabularyId 10)
+                (EntryId 1)
+                longText
+                definitions
+                []
+                DateTimeOffset.UtcNow
 
         Assert.Equal(Error(EntryTextTooLong MaxEntryTextLength), result)
         Assert.Empty(env.GetEntryByIdCalls)
+    }
+
+[<Fact>]
+let ``returns error when entry text is whitespace only``() =
+    task {
+        let env =
+            TestEnv(
+                getEntryById = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> failwith "Should not be called"),
+                updateEntry = (fun _ -> failwith "Should not be called"),
+                clearEntryChildren = (fun _ -> failwith "Should not be called"),
+                createDefinition = (fun _ -> failwith "Should not be called"),
+                createTranslation = (fun _ -> failwith "Should not be called"),
+                createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
+                createExamplesForTranslation = (fun _ -> failwith "Should not be called")
+            )
+
+        let definitions =
+            [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
+
+        let! result =
+            update env (UserId 1) (CollectionId 5) (VocabularyId 10) (EntryId 1) "   " definitions [] DateTimeOffset.UtcNow
+
+        Assert.Equal(Error EntryTextRequired, result)
+        Assert.Empty(env.GetEntryByIdCalls)
+    }
+
+[<Fact>]
+let ``returns error when definition example text is too long``() =
+    task {
+        let entry =
+            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
+
+        let longExample =
+            String.replicate (MaxExampleTextLength + 1) "a"
+
+        let env =
+            TestEnv(
+                getEntryById = (fun _ -> Task.FromResult(Some entry)),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                updateEntry = (fun _ -> failwith "Should not be called"),
+                clearEntryChildren = (fun _ -> failwith "Should not be called"),
+                createDefinition = (fun _ -> failwith "Should not be called"),
+                createTranslation = (fun _ -> failwith "Should not be called"),
+                createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
+                createExamplesForTranslation = (fun _ -> failwith "Should not be called")
+            )
+
+        let definitions =
+            [ makeDefinitionInput
+                  "definition"
+                  DefinitionSource.Manual
+                  [ makeExampleInput longExample ExampleSource.Custom ] ]
+
+        let! result =
+            update env (UserId 2) (CollectionId 5) (VocabularyId 10) (EntryId 1) "text" definitions [] DateTimeOffset.UtcNow
+
+        Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
+        Assert.Empty(env.UpdateEntryCalls)
+    }
+
+[<Fact>]
+let ``returns error when definition has too many examples``() =
+    task {
+        let entry =
+            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
+
+        let examples =
+            [ 1 .. MaxExamplesPerItem + 1 ]
+            |> List.map(fun i -> makeExampleInput $"example {i}" ExampleSource.Custom)
+
+        let env =
+            TestEnv(
+                getEntryById = (fun _ -> Task.FromResult(Some entry)),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                updateEntry = (fun _ -> failwith "Should not be called"),
+                clearEntryChildren = (fun _ -> failwith "Should not be called"),
+                createDefinition = (fun _ -> failwith "Should not be called"),
+                createTranslation = (fun _ -> failwith "Should not be called"),
+                createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
+                createExamplesForTranslation = (fun _ -> failwith "Should not be called")
+            )
+
+        let definitions =
+            [ makeDefinitionInput "definition" DefinitionSource.Manual examples ]
+
+        let! result =
+            update env (UserId 2) (CollectionId 5) (VocabularyId 10) (EntryId 1) "text" definitions [] DateTimeOffset.UtcNow
+
+        Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
+        Assert.Empty(env.UpdateEntryCalls)
     }
 
 [<Fact>]
@@ -535,7 +621,7 @@ let ``returns error when translation example text is too long``() =
         let env =
             TestEnv(
                 getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -550,14 +636,15 @@ let ``returns error when translation example text is too long``() =
                   TranslationSource.Manual
                   [ makeExampleInput longExample ExampleSource.Custom ] ]
 
-        let! result = update env (UserId 2) (EntryId 1) "text" [] translations DateTimeOffset.UtcNow
+        let! result =
+            update env (UserId 2) (CollectionId 5) (VocabularyId 10) (EntryId 1) "text" [] translations DateTimeOffset.UtcNow
 
         Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
         Assert.Empty(env.UpdateEntryCalls)
     }
 
 [<Fact>]
-let ``returns error when too many examples in translation``() =
+let ``returns error when translation has too many examples``() =
     task {
         let entry =
             makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
@@ -569,7 +656,7 @@ let ``returns error when too many examples in translation``() =
         let env =
             TestEnv(
                 getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -581,7 +668,8 @@ let ``returns error when too many examples in translation``() =
         let translations =
             [ makeTranslationInput "translation" TranslationSource.Manual examples ]
 
-        let! result = update env (UserId 2) (EntryId 1) "text" [] translations DateTimeOffset.UtcNow
+        let! result =
+            update env (UserId 2) (CollectionId 5) (VocabularyId 10) (EntryId 1) "text" [] translations DateTimeOffset.UtcNow
 
         Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
         Assert.Empty(env.UpdateEntryCalls)
@@ -616,7 +704,7 @@ let ``updates entry with definitions only``() =
                             Task.FromResult(Some updatedEntry)
                         else
                             failwith "Unexpected getEntryById call"),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
                 updateEntry = (fun _ -> Task.FromResult(())),
                 clearEntryChildren = (fun _ -> Task.FromResult(())),
                 createDefinition = (fun _ -> Task.FromResult(DefinitionId 10)),
@@ -628,7 +716,8 @@ let ``updates entry with definitions only``() =
         let definitions =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
-        let! result = update env (UserId 3) (EntryId 1) "word" definitions [] now
+        let! result =
+            update env (UserId 3) (CollectionId 5) (VocabularyId 10) (EntryId 1) "word" definitions [] now
 
         Assert.Equal(Ok updatedEntry, result)
 
@@ -641,7 +730,6 @@ let ``updates entry with definitions only``() =
         )
 
         Assert.Empty(env.CreateTranslationCalls)
-        Assert.Empty(env.CreateExamplesForTranslationCalls)
     }
 
 [<Fact>]
@@ -673,7 +761,7 @@ let ``updates entry with translations only``() =
                             Task.FromResult(Some updatedEntry)
                         else
                             failwith "Unexpected getEntryById call"),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
                 updateEntry = (fun _ -> Task.FromResult(())),
                 clearEntryChildren = (fun _ -> Task.FromResult(())),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -685,7 +773,8 @@ let ``updates entry with translations only``() =
         let translations =
             [ makeTranslationInput "translation" TranslationSource.Manual [] ]
 
-        let! result = update env (UserId 3) (EntryId 1) "word" [] translations now
+        let! result =
+            update env (UserId 3) (CollectionId 5) (VocabularyId 10) (EntryId 1) "word" [] translations now
 
         Assert.Equal(Ok updatedEntry, result)
 
@@ -698,5 +787,4 @@ let ``updates entry with translations only``() =
         )
 
         Assert.Empty(env.CreateDefinitionCalls)
-        Assert.Empty(env.CreateExamplesForDefinitionCalls)
     }

@@ -1682,3 +1682,656 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.Equal(expected, actual)
         }
+
+    [<Fact>]
+    member _.``GET list returns 404 when collection does not exist``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(506, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let! response = client.GetAsync(Urls.Entries.entriesByVocabulary(999999, vocabulary.Id))
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``POST create returns 404 when collection does not exist``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(507, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: CreateEntryRequest =
+                { EntryText = "hello"
+                  Definitions =
+                    [ { DefinitionText = "a greeting"
+                        Source = DefinitionSourceDto.Manual
+                        Examples = [] } ]
+                  Translations = []
+                  AllowDuplicate = None }
+
+            let! response = client.PostAsJsonAsync(Urls.Entries.entriesByVocabulary(999999, vocabulary.Id), request)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``GET by id returns 404 when collection does not exist``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(508, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let! response = client.GetAsync(Urls.Entries.entryById(999999, vocabulary.Id, entry.Id))
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``PUT returns 404 when collection does not exist``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(509, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: UpdateEntryRequest =
+                { EntryText = "hello"
+                  Definitions =
+                    [ { DefinitionText = "a greeting"
+                        Source = DefinitionSourceDto.Manual
+                        Examples = [] } ]
+                  Translations = [] }
+
+            let! response = client.PutAsJsonAsync(Urls.Entries.entryById(999999, vocabulary.Id, entry.Id), request)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``DELETE returns 404 when collection does not exist``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(510, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let! response = client.DeleteAsync(Urls.Entries.entryById(999999, vocabulary.Id, entry.Id))
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``POST move returns 404 when collection does not exist``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(511, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: MoveEntryRequest =
+                { VocabularyId = vocabulary.Id }
+
+            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById(999999, vocabulary.Id, entry.Id), request)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``GET by id returns 404 when entry belongs to different vocabulary``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(512, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabularyA =
+                Entities.makeVocabulary collection "Vocabulary A" None DateTimeOffset.UtcNow None false
+
+            let vocabularyB =
+                Entities.makeVocabulary collection "Vocabulary B" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabularyA "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabularyA; vocabularyB ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let! response = client.GetAsync(Urls.Entries.entryById(collection.Id, vocabularyB.Id, entry.Id))
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``PUT returns 404 when entry belongs to different vocabulary``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(513, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabularyA =
+                Entities.makeVocabulary collection "Vocabulary A" None DateTimeOffset.UtcNow None false
+
+            let vocabularyB =
+                Entities.makeVocabulary collection "Vocabulary B" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabularyA "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabularyA; vocabularyB ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: UpdateEntryRequest =
+                { EntryText = "hello"
+                  Definitions =
+                    [ { DefinitionText = "a greeting"
+                        Source = DefinitionSourceDto.Manual
+                        Examples = [] } ]
+                  Translations = [] }
+
+            let! response =
+                client.PutAsJsonAsync(Urls.Entries.entryById(collection.Id, vocabularyB.Id, entry.Id), request)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``DELETE returns 404 when entry belongs to different vocabulary``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(514, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabularyA =
+                Entities.makeVocabulary collection "Vocabulary A" None DateTimeOffset.UtcNow None false
+
+            let vocabularyB =
+                Entities.makeVocabulary collection "Vocabulary B" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabularyA "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabularyA; vocabularyB ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let! response = client.DeleteAsync(Urls.Entries.entryById(collection.Id, vocabularyB.Id, entry.Id))
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``POST move returns 404 when entry belongs to different vocabulary``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(515, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabularyA =
+                Entities.makeVocabulary collection "Vocabulary A" None DateTimeOffset.UtcNow None false
+
+            let vocabularyB =
+                Entities.makeVocabulary collection "Vocabulary B" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabularyA "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabularyA; vocabularyB ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: MoveEntryRequest =
+                { VocabularyId = vocabularyA.Id }
+
+            let! response =
+                client.PostAsJsonAsync(Urls.Entries.moveEntryById(collection.Id, vocabularyB.Id, entry.Id), request)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``GET list returns 404 when vocabulary does not belong to collection``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(516, "user@example.com", "P@ssw0rd!")
+
+            let collectionA =
+                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+
+            let collectionB =
+                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+
+            let vocabularyA =
+                Entities.makeVocabulary collectionA "Vocabulary A" None DateTimeOffset.UtcNow None false
+
+            let vocabularyB =
+                Entities.makeVocabulary collectionB "Vocabulary B" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collectionA; collectionB ]
+                |> Seeder.addVocabularies [ vocabularyA; vocabularyB ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let! response = client.GetAsync(Urls.Entries.entriesByVocabulary(collectionA.Id, vocabularyB.Id))
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``POST create returns 404 when vocabulary does not belong to collection``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(517, "user@example.com", "P@ssw0rd!")
+
+            let collectionA =
+                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+
+            let collectionB =
+                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+
+            let vocabularyA =
+                Entities.makeVocabulary collectionA "Vocabulary A" None DateTimeOffset.UtcNow None false
+
+            let vocabularyB =
+                Entities.makeVocabulary collectionB "Vocabulary B" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collectionA; collectionB ]
+                |> Seeder.addVocabularies [ vocabularyA; vocabularyB ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: CreateEntryRequest =
+                { EntryText = "hello"
+                  Definitions =
+                    [ { DefinitionText = "a greeting"
+                        Source = DefinitionSourceDto.Manual
+                        Examples = [] } ]
+                  Translations = []
+                  AllowDuplicate = None }
+
+            let! response =
+                client.PostAsJsonAsync(Urls.Entries.entriesByVocabulary(collectionA.Id, vocabularyB.Id), request)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``GET by id returns 404 when vocabulary does not exist``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(518, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let! response = client.GetAsync(Urls.Entries.entryById(collection.Id, 999999, entry.Id))
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``GET by id returns 404 when vocabulary belongs to different collection``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(519, "user@example.com", "P@ssw0rd!")
+
+            let collectionA =
+                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+
+            let collectionB =
+                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collectionB "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collectionA; collectionB ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let! response = client.GetAsync(Urls.Entries.entryById(collectionA.Id, vocabulary.Id, entry.Id))
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``PUT returns 404 when vocabulary belongs to different collection``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(520, "user@example.com", "P@ssw0rd!")
+
+            let collectionA =
+                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+
+            let collectionB =
+                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collectionB "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collectionA; collectionB ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: UpdateEntryRequest =
+                { EntryText = "hello"
+                  Definitions =
+                    [ { DefinitionText = "a greeting"
+                        Source = DefinitionSourceDto.Manual
+                        Examples = [] } ]
+                  Translations = [] }
+
+            let! response = client.PutAsJsonAsync(Urls.Entries.entryById(collectionA.Id, vocabulary.Id, entry.Id), request)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``DELETE returns 404 when vocabulary belongs to different collection``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(521, "user@example.com", "P@ssw0rd!")
+
+            let collectionA =
+                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+
+            let collectionB =
+                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collectionB "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collectionA; collectionB ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let! response = client.DeleteAsync(Urls.Entries.entryById(collectionA.Id, vocabulary.Id, entry.Id))
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``POST move returns 404 when vocabulary belongs to different collection``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(522, "user@example.com", "P@ssw0rd!")
+
+            let collectionA =
+                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+
+            let collectionB =
+                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collectionB "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collectionA; collectionB ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: MoveEntryRequest =
+                { VocabularyId = vocabulary.Id }
+
+            let! response =
+                client.PostAsJsonAsync(Urls.Entries.moveEntryById(collectionA.Id, vocabulary.Id, entry.Id), request)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }

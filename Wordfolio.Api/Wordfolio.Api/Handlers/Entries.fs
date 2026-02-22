@@ -13,7 +13,7 @@ open Npgsql
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
-open Wordfolio.Api.Domain.Entries.Operations
+open Wordfolio.Api.Domain.Entries.EntryOperations
 open Wordfolio.Api.Infrastructure.Environment
 
 module UrlTokens = Wordfolio.Api.Urls
@@ -216,7 +216,12 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result = getByVocabularyId env (UserId userId) (VocabularyId vocabularyId)
+                            let! result =
+                                getByVocabularyId
+                                    env
+                                    (UserId userId)
+                                    (CollectionId collectionId)
+                                    (VocabularyId vocabularyId)
 
                             return
                                 match result with
@@ -260,7 +265,7 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                                     |> Option.defaultValue false
                                   CreatedAt = DateTimeOffset.UtcNow }
 
-                            let! result = create env parameters
+                            let! result = create env (CollectionId collectionId) parameters
 
                             return
                                 match result with
@@ -291,7 +296,13 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result = getById env (UserId userId) (EntryId id)
+                            let! result =
+                                getById
+                                    env
+                                    (UserId userId)
+                                    (CollectionId collectionId)
+                                    (VocabularyId vocabularyId)
+                                    (EntryId id)
 
                             return
                                 match result with
@@ -316,7 +327,13 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result = delete env (UserId userId) (EntryId id)
+                            let! result =
+                                delete
+                                    env
+                                    (UserId userId)
+                                    (CollectionId collectionId)
+                                    (VocabularyId vocabularyId)
+                                    (EntryId id)
 
                             return
                                 match result with
@@ -353,6 +370,8 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                                 update
                                     env
                                     (UserId userId)
+                                    (CollectionId collectionId)
+                                    (VocabularyId vocabularyId)
                                     (EntryId id)
                                     request.EntryText
                                     definitions
@@ -387,6 +406,8 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                                 move
                                     env
                                     (UserId userId)
+                                    (CollectionId collectionId)
+                                    (VocabularyId vocabularyId)
                                     (EntryId id)
                                     (VocabularyId request.VocabularyId)
                                     DateTimeOffset.UtcNow

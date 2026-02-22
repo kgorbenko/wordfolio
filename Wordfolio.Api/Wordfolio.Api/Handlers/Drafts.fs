@@ -12,6 +12,7 @@ open Npgsql
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
+open Wordfolio.Api.Domain.Entries.DraftOperations
 open Wordfolio.Api.Handlers.Entries
 open Wordfolio.Api.Infrastructure.Environment
 
@@ -59,7 +60,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                         let env =
                             TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result = Operations.getDrafts env (UserId userId)
+                        let! result = getDrafts env (UserId userId)
 
                         return
                             match result with
@@ -113,7 +114,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                                     |> Option.defaultValue false
                                   CreatedAt = DateTimeOffset.UtcNow }
 
-                            let! result = Operations.create env parameters
+                            let! result = create env parameters
 
                             return
                                 match result with
@@ -141,7 +142,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result = Operations.getById env (UserId userId) (EntryId id)
+                            let! result = getById env (UserId userId) (EntryId id)
 
                             return
                                 match result with
@@ -176,7 +177,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                                 |> List.map toTranslationInput
 
                             let! result =
-                                Operations.update
+                                update
                                     env
                                     (UserId userId)
                                     (EntryId id)
@@ -210,7 +211,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result = Operations.delete env (UserId userId) (EntryId id)
+                            let! result = delete env (UserId userId) (EntryId id)
 
                             return
                                 match result with
@@ -237,7 +238,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                                 TransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
-                                Operations.move
+                                move
                                     env
                                     (UserId userId)
                                     (EntryId id)

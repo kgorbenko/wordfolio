@@ -1,4 +1,4 @@
-module Wordfolio.Api.Domain.Tests.Entries.MoveTests
+module Wordfolio.Api.Domain.Tests.Entries.EntryOperations.MoveTests
 
 open System
 open System.Threading.Tasks
@@ -7,7 +7,7 @@ open Xunit
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
-open Wordfolio.Api.Domain.Entries.Operations
+open Wordfolio.Api.Domain.Entries.EntryOperations
 
 type MoveEntryCall =
     { EntryId: EntryId
@@ -18,11 +18,15 @@ type MoveEntryCall =
 type TestEnv
     (
         getEntryById: EntryId -> Task<Entry option>,
+        hasVocabularyAccessInCollection: VocabularyId * CollectionId * UserId -> Task<bool>,
         hasVocabularyAccess: VocabularyId * UserId -> Task<bool>,
         moveEntry: EntryId * VocabularyId * VocabularyId * DateTimeOffset -> Task<unit>
     ) =
     let getEntryByIdCalls =
         ResizeArray<EntryId>()
+
+    let hasVocabularyAccessInCollectionCalls =
+        ResizeArray<VocabularyId * CollectionId * UserId>()
 
     let hasVocabularyAccessCalls =
         ResizeArray<VocabularyId * UserId>()
@@ -32,6 +36,10 @@ type TestEnv
 
     member _.GetEntryByIdCalls =
         getEntryByIdCalls |> Seq.toList
+
+    member _.HasVocabularyAccessInCollectionCalls =
+        hasVocabularyAccessInCollectionCalls
+        |> Seq.toList
 
     member _.HasVocabularyAccessCalls =
         hasVocabularyAccessCalls |> Seq.toList
@@ -43,6 +51,11 @@ type TestEnv
         member _.GetEntryById(id) =
             getEntryByIdCalls.Add(id)
             getEntryById id
+
+    interface IHasVocabularyAccessInCollection with
+        member _.HasVocabularyAccessInCollection(vocabularyId, collectionId, userId) =
+            hasVocabularyAccessInCollectionCalls.Add(vocabularyId, collectionId, userId)
+            hasVocabularyAccessInCollection(vocabularyId, collectionId, userId)
 
     interface IHasVocabularyAccess with
         member _.HasVocabularyAccess(vocabularyId, userId) =
@@ -73,7 +86,7 @@ let makeEntry id vocabularyId text createdAt updatedAt =
       Translations = [] }
 
 [<Fact>]
-let ``moves entry when user has access to source and target vocabularies``() =
+let ``moves entry when vocabulary is in collection and entry belongs to vocabulary``() =
     task {
         let now = DateTimeOffset.UtcNow
 
@@ -98,19 +111,22 @@ let ``moves entry when user has access to source and target vocabularies``() =
                             Task.FromResult(Some movedEntry)
                         else
                             failwith "Unexpected getEntryById call"),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
                 hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
                 moveEntry = (fun _ -> Task.FromResult(()))
             )
 
-        let! result = move env (UserId 1) (EntryId 10) (VocabularyId 200) now
+        let! result = move env (UserId 1) (CollectionId 5) (VocabularyId 100) (EntryId 10) (VocabularyId 200) now
 
         Assert.Equal(Ok movedEntry, result)
         Assert.Equal<EntryId list>([ EntryId 10; EntryId 10 ], env.GetEntryByIdCalls)
 
-        Assert.Equal<(VocabularyId * UserId) list>(
-            [ VocabularyId 100, UserId 1; VocabularyId 200, UserId 1 ],
-            env.HasVocabularyAccessCalls
+        Assert.Equal<(VocabularyId * CollectionId * UserId) list>(
+            [ VocabularyId 100, CollectionId 5, UserId 1 ],
+            env.HasVocabularyAccessInCollectionCalls
         )
+
+        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 200, UserId 1 ], env.HasVocabularyAccessCalls)
 
         Assert.Equal<MoveEntryCall list>(
             [ { EntryId = EntryId 10
@@ -122,86 +138,104 @@ let ``moves entry when user has access to source and target vocabularies``() =
     }
 
 [<Fact>]
-let ``returns EntryNotFound when entry does not exist``() =
+let ``returns VocabularyNotFoundOrAccessDenied when source vocabulary is not in collection``() =
     task {
         let env =
             TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(None)),
+                getEntryById = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(false)),
                 hasVocabularyAccess = (fun _ -> failwith "Should not be called"),
                 moveEntry = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = move env (UserId 1) (EntryId 99) (VocabularyId 200) DateTimeOffset.UtcNow
+        let! result =
+            move
+                env
+                (UserId 1)
+                (CollectionId 5)
+                (VocabularyId 100)
+                (EntryId 10)
+                (VocabularyId 200)
+                DateTimeOffset.UtcNow
 
-        Assert.Equal(Error(EntryNotFound(EntryId 99)), result)
+        Assert.Equal(Error(VocabularyNotFoundOrAccessDenied(VocabularyId 100)), result)
+        Assert.Empty(env.GetEntryByIdCalls)
         Assert.Empty(env.HasVocabularyAccessCalls)
         Assert.Empty(env.MoveEntryCalls)
     }
 
 [<Fact>]
-let ``returns EntryNotFound when source vocabulary access is denied``() =
+let ``returns EntryNotFound when entry does not exist``() =
     task {
-        let existingEntry =
-            makeEntry 10 100 "hello" DateTimeOffset.UtcNow None
-
-        let accessCallCount = ref 0
-
         let env =
             TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(Some existingEntry)),
-                hasVocabularyAccess =
-                    (fun _ ->
-                        let callCount = accessCallCount.Value
-                        accessCallCount.Value <- callCount + 1
-
-                        if callCount = 0 then
-                            Task.FromResult(false)
-                        else
-                            failwith "Target vocabulary access should not be checked"),
+                getEntryById = (fun _ -> Task.FromResult(None)),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                hasVocabularyAccess = (fun _ -> failwith "Should not be called"),
                 moveEntry = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = move env (UserId 1) (EntryId 10) (VocabularyId 200) DateTimeOffset.UtcNow
+        let! result =
+            move
+                env
+                (UserId 1)
+                (CollectionId 5)
+                (VocabularyId 100)
+                (EntryId 99)
+                (VocabularyId 200)
+                DateTimeOffset.UtcNow
+
+        Assert.Equal(Error(EntryNotFound(EntryId 99)), result)
+        Assert.Equal<EntryId list>([ EntryId 99 ], env.GetEntryByIdCalls)
+        Assert.Empty(env.HasVocabularyAccessCalls)
+        Assert.Empty(env.MoveEntryCalls)
+    }
+
+[<Fact>]
+let ``returns EntryNotFound when entry belongs to different vocabulary``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+
+        let entry =
+            makeEntry 10 999 "hello" now None
+
+        let env =
+            TestEnv(
+                getEntryById = (fun _ -> Task.FromResult(Some entry)),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                hasVocabularyAccess = (fun _ -> failwith "Should not be called"),
+                moveEntry = (fun _ -> failwith "Should not be called")
+            )
+
+        let! result = move env (UserId 1) (CollectionId 5) (VocabularyId 100) (EntryId 10) (VocabularyId 200) now
 
         Assert.Equal(Error(EntryNotFound(EntryId 10)), result)
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 100, UserId 1 ], env.HasVocabularyAccessCalls)
+        Assert.Equal<EntryId list>([ EntryId 10 ], env.GetEntryByIdCalls)
+        Assert.Empty(env.HasVocabularyAccessCalls)
         Assert.Empty(env.MoveEntryCalls)
     }
 
 [<Fact>]
 let ``returns VocabularyNotFoundOrAccessDenied when target vocabulary access is denied``() =
     task {
-        let existingEntry =
-            makeEntry 10 100 "hello" DateTimeOffset.UtcNow None
+        let now = DateTimeOffset.UtcNow
 
-        let accessCallCount = ref 0
+        let existingEntry =
+            makeEntry 10 100 "hello" now None
 
         let env =
             TestEnv(
                 getEntryById = (fun _ -> Task.FromResult(Some existingEntry)),
-                hasVocabularyAccess =
-                    (fun _ ->
-                        let callCount = accessCallCount.Value
-                        accessCallCount.Value <- callCount + 1
-
-                        if callCount = 0 then
-                            Task.FromResult(true)
-                        elif callCount = 1 then
-                            Task.FromResult(false)
-                        else
-                            failwith "Unexpected HasVocabularyAccess call"),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                hasVocabularyAccess = (fun _ -> Task.FromResult(false)),
                 moveEntry = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = move env (UserId 1) (EntryId 10) (VocabularyId 200) DateTimeOffset.UtcNow
+        let! result = move env (UserId 1) (CollectionId 5) (VocabularyId 100) (EntryId 10) (VocabularyId 200) now
 
         Assert.Equal(Error(VocabularyNotFoundOrAccessDenied(VocabularyId 200)), result)
-
-        Assert.Equal<(VocabularyId * UserId) list>(
-            [ VocabularyId 100, UserId 1; VocabularyId 200, UserId 1 ],
-            env.HasVocabularyAccessCalls
-        )
-
+        Assert.Equal<EntryId list>([ EntryId 10 ], env.GetEntryByIdCalls)
+        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 200, UserId 1 ], env.HasVocabularyAccessCalls)
         Assert.Empty(env.MoveEntryCalls)
     }
 
@@ -231,11 +265,12 @@ let ``move succeeds without duplicate checks in target vocabulary``() =
                             Task.FromResult(Some movedEntry)
                         else
                             failwith "Unexpected getEntryById call"),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
                 hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
                 moveEntry = (fun _ -> Task.FromResult(()))
             )
 
-        let! result = move env (UserId 1) (EntryId 10) (VocabularyId 200) now
+        let! result = move env (UserId 1) (CollectionId 5) (VocabularyId 100) (EntryId 10) (VocabularyId 200) now
 
         Assert.Equal(Ok movedEntry, result)
         Assert.Equal(1, env.MoveEntryCalls.Length)
