@@ -176,7 +176,8 @@ let makeCreateParams userId entryText definitions translations createdAt : Creat
       AllowDuplicate = false
       CreatedAt = createdAt }
 
-let defaultVocabulary = makeVocabulary 1 1 "Default"
+let defaultVocabulary =
+    makeVocabulary 1 1 "Default"
 
 [<Fact>]
 let ``creates entry with definitions only``() =
@@ -297,8 +298,7 @@ let ``creates entry with both definitions and translations``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result =
-            create env (makeCreateParams (UserId 1) "test word" definitionInputs translationInputs now)
+        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs translationInputs now)
 
         Assert.Equal(Ok createdEntry, result)
 
@@ -580,8 +580,7 @@ let ``returns error when example text is too long``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result =
-            create env (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
+        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
 
         Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
     }
@@ -611,8 +610,7 @@ let ``returns error when too many examples in definition``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result =
-            create env (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
+        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
 
         Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
     }
@@ -642,8 +640,7 @@ let ``returns error when too many examples in translation``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result =
-            create env (makeCreateParams (UserId 1) "test word" [] translationInputs DateTimeOffset.UtcNow)
+        let! result = create env (makeCreateParams (UserId 1) "test word" [] translationInputs DateTimeOffset.UtcNow)
 
         Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
     }
@@ -653,7 +650,8 @@ let ``proceeds when duplicate text match finds a stale record``() =
     task {
         let now = DateTimeOffset.UtcNow
 
-        let staleEntry = makeEntry 99 1 "test word" now [] []
+        let staleEntry =
+            makeEntry 99 1 "test word" now [] []
 
         let definitionInputs =
             [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]

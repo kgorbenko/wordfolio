@@ -60,11 +60,7 @@ let create env collectionId (parameters: CreateEntryParameters) =
                     return Error NoDefinitionsOrTranslations
                 else
                     let! accessResult =
-                        checkVocabularyAccessInCollection
-                            appEnv
-                            parameters.UserId
-                            collectionId
-                            parameters.VocabularyId
+                        checkVocabularyAccessInCollection appEnv parameters.UserId collectionId parameters.VocabularyId
 
                     match accessResult with
                     | Error error -> return Error error
@@ -75,10 +71,7 @@ let create env collectionId (parameters: CreateEntryParameters) =
                             else
                                 task {
                                     let! maybeExistingEntry =
-                                        getEntryByTextAndVocabularyId
-                                            appEnv
-                                            parameters.VocabularyId
-                                            (validText.Trim())
+                                        getEntryByTextAndVocabularyId appEnv parameters.VocabularyId (validText.Trim())
 
                                     match maybeExistingEntry with
                                     | Some existing ->

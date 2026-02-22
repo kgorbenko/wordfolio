@@ -537,7 +537,16 @@ let ``returns error when entry text is whitespace only``() =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
         let! result =
-            update env (UserId 1) (CollectionId 5) (VocabularyId 10) (EntryId 1) "   " definitions [] DateTimeOffset.UtcNow
+            update
+                env
+                (UserId 1)
+                (CollectionId 5)
+                (VocabularyId 10)
+                (EntryId 1)
+                "   "
+                definitions
+                []
+                DateTimeOffset.UtcNow
 
         Assert.Equal(Error EntryTextRequired, result)
         Assert.Empty(env.GetEntryByIdCalls)
@@ -571,7 +580,16 @@ let ``returns error when definition example text is too long``() =
                   [ makeExampleInput longExample ExampleSource.Custom ] ]
 
         let! result =
-            update env (UserId 2) (CollectionId 5) (VocabularyId 10) (EntryId 1) "text" definitions [] DateTimeOffset.UtcNow
+            update
+                env
+                (UserId 2)
+                (CollectionId 5)
+                (VocabularyId 10)
+                (EntryId 1)
+                "text"
+                definitions
+                []
+                DateTimeOffset.UtcNow
 
         Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
         Assert.Empty(env.UpdateEntryCalls)
@@ -603,7 +621,16 @@ let ``returns error when definition has too many examples``() =
             [ makeDefinitionInput "definition" DefinitionSource.Manual examples ]
 
         let! result =
-            update env (UserId 2) (CollectionId 5) (VocabularyId 10) (EntryId 1) "text" definitions [] DateTimeOffset.UtcNow
+            update
+                env
+                (UserId 2)
+                (CollectionId 5)
+                (VocabularyId 10)
+                (EntryId 1)
+                "text"
+                definitions
+                []
+                DateTimeOffset.UtcNow
 
         Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
         Assert.Empty(env.UpdateEntryCalls)
@@ -637,7 +664,16 @@ let ``returns error when translation example text is too long``() =
                   [ makeExampleInput longExample ExampleSource.Custom ] ]
 
         let! result =
-            update env (UserId 2) (CollectionId 5) (VocabularyId 10) (EntryId 1) "text" [] translations DateTimeOffset.UtcNow
+            update
+                env
+                (UserId 2)
+                (CollectionId 5)
+                (VocabularyId 10)
+                (EntryId 1)
+                "text"
+                []
+                translations
+                DateTimeOffset.UtcNow
 
         Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
         Assert.Empty(env.UpdateEntryCalls)
@@ -669,7 +705,16 @@ let ``returns error when translation has too many examples``() =
             [ makeTranslationInput "translation" TranslationSource.Manual examples ]
 
         let! result =
-            update env (UserId 2) (CollectionId 5) (VocabularyId 10) (EntryId 1) "text" [] translations DateTimeOffset.UtcNow
+            update
+                env
+                (UserId 2)
+                (CollectionId 5)
+                (VocabularyId 10)
+                (EntryId 1)
+                "text"
+                []
+                translations
+                DateTimeOffset.UtcNow
 
         Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
         Assert.Empty(env.UpdateEntryCalls)
@@ -716,8 +761,7 @@ let ``updates entry with definitions only``() =
         let definitions =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
-        let! result =
-            update env (UserId 3) (CollectionId 5) (VocabularyId 10) (EntryId 1) "word" definitions [] now
+        let! result = update env (UserId 3) (CollectionId 5) (VocabularyId 10) (EntryId 1) "word" definitions [] now
 
         Assert.Equal(Ok updatedEntry, result)
 
@@ -773,8 +817,7 @@ let ``updates entry with translations only``() =
         let translations =
             [ makeTranslationInput "translation" TranslationSource.Manual [] ]
 
-        let! result =
-            update env (UserId 3) (CollectionId 5) (VocabularyId 10) (EntryId 1) "word" [] translations now
+        let! result = update env (UserId 3) (CollectionId 5) (VocabularyId 10) (EntryId 1) "word" [] translations now
 
         Assert.Equal(Ok updatedEntry, result)
 
