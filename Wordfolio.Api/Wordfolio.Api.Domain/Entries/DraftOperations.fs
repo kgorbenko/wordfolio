@@ -1,78 +1,34 @@
 module Wordfolio.Api.Domain.Entries.DraftOperations
 
-open System.Threading.Tasks
-
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries.Capabilities
 open Wordfolio.Api.Domain.Entries.Helpers
 open Wordfolio.Api.Domain.Shared
 open Wordfolio.Api.Domain.Transactions
 
-let private checkVocabularyAccess env userId vocabularyId =
-    task {
-        let! hasAccess = hasVocabularyAccess env vocabularyId userId
-
-        return
-            if not hasAccess then
-                Error(VocabularyNotFoundOrAccessDenied vocabularyId)
-            else
-                Ok()
-    }
-
 let create env (parameters: CreateDraftParameters) =
     runInTransaction env (fun appEnv ->
         task {
-            match validateEntryText parameters.EntryText with
+            match validateEntryInputs parameters.EntryText parameters.Definitions parameters.Translations with
             | Error error -> return Error error
-            | Ok validText ->
-                if
-                    parameters.Definitions.IsEmpty
-                    && parameters.Translations.IsEmpty
-                then
-                    return Error NoDefinitionsOrTranslations
-                else
-                    match validateDefinitions parameters.Definitions with
-                    | Error error -> return Error error
-                    | Ok validDefinitions ->
-                        match validateTranslations parameters.Translations with
-                        | Error error -> return Error error
-                        | Ok validTranslations ->
-                            let! vocabularyId =
-                                Operations.getOrCreateDefaultVocabulary appEnv parameters.UserId parameters.CreatedAt
+            | Ok(validText, validDefinitions, validTranslations) ->
+                let! vocabularyId =
+                    Operations.getOrCreateDefaultVocabulary appEnv parameters.UserId parameters.CreatedAt
 
-                            let! shouldProceed =
-                                if parameters.AllowDuplicate then
-                                    Task.FromResult(Ok())
-                                else
-                                    task {
-                                        let! maybeExistingEntry =
-                                            getEntryByTextAndVocabularyId appEnv vocabularyId (validText.Trim())
+                let! duplicateResult =
+                    checkForDuplicate appEnv vocabularyId (validText.Trim()) parameters.AllowDuplicate
 
-                                        match maybeExistingEntry with
-                                        | Some existing ->
-                                            let! maybeFullEntry = getEntryById appEnv existing.Id
-
-                                            match maybeFullEntry with
-                                            | Some fullEntry -> return Error(DuplicateEntry fullEntry)
-                                            | None -> return Ok()
-                                        | None -> return Ok()
-                                    }
-
-                            match shouldProceed with
-                            | Error error -> return Error error
-                            | Ok() ->
-                                let trimmedText = validText.Trim()
-
-                                let! entryId = createEntry appEnv vocabularyId trimmedText parameters.CreatedAt
-
-                                do! createTranslationsAsync appEnv entryId validTranslations
-                                do! createDefinitionsAsync appEnv entryId validDefinitions
-
-                                let! maybeEntry = getEntryById appEnv entryId
-
-                                match maybeEntry with
-                                | Some entry -> return Ok entry
-                                | None -> return Error EntryTextRequired
+                match duplicateResult with
+                | Error error -> return Error error
+                | Ok() ->
+                    return!
+                        createEntryWithChildren
+                            appEnv
+                            vocabularyId
+                            (validText.Trim())
+                            parameters.CreatedAt
+                            validDefinitions
+                            validTranslations
         })
 
 let getById env userId entryId =
@@ -105,44 +61,27 @@ let getByVocabularyId env userId vocabularyId =
 let update env userId entryId entryText (definitions: DefinitionInput list) (translations: TranslationInput list) now =
     runInTransaction env (fun appEnv ->
         task {
-            match validateEntryText entryText with
+            match validateEntryInputs entryText definitions translations with
             | Error error -> return Error error
-            | Ok validText ->
-                if
-                    definitions.IsEmpty
-                    && translations.IsEmpty
-                then
-                    return Error NoDefinitionsOrTranslations
-                else
-                    match validateDefinitions definitions with
-                    | Error error -> return Error error
-                    | Ok validDefinitions ->
-                        match validateTranslations translations with
-                        | Error error -> return Error error
-                        | Ok validTranslations ->
-                            let! maybeEntry = getEntryById appEnv entryId
+            | Ok(validText, validDefinitions, validTranslations) ->
+                let! maybeEntry = getEntryById appEnv entryId
 
-                            match maybeEntry with
-                            | None -> return Error(EntryNotFound entryId)
-                            | Some existingEntry ->
-                                let! vocabAccessResult = checkVocabularyAccess appEnv userId existingEntry.VocabularyId
+                match maybeEntry with
+                | None -> return Error(EntryNotFound entryId)
+                | Some existingEntry ->
+                    let! vocabAccessResult = checkVocabularyAccess appEnv userId existingEntry.VocabularyId
 
-                                match vocabAccessResult with
-                                | Error _ -> return Error(EntryNotFound entryId)
-                                | Ok _ ->
-                                    let trimmedText = validText.Trim()
-
-                                    do! clearEntryChildren appEnv entryId
-                                    do! updateEntry appEnv entryId trimmedText now
-
-                                    do! createTranslationsAsync appEnv entryId validTranslations
-                                    do! createDefinitionsAsync appEnv entryId validDefinitions
-
-                                    let! maybeUpdated = getEntryById appEnv entryId
-
-                                    match maybeUpdated with
-                                    | Some entry -> return Ok entry
-                                    | None -> return Error(EntryNotFound entryId)
+                    match vocabAccessResult with
+                    | Error _ -> return Error(EntryNotFound entryId)
+                    | Ok _ ->
+                        return!
+                            updateEntryWithChildren
+                                appEnv
+                                entryId
+                                (validText.Trim())
+                                now
+                                validDefinitions
+                                validTranslations
         })
 
 let move env userId entryId targetVocabularyId now =
