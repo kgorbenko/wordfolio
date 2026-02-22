@@ -474,7 +474,10 @@ let ``trims whitespace from entry text``() =
                 getEntryById = (fun _ -> Task.FromResult(Some createdEntry)),
                 getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(None)),
                 hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
-                createEntry = (fun (_, text, _) -> capturedText.Value <- text; Task.FromResult(EntryId 1)),
+                createEntry =
+                    (fun (_, text, _) ->
+                        capturedText.Value <- text
+                        Task.FromResult(EntryId 1)),
                 createDefinition = (fun _ -> Task.FromResult(DefinitionId 10)),
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> Task.FromResult(())),

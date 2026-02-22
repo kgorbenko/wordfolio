@@ -9,7 +9,10 @@ import { useNotificationContext } from "../../../contexts/NotificationContext";
 import { useDuplicateEntryDialog } from "../../entries/hooks/useDuplicateEntryDialog";
 import { useCreateDraftMutation } from "../hooks/useCreateDraftMutation";
 import { CreateEntryRequest } from "../../entries/api/entriesApi";
-import { EntryLookupForm, VocabularyContext } from "../../entries/components/EntryLookupForm";
+import {
+    EntryLookupForm,
+    VocabularyContext,
+} from "../../entries/components/EntryLookupForm";
 
 export const CreateDraftPage = () => {
     const navigate = useNavigate();
@@ -42,7 +45,7 @@ export const CreateDraftPage = () => {
     });
 
     const handleSave = useCallback(
-        (_: VocabularyContext, request: CreateEntryRequest) => {
+        (_: VocabularyContext | null, request: CreateEntryRequest) => {
             pendingRequestRef.current = request;
             createMutation.mutate(request);
         },

@@ -2253,7 +2253,8 @@ type EntriesTests(fixture: WordfolioIdentityTestFixture) =
                         Examples = [] } ]
                   Translations = [] }
 
-            let! response = client.PutAsJsonAsync(Urls.Entries.entryById(collectionA.Id, vocabulary.Id, entry.Id), request)
+            let! response =
+                client.PutAsJsonAsync(Urls.Entries.entryById(collectionA.Id, vocabulary.Id, entry.Id), request)
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }

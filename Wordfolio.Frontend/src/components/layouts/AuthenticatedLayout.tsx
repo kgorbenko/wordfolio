@@ -13,7 +13,7 @@ import { VocabularyContext } from "../../features/entries/components/EntryLookup
 import { WordEntrySheet } from "../../features/entries";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
-import { assertNonNullable } from '../../utils/misc.ts';
+import { assertNonNullable } from "../../utils/misc.ts";
 
 import styles from "./AuthenticatedLayout.module.scss";
 

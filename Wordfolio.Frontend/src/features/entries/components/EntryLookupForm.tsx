@@ -74,18 +74,20 @@ export const EntryLookupForm = ({
                 ? selectedVocabularyId
                 : vocabularyId;
 
-            const context = effectiveVocabularyId !== undefined
-                ? {
-                    collectionId: ensureNonNullable(
-                        ensureNonNullable(hierarchy).collections.find((c) =>
-                            c.vocabularies.some(
-                                (v) => v.id === selectedVocabularyId
-                            )
-                        )
-                    ).id,
-                    vocabularyId: effectiveVocabularyId,
-                }
-                : null;
+            const context =
+                effectiveVocabularyId !== undefined
+                    ? {
+                          collectionId: ensureNonNullable(
+                              ensureNonNullable(hierarchy).collections.find(
+                                  (c) =>
+                                      c.vocabularies.some(
+                                          (v) => v.id === selectedVocabularyId
+                                      )
+                              )
+                          ).id,
+                          vocabularyId: effectiveVocabularyId,
+                      }
+                    : null;
 
             onSave(context, {
                 entryText: word.trim(),
@@ -93,7 +95,14 @@ export const EntryLookupForm = ({
                 translations: data.translations,
             });
         },
-        [onSave, showVocabularySelector, selectedVocabularyId, hierarchy, word]
+        [
+            onSave,
+            showVocabularySelector,
+            selectedVocabularyId,
+            vocabularyId,
+            hierarchy,
+            word,
+        ]
     );
 
     const canSave =
