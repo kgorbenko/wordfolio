@@ -31,36 +31,36 @@ let create env (parameters: CreateDraftParameters) =
                 then
                     return Error NoDefinitionsOrTranslations
                 else
-                    let! vocabularyId =
-                        Operations.getOrCreateDefaultVocabulary appEnv parameters.UserId parameters.CreatedAt
-
-                    let! shouldProceed =
-                        if parameters.AllowDuplicate then
-                            Task.FromResult(Ok())
-                        else
-                            task {
-                                let! maybeExistingEntry =
-                                    getEntryByTextAndVocabularyId appEnv vocabularyId (validText.Trim())
-
-                                match maybeExistingEntry with
-                                | Some existing ->
-                                    let! maybeFullEntry = getEntryById appEnv existing.Id
-
-                                    match maybeFullEntry with
-                                    | Some fullEntry -> return Error(DuplicateEntry fullEntry)
-                                    | None -> return Ok()
-                                | None -> return Ok()
-                            }
-
-                    match shouldProceed with
+                    match validateDefinitions parameters.Definitions with
                     | Error error -> return Error error
-                    | Ok() ->
-                        match validateDefinitions parameters.Definitions with
+                    | Ok validDefinitions ->
+                        match validateTranslations parameters.Translations with
                         | Error error -> return Error error
-                        | Ok validDefinitions ->
-                            match validateTranslations parameters.Translations with
+                        | Ok validTranslations ->
+                            let! vocabularyId =
+                                Operations.getOrCreateDefaultVocabulary appEnv parameters.UserId parameters.CreatedAt
+
+                            let! shouldProceed =
+                                if parameters.AllowDuplicate then
+                                    Task.FromResult(Ok())
+                                else
+                                    task {
+                                        let! maybeExistingEntry =
+                                            getEntryByTextAndVocabularyId appEnv vocabularyId (validText.Trim())
+
+                                        match maybeExistingEntry with
+                                        | Some existing ->
+                                            let! maybeFullEntry = getEntryById appEnv existing.Id
+
+                                            match maybeFullEntry with
+                                            | Some fullEntry -> return Error(DuplicateEntry fullEntry)
+                                            | None -> return Ok()
+                                        | None -> return Ok()
+                                    }
+
+                            match shouldProceed with
                             | Error error -> return Error error
-                            | Ok validTranslations ->
+                            | Ok() ->
                                 let trimmedText = validText.Trim()
 
                                 let! entryId = createEntry appEnv vocabularyId trimmedText parameters.CreatedAt

@@ -59,39 +59,46 @@ let create env collectionId (parameters: CreateEntryParameters) =
                 then
                     return Error NoDefinitionsOrTranslations
                 else
-                    let! accessResult =
-                        checkVocabularyAccessInCollection appEnv parameters.UserId collectionId parameters.VocabularyId
-
-                    match accessResult with
+                    match validateDefinitions parameters.Definitions with
                     | Error error -> return Error error
-                    | Ok() ->
-                        let! shouldProceed =
-                            if parameters.AllowDuplicate then
-                                Task.FromResult(Ok())
-                            else
-                                task {
-                                    let! maybeExistingEntry =
-                                        getEntryByTextAndVocabularyId appEnv parameters.VocabularyId (validText.Trim())
-
-                                    match maybeExistingEntry with
-                                    | Some existing ->
-                                        let! maybeFullEntry = getEntryById appEnv existing.Id
-
-                                        match maybeFullEntry with
-                                        | Some fullEntry -> return Error(DuplicateEntry fullEntry)
-                                        | None -> return Ok()
-                                    | None -> return Ok()
-                                }
-
-                        match shouldProceed with
+                    | Ok validDefinitions ->
+                        match validateTranslations parameters.Translations with
                         | Error error -> return Error error
-                        | Ok() ->
-                            match validateDefinitions parameters.Definitions with
+                        | Ok validTranslations ->
+                            let! accessResult =
+                                checkVocabularyAccessInCollection
+                                    appEnv
+                                    parameters.UserId
+                                    collectionId
+                                    parameters.VocabularyId
+
+                            match accessResult with
                             | Error error -> return Error error
-                            | Ok validDefinitions ->
-                                match validateTranslations parameters.Translations with
+                            | Ok() ->
+                                let! shouldProceed =
+                                    if parameters.AllowDuplicate then
+                                        Task.FromResult(Ok())
+                                    else
+                                        task {
+                                            let! maybeExistingEntry =
+                                                getEntryByTextAndVocabularyId
+                                                    appEnv
+                                                    parameters.VocabularyId
+                                                    (validText.Trim())
+
+                                            match maybeExistingEntry with
+                                            | Some existing ->
+                                                let! maybeFullEntry = getEntryById appEnv existing.Id
+
+                                                match maybeFullEntry with
+                                                | Some fullEntry -> return Error(DuplicateEntry fullEntry)
+                                                | None -> return Ok()
+                                            | None -> return Ok()
+                                        }
+
+                                match shouldProceed with
                                 | Error error -> return Error error
-                                | Ok validTranslations ->
+                                | Ok() ->
                                     let trimmedText = validText.Trim()
 
                                     let! entryId =
