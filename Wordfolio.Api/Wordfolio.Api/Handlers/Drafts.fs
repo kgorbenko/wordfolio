@@ -99,9 +99,8 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let parameters: CreateEntryParameters =
+                            let parameters: CreateDraftParameters =
                                 { UserId = UserId userId
-                                  VocabularyId = None
                                   EntryText = request.EntryText
                                   Definitions =
                                     request.Definitions

@@ -102,7 +102,7 @@ let makeExampleInput text source = { ExampleText = text; Source = source }
 
 let makeParameters userId vocabularyId entryText definitions translations allowDuplicate createdAt =
     { UserId = UserId userId
-      VocabularyId = Some(VocabularyId vocabularyId)
+      VocabularyId = VocabularyId vocabularyId
       EntryText = entryText
       Definitions = definitions
       Translations = translations
@@ -571,4 +571,67 @@ let ``returns TooManyExamples when translation has too many examples``() =
         let! result = create env (CollectionId 5) parameters
 
         Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
+    }
+
+[<Fact>]
+let ``proceeds when duplicate text match finds a stale record``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+        let staleEntry = makeEntry 99 10 "hello"
+        let createdEntry = makeEntry 1 10 "hello"
+
+        let definitions =
+            [ makeDefinitionInput "a greeting" DefinitionSource.Manual [] ]
+
+        let parameters =
+            makeParameters 1 10 "hello" definitions [] false now
+
+        let env =
+            TestEnv(
+                getEntryById =
+                    (fun id ->
+                        if id = EntryId 99 then
+                            Task.FromResult(None)
+                        else
+                            Task.FromResult(Some createdEntry)),
+                getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(Some staleEntry)),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                createEntry = (fun _ -> Task.FromResult(EntryId 1)),
+                createDefinition = (fun _ -> Task.FromResult(DefinitionId 10)),
+                createTranslation = (fun _ -> failwith "Should not be called"),
+                createExamplesForDefinition = (fun _ -> Task.FromResult(())),
+                createExamplesForTranslation = (fun _ -> failwith "Should not be called")
+            )
+
+        let! result = create env (CollectionId 5) parameters
+
+        Assert.Equal(Ok createdEntry, result)
+    }
+
+[<Fact>]
+let ``returns EntryTextRequired when post-create entry fetch returns None``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+
+        let definitions =
+            [ makeDefinitionInput "a greeting" DefinitionSource.Manual [] ]
+
+        let parameters =
+            makeParameters 1 10 "hello" definitions [] false now
+
+        let env =
+            TestEnv(
+                getEntryById = (fun _ -> Task.FromResult(None)),
+                getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(None)),
+                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                createEntry = (fun _ -> Task.FromResult(EntryId 1)),
+                createDefinition = (fun _ -> Task.FromResult(DefinitionId 10)),
+                createTranslation = (fun _ -> failwith "Should not be called"),
+                createExamplesForDefinition = (fun _ -> Task.FromResult(())),
+                createExamplesForTranslation = (fun _ -> failwith "Should not be called")
+            )
+
+        let! result = create env (CollectionId 5) parameters
+
+        Assert.Equal(Error EntryTextRequired, result)
     }
