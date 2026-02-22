@@ -367,8 +367,8 @@ let ``returns ExampleTextTooLong when definition example text exceeds max length
         let env =
             TestEnv(
                 getEntryById = (fun _ -> failwith "Should not be called"),
-                getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(None)),
-                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                getEntryByTextAndVocabularyId = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> failwith "Should not be called"),
                 createEntry = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
                 createTranslation = (fun _ -> failwith "Should not be called"),
@@ -532,8 +532,8 @@ let ``returns TooManyExamples when definition has too many examples``() =
         let env =
             TestEnv(
                 getEntryById = (fun _ -> failwith "Should not be called"),
-                getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(None)),
-                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                getEntryByTextAndVocabularyId = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> failwith "Should not be called"),
                 createEntry = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
                 createTranslation = (fun _ -> failwith "Should not be called"),
@@ -562,8 +562,8 @@ let ``returns TooManyExamples when translation has too many examples``() =
         let env =
             TestEnv(
                 getEntryById = (fun _ -> failwith "Should not be called"),
-                getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(None)),
-                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                getEntryByTextAndVocabularyId = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> failwith "Should not be called"),
                 createEntry = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
                 createTranslation = (fun _ -> failwith "Should not be called"),
