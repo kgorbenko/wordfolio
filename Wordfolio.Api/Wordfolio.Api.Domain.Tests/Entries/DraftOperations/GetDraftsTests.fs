@@ -1,4 +1,4 @@
-module Wordfolio.Api.Domain.Tests.Entries.GetDraftsTests
+module Wordfolio.Api.Domain.Tests.Entries.DraftOperations.GetDraftsTests
 
 open System
 open System.Threading.Tasks
@@ -7,7 +7,7 @@ open Xunit
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
-open Wordfolio.Api.Domain.Entries.Operations
+open Wordfolio.Api.Domain.Entries.DraftOperations
 open Wordfolio.Api.Domain.Shared
 
 let private shouldNotBeCalled<'a, 'b> : 'a -> Task<'b> =

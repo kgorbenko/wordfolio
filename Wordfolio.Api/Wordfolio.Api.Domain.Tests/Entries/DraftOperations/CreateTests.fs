@@ -1,4 +1,4 @@
-module Wordfolio.Api.Domain.Tests.Entries.CreateTests
+module Wordfolio.Api.Domain.Tests.Entries.DraftOperations.CreateTests
 
 open System
 open System.Threading.Tasks
@@ -8,7 +8,8 @@ open Xunit
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.Entries
-open Wordfolio.Api.Domain.Entries.Operations
+open Wordfolio.Api.Domain.Entries.DraftOperations
+open Wordfolio.Api.Domain.Entries.Helpers
 open Wordfolio.Api.Domain.Shared
 open Wordfolio.Api.Domain.Vocabularies
 

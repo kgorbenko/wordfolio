@@ -37,6 +37,9 @@ type IClearEntryChildren =
 type IHasVocabularyAccess =
     abstract HasVocabularyAccess: VocabularyId * UserId -> Task<bool>
 
+type IHasVocabularyAccessInCollection =
+    abstract HasVocabularyAccessInCollection: VocabularyId * CollectionId * UserId -> Task<bool>
+
 type IDeleteEntry =
     abstract DeleteEntry: EntryId -> Task<int>
 
@@ -74,6 +77,9 @@ module Capabilities =
 
     let hasVocabularyAccess (env: #IHasVocabularyAccess) vocabularyId userId =
         env.HasVocabularyAccess(vocabularyId, userId)
+
+    let hasVocabularyAccessInCollection (env: #IHasVocabularyAccessInCollection) vocabularyId collectionId userId =
+        env.HasVocabularyAccessInCollection(vocabularyId, collectionId, userId)
 
     let deleteEntry (env: #IDeleteEntry) entryId = env.DeleteEntry(entryId)
 

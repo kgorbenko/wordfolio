@@ -33,13 +33,19 @@
     <Compile Include="CollectionsHierarchy\GetByUserIdTests.fs" />
     <Compile Include="CollectionsHierarchy\SearchUserCollectionsTests.fs" />
     <Compile Include="CollectionsHierarchy\SearchCollectionVocabulariesTests.fs" />
-    <Compile Include="Entries\CreateTests.fs" />
-    <Compile Include="Entries\GetDraftsTests.fs" />
-    <Compile Include="Entries\GetByIdTests.fs" />
-    <Compile Include="Entries\GetByVocabularyIdTests.fs" />
-    <Compile Include="Entries\UpdateTests.fs" />
-    <Compile Include="Entries\MoveTests.fs" />
-    <Compile Include="Entries\DeleteTests.fs" />
+    <Compile Include="Entries\DraftOperations\CreateTests.fs" />
+    <Compile Include="Entries\DraftOperations\GetDraftsTests.fs" />
+    <Compile Include="Entries\DraftOperations\GetByIdTests.fs" />
+    <Compile Include="Entries\DraftOperations\GetByVocabularyIdTests.fs" />
+    <Compile Include="Entries\DraftOperations\UpdateTests.fs" />
+    <Compile Include="Entries\DraftOperations\MoveTests.fs" />
+    <Compile Include="Entries\DraftOperations\DeleteTests.fs" />
+    <Compile Include="Entries\EntryOperations\GetByVocabularyIdTests.fs" />
+    <Compile Include="Entries\EntryOperations\GetByIdTests.fs" />
+    <Compile Include="Entries\EntryOperations\CreateTests.fs" />
+    <Compile Include="Entries\EntryOperations\UpdateTests.fs" />
+    <Compile Include="Entries\EntryOperations\MoveTests.fs" />
+    <Compile Include="Entries\EntryOperations\DeleteTests.fs" />
   </ItemGroup>
 
 </Project>

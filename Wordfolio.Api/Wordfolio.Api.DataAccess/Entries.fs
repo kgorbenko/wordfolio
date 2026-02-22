@@ -208,13 +208,37 @@ let hasVocabularyAccessAsync
     : Task<bool> =
     task {
         let! result =
-            (select {
+            select {
                 for v in Vocabularies.vocabulariesTable do
                     innerJoin c in collectionsTable on (v.CollectionId = c.Id)
                     where(v.Id = vocabularyId && c.UserId = userId)
-             }
-             |> trySelectFirstAsync connection transaction cancellationToken)
-            : Task<Vocabularies.VocabularyRecord option>
+            }
+            |> trySelectFirstAsync<Vocabularies.VocabularyRecord> connection transaction cancellationToken
+
+        return result |> Option.isSome
+    }
+
+let hasVocabularyAccessInCollectionAsync
+    (vocabularyId: int)
+    (collectionId: int)
+    (userId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<bool> =
+    task {
+        let! result =
+            select {
+                for v in Vocabularies.vocabulariesTable do
+                    innerJoin c in collectionsTable on (v.CollectionId = c.Id)
+
+                    where(
+                        v.Id = vocabularyId
+                        && v.CollectionId = collectionId
+                        && c.UserId = userId
+                    )
+            }
+            |> trySelectFirstAsync<Vocabularies.VocabularyRecord> connection transaction cancellationToken
 
         return result |> Option.isSome
     }
