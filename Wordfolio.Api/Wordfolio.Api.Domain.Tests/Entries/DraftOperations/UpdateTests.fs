@@ -328,7 +328,10 @@ let ``returns EntryNotFound when entry does not exist``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = update env (UserId 1) (EntryId 99) "text" [] [] DateTimeOffset.UtcNow
+        let definitions =
+            [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
+
+        let! result = update env (UserId 1) (EntryId 99) "text" definitions [] DateTimeOffset.UtcNow
 
         Assert.Equal(Error(EntryNotFound(EntryId 99)), result)
         Assert.Equal<EntryId list>([ EntryId 99 ], env.GetEntryByIdCalls)
@@ -353,7 +356,10 @@ let ``returns EntryNotFound when user has no access``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = update env (UserId 2) (EntryId 1) "text" [] [] DateTimeOffset.UtcNow
+        let definitions =
+            [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
+
+        let! result = update env (UserId 2) (EntryId 1) "text" definitions [] DateTimeOffset.UtcNow
 
         Assert.Equal(Error(EntryNotFound(EntryId 1)), result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
@@ -364,13 +370,10 @@ let ``returns EntryNotFound when user has no access``() =
 [<Fact>]
 let ``returns error when no definitions or translations``() =
     task {
-        let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
-
         let env =
             TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
+                getEntryById = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccess = (fun _ -> failwith "Should not be called"),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -388,16 +391,13 @@ let ``returns error when no definitions or translations``() =
 [<Fact>]
 let ``returns error when example text is too long``() =
     task {
-        let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
-
         let longExample =
             String.replicate (MaxExampleTextLength + 1) "a"
 
         let env =
             TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
+                getEntryById = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccess = (fun _ -> failwith "Should not be called"),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -421,17 +421,14 @@ let ``returns error when example text is too long``() =
 [<Fact>]
 let ``returns error when too many examples``() =
     task {
-        let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
-
         let examples =
             [ 1 .. MaxExamplesPerItem + 1 ]
             |> List.map(fun i -> makeExampleInput $"example {i}" ExampleSource.Custom)
 
         let env =
             TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
+                getEntryById = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccess = (fun _ -> failwith "Should not be called"),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -527,16 +524,13 @@ let ``returns error when entry text exceeds max length``() =
 [<Fact>]
 let ``returns error when translation example text is too long``() =
     task {
-        let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
-
         let longExample =
             String.replicate (MaxExampleTextLength + 1) "a"
 
         let env =
             TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
+                getEntryById = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccess = (fun _ -> failwith "Should not be called"),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -560,17 +554,14 @@ let ``returns error when translation example text is too long``() =
 [<Fact>]
 let ``returns error when too many examples in translation``() =
     task {
-        let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
-
         let examples =
             [ 1 .. MaxExamplesPerItem + 1 ]
             |> List.map(fun i -> makeExampleInput $"example {i}" ExampleSource.Custom)
 
         let env =
             TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
+                getEntryById = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccess = (fun _ -> failwith "Should not be called"),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),

@@ -434,13 +434,10 @@ let ``returns EntryNotFound when entry belongs to different vocabulary``() =
 [<Fact>]
 let ``returns error when no definitions or translations``() =
     task {
-        let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
-
         let env =
             TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                getEntryById = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> failwith "Should not be called"),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -555,16 +552,13 @@ let ``returns error when entry text is whitespace only``() =
 [<Fact>]
 let ``returns error when definition example text is too long``() =
     task {
-        let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
-
         let longExample =
             String.replicate (MaxExampleTextLength + 1) "a"
 
         let env =
             TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                getEntryById = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> failwith "Should not be called"),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -598,17 +592,14 @@ let ``returns error when definition example text is too long``() =
 [<Fact>]
 let ``returns error when definition has too many examples``() =
     task {
-        let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
-
         let examples =
             [ 1 .. MaxExamplesPerItem + 1 ]
             |> List.map(fun i -> makeExampleInput $"example {i}" ExampleSource.Custom)
 
         let env =
             TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                getEntryById = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> failwith "Should not be called"),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -639,16 +630,13 @@ let ``returns error when definition has too many examples``() =
 [<Fact>]
 let ``returns error when translation example text is too long``() =
     task {
-        let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
-
         let longExample =
             String.replicate (MaxExampleTextLength + 1) "a"
 
         let env =
             TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                getEntryById = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> failwith "Should not be called"),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),
@@ -682,17 +670,14 @@ let ``returns error when translation example text is too long``() =
 [<Fact>]
 let ``returns error when translation has too many examples``() =
     task {
-        let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
-
         let examples =
             [ 1 .. MaxExamplesPerItem + 1 ]
             |> List.map(fun i -> makeExampleInput $"example {i}" ExampleSource.Custom)
 
         let env =
             TestEnv(
-                getEntryById = (fun _ -> Task.FromResult(Some entry)),
-                hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
+                getEntryById = (fun _ -> failwith "Should not be called"),
+                hasVocabularyAccessInCollection = (fun _ -> failwith "Should not be called"),
                 updateEntry = (fun _ -> failwith "Should not be called"),
                 clearEntryChildren = (fun _ -> failwith "Should not be called"),
                 createDefinition = (fun _ -> failwith "Should not be called"),

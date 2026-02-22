@@ -148,33 +148,34 @@ let update
             match validateEntryText entryText with
             | Error error -> return Error error
             | Ok validText ->
-                let! accessResult = checkVocabularyAccessInCollection appEnv userId collectionId vocabularyId
-
-                match accessResult with
-                | Error error -> return Error error
-                | Ok _ ->
-                    let! maybeEntry = getEntryById appEnv entryId
-
-                    match maybeEntry with
-                    | None -> return Error(EntryNotFound entryId)
-                    | Some existingEntry ->
-                        match checkEntryBelongsToVocabulary entryId existingEntry vocabularyId with
+                if
+                    definitions.IsEmpty
+                    && translations.IsEmpty
+                then
+                    return Error NoDefinitionsOrTranslations
+                else
+                    match validateDefinitions definitions with
+                    | Error error -> return Error error
+                    | Ok validDefinitions ->
+                        match validateTranslations translations with
                         | Error error -> return Error error
-                        | Ok _ ->
-                            if
-                                definitions.IsEmpty
-                                && translations.IsEmpty
-                            then
-                                return Error NoDefinitionsOrTranslations
-                            else
-                                let trimmedText = validText.Trim()
+                        | Ok validTranslations ->
+                            let! accessResult =
+                                checkVocabularyAccessInCollection appEnv userId collectionId vocabularyId
 
-                                match validateDefinitions definitions with
-                                | Error error -> return Error error
-                                | Ok validDefinitions ->
-                                    match validateTranslations translations with
+                            match accessResult with
+                            | Error error -> return Error error
+                            | Ok _ ->
+                                let! maybeEntry = getEntryById appEnv entryId
+
+                                match maybeEntry with
+                                | None -> return Error(EntryNotFound entryId)
+                                | Some existingEntry ->
+                                    match checkEntryBelongsToVocabulary entryId existingEntry vocabularyId with
                                     | Error error -> return Error error
-                                    | Ok validTranslations ->
+                                    | Ok _ ->
+                                        let trimmedText = validText.Trim()
+
                                         do! clearEntryChildren appEnv entryId
                                         do! updateEntry appEnv entryId trimmedText now
 

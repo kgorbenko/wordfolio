@@ -108,30 +108,30 @@ let update env userId entryId entryText (definitions: DefinitionInput list) (tra
             match validateEntryText entryText with
             | Error error -> return Error error
             | Ok validText ->
-                let! maybeEntry = getEntryById appEnv entryId
+                if
+                    definitions.IsEmpty
+                    && translations.IsEmpty
+                then
+                    return Error NoDefinitionsOrTranslations
+                else
+                    match validateDefinitions definitions with
+                    | Error error -> return Error error
+                    | Ok validDefinitions ->
+                        match validateTranslations translations with
+                        | Error error -> return Error error
+                        | Ok validTranslations ->
+                            let! maybeEntry = getEntryById appEnv entryId
 
-                match maybeEntry with
-                | None -> return Error(EntryNotFound entryId)
-                | Some existingEntry ->
-                    let! vocabAccessResult = checkVocabularyAccess appEnv userId existingEntry.VocabularyId
+                            match maybeEntry with
+                            | None -> return Error(EntryNotFound entryId)
+                            | Some existingEntry ->
+                                let! vocabAccessResult = checkVocabularyAccess appEnv userId existingEntry.VocabularyId
 
-                    match vocabAccessResult with
-                    | Error _ -> return Error(EntryNotFound entryId)
-                    | Ok _ ->
-                        if
-                            definitions.IsEmpty
-                            && translations.IsEmpty
-                        then
-                            return Error NoDefinitionsOrTranslations
-                        else
-                            let trimmedText = validText.Trim()
+                                match vocabAccessResult with
+                                | Error _ -> return Error(EntryNotFound entryId)
+                                | Ok _ ->
+                                    let trimmedText = validText.Trim()
 
-                            match validateDefinitions definitions with
-                            | Error error -> return Error error
-                            | Ok validDefinitions ->
-                                match validateTranslations translations with
-                                | Error error -> return Error error
-                                | Ok validTranslations ->
                                     do! clearEntryChildren appEnv entryId
                                     do! updateEntry appEnv entryId trimmedText now
 
