@@ -61,7 +61,15 @@ type TranslationInput =
 
 type CreateEntryParameters =
     { UserId: UserId
-      VocabularyId: VocabularyId option
+      VocabularyId: VocabularyId
+      EntryText: string
+      Definitions: DefinitionInput list
+      Translations: TranslationInput list
+      AllowDuplicate: bool
+      CreatedAt: DateTimeOffset }
+
+type CreateDraftParameters =
+    { UserId: UserId
       EntryText: string
       Definitions: DefinitionInput list
       Translations: TranslationInput list

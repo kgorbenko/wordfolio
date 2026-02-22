@@ -19,7 +19,7 @@ let private checkVocabularyAccess env userId vocabularyId =
                 Ok()
     }
 
-let create env (parameters: CreateEntryParameters) =
+let create env (parameters: CreateDraftParameters) =
     runInTransaction env (fun appEnv ->
         task {
             match validateEntryText parameters.EntryText with
@@ -31,66 +31,48 @@ let create env (parameters: CreateEntryParameters) =
                 then
                     return Error NoDefinitionsOrTranslations
                 else
-                    let! vocabularyIdResult =
-                        match parameters.VocabularyId with
-                        | Some id ->
+                    let! vocabularyId =
+                        Operations.getOrCreateDefaultVocabulary appEnv parameters.UserId parameters.CreatedAt
+
+                    let! shouldProceed =
+                        if parameters.AllowDuplicate then
+                            Task.FromResult(Ok())
+                        else
                             task {
-                                let! accessResult = checkVocabularyAccess appEnv parameters.UserId id
-                                return accessResult |> Result.map(fun () -> id)
-                            }
-                        | None ->
-                            task {
-                                let! id =
-                                    Operations.getOrCreateDefaultVocabulary
-                                        appEnv
-                                        parameters.UserId
-                                        parameters.CreatedAt
+                                let! maybeExistingEntry =
+                                    getEntryByTextAndVocabularyId appEnv vocabularyId (validText.Trim())
 
-                                return Ok id
-                            }
+                                match maybeExistingEntry with
+                                | Some existing ->
+                                    let! maybeFullEntry = getEntryById appEnv existing.Id
 
-                    match vocabularyIdResult with
-                    | Error error -> return Error error
-                    | Ok vocabularyId ->
-                        let! shouldProceed =
-                            if parameters.AllowDuplicate then
-                                Task.FromResult(Ok())
-                            else
-                                task {
-                                    let! maybeExistingEntry =
-                                        getEntryByTextAndVocabularyId appEnv vocabularyId (validText.Trim())
-
-                                    match maybeExistingEntry with
-                                    | Some existing ->
-                                        let! maybeFullEntry = getEntryById appEnv existing.Id
-
-                                        match maybeFullEntry with
-                                        | Some fullEntry -> return Error(DuplicateEntry fullEntry)
-                                        | None -> return Ok()
+                                    match maybeFullEntry with
+                                    | Some fullEntry -> return Error(DuplicateEntry fullEntry)
                                     | None -> return Ok()
-                                }
+                                | None -> return Ok()
+                            }
 
-                        match shouldProceed with
+                    match shouldProceed with
+                    | Error error -> return Error error
+                    | Ok() ->
+                        match validateDefinitions parameters.Definitions with
                         | Error error -> return Error error
-                        | Ok() ->
-                            match validateDefinitions parameters.Definitions with
+                        | Ok validDefinitions ->
+                            match validateTranslations parameters.Translations with
                             | Error error -> return Error error
-                            | Ok validDefinitions ->
-                                match validateTranslations parameters.Translations with
-                                | Error error -> return Error error
-                                | Ok validTranslations ->
-                                    let trimmedText = validText.Trim()
+                            | Ok validTranslations ->
+                                let trimmedText = validText.Trim()
 
-                                    let! entryId = createEntry appEnv vocabularyId trimmedText parameters.CreatedAt
+                                let! entryId = createEntry appEnv vocabularyId trimmedText parameters.CreatedAt
 
-                                    do! createTranslationsAsync appEnv entryId validTranslations
-                                    do! createDefinitionsAsync appEnv entryId validDefinitions
+                                do! createTranslationsAsync appEnv entryId validTranslations
+                                do! createDefinitionsAsync appEnv entryId validDefinitions
 
-                                    let! maybeEntry = getEntryById appEnv entryId
+                                let! maybeEntry = getEntryById appEnv entryId
 
-                                    match maybeEntry with
-                                    | Some entry -> return Ok entry
-                                    | None -> return Error EntryTextRequired
+                                match maybeEntry with
+                                | Some entry -> return Ok entry
+                                | None -> return Error EntryTextRequired
         })
 
 let getById env userId entryId =

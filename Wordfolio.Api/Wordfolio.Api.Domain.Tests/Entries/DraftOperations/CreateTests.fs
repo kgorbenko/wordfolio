@@ -6,12 +6,10 @@ open System.Threading.Tasks
 open Xunit
 
 open Wordfolio.Api.Domain
-open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations
 open Wordfolio.Api.Domain.Entries.Helpers
 open Wordfolio.Api.Domain.Shared
-open Wordfolio.Api.Domain.Vocabularies
 
 type TestEnv
     (
@@ -22,7 +20,10 @@ type TestEnv
         createTranslation: EntryId * string * TranslationSource * int -> Task<TranslationId>,
         createExamplesForDefinition: DefinitionId * ExampleInput list -> Task<unit>,
         createExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>,
-        hasVocabularyAccess: VocabularyId * UserId -> Task<bool>
+        getDefaultVocabulary: UserId -> Task<Vocabulary option>,
+        getDefaultCollection: UserId -> Task<Collection option>,
+        createDefaultVocabulary: CreateVocabularyParameters -> Task<VocabularyId>,
+        createDefaultCollection: CreateCollectionParameters -> Task<CollectionId>
     ) =
     let getEntryByIdCalls =
         ResizeArray<EntryId>()
@@ -44,9 +45,6 @@ type TestEnv
 
     let createExamplesForTranslationCalls =
         ResizeArray<TranslationId * ExampleInput list>()
-
-    let hasVocabularyAccessCalls =
-        ResizeArray<VocabularyId * UserId>()
 
     member _.GetEntryByIdCalls =
         getEntryByIdCalls |> Seq.toList
@@ -71,9 +69,6 @@ type TestEnv
     member _.CreateExamplesForTranslationCalls =
         createExamplesForTranslationCalls
         |> Seq.toList
-
-    member _.HasVocabularyAccessCalls =
-        hasVocabularyAccessCalls |> Seq.toList
 
     interface IGetEntryById with
         member _.GetEntryById(id) =
@@ -110,29 +105,20 @@ type TestEnv
             createExamplesForTranslationCalls.Add(translationId, examples)
             createExamplesForTranslation(translationId, examples)
 
-    interface IHasVocabularyAccess with
-        member _.HasVocabularyAccess(vocabularyId, userId) =
-            hasVocabularyAccessCalls.Add(vocabularyId, userId)
-            hasVocabularyAccess(vocabularyId, userId)
-
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
 
     interface IGetDefaultVocabulary with
-        member _.GetDefaultVocabulary(_) =
-            failwith "IGetDefaultVocabulary not expected in these tests"
+        member _.GetDefaultVocabulary(userId) = getDefaultVocabulary userId
 
     interface ICreateDefaultVocabulary with
-        member _.CreateDefaultVocabulary(_) =
-            failwith "ICreateDefaultVocabulary not expected in these tests"
+        member _.CreateDefaultVocabulary(parameters) = createDefaultVocabulary parameters
 
     interface IGetDefaultCollection with
-        member _.GetDefaultCollection(_) =
-            failwith "IGetDefaultCollection not expected in these tests"
+        member _.GetDefaultCollection(userId) = getDefaultCollection userId
 
     interface ICreateDefaultCollection with
-        member _.CreateDefaultCollection(_) =
-            failwith "ICreateDefaultCollection not expected in these tests"
+        member _.CreateDefaultCollection(parameters) = createDefaultCollection parameters
 
 let makeVocabulary id collectionId name =
     { Id = VocabularyId id
@@ -182,22 +168,20 @@ let makeTranslationInput text source examples =
 
 let makeExampleInput text source = { ExampleText = text; Source = source }
 
-let makeCreateParams userId vocabularyId entryText definitions translations createdAt : CreateEntryParameters =
+let makeCreateParams userId entryText definitions translations createdAt : CreateDraftParameters =
     { UserId = userId
-      VocabularyId = Some vocabularyId
       EntryText = entryText
       Definitions = definitions
       Translations = translations
       AllowDuplicate = false
       CreatedAt = createdAt }
 
+let defaultVocabulary = makeVocabulary 1 1 "Default"
+
 [<Fact>]
 let ``creates entry with definitions only``() =
     task {
         let now = DateTimeOffset.UtcNow
-
-        let vocabulary =
-            makeVocabulary 1 1 "Test Vocabulary"
 
         let definitionInputs =
             [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]
@@ -217,10 +201,13 @@ let ``creates entry with definitions only``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> Task.FromResult(())),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
+                getDefaultVocabulary = (fun _ -> Task.FromResult(Some defaultVocabulary)),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) (VocabularyId 1) "test word" definitionInputs [] now)
+        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
 
         Assert.Equal(Ok createdEntry, result)
 
@@ -237,9 +224,6 @@ let ``creates entry with definitions only``() =
 let ``creates entry with translations only``() =
     task {
         let now = DateTimeOffset.UtcNow
-
-        let vocabulary =
-            makeVocabulary 1 1 "Test Vocabulary"
 
         let translationInputs =
             [ makeTranslationInput "test translation" TranslationSource.Manual [] ]
@@ -259,10 +243,13 @@ let ``creates entry with translations only``() =
                 createTranslation = (fun _ -> Task.FromResult(TranslationId 1)),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> Task.FromResult(())),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
+                getDefaultVocabulary = (fun _ -> Task.FromResult(Some defaultVocabulary)),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) (VocabularyId 1) "test word" [] translationInputs now)
+        let! result = create env (makeCreateParams (UserId 1) "test word" [] translationInputs now)
 
         Assert.Equal(Ok createdEntry, result)
 
@@ -279,9 +266,6 @@ let ``creates entry with translations only``() =
 let ``creates entry with both definitions and translations``() =
     task {
         let now = DateTimeOffset.UtcNow
-
-        let vocabulary =
-            makeVocabulary 1 1 "Test Vocabulary"
 
         let definitionInputs =
             [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]
@@ -307,11 +291,14 @@ let ``creates entry with both definitions and translations``() =
                 createTranslation = (fun _ -> Task.FromResult(TranslationId 1)),
                 createExamplesForDefinition = (fun _ -> Task.FromResult(())),
                 createExamplesForTranslation = (fun _ -> Task.FromResult(())),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
+                getDefaultVocabulary = (fun _ -> Task.FromResult(Some defaultVocabulary)),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
         let! result =
-            create env (makeCreateParams (UserId 1) (VocabularyId 1) "test word" definitionInputs translationInputs now)
+            create env (makeCreateParams (UserId 1) "test word" definitionInputs translationInputs now)
 
         Assert.Equal(Ok createdEntry, result)
 
@@ -329,9 +316,6 @@ let ``creates entry with both definitions and translations``() =
 let ``trims whitespace from entry text``() =
     task {
         let now = DateTimeOffset.UtcNow
-
-        let vocabulary =
-            makeVocabulary 1 1 "Test Vocabulary"
 
         let definitionInputs =
             [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]
@@ -356,10 +340,13 @@ let ``trims whitespace from entry text``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> Task.FromResult(())),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
+                getDefaultVocabulary = (fun _ -> Task.FromResult(Some defaultVocabulary)),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) (VocabularyId 1) "  test word  " definitionInputs [] now)
+        let! result = create env (makeCreateParams (UserId 1) "  test word  " definitionInputs [] now)
 
         Assert.True(Result.isOk result)
     }
@@ -376,7 +363,10 @@ let ``returns error when entry text is empty``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> failwith "Should not be called")
+                getDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
         let! result =
@@ -384,7 +374,6 @@ let ``returns error when entry text is empty``() =
                 env
                 (makeCreateParams
                     (UserId 1)
-                    (VocabularyId 1)
                     ""
                     [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
                     []
@@ -406,7 +395,10 @@ let ``returns error when entry text is whitespace only``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> failwith "Should not be called")
+                getDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
         let! result =
@@ -414,7 +406,6 @@ let ``returns error when entry text is whitespace only``() =
                 env
                 (makeCreateParams
                     (UserId 1)
-                    (VocabularyId 1)
                     "   "
                     [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
                     []
@@ -437,7 +428,10 @@ let ``returns error when entry text exceeds max length``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> failwith "Should not be called")
+                getDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
         let! result =
@@ -445,7 +439,6 @@ let ``returns error when entry text exceeds max length``() =
                 env
                 (makeCreateParams
                     (UserId 1)
-                    (VocabularyId 1)
                     longText
                     [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
                     []
@@ -466,41 +459,15 @@ let ``returns error when both definitions and translations are empty``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> failwith "Should not be called")
+                getDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) (VocabularyId 1) "test word" [] [] DateTimeOffset.UtcNow)
+        let! result = create env (makeCreateParams (UserId 1) "test word" [] [] DateTimeOffset.UtcNow)
 
         Assert.Equal(Error NoDefinitionsOrTranslations, result)
-    }
-
-[<Fact>]
-let ``returns error when vocabulary is not found``() =
-    task {
-        let env =
-            TestEnv(
-                getEntryById = (fun _ -> failwith "Should not be called"),
-                getEntryByTextAndVocabularyId = (fun _ -> failwith "Should not be called"),
-                createEntry = (fun _ -> failwith "Should not be called"),
-                createDefinition = (fun _ -> failwith "Should not be called"),
-                createTranslation = (fun _ -> failwith "Should not be called"),
-                createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
-                createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(false))
-            )
-
-        let! result =
-            create
-                env
-                (makeCreateParams
-                    (UserId 1)
-                    (VocabularyId 1)
-                    "test word"
-                    [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
-                    []
-                    DateTimeOffset.UtcNow)
-
-        Assert.Equal(Error(VocabularyNotFoundOrAccessDenied(VocabularyId 1)), result)
     }
 
 [<Fact>]
@@ -523,7 +490,10 @@ let ``returns error when duplicate entry exists``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
+                getDefaultVocabulary = (fun _ -> Task.FromResult(Some defaultVocabulary)),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
         let! result =
@@ -531,7 +501,6 @@ let ``returns error when duplicate entry exists``() =
                 env
                 (makeCreateParams
                     (UserId 1)
-                    (VocabularyId 1)
                     "test word"
                     [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
                     []
@@ -566,11 +535,14 @@ let ``creates entry when duplicate exists and AllowDuplicate is true``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> Task.FromResult(())),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
+                getDefaultVocabulary = (fun _ -> Task.FromResult(Some defaultVocabulary)),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
         let parameters =
-            { makeCreateParams (UserId 1) (VocabularyId 1) "test word" definitionInputs [] now with
+            { makeCreateParams (UserId 1) "test word" definitionInputs [] now with
                 AllowDuplicate = true }
 
         let! result = create env parameters
@@ -584,9 +556,6 @@ let ``creates entry when duplicate exists and AllowDuplicate is true``() =
 [<Fact>]
 let ``returns error when example text is too long``() =
     task {
-        let vocabulary =
-            makeVocabulary 1 1 "Test Vocabulary"
-
         let longExampleText =
             String.replicate 201 "a"
 
@@ -605,13 +574,14 @@ let ``returns error when example text is too long``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
+                getDefaultVocabulary = (fun _ -> Task.FromResult(Some defaultVocabulary)),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
         let! result =
-            create
-                env
-                (makeCreateParams (UserId 1) (VocabularyId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
+            create env (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
 
         Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
     }
@@ -619,9 +589,6 @@ let ``returns error when example text is too long``() =
 [<Fact>]
 let ``returns error when too many examples in definition``() =
     task {
-        let vocabulary =
-            makeVocabulary 1 1 "Test Vocabulary"
-
         let examples =
             [ 1..6 ]
             |> List.map(fun i -> makeExampleInput $"example {i}" ExampleSource.Custom)
@@ -638,13 +605,14 @@ let ``returns error when too many examples in definition``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
+                getDefaultVocabulary = (fun _ -> Task.FromResult(Some defaultVocabulary)),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
         let! result =
-            create
-                env
-                (makeCreateParams (UserId 1) (VocabularyId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
+            create env (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
 
         Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
     }
@@ -652,9 +620,6 @@ let ``returns error when too many examples in definition``() =
 [<Fact>]
 let ``returns error when too many examples in translation``() =
     task {
-        let vocabulary =
-            makeVocabulary 1 1 "Test Vocabulary"
-
         let examples =
             [ 1..6 ]
             |> List.map(fun i -> makeExampleInput $"example {i}" ExampleSource.Custom)
@@ -671,13 +636,159 @@ let ``returns error when too many examples in translation``() =
                 createTranslation = (fun _ -> failwith "Should not be called"),
                 createExamplesForDefinition = (fun _ -> failwith "Should not be called"),
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
-                hasVocabularyAccess = (fun _ -> Task.FromResult(true))
+                getDefaultVocabulary = (fun _ -> Task.FromResult(Some defaultVocabulary)),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
         let! result =
-            create
-                env
-                (makeCreateParams (UserId 1) (VocabularyId 1) "test word" [] translationInputs DateTimeOffset.UtcNow)
+            create env (makeCreateParams (UserId 1) "test word" [] translationInputs DateTimeOffset.UtcNow)
 
         Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
+    }
+
+[<Fact>]
+let ``proceeds when duplicate text match finds a stale record``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+
+        let staleEntry = makeEntry 99 1 "test word" now [] []
+
+        let definitionInputs =
+            [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]
+
+        let expectedDefinition =
+            makeDefinition 1 "A test definition" DefinitionSource.Manual 0 []
+
+        let createdEntry =
+            makeEntry 1 1 "test word" now [ expectedDefinition ] []
+
+        let env =
+            TestEnv(
+                getEntryById =
+                    (fun id ->
+                        if id = EntryId 99 then
+                            Task.FromResult(None)
+                        else
+                            Task.FromResult(Some createdEntry)),
+                getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(Some staleEntry)),
+                createEntry = (fun _ -> Task.FromResult(EntryId 1)),
+                createDefinition = (fun _ -> Task.FromResult(DefinitionId 1)),
+                createTranslation = (fun _ -> failwith "Should not be called"),
+                createExamplesForDefinition = (fun _ -> Task.FromResult(())),
+                createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
+                getDefaultVocabulary = (fun _ -> Task.FromResult(Some defaultVocabulary)),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
+            )
+
+        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
+
+        Assert.Equal(Ok createdEntry, result)
+    }
+
+[<Fact>]
+let ``returns EntryTextRequired when post-create entry fetch returns None``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+
+        let definitionInputs =
+            [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]
+
+        let env =
+            TestEnv(
+                getEntryById = (fun _ -> Task.FromResult(None)),
+                getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(None)),
+                createEntry = (fun _ -> Task.FromResult(EntryId 1)),
+                createDefinition = (fun _ -> Task.FromResult(DefinitionId 1)),
+                createTranslation = (fun _ -> failwith "Should not be called"),
+                createExamplesForDefinition = (fun _ -> Task.FromResult(())),
+                createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
+                getDefaultVocabulary = (fun _ -> Task.FromResult(Some defaultVocabulary)),
+                getDefaultCollection = (fun _ -> failwith "Should not be called"),
+                createDefaultVocabulary = (fun _ -> failwith "Should not be called"),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
+            )
+
+        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
+
+        Assert.Equal(Error EntryTextRequired, result)
+    }
+
+[<Fact>]
+let ``creates entry when default vocabulary does not exist but default collection does``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+
+        let definitionInputs =
+            [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]
+
+        let expectedDefinition =
+            makeDefinition 1 "A test definition" DefinitionSource.Manual 0 []
+
+        let createdEntry =
+            makeEntry 1 1 "test word" now [ expectedDefinition ] []
+
+        let existingCollection: Collection =
+            { Id = CollectionId 1
+              UserId = UserId 1
+              Name = "[System] Unsorted"
+              Description = None
+              CreatedAt = now
+              UpdatedAt = None }
+
+        let env =
+            TestEnv(
+                getEntryById = (fun _ -> Task.FromResult(Some createdEntry)),
+                getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(None)),
+                createEntry = (fun _ -> Task.FromResult(EntryId 1)),
+                createDefinition = (fun _ -> Task.FromResult(DefinitionId 1)),
+                createTranslation = (fun _ -> failwith "Should not be called"),
+                createExamplesForDefinition = (fun _ -> Task.FromResult(())),
+                createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
+                getDefaultVocabulary = (fun _ -> Task.FromResult(None)),
+                getDefaultCollection = (fun _ -> Task.FromResult(Some existingCollection)),
+                createDefaultVocabulary = (fun _ -> Task.FromResult(VocabularyId 1)),
+                createDefaultCollection = (fun _ -> failwith "Should not be called")
+            )
+
+        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
+
+        Assert.Equal(Ok createdEntry, result)
+    }
+
+[<Fact>]
+let ``creates entry when neither default vocabulary nor default collection exists``() =
+    task {
+        let now = DateTimeOffset.UtcNow
+
+        let definitionInputs =
+            [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]
+
+        let expectedDefinition =
+            makeDefinition 1 "A test definition" DefinitionSource.Manual 0 []
+
+        let createdEntry =
+            makeEntry 1 1 "test word" now [ expectedDefinition ] []
+
+        let env =
+            TestEnv(
+                getEntryById = (fun _ -> Task.FromResult(Some createdEntry)),
+                getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(None)),
+                createEntry = (fun _ -> Task.FromResult(EntryId 1)),
+                createDefinition = (fun _ -> Task.FromResult(DefinitionId 1)),
+                createTranslation = (fun _ -> failwith "Should not be called"),
+                createExamplesForDefinition = (fun _ -> Task.FromResult(())),
+                createExamplesForTranslation = (fun _ -> failwith "Should not be called"),
+                getDefaultVocabulary = (fun _ -> Task.FromResult(None)),
+                getDefaultCollection = (fun _ -> Task.FromResult(None)),
+                createDefaultVocabulary = (fun _ -> Task.FromResult(VocabularyId 1)),
+                createDefaultCollection = (fun _ -> Task.FromResult(CollectionId 1))
+            )
+
+        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
+
+        Assert.Equal(Ok createdEntry, result)
     }

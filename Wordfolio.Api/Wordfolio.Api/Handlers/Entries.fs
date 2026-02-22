@@ -252,7 +252,7 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
 
                             let parameters: CreateEntryParameters =
                                 { UserId = UserId userId
-                                  VocabularyId = Some(VocabularyId vocabularyId)
+                                  VocabularyId = VocabularyId vocabularyId
                                   EntryText = request.EntryText
                                   Definitions =
                                     request.Definitions
