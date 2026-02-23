@@ -12,6 +12,33 @@ Refactor `Wordfolio.Api.Domain` to align with the agreed rules:
 - Errors are operation-specific.
 - Naming reflects data shape and intent.
 
+## Progress Status
+
+Last updated: 2026-02-23
+
+- Phase 0 - Completed
+- Phase 1 - Completed
+- Phase 2 - Completed
+- Phase 3 - Completed
+- Phase 4 - Not started
+- Phase 5 - Not started
+
+Completed implementation notes:
+
+- Root shared files are now in place: `Types.fs`, `Capabilities.fs`, `Operations.fs`.
+- `Wordfolio.Api.Domain.Shared` was fully removed from active code.
+- Cross-feature contract `IGetCollectionById` was extracted to root shared `Capabilities.fs`.
+- `Ids.fs` and `Transactions.fs` were merged into root shared files:
+  - ID value types moved into `Types.fs`.
+  - `ITransactional` and `runInTransaction` moved into `Capabilities.fs`.
+- Feature type-alias files were removed (`Collections/Collection.fs`, `Vocabularies/Vocabulary.fs`) to enforce no re-export aliases.
+- `Vocabularies/Types.fs` now hosts feature-specific `VocabularyDetail`.
+- Rulebook was updated to prohibit aliasing root types under feature namespaces.
+
+Process note:
+
+- After each completed phase, update this plan document with status and key deltas.
+
 ## Scope
 
 Projects/files in scope:
@@ -46,6 +73,10 @@ Exit criteria:
 
 - Baseline passes and is captured.
 
+Status:
+
+- Completed on 2026-02-23.
+
 ---
 
 ### Phase 1 - Introduce Root Shared Files (No behavior change)
@@ -64,6 +95,10 @@ Exit criteria:
 - Domain builds.
 - No feature behavior changes.
 - Shared namespace migration is complete in active code paths.
+
+Status:
+
+- Completed on 2026-02-23.
 
 ---
 
@@ -84,6 +119,10 @@ Exit criteria:
 - No `Wordfolio.Api.Domain.Shared` namespace remains.
 - Build and tests pass.
 
+Status:
+
+- Completed on 2026-02-23.
+
 ---
 
 ### Phase 3 - Enforce Feature Boundary Rule (No feature imports)
@@ -98,6 +137,10 @@ Exit criteria:
 Exit criteria:
 
 - No direct feature-to-feature imports in `Wordfolio.Api.Domain`.
+
+Status:
+
+- Completed on 2026-02-23.
 
 ---
 
