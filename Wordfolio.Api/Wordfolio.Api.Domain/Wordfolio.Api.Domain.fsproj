@@ -9,14 +9,13 @@
     <Compile Include="Types.fs" />
     <Compile Include="Capabilities.fs" />
     <Compile Include="Operations.fs" />
-    <Compile Include="Collections\Collection.fs" />
     <Compile Include="Collections\Errors.fs" />
     <Compile Include="Collections\Capabilities.fs" />
     <Compile Include="Collections\Operations.fs" />
     <Compile Include="CollectionsHierarchy\CollectionsHierarchy.fs" />
     <Compile Include="CollectionsHierarchy\Capabilities.fs" />
     <Compile Include="CollectionsHierarchy\Operations.fs" />
-    <Compile Include="Vocabularies\Vocabulary.fs" />
+    <Compile Include="Vocabularies\Types.fs" />
     <Compile Include="Vocabularies\Errors.fs" />
     <Compile Include="Vocabularies\Capabilities.fs" />
     <Compile Include="Vocabularies\Operations.fs" />

@@ -39,6 +39,7 @@
 - Avoid misleading names. Type names must reflect payload depth and intent.
 - Use clear suffixes when needed (`Overview`, `Details`, `WithEntryCount`, and so on).
 - Prefer domain-specific value types where useful instead of primitive-heavy APIs.
+- Do not alias or re-export root shared types inside feature namespaces (for example, no `type Collection = Wordfolio.Api.Domain.Collection` in `Wordfolio.Api.Domain.Collections`).
 
 ## File and Module Organization Rules
 
