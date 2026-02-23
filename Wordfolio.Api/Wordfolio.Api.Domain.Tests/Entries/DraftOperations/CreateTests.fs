@@ -9,7 +9,6 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations
 open Wordfolio.Api.Domain.Entries.Helpers
-open Wordfolio.Api.Domain.Shared
 
 type TestEnv
     (

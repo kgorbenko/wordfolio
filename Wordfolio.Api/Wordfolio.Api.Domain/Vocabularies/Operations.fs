@@ -3,7 +3,7 @@ module Wordfolio.Api.Domain.Vocabularies.Operations
 open System
 open System.Threading.Tasks
 
-open Wordfolio.Api.Domain.Transactions
+open Wordfolio.Api.Domain.Capabilities
 open Wordfolio.Api.Domain.Vocabularies.Capabilities
 
 [<Literal>]

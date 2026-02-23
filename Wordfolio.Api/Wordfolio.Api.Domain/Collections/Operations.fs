@@ -3,8 +3,8 @@ module Wordfolio.Api.Domain.Collections.Operations
 open System
 
 open Wordfolio.Api.Domain
+open Wordfolio.Api.Domain.Capabilities
 open Wordfolio.Api.Domain.Collections.Capabilities
-open Wordfolio.Api.Domain.Transactions
 
 [<Literal>]
 let MaxNameLength = 255

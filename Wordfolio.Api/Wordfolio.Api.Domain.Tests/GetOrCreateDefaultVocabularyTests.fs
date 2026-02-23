@@ -1,4 +1,4 @@
-module Wordfolio.Api.Domain.Tests.Shared.GetOrCreateDefaultVocabularyTests
+module Wordfolio.Api.Domain.Tests.GetOrCreateDefaultVocabularyTests
 
 open System
 open System.Threading.Tasks
@@ -6,10 +6,7 @@ open System.Threading.Tasks
 open Xunit
 
 open Wordfolio.Api.Domain
-open Wordfolio.Api.Domain.Collections
-open Wordfolio.Api.Domain.Shared
-open Wordfolio.Api.Domain.Shared.Operations
-open Wordfolio.Api.Domain.Vocabularies
+open Wordfolio.Api.Domain.Operations
 
 type TestEnv
     (

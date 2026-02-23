@@ -7,7 +7,6 @@ open Xunit
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
-open Wordfolio.Api.Domain.Shared
 open Wordfolio.Api.Domain.Collections.Operations
 
 type CreateCollectionCall =

@@ -8,7 +8,6 @@ open Xunit
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations
-open Wordfolio.Api.Domain.Shared
 
 let private shouldNotBeCalled<'a, 'b> : 'a -> Task<'b> =
     fun _ -> failwith "Should not be called"

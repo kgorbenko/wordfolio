@@ -4,7 +4,7 @@ open System
 
 open Wordfolio.Api.Domain
 
-type Vocabulary = Wordfolio.Api.Domain.Shared.Vocabulary
+type Vocabulary = Wordfolio.Api.Domain.Vocabulary
 
 type VocabularyDetail =
     { Id: VocabularyId

@@ -1,9 +1,10 @@
-namespace Wordfolio.Api.Domain.Shared
+namespace Wordfolio.Api.Domain
 
 open System
 open System.Threading.Tasks
 
-open Wordfolio.Api.Domain
+type ITransactional<'env> =
+    abstract RunInTransaction<'a, 'err> : ('env -> Task<Result<'a, 'err>>) -> Task<Result<'a, 'err>>
 
 type CreateVocabularyParameters =
     { CollectionId: CollectionId
@@ -30,6 +31,8 @@ type ICreateDefaultCollection =
     abstract CreateDefaultCollection: CreateCollectionParameters -> Task<CollectionId>
 
 module Capabilities =
+    let runInTransaction (env: #ITransactional<'env>) operation = env.RunInTransaction(operation)
+
     let getDefaultVocabulary (env: #IGetDefaultVocabulary) userId = env.GetDefaultVocabulary(userId)
 
     let createDefaultVocabulary (env: #ICreateDefaultVocabulary) parameters = env.CreateDefaultVocabulary(parameters)

@@ -1,7 +1,7 @@
 module Wordfolio.Api.Domain.CollectionsHierarchy.Operations
 
+open Wordfolio.Api.Domain.Capabilities
 open Wordfolio.Api.Domain.CollectionsHierarchy.Capabilities
-open Wordfolio.Api.Domain.Transactions
 
 let getByUserId env userId =
     runInTransaction env (fun appEnv ->

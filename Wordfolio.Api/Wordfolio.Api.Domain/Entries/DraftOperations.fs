@@ -1,10 +1,9 @@
 module Wordfolio.Api.Domain.Entries.DraftOperations
 
 open Wordfolio.Api.Domain
+open Wordfolio.Api.Domain.Capabilities
 open Wordfolio.Api.Domain.Entries.Capabilities
 open Wordfolio.Api.Domain.Entries.Helpers
-open Wordfolio.Api.Domain.Shared
-open Wordfolio.Api.Domain.Transactions
 
 let create env (parameters: CreateDraftParameters) =
     runInTransaction env (fun appEnv ->
@@ -132,7 +131,7 @@ let delete env userId entryId =
 let getDrafts (env: #ITransactional<#IGetDefaultVocabulary & #IGetEntriesHierarchyByVocabularyId>) (userId: UserId) =
     runInTransaction env (fun appEnv ->
         task {
-            match! Shared.Capabilities.getDefaultVocabulary appEnv userId with
+            match! Wordfolio.Api.Domain.Capabilities.getDefaultVocabulary appEnv userId with
             | None -> return Ok None
             | Some vocabulary ->
                 let! entries = getEntriesHierarchyByVocabularyId appEnv vocabulary.Id

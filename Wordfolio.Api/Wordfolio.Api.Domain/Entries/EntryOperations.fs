@@ -1,8 +1,8 @@
 module Wordfolio.Api.Domain.Entries.EntryOperations
 
+open Wordfolio.Api.Domain.Capabilities
 open Wordfolio.Api.Domain.Entries.Capabilities
 open Wordfolio.Api.Domain.Entries.Helpers
-open Wordfolio.Api.Domain.Transactions
 
 let private checkVocabularyAccessInCollection env userId collectionId vocabularyId =
     task {
