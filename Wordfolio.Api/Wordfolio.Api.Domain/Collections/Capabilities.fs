@@ -5,9 +5,6 @@ open System.Threading.Tasks
 
 open Wordfolio.Api.Domain
 
-type IGetCollectionById =
-    abstract GetCollectionById: CollectionId -> Task<Collection option>
-
 type IGetCollectionsByUserId =
     abstract GetCollectionsByUserId: UserId -> Task<Collection list>
 
@@ -21,8 +18,6 @@ type IDeleteCollection =
     abstract DeleteCollection: CollectionId -> Task<int>
 
 module Capabilities =
-    let getCollectionById (env: #IGetCollectionById) collectionId = env.GetCollectionById(collectionId)
-
     let getCollectionsByUserId (env: #IGetCollectionsByUserId) userId = env.GetCollectionsByUserId(userId)
 
     let createCollection (env: #ICreateCollection) userId name description createdAt =

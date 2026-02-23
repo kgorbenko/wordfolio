@@ -4,7 +4,6 @@ open System
 open System.Threading.Tasks
 
 open Wordfolio.Api.Domain
-open Wordfolio.Api.Domain.Collections
 
 type IGetVocabularyById =
     abstract GetVocabularyById: VocabularyId -> Task<Vocabulary option>
