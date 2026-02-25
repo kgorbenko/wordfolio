@@ -20,7 +20,7 @@ Last updated: 2026-02-23
 - Phase 1 - Completed
 - Phase 2 - Completed
 - Phase 3 - Completed
-- Phase 4 - Not started
+- Phase 4 - In progress (Collections completed)
 - Phase 5 - Not started
 
 Completed implementation notes:
@@ -34,6 +34,16 @@ Completed implementation notes:
 - Feature type-alias files were removed (`Collections/Collection.fs`, `Vocabularies/Vocabulary.fs`) to enforce no re-export aliases.
 - `Vocabularies/Types.fs` now hosts feature-specific `VocabularyDetail`.
 - Rulebook was updated to prohibit aliasing root types under feature namespaces.
+- Collections feature loop (Phase 4) was completed:
+  - Added `Collections/Types.fs` and normalized collection operation parameter models.
+  - Refactored collection capability signatures to use parameter records.
+  - Split collection errors into operation-specific DUs.
+  - Updated collection handlers, infrastructure wiring, and collection domain tests to new contracts.
+  - Maintained behavior while keeping operation return types explicit.
+- Root default-creation parameter models were renamed for clarity and to avoid feature-name collisions:
+  - `CreateVocabularyParameters` -> `CreateDefaultVocabularyParameters`
+  - `CreateCollectionParameters` -> `CreateDefaultCollectionParameters`
+- Rulebook was updated to keep `env` parameter types inferred in operations (no explicit env-type annotations).
 
 Process note:
 
@@ -175,6 +185,16 @@ Exit criteria (per feature):
 
 - Feature conforms to agreed rules and compiles cleanly with updated consumers.
 - Tests for impacted areas pass.
+
+Status:
+
+- In progress.
+- Completed features:
+  - `Collections` (completed on 2026-02-23)
+- Remaining features:
+  - `Vocabularies`
+  - `Entries`
+  - `CollectionsHierarchy`
 
 ---
 

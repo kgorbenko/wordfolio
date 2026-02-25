@@ -207,13 +207,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateCollection with
-        member _.CreateCollection(UserId userId, name, description, createdAt) =
+        member _.CreateCollection(parameters: CreateCollectionData) =
             task {
                 let parameters: DataAccess.CollectionCreationParameters =
-                    { UserId = userId
-                      Name = name
-                      Description = description
-                      CreatedAt = createdAt }
+                    { UserId = UserId.value parameters.UserId
+                      Name = parameters.Name
+                      Description = parameters.Description
+                      CreatedAt = parameters.CreatedAt }
 
                 let! id =
                     Wordfolio.Api.DataAccess.Collections.createCollectionAsync
@@ -226,13 +226,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface IUpdateCollection with
-        member _.UpdateCollection(CollectionId id, name, description, updatedAt) =
+        member _.UpdateCollection(parameters: UpdateCollectionData) =
             task {
                 let parameters: DataAccess.CollectionUpdateParameters =
-                    { Id = id
-                      Name = name
-                      Description = description
-                      UpdatedAt = updatedAt }
+                    { Id = CollectionId.value parameters.CollectionId
+                      Name = parameters.Name
+                      Description = parameters.Description
+                      UpdatedAt = parameters.UpdatedAt }
 
                 return!
                     Wordfolio.Api.DataAccess.Collections.updateCollectionAsync
@@ -340,7 +340,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateDefaultVocabulary with
-        member _.CreateDefaultVocabulary(parameters: CreateVocabularyParameters) =
+        member _.CreateDefaultVocabulary(parameters: CreateDefaultVocabularyParameters) =
             task {
                 let dataAccessParams: DataAccess.VocabularyCreationParameters =
                     { CollectionId = CollectionId.value parameters.CollectionId
@@ -372,7 +372,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateDefaultCollection with
-        member _.CreateDefaultCollection(parameters: CreateCollectionParameters) =
+        member _.CreateDefaultCollection(parameters: CreateDefaultCollectionParameters) =
             task {
                 let dataAccessParams: DataAccess.CollectionCreationParameters =
                     { UserId = UserId.value parameters.UserId

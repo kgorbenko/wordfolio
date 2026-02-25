@@ -45,7 +45,11 @@ let ``returns collection when found and owned by user``() =
 
                 Task.FromResult(Some collection))
 
-        let! result = getById env (UserId 1) (CollectionId 1)
+        let! result =
+            getById
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
         Assert.Equal(Ok collection, result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -61,9 +65,13 @@ let ``returns NotFound when collection does not exist``() =
 
                 Task.FromResult(None))
 
-        let! result = getById env (UserId 1) (CollectionId 1)
+        let! result =
+            getById
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
-        Assert.Equal(Error(CollectionNotFound(CollectionId 1)), result)
+        Assert.Equal(Error(GetCollectionByIdError.CollectionNotFound(CollectionId 1)), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }
 
@@ -80,8 +88,12 @@ let ``returns AccessDenied when collection owned by different user``() =
 
                 Task.FromResult(Some collection))
 
-        let! result = getById env (UserId 1) (CollectionId 1)
+        let! result =
+            getById
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
-        Assert.Equal(Error(CollectionAccessDenied(CollectionId 1)), result)
+        Assert.Equal(Error(GetCollectionByIdError.CollectionAccessDenied(CollectionId 1)), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }

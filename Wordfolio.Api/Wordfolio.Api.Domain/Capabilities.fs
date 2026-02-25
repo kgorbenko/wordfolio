@@ -6,32 +6,32 @@ open System.Threading.Tasks
 type ITransactional<'env> =
     abstract RunInTransaction<'a, 'err> : ('env -> Task<Result<'a, 'err>>) -> Task<Result<'a, 'err>>
 
-type IGetCollectionById =
-    abstract GetCollectionById: CollectionId -> Task<Collection option>
-
-type CreateVocabularyParameters =
+type CreateDefaultVocabularyParameters =
     { CollectionId: CollectionId
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset }
 
-type CreateCollectionParameters =
+type CreateDefaultCollectionParameters =
     { UserId: UserId
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset }
 
+type IGetCollectionById =
+    abstract GetCollectionById: CollectionId -> Task<Collection option>
+
 type IGetDefaultVocabulary =
     abstract GetDefaultVocabulary: UserId -> Task<Vocabulary option>
 
 type ICreateDefaultVocabulary =
-    abstract CreateDefaultVocabulary: CreateVocabularyParameters -> Task<VocabularyId>
+    abstract CreateDefaultVocabulary: CreateDefaultVocabularyParameters -> Task<VocabularyId>
 
 type IGetDefaultCollection =
     abstract GetDefaultCollection: UserId -> Task<Collection option>
 
 type ICreateDefaultCollection =
-    abstract CreateDefaultCollection: CreateCollectionParameters -> Task<CollectionId>
+    abstract CreateDefaultCollection: CreateDefaultCollectionParameters -> Task<CollectionId>
 
 module Capabilities =
     let runInTransaction (env: #ITransactional<'env>) operation = env.RunInTransaction(operation)

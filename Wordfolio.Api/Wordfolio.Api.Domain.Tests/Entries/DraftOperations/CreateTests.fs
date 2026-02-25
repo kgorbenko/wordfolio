@@ -21,8 +21,8 @@ type TestEnv
         createExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>,
         getDefaultVocabulary: UserId -> Task<Vocabulary option>,
         getDefaultCollection: UserId -> Task<Collection option>,
-        createDefaultVocabulary: CreateVocabularyParameters -> Task<VocabularyId>,
-        createDefaultCollection: CreateCollectionParameters -> Task<CollectionId>
+        createDefaultVocabulary: CreateDefaultVocabularyParameters -> Task<VocabularyId>,
+        createDefaultCollection: CreateDefaultCollectionParameters -> Task<CollectionId>
     ) =
     let getEntryByIdCalls =
         ResizeArray<EntryId>()

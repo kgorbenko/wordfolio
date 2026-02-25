@@ -1,6 +1,7 @@
 module Wordfolio.Api.Domain.Collections.Operations
 
 open System
+open System.Threading.Tasks
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Capabilities
@@ -9,54 +10,89 @@ open Wordfolio.Api.Domain.Collections.Capabilities
 [<Literal>]
 let MaxNameLength = 255
 
-let private validateName(name: string) : Result<string, CollectionError> =
+type GetCollectionByIdParameters =
+    { UserId: UserId
+      CollectionId: CollectionId }
+
+type GetCollectionsByUserIdParameters = { UserId: UserId }
+
+type CreateCollectionParameters =
+    { UserId: UserId
+      Name: string
+      Description: string option
+      CreatedAt: DateTimeOffset }
+
+type UpdateCollectionParameters =
+    { UserId: UserId
+      CollectionId: CollectionId
+      Name: string
+      Description: string option
+      UpdatedAt: DateTimeOffset }
+
+type DeleteCollectionParameters =
+    { UserId: UserId
+      CollectionId: CollectionId }
+
+let private validateName(name: string) : Result<string, CollectionNameValidationError> =
     if String.IsNullOrWhiteSpace(name) then
-        Error CollectionNameRequired
+        Error CollectionNameValidationError.NameRequired
     elif name.Length > MaxNameLength then
-        Error(CollectionNameTooLong MaxNameLength)
+        Error(CollectionNameValidationError.NameTooLong MaxNameLength)
     else
         Ok name
 
-let private checkOwnership (userId: UserId) (collection: Collection) : Result<Collection, CollectionError> =
-    if collection.UserId = userId then
-        Ok collection
-    else
-        Error(CollectionAccessDenied collection.Id)
+let private mapCreateValidationError(validationError: CollectionNameValidationError) : CreateCollectionError =
+    match validationError with
+    | CollectionNameValidationError.NameRequired -> CreateCollectionError.CollectionNameRequired
+    | CollectionNameValidationError.NameTooLong maxLength -> CreateCollectionError.CollectionNameTooLong maxLength
 
-let getById env userId collectionId =
+let private mapUpdateValidationError(validationError: CollectionNameValidationError) : UpdateCollectionError =
+    match validationError with
+    | CollectionNameValidationError.NameRequired -> UpdateCollectionError.CollectionNameRequired
+    | CollectionNameValidationError.NameTooLong maxLength -> UpdateCollectionError.CollectionNameTooLong maxLength
+
+let private checkOwnership (userId: UserId) (collection: Collection) : Result<unit, unit> =
+    if collection.UserId = userId then
+        Ok()
+    else
+        Error()
+
+let getById env (parameters: GetCollectionByIdParameters) : Task<Result<Collection, GetCollectionByIdError>> =
     runInTransaction env (fun appEnv ->
         task {
-            let! maybeCollection = getCollectionById appEnv collectionId
+            let! maybeCollection = getCollectionById appEnv parameters.CollectionId
 
             return
                 match maybeCollection with
-                | None -> Error(CollectionNotFound collectionId)
-                | Some collection -> checkOwnership userId collection
+                | None -> Error(GetCollectionByIdError.CollectionNotFound parameters.CollectionId)
+                | Some collection ->
+                    match checkOwnership parameters.UserId collection with
+                    | Ok() -> Ok collection
+                    | Error() -> Error(GetCollectionByIdError.CollectionAccessDenied collection.Id)
         })
 
-let getByUserId env userId =
-    task {
-        let! result =
-            runInTransaction env (fun appEnv ->
-                task {
-                    let! collections = getCollectionsByUserId appEnv userId
-                    return Ok collections
-                })
-
-        return
-            match result with
-            | Ok collections -> collections
-            | Error _ -> []
-    }
-
-let create env userId name description now =
+let getByUserId env (parameters: GetCollectionsByUserIdParameters) : Task<Result<Collection list, unit>> =
     runInTransaction env (fun appEnv ->
         task {
-            match validateName name with
-            | Error error -> return Error error
+            let! collections = getCollectionsByUserId appEnv parameters.UserId
+            return (Ok collections)
+        })
+
+let create env (parameters: CreateCollectionParameters) : Task<Result<Collection, CreateCollectionError>> =
+    runInTransaction env (fun appEnv ->
+        task {
+            match validateName parameters.Name with
+            | Error validationError -> return Error(mapCreateValidationError validationError)
             | Ok validName ->
                 let trimmedName = validName.Trim()
-                let! collectionId = createCollection appEnv userId trimmedName description now
+
+                let createParameters: CreateCollectionData =
+                    { UserId = parameters.UserId
+                      Name = trimmedName
+                      Description = parameters.Description
+                      CreatedAt = parameters.CreatedAt }
+
+                let! collectionId = createCollection appEnv createParameters
                 let! maybeCollection = getCollectionById appEnv collectionId
 
                 return
@@ -65,50 +101,57 @@ let create env userId name description now =
                     | None -> failwith $"Collection {collectionId} not found after creation"
         })
 
-let update env userId collectionId name description now =
+let update env (parameters: UpdateCollectionParameters) : Task<Result<Collection, UpdateCollectionError>> =
     runInTransaction env (fun appEnv ->
         task {
-            let! maybeCollection = getCollectionById appEnv collectionId
+            let! maybeCollection = getCollectionById appEnv parameters.CollectionId
 
             match maybeCollection with
-            | None -> return Error(CollectionNotFound collectionId)
+            | None -> return Error(UpdateCollectionError.CollectionNotFound parameters.CollectionId)
             | Some collection ->
-                match checkOwnership userId collection with
-                | Error error -> return Error error
-                | Ok _ ->
-                    match validateName name with
-                    | Error error -> return Error error
+                match checkOwnership parameters.UserId collection with
+                | Error() -> return Error(UpdateCollectionError.CollectionAccessDenied collection.Id)
+                | Ok() ->
+                    match validateName parameters.Name with
+                    | Error validationError -> return Error(mapUpdateValidationError validationError)
                     | Ok validName ->
                         let trimmedName = validName.Trim()
-                        let! affectedRows = updateCollection appEnv collectionId trimmedName description now
+
+                        let updateParameters: UpdateCollectionData =
+                            { CollectionId = parameters.CollectionId
+                              Name = trimmedName
+                              Description = parameters.Description
+                              UpdatedAt = parameters.UpdatedAt }
+
+                        let! affectedRows = updateCollection appEnv updateParameters
 
                         if affectedRows > 0 then
                             let updated =
                                 { collection with
                                     Name = trimmedName
-                                    Description = description
-                                    UpdatedAt = Some now }
+                                    Description = parameters.Description
+                                    UpdatedAt = Some parameters.UpdatedAt }
 
                             return Ok updated
                         else
-                            return Error(CollectionNotFound collectionId)
+                            return Error(UpdateCollectionError.CollectionNotFound parameters.CollectionId)
         })
 
-let delete env userId collectionId =
+let delete env (parameters: DeleteCollectionParameters) : Task<Result<unit, DeleteCollectionError>> =
     runInTransaction env (fun appEnv ->
         task {
-            let! maybeCollection = getCollectionById appEnv collectionId
+            let! maybeCollection = getCollectionById appEnv parameters.CollectionId
 
             match maybeCollection with
-            | None -> return Error(CollectionNotFound collectionId)
+            | None -> return Error(DeleteCollectionError.CollectionNotFound parameters.CollectionId)
             | Some collection ->
-                match checkOwnership userId collection with
-                | Error error -> return Error error
-                | Ok _ ->
-                    let! affectedRows = deleteCollection appEnv collectionId
+                match checkOwnership parameters.UserId collection with
+                | Error() -> return Error(DeleteCollectionError.CollectionAccessDenied collection.Id)
+                | Ok() ->
+                    let! affectedRows = deleteCollection appEnv parameters.CollectionId
 
                     if affectedRows > 0 then
                         return Ok()
                     else
-                        return Error(CollectionNotFound collectionId)
+                        return Error(DeleteCollectionError.CollectionNotFound parameters.CollectionId)
         })

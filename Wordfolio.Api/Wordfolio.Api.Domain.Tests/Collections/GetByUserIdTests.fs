@@ -46,9 +46,9 @@ let ``returns collections for user``() =
 
                 Task.FromResult(collections))
 
-        let! result = getByUserId env (UserId 1)
+        let! result = getByUserId env { UserId = UserId 1 }
 
-        Assert.Equal<Collection list>(collections, result)
+        Assert.Equal(Ok collections, result)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsByUserIdCalls)
     }
 
@@ -62,8 +62,8 @@ let ``returns empty list when user has no collections``() =
 
                 Task.FromResult([]))
 
-        let! result = getByUserId env (UserId 1)
+        let! result = getByUserId env { UserId = UserId 1 }
 
-        Assert.Empty(result)
+        Assert.Equal(Ok [], result)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsByUserIdCalls)
     }

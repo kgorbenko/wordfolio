@@ -26,7 +26,7 @@ let getOrCreateDefaultVocabulary env (userId: UserId) (now: DateTimeOffset) : Ta
                 match maybeCollection with
                 | Some collection -> collection.Id |> Task.FromResult
                 | None ->
-                    let collectionParams: CreateCollectionParameters =
+                    let collectionParams: CreateDefaultCollectionParameters =
                         { UserId = userId
                           Name = SystemCollectionName
                           Description = None
@@ -34,7 +34,7 @@ let getOrCreateDefaultVocabulary env (userId: UserId) (now: DateTimeOffset) : Ta
 
                     createDefaultCollection env collectionParams
 
-            let vocabularyParams: CreateVocabularyParameters =
+            let vocabularyParams: CreateDefaultVocabularyParameters =
                 { CollectionId = collectionId
                   Name = DefaultVocabularyName
                   Description = None

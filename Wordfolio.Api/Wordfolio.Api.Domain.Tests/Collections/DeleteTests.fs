@@ -65,7 +65,11 @@ let ``deletes collection when owned by user``() =
                         Task.FromResult(1))
             )
 
-        let! result = delete env (UserId 1) (CollectionId 1)
+        let! result =
+            delete
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
         Assert.Equal(Ok(), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -86,9 +90,13 @@ let ``returns NotFound when collection does not exist``() =
                 deleteCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = delete env (UserId 1) (CollectionId 1)
+        let! result =
+            delete
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
-        Assert.Equal(Error(CollectionNotFound(CollectionId 1)), result)
+        Assert.Equal(Error(DeleteCollectionError.CollectionNotFound(CollectionId 1)), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.DeleteCollectionCalls)
     }
@@ -110,9 +118,13 @@ let ``returns AccessDenied when collection owned by different user``() =
                 deleteCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = delete env (UserId 1) (CollectionId 1)
+        let! result =
+            delete
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
-        Assert.Equal(Error(CollectionAccessDenied(CollectionId 1)), result)
+        Assert.Equal(Error(DeleteCollectionError.CollectionAccessDenied(CollectionId 1)), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.DeleteCollectionCalls)
     }
@@ -129,8 +141,12 @@ let ``returns NotFound when delete affects no rows``() =
                 deleteCollection = (fun _ -> Task.FromResult(0))
             )
 
-        let! result = delete env (UserId 1) (CollectionId 1)
+        let! result =
+            delete
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
-        Assert.Equal(Error(CollectionNotFound(CollectionId 1)), result)
+        Assert.Equal(Error(DeleteCollectionError.CollectionNotFound(CollectionId 1)), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.DeleteCollectionCalls)
     }

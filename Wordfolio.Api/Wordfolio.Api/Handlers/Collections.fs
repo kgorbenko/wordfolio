@@ -51,13 +51,29 @@ let private getUserId(user: ClaimsPrincipal) : int option =
         | true, id -> Some id
         | false, _ -> None
 
-let private toErrorResponse(error: CollectionError) : IResult =
+let private toGetByIdErrorResponse(error: GetCollectionByIdError) : IResult =
     match error with
-    | CollectionNotFound _ -> Results.NotFound()
-    | CollectionAccessDenied _ -> Results.Forbid()
-    | CollectionNameRequired -> Results.BadRequest({| error = "Name is required" |})
-    | CollectionNameTooLong maxLength ->
+    | GetCollectionByIdError.CollectionNotFound _ -> Results.NotFound()
+    | GetCollectionByIdError.CollectionAccessDenied _ -> Results.Forbid()
+
+let private toCreateErrorResponse(error: CreateCollectionError) : IResult =
+    match error with
+    | CreateCollectionError.CollectionNameRequired -> Results.BadRequest({| error = "Name is required" |})
+    | CreateCollectionError.CollectionNameTooLong maxLength ->
         Results.BadRequest({| error = $"Name must be at most {maxLength} characters" |})
+
+let private toUpdateErrorResponse(error: UpdateCollectionError) : IResult =
+    match error with
+    | UpdateCollectionError.CollectionNotFound _ -> Results.NotFound()
+    | UpdateCollectionError.CollectionAccessDenied _ -> Results.Forbid()
+    | UpdateCollectionError.CollectionNameRequired -> Results.BadRequest({| error = "Name is required" |})
+    | UpdateCollectionError.CollectionNameTooLong maxLength ->
+        Results.BadRequest({| error = $"Name must be at most {maxLength} characters" |})
+
+let private toDeleteErrorResponse(error: DeleteCollectionError) : IResult =
+    match error with
+    | DeleteCollectionError.CollectionNotFound _ -> Results.NotFound()
+    | DeleteCollectionError.CollectionAccessDenied _ -> Results.Forbid()
 
 let mapCollectionsEndpoints(group: RouteGroupBuilder) =
     group
@@ -71,9 +87,12 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
                         let env =
                             TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result = getByUserId env (UserId userId)
-                        let response = result |> List.map toResponse
-                        return Results.Ok(response)
+                        let! result = getByUserId env { UserId = UserId userId }
+
+                        let collections =
+                            Result.defaultValue [] result
+
+                        return Results.Ok(collections |> List.map toResponse)
                 })
         )
         .Produces<CollectionResponse list>(StatusCodes.Status200OK)
@@ -92,12 +111,16 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result = getById env (UserId userId) (CollectionId id)
+                            let! result =
+                                getById
+                                    env
+                                    { UserId = UserId userId
+                                      CollectionId = CollectionId id }
 
                             return
                                 match result with
                                 | Ok collection -> Results.Ok(toResponse collection)
-                                | Error error -> toErrorResponse error
+                                | Error error -> toGetByIdErrorResponse error
                     })
         )
         .Produces<CollectionResponse>(StatusCodes.Status200OK)
@@ -119,7 +142,12 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
                                 TransactionalEnv(dataSource, cancellationToken)
 
                             let! result =
-                                create env (UserId userId) request.Name request.Description DateTimeOffset.UtcNow
+                                create
+                                    env
+                                    { UserId = UserId userId
+                                      Name = request.Name
+                                      Description = request.Description
+                                      CreatedAt = DateTimeOffset.UtcNow }
 
                             return
                                 match result with
@@ -128,7 +156,7 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
                                         Urls.collectionById(CollectionId.value collection.Id),
                                         toResponse collection
                                     )
-                                | Error error -> toErrorResponse error
+                                | Error error -> toCreateErrorResponse error
                     })
         )
         .Produces<CollectionResponse>(StatusCodes.Status201Created)
@@ -151,16 +179,16 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
                             let! result =
                                 update
                                     env
-                                    (UserId userId)
-                                    (CollectionId id)
-                                    request.Name
-                                    request.Description
-                                    DateTimeOffset.UtcNow
+                                    { UserId = UserId userId
+                                      CollectionId = CollectionId id
+                                      Name = request.Name
+                                      Description = request.Description
+                                      UpdatedAt = DateTimeOffset.UtcNow }
 
                             return
                                 match result with
                                 | Ok collection -> Results.Ok(toResponse collection)
-                                | Error error -> toErrorResponse error
+                                | Error error -> toUpdateErrorResponse error
                     })
         )
         .Produces<CollectionResponse>(StatusCodes.Status200OK)
@@ -182,12 +210,16 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result = delete env (UserId userId) (CollectionId id)
+                            let! result =
+                                delete
+                                    env
+                                    { UserId = UserId userId
+                                      CollectionId = CollectionId id }
 
                             return
                                 match result with
                                 | Ok() -> Results.NoContent()
-                                | Error error -> toErrorResponse error
+                                | Error error -> toDeleteErrorResponse error
                     })
         )
         .Produces(StatusCodes.Status204NoContent)

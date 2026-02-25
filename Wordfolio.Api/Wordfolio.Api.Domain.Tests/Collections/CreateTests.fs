@@ -17,7 +17,7 @@ type CreateCollectionCall =
 
 type TestEnv
     (
-        createCollection: UserId * string * string option * DateTimeOffset -> Task<CollectionId>,
+        createCollection: CreateCollectionData -> Task<CollectionId>,
         getCollectionById: CollectionId -> Task<Collection option>
     ) =
     let createCollectionCalls =
@@ -33,15 +33,15 @@ type TestEnv
         getCollectionByIdCalls |> Seq.toList
 
     interface ICreateCollection with
-        member _.CreateCollection(userId, name, description, createdAt) =
+        member _.CreateCollection(parameters) =
             createCollectionCalls.Add(
-                { UserId = userId
-                  Name = name
-                  Description = description
-                  CreatedAt = createdAt }
+                { UserId = parameters.UserId
+                  Name = parameters.Name
+                  Description = parameters.Description
+                  CreatedAt = parameters.CreatedAt }
             )
 
-            createCollection(userId, name, description, createdAt)
+            createCollection(parameters)
 
     interface IGetCollectionById with
         member _.GetCollectionById(id) =
@@ -70,18 +70,18 @@ let ``creates collection with valid name``() =
         let env =
             TestEnv(
                 createCollection =
-                    (fun (userId, name, description, createdAt) ->
-                        if userId <> UserId 1 then
-                            failwith $"Unexpected userId: {userId}"
+                    (fun parameters ->
+                        if parameters.UserId <> UserId 1 then
+                            failwith $"Unexpected userId: {parameters.UserId}"
 
-                        if name <> "Test Collection" then
-                            failwith $"Unexpected name: {name}"
+                        if parameters.Name <> "Test Collection" then
+                            failwith $"Unexpected name: {parameters.Name}"
 
-                        if description <> None then
-                            failwith $"Unexpected description: {description}"
+                        if parameters.Description <> None then
+                            failwith $"Unexpected description: {parameters.Description}"
 
-                        if createdAt <> now then
-                            failwith $"Unexpected createdAt: {createdAt}"
+                        if parameters.CreatedAt <> now then
+                            failwith $"Unexpected createdAt: {parameters.CreatedAt}"
 
                         Task.FromResult(CollectionId 1)),
                 getCollectionById =
@@ -92,7 +92,13 @@ let ``creates collection with valid name``() =
                         Task.FromResult(Some createdCollection))
             )
 
-        let! result = create env (UserId 1) "Test Collection" None now
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  Name = "Test Collection"
+                  Description = None
+                  CreatedAt = now }
 
         Assert.Equal(Ok createdCollection, result)
         Assert.Equal(1, env.CreateCollectionCalls.Length)
@@ -111,15 +117,21 @@ let ``creates collection with description``() =
         let env =
             TestEnv(
                 createCollection =
-                    (fun (userId, name, desc, createdAt) ->
-                        if desc <> description then
-                            failwith $"Unexpected description: {desc}"
+                    (fun parameters ->
+                        if parameters.Description <> description then
+                            failwith $"Unexpected description: {parameters.Description}"
 
                         Task.FromResult(CollectionId 1)),
                 getCollectionById = (fun _ -> Task.FromResult(Some createdCollection))
             )
 
-        let! result = create env (UserId 1) "Test Collection" description now
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  Name = "Test Collection"
+                  Description = description
+                  CreatedAt = now }
 
         Assert.Equal(Ok createdCollection, result)
     }
@@ -135,15 +147,21 @@ let ``trims whitespace from name``() =
         let env =
             TestEnv(
                 createCollection =
-                    (fun (_, name, _, _) ->
-                        if name <> "Test Collection" then
-                            failwith $"Expected trimmed name 'Test Collection', got: '{name}'"
+                    (fun parameters ->
+                        if parameters.Name <> "Test Collection" then
+                            failwith $"Expected trimmed name 'Test Collection', got: '{parameters.Name}'"
 
                         Task.FromResult(CollectionId 1)),
                 getCollectionById = (fun _ -> Task.FromResult(Some createdCollection))
             )
 
-        let! result = create env (UserId 1) "  Test Collection  " None now
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  Name = "  Test Collection  "
+                  Description = None
+                  CreatedAt = now }
 
         Assert.True(Result.isOk result)
 
@@ -162,9 +180,15 @@ let ``returns error when name is empty``() =
                 getCollectionById = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (UserId 1) "" None DateTimeOffset.UtcNow
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  Name = ""
+                  Description = None
+                  CreatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error CollectionNameRequired, result)
+        Assert.Equal(Error CreateCollectionError.CollectionNameRequired, result)
         Assert.Empty(env.CreateCollectionCalls)
     }
 
@@ -177,9 +201,15 @@ let ``returns error when name is whitespace only``() =
                 getCollectionById = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (UserId 1) "   " None DateTimeOffset.UtcNow
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  Name = "   "
+                  Description = None
+                  CreatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error CollectionNameRequired, result)
+        Assert.Equal(Error CreateCollectionError.CollectionNameRequired, result)
         Assert.Empty(env.CreateCollectionCalls)
     }
 
@@ -194,9 +224,15 @@ let ``returns error when name exceeds max length``() =
                 getCollectionById = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (UserId 1) longName None DateTimeOffset.UtcNow
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  Name = longName
+                  Description = None
+                  CreatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(CollectionNameTooLong MaxNameLength), result)
+        Assert.Equal(Error(CreateCollectionError.CollectionNameTooLong MaxNameLength), result)
         Assert.Empty(env.CreateCollectionCalls)
     }
 
@@ -214,15 +250,21 @@ let ``accepts name at exact max length``() =
         let env =
             TestEnv(
                 createCollection =
-                    (fun (_, name, _, _) ->
-                        if name <> maxLengthName then
+                    (fun parameters ->
+                        if parameters.Name <> maxLengthName then
                             failwith $"Expected name with {MaxNameLength} characters"
 
                         Task.FromResult(CollectionId 1)),
                 getCollectionById = (fun _ -> Task.FromResult(Some createdCollection))
             )
 
-        let! result = create env (UserId 1) maxLengthName None now
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  Name = maxLengthName
+                  Description = None
+                  CreatedAt = now }
 
         Assert.Equal(Ok createdCollection, result)
     }
@@ -238,7 +280,15 @@ let ``throws when post-creation collection fetch returns None``() =
                 getCollectionById = (fun _ -> Task.FromResult(None))
             )
 
-        let! ex = Assert.ThrowsAsync<Exception>(fun () -> create env (UserId 1) "Test Collection" None now :> Task)
+        let! ex =
+            Assert.ThrowsAsync<Exception>(fun () ->
+                create
+                    env
+                    { UserId = UserId 1
+                      Name = "Test Collection"
+                      Description = None
+                      CreatedAt = now }
+                :> Task)
 
         Assert.Equal("Collection CollectionId 1 not found after creation", ex.Message)
     }
