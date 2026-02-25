@@ -50,6 +50,12 @@ Completed implementation notes:
   - Split vocabulary errors into operation-specific DUs and enforced `[<RequireQualifiedAccess>]`.
   - Added shared vocabulary validation result type `VocabularyNameValidationResult` in `Vocabularies/Types.fs` and remapped per operation.
   - Updated vocabulary handlers, infrastructure bindings, and vocabulary domain tests to new contracts.
+- CollectionsHierarchy feature loop (Phase 4) was completed:
+  - Renamed `CollectionsHierarchy/CollectionsHierarchy.fs` to `CollectionsHierarchy/Types.fs`.
+  - Refactored operations to parameter-record signatures with explicit `Task<Result<_, unit>>` return types.
+  - Refactored capability signatures to record-based inputs for non-trivial calls.
+  - Updated handler fallback logic to use `Result.defaultValue` for unit-error operations.
+  - Updated infrastructure and collections-hierarchy domain tests to the new capability/operation contracts.
 
 Process note:
 
@@ -198,9 +204,9 @@ Status:
 - Completed features:
   - `Collections` (completed on 2026-02-23)
   - `Vocabularies` (completed on 2026-02-25)
+  - `CollectionsHierarchy` (completed on 2026-02-25)
 - Remaining features:
   - `Entries`
-  - `CollectionsHierarchy`
 
 ---
 

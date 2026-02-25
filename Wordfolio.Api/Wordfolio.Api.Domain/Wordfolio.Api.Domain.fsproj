@@ -13,7 +13,7 @@
     <Compile Include="Collections\Errors.fs" />
     <Compile Include="Collections\Capabilities.fs" />
     <Compile Include="Collections\Operations.fs" />
-    <Compile Include="CollectionsHierarchy\CollectionsHierarchy.fs" />
+    <Compile Include="CollectionsHierarchy\Types.fs" />
     <Compile Include="CollectionsHierarchy\Capabilities.fs" />
     <Compile Include="CollectionsHierarchy\Operations.fs" />
     <Compile Include="Vocabularies\Types.fs" />

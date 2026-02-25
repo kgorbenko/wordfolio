@@ -66,7 +66,7 @@ type CollectionsHierarchyResponse =
       DefaultVocabulary: VocabularyWithEntryCountHierarchyResponse option }
 
 let private toVocabularyWithEntryCountHierarchyResponse
-    (v: VocabularySummary)
+    (v: VocabularyWithEntryCount)
     : VocabularyWithEntryCountHierarchyResponse =
     { Id = VocabularyId.value v.Id
       Name = v.Name
@@ -76,7 +76,7 @@ let private toVocabularyWithEntryCountHierarchyResponse
       EntryCount = v.EntryCount }
 
 let private toCollectionWithVocabulariesHierarchyResponse
-    (c: CollectionSummary)
+    (c: CollectionWithVocabularies)
     : CollectionWithVocabulariesHierarchyResponse =
     { Id = CollectionId.value c.Id
       Name = c.Name
@@ -87,7 +87,7 @@ let private toCollectionWithVocabulariesHierarchyResponse
         c.Vocabularies
         |> List.map toVocabularyWithEntryCountHierarchyResponse }
 
-let private toCollectionOverviewResponse(c: CollectionOverview) : CollectionOverviewResponse =
+let private toCollectionOverviewResponse(c: CollectionWithVocabularyCount) : CollectionOverviewResponse =
     { Id = CollectionId.value c.Id
       Name = c.Name
       Description = c.Description
@@ -97,11 +97,11 @@ let private toCollectionOverviewResponse(c: CollectionOverview) : CollectionOver
 
 let private toVocabularySortByDomain(sortBy: VocabularySummarySortByRequest) =
     match sortBy with
-    | VocabularySummarySortByRequest.Name -> VocabularySummarySortBy.Name
-    | VocabularySummarySortByRequest.CreatedAt -> VocabularySummarySortBy.CreatedAt
-    | VocabularySummarySortByRequest.UpdatedAt -> VocabularySummarySortBy.UpdatedAt
-    | VocabularySummarySortByRequest.EntryCount -> VocabularySummarySortBy.EntryCount
-    | _ -> VocabularySummarySortBy.Name
+    | VocabularySummarySortByRequest.Name -> VocabularySortBy.Name
+    | VocabularySummarySortByRequest.CreatedAt -> VocabularySortBy.CreatedAt
+    | VocabularySummarySortByRequest.UpdatedAt -> VocabularySortBy.UpdatedAt
+    | VocabularySummarySortByRequest.EntryCount -> VocabularySortBy.EntryCount
+    | _ -> VocabularySortBy.Name
 
 let private toSortByDomain(sortBy: CollectionSortByRequest) =
     match sortBy with
@@ -140,25 +140,23 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
                         let env =
                             TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result = getByUserId env (UserId userId)
+                        let! result = getByUserId env { UserId = UserId userId }
 
-                        return
-                            match result with
-                            | Ok hierarchyResult ->
-                                let response: CollectionsHierarchyResponse =
-                                    { Collections =
-                                        hierarchyResult.Collections
-                                        |> List.map toCollectionWithVocabulariesHierarchyResponse
-                                      DefaultVocabulary =
-                                        hierarchyResult.DefaultVocabulary
-                                        |> Option.map toVocabularyWithEntryCountHierarchyResponse }
+                        let hierarchyResult: CollectionsHierarchyResult =
+                            Result.defaultValue
+                                { Collections = []
+                                  DefaultVocabulary = None }
+                                result
 
-                                Results.Ok(response)
-                            | Error _ ->
-                                Results.Ok(
-                                    { Collections = []
-                                      DefaultVocabulary = None }
-                                )
+                        let response: CollectionsHierarchyResponse =
+                            { Collections =
+                                hierarchyResult.Collections
+                                |> List.map toCollectionWithVocabulariesHierarchyResponse
+                              DefaultVocabulary =
+                                hierarchyResult.DefaultVocabulary
+                                |> Option.map toVocabularyWithEntryCountHierarchyResponse }
+
+                        return Results.Ok(response)
                 })
         )
         .Produces<CollectionsHierarchyResponse>(StatusCodes.Status200OK)
@@ -186,15 +184,19 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
                                   SortBy = sortBy |> toSortByDomain
                                   SortDirection = sortDirection |> toSortDirectionDomain }
 
-                            let! result = searchUserCollections env (UserId userId) query
+                            let! result =
+                                searchUserCollections
+                                    env
+                                    { UserId = UserId userId
+                                      Query = query }
+
+                            let collections =
+                                Result.defaultValue [] result
 
                             return
-                                match result with
-                                | Ok collections ->
-                                    collections
-                                    |> List.map toCollectionOverviewResponse
-                                    |> Results.Ok
-                                | Error _ -> Results.Ok([])
+                                collections
+                                |> List.map toCollectionOverviewResponse
+                                |> Results.Ok
                     })
         )
         .Produces<CollectionOverviewResponse list>(StatusCodes.Status200OK)
@@ -213,7 +215,7 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let query: VocabularySummaryQuery =
+                            let query: SearchCollectionVocabulariesQuery =
                                 { Search =
                                     if String.IsNullOrWhiteSpace search then
                                         None
@@ -223,15 +225,19 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
                                   SortDirection = sortDirection |> toSortDirectionDomain }
 
                             let! result =
-                                searchCollectionVocabularies env (UserId userId) (CollectionId collectionId) query
+                                searchCollectionVocabularies
+                                    env
+                                    { UserId = UserId userId
+                                      CollectionId = CollectionId collectionId
+                                      Query = query }
+
+                            let vocabularies =
+                                Result.defaultValue [] result
 
                             return
-                                match result with
-                                | Ok vocabularies ->
-                                    vocabularies
-                                    |> List.map toVocabularyWithEntryCountHierarchyResponse
-                                    |> Results.Ok
-                                | Error _ -> Results.Ok([])
+                                vocabularies
+                                |> List.map toVocabularyWithEntryCountHierarchyResponse
+                                |> Results.Ok
                     })
         )
         .Produces<VocabularyWithEntryCountHierarchyResponse list>(StatusCodes.Status200OK)

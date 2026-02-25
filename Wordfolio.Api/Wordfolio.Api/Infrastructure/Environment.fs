@@ -111,9 +111,9 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
           Definitions = definitions
           Translations = translations }
 
-    let toVocabularySummaryDomain
+    let toVocabularyWithEntryCountDomain
         (v: Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummary)
-        : Wordfolio.Api.Domain.CollectionsHierarchy.VocabularySummary =
+        : Wordfolio.Api.Domain.CollectionsHierarchy.VocabularyWithEntryCount =
         { Id = VocabularyId v.Id
           Name = v.Name
           Description = v.Description
@@ -121,9 +121,9 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
           UpdatedAt = v.UpdatedAt
           EntryCount = v.EntryCount }
 
-    let toCollectionSummaryDomain
+    let toCollectionWithVocabulariesDomain
         (c: Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionSummary)
-        : Wordfolio.Api.Domain.CollectionsHierarchy.CollectionSummary =
+        : Wordfolio.Api.Domain.CollectionsHierarchy.CollectionWithVocabularies =
         { Id = CollectionId c.Id
           Name = c.Name
           Description = c.Description
@@ -131,11 +131,11 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
           UpdatedAt = c.UpdatedAt
           Vocabularies =
             c.Vocabularies
-            |> List.map toVocabularySummaryDomain }
+            |> List.map toVocabularyWithEntryCountDomain }
 
     let toCollectionOverviewDomain
         (c: Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionOverview)
-        : Wordfolio.Api.Domain.CollectionsHierarchy.CollectionOverview =
+        : Wordfolio.Api.Domain.CollectionsHierarchy.CollectionWithVocabularyCount =
         { Id = CollectionId c.Id
           Name = c.Name
           Description = c.Description
@@ -163,21 +163,19 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
           SortBy = toCollectionSortByDataAccess query.SortBy
           SortDirection = toSortDirectionDataAccess query.SortDirection }
 
-    let toVocabularySummarySortByDataAccess(sortBy: VocabularySummarySortBy) =
+    let toVocabularySortByDataAccess(sortBy: VocabularySortBy) =
         match sortBy with
-        | VocabularySummarySortBy.Name -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.Name
-        | VocabularySummarySortBy.CreatedAt ->
-            Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.CreatedAt
-        | VocabularySummarySortBy.UpdatedAt ->
-            Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.UpdatedAt
-        | VocabularySummarySortBy.EntryCount ->
+        | VocabularySortBy.Name -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.Name
+        | VocabularySortBy.CreatedAt -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.CreatedAt
+        | VocabularySortBy.UpdatedAt -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.UpdatedAt
+        | VocabularySortBy.EntryCount ->
             Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.EntryCount
 
-    let toVocabularySummaryQueryDataAccess
-        (query: VocabularySummaryQuery)
+    let toSearchCollectionVocabulariesQueryDataAccess
+        (query: SearchCollectionVocabulariesQuery)
         : Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummaryQuery =
         { Search = query.Search
-          SortBy = toVocabularySummarySortByDataAccess query.SortBy
+          SortBy = toVocabularySortByDataAccess query.SortBy
           SortDirection = toSortDirectionDataAccess query.SortDirection }
 
     interface IGetCollectionById with
@@ -632,16 +630,16 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
 
                 return
                     results
-                    |> List.map toCollectionSummaryDomain
+                    |> List.map toCollectionWithVocabulariesDomain
             }
 
     interface ISearchUserCollections with
-        member _.SearchUserCollections(UserId userId, query) =
+        member _.SearchUserCollections(data: SearchUserCollectionsData) =
             task {
                 let! results =
                     Wordfolio.Api.DataAccess.CollectionsHierarchy.searchUserCollectionsAsync
-                        userId
-                        (query
+                        (UserId.value data.UserId)
+                        (data.Query
                          |> toSearchUserCollectionsQueryDataAccess)
                         connection
                         transaction
@@ -653,25 +651,25 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ISearchCollectionVocabularies with
-        member _.SearchCollectionVocabularies(UserId userId, CollectionId collectionId, query) =
+        member _.SearchCollectionVocabularies(data: SearchCollectionVocabulariesData) =
             task {
                 let! results =
                     Wordfolio.Api.DataAccess.CollectionsHierarchy.searchCollectionVocabulariesAsync
-                        userId
-                        collectionId
-                        (query
-                         |> toVocabularySummaryQueryDataAccess)
+                        (UserId.value data.UserId)
+                        (CollectionId.value data.CollectionId)
+                        (data.Query
+                         |> toSearchCollectionVocabulariesQueryDataAccess)
                         connection
                         transaction
                         cancellationToken
 
                 return
                     results
-                    |> List.map toVocabularySummaryDomain
+                    |> List.map toVocabularyWithEntryCountDomain
             }
 
-    interface IGetDefaultVocabularySummary with
-        member _.GetDefaultVocabularySummary(UserId userId) =
+    interface IGetDefaultVocabularyWithEntryCount with
+        member _.GetDefaultVocabularyWithEntryCount(UserId userId) =
             task {
                 let! result =
                     Wordfolio.Api.DataAccess.CollectionsHierarchy.getDefaultVocabularySummaryByUserIdAsync
