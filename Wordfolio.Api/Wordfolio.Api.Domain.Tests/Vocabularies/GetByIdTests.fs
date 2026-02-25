@@ -80,7 +80,11 @@ let ``returns vocabulary when found and collection owned by user``() =
                         Task.FromResult(Some collection))
             )
 
-        let! result = getById env (UserId 1) (VocabularyId 1)
+        let! result =
+            getById
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1 }
 
         let expected: VocabularyDetail =
             { Id = vocabulary.Id
@@ -110,9 +114,13 @@ let ``returns NotFound when vocabulary does not exist``() =
                 getCollectionById = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = getById env (UserId 1) (VocabularyId 1)
+        let! result =
+            getById
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1 }
 
-        Assert.Equal(Error(VocabularyNotFound(VocabularyId 1)), result)
+        Assert.Equal(Error(GetVocabularyByIdError.VocabularyNotFound(VocabularyId 1)), result)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
         Assert.Empty(env.GetCollectionByIdCalls)
     }
@@ -141,9 +149,13 @@ let ``returns AccessDenied when collection owned by different user``() =
                         Task.FromResult(Some collection))
             )
 
-        let! result = getById env (UserId 1) (VocabularyId 1)
+        let! result =
+            getById
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1 }
 
-        Assert.Equal(Error(VocabularyAccessDenied(VocabularyId 1)), result)
+        Assert.Equal(Error(GetVocabularyByIdError.VocabularyAccessDenied(VocabularyId 1)), result)
     }
 
 [<Fact>]
@@ -158,7 +170,11 @@ let ``returns CollectionNotFound when collection does not exist``() =
                 getCollectionById = (fun _ -> Task.FromResult(None))
             )
 
-        let! result = getById env (UserId 1) (VocabularyId 1)
+        let! result =
+            getById
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1 }
 
-        Assert.Equal(Error(VocabularyCollectionNotFound(CollectionId 1)), result)
+        Assert.Equal(Error(GetVocabularyByIdError.VocabularyCollectionNotFound(CollectionId 1)), result)
     }

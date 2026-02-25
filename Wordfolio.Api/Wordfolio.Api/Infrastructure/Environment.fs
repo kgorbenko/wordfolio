@@ -280,13 +280,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateVocabulary with
-        member _.CreateVocabulary(CollectionId collectionId, name, description, createdAt) =
+        member _.CreateVocabulary(data: CreateVocabularyData) =
             task {
                 let parameters: DataAccess.VocabularyCreationParameters =
-                    { CollectionId = collectionId
-                      Name = name
-                      Description = description
-                      CreatedAt = createdAt }
+                    { CollectionId = CollectionId.value data.CollectionId
+                      Name = data.Name
+                      Description = data.Description
+                      CreatedAt = data.CreatedAt }
 
                 let! id =
                     Wordfolio.Api.DataAccess.Vocabularies.createVocabularyAsync
@@ -299,13 +299,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface IUpdateVocabulary with
-        member _.UpdateVocabulary(VocabularyId id, name, description, updatedAt) =
+        member _.UpdateVocabulary(data: UpdateVocabularyData) =
             task {
                 let parameters: DataAccess.VocabularyUpdateParameters =
-                    { Id = id
-                      Name = name
-                      Description = description
-                      UpdatedAt = updatedAt }
+                    { Id = VocabularyId.value data.VocabularyId
+                      Name = data.Name
+                      Description = data.Description
+                      UpdatedAt = data.UpdatedAt }
 
                 return!
                     Wordfolio.Api.DataAccess.Vocabularies.updateVocabularyAsync

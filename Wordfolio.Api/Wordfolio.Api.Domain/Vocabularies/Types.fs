@@ -12,3 +12,7 @@ type VocabularyDetail =
       Description: string option
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option }
+
+type VocabularyNameValidationResult =
+    | NameRequired
+    | NameTooLong of maxLength: int

@@ -81,7 +81,11 @@ let ``returns vocabularies when collection owned by user``() =
                         Task.FromResult(vocabularies))
             )
 
-        let! result = getByCollectionId env (UserId 1) (CollectionId 1)
+        let! result =
+            getByCollectionId
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
         Assert.Equal(Ok vocabularies, result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -99,7 +103,11 @@ let ``returns empty list when collection has no vocabularies``() =
                 getVocabulariesByCollectionId = (fun _ -> Task.FromResult([]))
             )
 
-        let! result = getByCollectionId env (UserId 1) (CollectionId 1)
+        let! result =
+            getByCollectionId
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
         match result with
         | Ok vocabularies -> Assert.Empty(vocabularies)
@@ -120,9 +128,13 @@ let ``returns CollectionNotFound when collection does not exist``() =
                 getVocabulariesByCollectionId = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = getByCollectionId env (UserId 1) (CollectionId 1)
+        let! result =
+            getByCollectionId
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
-        Assert.Equal(Error(VocabularyCollectionNotFound(CollectionId 1)), result)
+        Assert.Equal(Error(GetVocabulariesByCollectionIdError.VocabularyCollectionNotFound(CollectionId 1)), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.GetVocabulariesByCollectionIdCalls)
     }
@@ -143,8 +155,12 @@ let ``returns CollectionNotFound when collection owned by different user``() =
                 getVocabulariesByCollectionId = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = getByCollectionId env (UserId 1) (CollectionId 1)
+        let! result =
+            getByCollectionId
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
-        Assert.Equal(Error(VocabularyCollectionNotFound(CollectionId 1)), result)
+        Assert.Equal(Error(GetVocabulariesByCollectionIdError.VocabularyCollectionNotFound(CollectionId 1)), result)
         Assert.Empty(env.GetVocabulariesByCollectionIdCalls)
     }

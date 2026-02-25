@@ -19,7 +19,7 @@ type CreateVocabularyCall =
 type TestEnv
     (
         getCollectionById: CollectionId -> Task<Collection option>,
-        createVocabulary: CollectionId * string * string option * DateTimeOffset -> Task<VocabularyId>,
+        createVocabulary: CreateVocabularyData -> Task<VocabularyId>,
         getVocabularyById: VocabularyId -> Task<Vocabulary option>
     ) =
     let getCollectionByIdCalls =
@@ -46,15 +46,15 @@ type TestEnv
             getCollectionById id
 
     interface ICreateVocabulary with
-        member _.CreateVocabulary(collectionId, name, description, createdAt) =
+        member _.CreateVocabulary(data) =
             createVocabularyCalls.Add(
-                { CollectionId = collectionId
-                  Name = name
-                  Description = description
-                  CreatedAt = createdAt }
+                { CollectionId = data.CollectionId
+                  Name = data.Name
+                  Description = data.Description
+                  CreatedAt = data.CreatedAt }
             )
 
-            createVocabulary(collectionId, name, description, createdAt)
+            createVocabulary(data)
 
     interface IGetVocabularyById with
         member _.GetVocabularyById(id) =
@@ -98,18 +98,18 @@ let ``creates vocabulary with valid name``() =
 
                         Task.FromResult(Some collection)),
                 createVocabulary =
-                    (fun (collectionId, name, description, createdAt) ->
-                        if collectionId <> CollectionId 1 then
-                            failwith $"Unexpected collectionId: {collectionId}"
+                    (fun data ->
+                        if data.CollectionId <> CollectionId 1 then
+                            failwith $"Unexpected collectionId: {data.CollectionId}"
 
-                        if name <> "Test Vocabulary" then
-                            failwith $"Unexpected name: {name}"
+                        if data.Name <> "Test Vocabulary" then
+                            failwith $"Unexpected name: {data.Name}"
 
-                        if description <> None then
-                            failwith $"Unexpected description: {description}"
+                        if data.Description <> None then
+                            failwith $"Unexpected description: {data.Description}"
 
-                        if createdAt <> now then
-                            failwith $"Unexpected createdAt: {createdAt}"
+                        if data.CreatedAt <> now then
+                            failwith $"Unexpected createdAt: {data.CreatedAt}"
 
                         Task.FromResult(VocabularyId 1)),
                 getVocabularyById =
@@ -120,7 +120,14 @@ let ``creates vocabulary with valid name``() =
                         Task.FromResult(Some createdVocabulary))
             )
 
-        let! result = create env (UserId 1) (CollectionId 1) "Test Vocabulary" None now
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1
+                  Name = "Test Vocabulary"
+                  Description = None
+                  CreatedAt = now }
 
         Assert.Equal(Ok createdVocabulary, result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -142,15 +149,22 @@ let ``creates vocabulary with description``() =
             TestEnv(
                 getCollectionById = (fun _ -> Task.FromResult(Some collection)),
                 createVocabulary =
-                    (fun (_, _, desc, _) ->
-                        if desc <> description then
-                            failwith $"Unexpected description: {desc}"
+                    (fun data ->
+                        if data.Description <> description then
+                            failwith $"Unexpected description: {data.Description}"
 
                         Task.FromResult(VocabularyId 1)),
                 getVocabularyById = (fun _ -> Task.FromResult(Some createdVocabulary))
             )
 
-        let! result = create env (UserId 1) (CollectionId 1) "Test Vocabulary" description now
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1
+                  Name = "Test Vocabulary"
+                  Description = description
+                  CreatedAt = now }
 
         Assert.Equal(Ok createdVocabulary, result)
     }
@@ -168,15 +182,22 @@ let ``trims whitespace from name``() =
             TestEnv(
                 getCollectionById = (fun _ -> Task.FromResult(Some collection)),
                 createVocabulary =
-                    (fun (_, name, _, _) ->
-                        if name <> "Test Vocabulary" then
-                            failwith $"Expected trimmed name 'Test Vocabulary', got: '{name}'"
+                    (fun data ->
+                        if data.Name <> "Test Vocabulary" then
+                            failwith $"Expected trimmed name 'Test Vocabulary', got: '{data.Name}'"
 
                         Task.FromResult(VocabularyId 1)),
                 getVocabularyById = (fun _ -> Task.FromResult(Some createdVocabulary))
             )
 
-        let! result = create env (UserId 1) (CollectionId 1) "  Test Vocabulary  " None now
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1
+                  Name = "  Test Vocabulary  "
+                  Description = None
+                  CreatedAt = now }
 
         Assert.True(Result.isOk result)
 
@@ -201,9 +222,16 @@ let ``returns CollectionNotFound when collection does not exist``() =
                 getVocabularyById = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (UserId 1) (CollectionId 1) "Test Vocabulary" None DateTimeOffset.UtcNow
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1
+                  Name = "Test Vocabulary"
+                  Description = None
+                  CreatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(VocabularyCollectionNotFound(CollectionId 1)), result)
+        Assert.Equal(Error(CreateVocabularyError.VocabularyCollectionNotFound(CollectionId 1)), result)
         Assert.Empty(env.CreateVocabularyCalls)
     }
 
@@ -219,9 +247,16 @@ let ``returns CollectionNotFound when collection owned by different user``() =
                 getVocabularyById = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (UserId 1) (CollectionId 1) "Test Vocabulary" None DateTimeOffset.UtcNow
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1
+                  Name = "Test Vocabulary"
+                  Description = None
+                  CreatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(VocabularyCollectionNotFound(CollectionId 1)), result)
+        Assert.Equal(Error(CreateVocabularyError.VocabularyCollectionNotFound(CollectionId 1)), result)
         Assert.Empty(env.CreateVocabularyCalls)
     }
 
@@ -237,9 +272,16 @@ let ``returns error when name is empty``() =
                 getVocabularyById = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (UserId 1) (CollectionId 1) "" None DateTimeOffset.UtcNow
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1
+                  Name = ""
+                  Description = None
+                  CreatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error VocabularyNameRequired, result)
+        Assert.Equal(Error CreateVocabularyError.VocabularyNameRequired, result)
         Assert.Empty(env.CreateVocabularyCalls)
     }
 
@@ -255,9 +297,16 @@ let ``returns error when name is whitespace only``() =
                 getVocabularyById = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (UserId 1) (CollectionId 1) "   " None DateTimeOffset.UtcNow
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1
+                  Name = "   "
+                  Description = None
+                  CreatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error VocabularyNameRequired, result)
+        Assert.Equal(Error CreateVocabularyError.VocabularyNameRequired, result)
         Assert.Empty(env.CreateVocabularyCalls)
     }
 
@@ -274,9 +323,16 @@ let ``returns error when name exceeds max length``() =
                 getVocabularyById = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (UserId 1) (CollectionId 1) longName None DateTimeOffset.UtcNow
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1
+                  Name = longName
+                  Description = None
+                  CreatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(VocabularyNameTooLong MaxNameLength), result)
+        Assert.Equal(Error(CreateVocabularyError.VocabularyNameTooLong MaxNameLength), result)
         Assert.Empty(env.CreateVocabularyCalls)
     }
 
@@ -296,15 +352,22 @@ let ``accepts name at exact max length``() =
             TestEnv(
                 getCollectionById = (fun _ -> Task.FromResult(Some collection)),
                 createVocabulary =
-                    (fun (_, name, _, _) ->
-                        if name <> maxLengthName then
+                    (fun data ->
+                        if data.Name <> maxLengthName then
                             failwith $"Expected name with {MaxNameLength} characters"
 
                         Task.FromResult(VocabularyId 1)),
                 getVocabularyById = (fun _ -> Task.FromResult(Some createdVocabulary))
             )
 
-        let! result = create env (UserId 1) (CollectionId 1) maxLengthName None now
+        let! result =
+            create
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1
+                  Name = maxLengthName
+                  Description = None
+                  CreatedAt = now }
 
         Assert.Equal(Ok createdVocabulary, result)
     }
@@ -324,7 +387,14 @@ let ``throws when post-creation vocabulary fetch returns None``() =
 
         let! ex =
             Assert.ThrowsAsync<Exception>(fun () ->
-                create env (UserId 1) (CollectionId 1) "Test Vocabulary" None now :> Task)
+                create
+                    env
+                    { UserId = UserId 1
+                      CollectionId = CollectionId 1
+                      Name = "Test Vocabulary"
+                      Description = None
+                      CreatedAt = now }
+                :> Task)
 
         Assert.Equal("Vocabulary VocabularyId 1 not found after creation", ex.Message)
     }

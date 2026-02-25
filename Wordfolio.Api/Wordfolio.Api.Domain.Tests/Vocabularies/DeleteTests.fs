@@ -98,7 +98,11 @@ let ``deletes vocabulary when collection owned by user``() =
                         Task.FromResult(1))
             )
 
-        let! result = delete env (UserId 1) (VocabularyId 1)
+        let! result =
+            delete
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1 }
 
         Assert.Equal(Ok(), result)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
@@ -121,9 +125,13 @@ let ``returns NotFound when vocabulary does not exist``() =
                 deleteVocabulary = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = delete env (UserId 1) (VocabularyId 1)
+        let! result =
+            delete
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1 }
 
-        Assert.Equal(Error(VocabularyNotFound(VocabularyId 1)), result)
+        Assert.Equal(Error(DeleteVocabularyError.VocabularyNotFound(VocabularyId 1)), result)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
         Assert.Empty(env.DeleteVocabularyCalls)
     }
@@ -143,9 +151,13 @@ let ``returns AccessDenied when collection owned by different user``() =
                 deleteVocabulary = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = delete env (UserId 1) (VocabularyId 1)
+        let! result =
+            delete
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1 }
 
-        Assert.Equal(Error(VocabularyAccessDenied(VocabularyId 1)), result)
+        Assert.Equal(Error(DeleteVocabularyError.VocabularyAccessDenied(VocabularyId 1)), result)
         Assert.Empty(env.DeleteVocabularyCalls)
     }
 
@@ -162,9 +174,13 @@ let ``returns AccessDenied when collection does not exist``() =
                 deleteVocabulary = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = delete env (UserId 1) (VocabularyId 1)
+        let! result =
+            delete
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1 }
 
-        Assert.Equal(Error(VocabularyAccessDenied(VocabularyId 1)), result)
+        Assert.Equal(Error(DeleteVocabularyError.VocabularyAccessDenied(VocabularyId 1)), result)
         Assert.Empty(env.DeleteVocabularyCalls)
     }
 
@@ -183,8 +199,12 @@ let ``returns NotFound when delete affects no rows``() =
                 deleteVocabulary = (fun _ -> Task.FromResult(0))
             )
 
-        let! result = delete env (UserId 1) (VocabularyId 1)
+        let! result =
+            delete
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1 }
 
-        Assert.Equal(Error(VocabularyNotFound(VocabularyId 1)), result)
+        Assert.Equal(Error(DeleteVocabularyError.VocabularyNotFound(VocabularyId 1)), result)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.DeleteVocabularyCalls)
     }

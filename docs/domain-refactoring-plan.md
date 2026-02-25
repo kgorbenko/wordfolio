@@ -44,6 +44,12 @@ Completed implementation notes:
   - `CreateVocabularyParameters` -> `CreateDefaultVocabularyParameters`
   - `CreateCollectionParameters` -> `CreateDefaultCollectionParameters`
 - Rulebook was updated to keep `env` parameter types inferred in operations (no explicit env-type annotations).
+- Vocabularies feature loop (Phase 4) was completed:
+  - Refactored vocabulary operation signatures to parameter records in `Vocabularies/Operations.fs`.
+  - Refactored vocabulary capabilities to use record-based capability inputs in `Vocabularies/Capabilities.fs`.
+  - Split vocabulary errors into operation-specific DUs and enforced `[<RequireQualifiedAccess>]`.
+  - Added shared vocabulary validation result type `VocabularyNameValidationResult` in `Vocabularies/Types.fs` and remapped per operation.
+  - Updated vocabulary handlers, infrastructure bindings, and vocabulary domain tests to new contracts.
 
 Process note:
 
@@ -191,8 +197,8 @@ Status:
 - In progress.
 - Completed features:
   - `Collections` (completed on 2026-02-23)
+  - `Vocabularies` (completed on 2026-02-25)
 - Remaining features:
-  - `Vocabularies`
   - `Entries`
   - `CollectionsHierarchy`
 
