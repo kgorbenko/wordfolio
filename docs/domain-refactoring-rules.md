@@ -31,6 +31,13 @@
 - Transaction orchestration stays in the operations layer (consistent boundary ownership).
 - Do not silently swallow failures into default values unless that is an explicit business rule.
 
+## Call-Site Qualification Rules
+
+- Do not use fully-qualified namespace call sites in domain code or tests (for example, `Wordfolio.Api.Domain.Entries.DraftOperations.getDrafts ...`).
+- Prefer module-qualified calls such as `DraftOperations.getDrafts ...`.
+- If the function is already in scope, use the direct call form such as `getDrafts ...`.
+- Resolve name collisions with local aliases or selective `open` statements, not long namespace chains.
+
 ## Error Modeling Rules
 
 - Errors must be operation-specific, not generic feature-wide unions.
@@ -60,3 +67,13 @@
 - First move and rename namespace structure, then update signatures (`...Parameters`), then split errors, then do naming cleanup.
 - Update tests alongside each operation and error-contract change.
 - Keep external behavior unchanged unless explicitly intended.
+
+## Test Rules
+
+- Do not add compatibility wrappers in tests to reshape operation signatures; call operations directly with their real parameter records.
+- Test dependency function signatures must match capability interface signatures exactly (parameter shape and return type).
+- `...Calls` collections in tests must store exactly the parameter type of the method being tracked.
+- For capability methods that use parameter records, store those same record types in `...Calls` collections.
+- For capability methods that use tuple parameters, store those same tuple types in `...Calls` collections.
+- Do not create duplicate test-only `...Call` records when capability parameter records already exist.
+- In every test, assert the state of all `...Calls` collections (explicitly verify expected calls and explicit empties for non-used dependencies).
