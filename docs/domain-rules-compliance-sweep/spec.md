@@ -151,7 +151,7 @@ The loop is feature-driven. Each implementation iteration must complete one full
 
 ### 6. Final full-scope compliance and closeout
 - [x] Implement: Re-audit all in-scope files and resolve any remaining rule drift across domain and tests.
-- [ ] Improve: Review final diff for no-behavior-change compliance, consistency, and removal of fully-qualified domain call-sites.
+- [x] Improve: Review final diff for no-behavior-change compliance, consistency, and removal of fully-qualified domain call-sites.
 
 ## Progress Log
 
@@ -220,3 +220,9 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - What was done: Re-audited full in-scope domain/test files and fixed remaining capability tuple-signature drift in Entries by introducing named capability data records (`GetEntryByTextAndVocabularyIdData`, `CreateExamplesForDefinitionData`, `CreateExamplesForTranslationData`, `HasVocabularyAccessData`) and updating all domain, infrastructure, and tests call sites to use the exact record types. Updated entries test call-tracking collections/assertions to match capability signatures exactly and reran the full mandatory verification suite successfully.
 - Issues encountered: None
 - Learnings: Final compliance checks should include capability signatures in helper-level dependencies, not only operation-level parameter records; tuple signatures can survive feature passes unless capability contracts and test call-tracking types are explicitly cross-checked together.
+
+### Improve: Review final diff for no-behavior-change compliance, consistency, and removal of fully-qualified domain call-sites.
+- Files changed: `docs/domain-rules-compliance-sweep/spec.md`
+- What was done: Re-reviewed the completed sweep for behavioral neutrality and consistency, then audited in-scope domain and test files for fully-qualified `Wordfolio.Api.Domain...` operation call sites and found no remaining violations. No production or test code updates were required for this improve pass.
+- Issues encountered: None
+- Learnings: A fast final regex audit focused on fully-qualified invocation patterns is an effective closeout guardrail after feature-by-feature refactors, especially when prior steps already normalized signatures and call tracking.
