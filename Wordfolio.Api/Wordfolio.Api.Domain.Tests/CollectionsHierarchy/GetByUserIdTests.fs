@@ -91,6 +91,7 @@ let ``returns collections with vocabularies for user``() =
 
         Assert.Equal(Ok expected, result)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsWithVocabulariesCalls)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularyWithEntryCountCalls)
     }
 
 [<Fact>]
@@ -114,6 +115,7 @@ let ``returns empty list when user has no collections``() =
 
         Assert.Equal(Ok expected, result)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsWithVocabulariesCalls)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularyWithEntryCountCalls)
     }
 
 [<Fact>]
@@ -139,6 +141,7 @@ let ``returns default vocabulary when it has entries``() =
               DefaultVocabulary = Some defaultVocab }
 
         Assert.Equal(Ok expected, result)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsWithVocabulariesCalls)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularyWithEntryCountCalls)
     }
 
@@ -165,4 +168,6 @@ let ``does not return default vocabulary when it has no entries``() =
               DefaultVocabulary = None }
 
         Assert.Equal(Ok expected, result)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsWithVocabulariesCalls)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularyWithEntryCountCalls)
     }

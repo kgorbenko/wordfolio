@@ -142,7 +142,7 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - [x] Improve: Review operation-specific error contracts and call-site qualification consistency.
 
 ### 4. CollectionsHierarchy feature compliance (domain + tests)
-- [ ] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/CollectionsHierarchy/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/CollectionsHierarchy/*.fs`.
+- [x] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/CollectionsHierarchy/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/CollectionsHierarchy/*.fs`.
 - [ ] Improve: Review naming precision and cross-feature dependency compliance.
 
 ### 5. Entries feature compliance (domain + tests)
@@ -190,3 +190,9 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - What was done: Audited vocabulary operation error unions and corresponding operation implementations/tests to confirm each public operation returns its own `[<RequireQualifiedAccess>]` DU with only relevant cases. Verified vocabulary domain/tests use module-qualified or in-scope operation calls and contain no fully-qualified `Wordfolio.Api.Domain...` call sites.
 - Issues encountered: None
 - Learnings: Vocabularies already follow operation-specific error modeling with explicit per-operation DUs (`GetVocabularyByIdError`, `GetVocabulariesByCollectionIdError`, `CreateVocabularyError`, `UpdateVocabularyError`, `DeleteVocabularyError`), so this improve pass required no production/test code edits beyond recording the compliance review.
+
+### Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/CollectionsHierarchy/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/CollectionsHierarchy/*.fs`.
+- Files changed: `Wordfolio.Api/Wordfolio.Api.Domain.Tests/CollectionsHierarchy/GetByUserIdTests.fs`, `docs/domain-rules-compliance-sweep/spec.md`
+- What was done: Audited CollectionsHierarchy domain and test files for the inlined ruleset and kept production code unchanged because capability signatures, operation contracts, and module qualification already complied. Updated `GetByUserId` tests to assert all tracked dependency call collections in every test, including explicit non-empty call assertions for both dependencies.
+- Issues encountered: None
+- Learnings: For CollectionsHierarchy unit-error operations, compliance drift was in test assertion completeness rather than operation signatures; tests with multiple dependencies must always assert every `...Calls` collection to satisfy the loop's call-tracking rule.
