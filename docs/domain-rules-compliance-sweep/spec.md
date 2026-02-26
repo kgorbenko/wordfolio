@@ -143,7 +143,7 @@ The loop is feature-driven. Each implementation iteration must complete one full
 
 ### 4. CollectionsHierarchy feature compliance (domain + tests)
 - [x] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/CollectionsHierarchy/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/CollectionsHierarchy/*.fs`.
-- [ ] Improve: Review naming precision and cross-feature dependency compliance.
+- [x] Improve: Review naming precision and cross-feature dependency compliance.
 
 ### 5. Entries feature compliance (domain + tests)
 - [ ] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Entries/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/**/*.fs`.
@@ -196,3 +196,9 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - What was done: Audited CollectionsHierarchy domain and test files for the inlined ruleset and kept production code unchanged because capability signatures, operation contracts, and module qualification already complied. Updated `GetByUserId` tests to assert all tracked dependency call collections in every test, including explicit non-empty call assertions for both dependencies.
 - Issues encountered: None
 - Learnings: For CollectionsHierarchy unit-error operations, compliance drift was in test assertion completeness rather than operation signatures; tests with multiple dependencies must always assert every `...Calls` collection to satisfy the loop's call-tracking rule.
+
+### Improve: Review naming precision and cross-feature dependency compliance.
+- Files changed: `docs/domain-rules-compliance-sweep/spec.md`
+- What was done: Reviewed `CollectionsHierarchy` domain and test modules for naming precision and verified the public types accurately communicate payload depth (`CollectionWithVocabularies`, `CollectionWithVocabularyCount`, `VocabularyWithEntryCount`, `CollectionsHierarchyResult`) without ambiguous aliases. Re-audited dependencies to confirm the feature references only root shared contracts (`Wordfolio.Api.Domain`) and does not import other feature namespaces.
+- Issues encountered: None
+- Learnings: CollectionsHierarchy already preserves dependency boundaries by expressing cross-feature concepts through root shared value types (`CollectionId`, `VocabularyId`, `UserId`) rather than feature-to-feature imports; future naming refinements should keep this boundary intact.
