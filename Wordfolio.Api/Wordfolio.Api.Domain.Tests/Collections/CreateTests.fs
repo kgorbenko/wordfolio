@@ -9,19 +9,13 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.Collections.Operations
 
-type CreateCollectionCall =
-    { UserId: UserId
-      Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset }
-
 type TestEnv
     (
         createCollection: CreateCollectionData -> Task<CollectionId>,
         getCollectionById: CollectionId -> Task<Collection option>
     ) =
     let createCollectionCalls =
-        ResizeArray<CreateCollectionCall>()
+        ResizeArray<CreateCollectionData>()
 
     let getCollectionByIdCalls =
         ResizeArray<CollectionId>()
@@ -34,13 +28,7 @@ type TestEnv
 
     interface ICreateCollection with
         member _.CreateCollection(parameters) =
-            createCollectionCalls.Add(
-                { UserId = parameters.UserId
-                  Name = parameters.Name
-                  Description = parameters.Description
-                  CreatedAt = parameters.CreatedAt }
-            )
-
+            createCollectionCalls.Add(parameters)
             createCollection(parameters)
 
     interface IGetCollectionById with
@@ -101,7 +89,16 @@ let ``creates collection with valid name``() =
                   CreatedAt = now }
 
         Assert.Equal(Ok createdCollection, result)
-        Assert.Equal(1, env.CreateCollectionCalls.Length)
+
+        Assert.Equal<CreateCollectionData list>(
+            [ ({ UserId = UserId 1
+                 Name = "Test Collection"
+                 Description = None
+                 CreatedAt = now }
+              : CreateCollectionData) ],
+            env.CreateCollectionCalls
+        )
+
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }
 
@@ -134,6 +131,17 @@ let ``creates collection with description``() =
                   CreatedAt = now }
 
         Assert.Equal(Ok createdCollection, result)
+
+        Assert.Equal<CreateCollectionData list>(
+            [ ({ UserId = UserId 1
+                 Name = "Test Collection"
+                 Description = description
+                 CreatedAt = now }
+              : CreateCollectionData) ],
+            env.CreateCollectionCalls
+        )
+
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }
 
 [<Fact>]
@@ -165,10 +173,16 @@ let ``trims whitespace from name``() =
 
         Assert.True(Result.isOk result)
 
-        let call =
-            env.CreateCollectionCalls |> List.head
+        Assert.Equal<CreateCollectionData list>(
+            [ ({ UserId = UserId 1
+                 Name = "Test Collection"
+                 Description = None
+                 CreatedAt = now }
+              : CreateCollectionData) ],
+            env.CreateCollectionCalls
+        )
 
-        Assert.Equal("Test Collection", call.Name)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }
 
 [<Fact>]
@@ -190,6 +204,7 @@ let ``returns error when name is empty``() =
 
         Assert.Equal(Error CreateCollectionError.CollectionNameRequired, result)
         Assert.Empty(env.CreateCollectionCalls)
+        Assert.Empty(env.GetCollectionByIdCalls)
     }
 
 [<Fact>]
@@ -211,6 +226,7 @@ let ``returns error when name is whitespace only``() =
 
         Assert.Equal(Error CreateCollectionError.CollectionNameRequired, result)
         Assert.Empty(env.CreateCollectionCalls)
+        Assert.Empty(env.GetCollectionByIdCalls)
     }
 
 [<Fact>]
@@ -234,6 +250,7 @@ let ``returns error when name exceeds max length``() =
 
         Assert.Equal(Error(CreateCollectionError.CollectionNameTooLong MaxNameLength), result)
         Assert.Empty(env.CreateCollectionCalls)
+        Assert.Empty(env.GetCollectionByIdCalls)
     }
 
 [<Fact>]
@@ -267,6 +284,17 @@ let ``accepts name at exact max length``() =
                   CreatedAt = now }
 
         Assert.Equal(Ok createdCollection, result)
+
+        Assert.Equal<CreateCollectionData list>(
+            [ ({ UserId = UserId 1
+                 Name = maxLengthName
+                 Description = None
+                 CreatedAt = now }
+              : CreateCollectionData) ],
+            env.CreateCollectionCalls
+        )
+
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }
 
 [<Fact>]
@@ -291,4 +319,15 @@ let ``throws when post-creation collection fetch returns None``() =
                 :> Task)
 
         Assert.Equal("Collection CollectionId 1 not found after creation", ex.Message)
+
+        Assert.Equal<CreateCollectionData list>(
+            [ ({ UserId = UserId 1
+                 Name = "Test Collection"
+                 Description = None
+                 CreatedAt = now }
+              : CreateCollectionData) ],
+            env.CreateCollectionCalls
+        )
+
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }

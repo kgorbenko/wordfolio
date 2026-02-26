@@ -134,7 +134,7 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - [x] Improve: Review for hidden feature-coupling and compile-order assumptions introduced by shared-type/capability movement.
 
 ### 2. Collections feature compliance (domain + tests)
-- [ ] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Collections/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Collections/*.fs`.
+- [x] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Collections/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Collections/*.fs`.
 - [ ] Improve: Review test call-tracking completeness (`...Calls` type parity and full assertions per test).
 
 ### 3. Vocabularies feature compliance (domain + tests)
@@ -166,3 +166,9 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - What was done: Re-reviewed root shared domain contracts and operation wiring for cross-feature coupling and compile-order fragility. Confirmed the shared root files remain feature-agnostic and both domain/test `.fsproj` compile order already preserves root-before-feature dependency direction.
 - Issues encountered: None
 - Learnings: Shared root capability contracts (`IGetDefaultCollection`, `ICreateDefaultCollection`, `IGetDefaultVocabulary`, `ICreateDefaultVocabulary`) safely centralize default-vocabulary orchestration without requiring feature-to-feature imports, so future refactors should preserve this boundary by extending root contracts instead of adding cross-feature references.
+
+### Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Collections/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Collections/*.fs`.
+- Files changed: `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Collections/CreateTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Collections/DeleteTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Collections/UpdateTests.fs`, `docs/domain-rules-compliance-sweep/spec.md`
+- What was done: Updated collections tests to track capability calls using the exact capability parameter record types (`CreateCollectionData`, `UpdateCollectionData`) and removed duplicate test-only call records. Added explicit assertions in each test for all `...Calls` collections, including expected empties for dependencies that should not be invoked.
+- Issues encountered: Initial compile errors from ambiguous record inference between operation and capability parameter records were resolved by explicitly typing expected call records in assertions.
+- Learnings: Collections operations intentionally use separate operation parameter records and capability data records with overlapping fields, so tests should annotate expected record literals when asserting call lists to keep type parity explicit and unambiguous.

@@ -9,19 +9,13 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.Collections.Operations
 
-type UpdateCollectionCall =
-    { CollectionId: CollectionId
-      Name: string
-      Description: string option
-      UpdatedAt: DateTimeOffset }
-
 type TestEnv
     (getCollectionById: CollectionId -> Task<Collection option>, updateCollection: UpdateCollectionData -> Task<int>) =
     let getCollectionByIdCalls =
         ResizeArray<CollectionId>()
 
     let updateCollectionCalls =
-        ResizeArray<UpdateCollectionCall>()
+        ResizeArray<UpdateCollectionData>()
 
     member _.GetCollectionByIdCalls =
         getCollectionByIdCalls |> Seq.toList
@@ -36,13 +30,7 @@ type TestEnv
 
     interface IUpdateCollection with
         member _.UpdateCollection(parameters) =
-            updateCollectionCalls.Add(
-                { CollectionId = parameters.CollectionId
-                  Name = parameters.Name
-                  Description = parameters.Description
-                  UpdatedAt = parameters.UpdatedAt }
-            )
-
+            updateCollectionCalls.Add(parameters)
             updateCollection(parameters)
 
     interface ITransactional<TestEnv> with
@@ -115,7 +103,15 @@ let ``updates collection when owned by user``() =
         | Error e -> failwith $"Expected Ok, got Error: {e}"
 
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
-        Assert.Equal(1, env.UpdateCollectionCalls.Length)
+
+        Assert.Equal<UpdateCollectionData list>(
+            [ ({ CollectionId = CollectionId 1
+                 Name = "New Name"
+                 Description = Some "New Description"
+                 UpdatedAt = now }
+              : UpdateCollectionData) ],
+            env.UpdateCollectionCalls
+        )
     }
 
 [<Fact>]
@@ -147,11 +143,16 @@ let ``trims whitespace from name``() =
                   UpdatedAt = now }
 
         Assert.True(Result.isOk result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
 
-        let call =
-            env.UpdateCollectionCalls |> List.head
-
-        Assert.Equal("New Name", call.Name)
+        Assert.Equal<UpdateCollectionData list>(
+            [ ({ CollectionId = CollectionId 1
+                 Name = "New Name"
+                 Description = None
+                 UpdatedAt = now }
+              : UpdateCollectionData) ],
+            env.UpdateCollectionCalls
+        )
     }
 
 [<Fact>]
@@ -180,6 +181,17 @@ let ``clears description when updated to None``() =
         match result with
         | Ok updated -> Assert.Equal(None, updated.Description)
         | Error e -> failwith $"Expected Ok, got Error: {e}"
+
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+
+        Assert.Equal<UpdateCollectionData list>(
+            [ ({ CollectionId = CollectionId 1
+                 Name = "Test Collection"
+                 Description = None
+                 UpdatedAt = now }
+              : UpdateCollectionData) ],
+            env.UpdateCollectionCalls
+        )
     }
 
 [<Fact>]
@@ -206,6 +218,7 @@ let ``returns NotFound when collection does not exist``() =
                   UpdatedAt = DateTimeOffset.UtcNow }
 
         Assert.Equal(Error(UpdateCollectionError.CollectionNotFound(CollectionId 1)), result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.UpdateCollectionCalls)
     }
 
@@ -236,6 +249,7 @@ let ``returns AccessDenied when collection owned by different user``() =
                   UpdatedAt = DateTimeOffset.UtcNow }
 
         Assert.Equal(Error(UpdateCollectionError.CollectionAccessDenied(CollectionId 1)), result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.UpdateCollectionCalls)
     }
 
@@ -261,6 +275,7 @@ let ``returns error when name is empty``() =
                   UpdatedAt = DateTimeOffset.UtcNow }
 
         Assert.Equal(Error UpdateCollectionError.CollectionNameRequired, result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.UpdateCollectionCalls)
     }
 
@@ -288,6 +303,7 @@ let ``returns error when name exceeds max length``() =
                   UpdatedAt = DateTimeOffset.UtcNow }
 
         Assert.Equal(Error(UpdateCollectionError.CollectionNameTooLong MaxNameLength), result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.UpdateCollectionCalls)
     }
 
@@ -313,6 +329,7 @@ let ``returns error when name is whitespace only``() =
                   UpdatedAt = DateTimeOffset.UtcNow }
 
         Assert.Equal(Error UpdateCollectionError.CollectionNameRequired, result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.UpdateCollectionCalls)
     }
 
@@ -348,11 +365,23 @@ let ``accepts name at exact max length``() =
                   UpdatedAt = now }
 
         Assert.True(Result.isOk result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+
+        Assert.Equal<UpdateCollectionData list>(
+            [ ({ CollectionId = CollectionId 1
+                 Name = maxLengthName
+                 Description = None
+                 UpdatedAt = now }
+              : UpdateCollectionData) ],
+            env.UpdateCollectionCalls
+        )
     }
 
 [<Fact>]
 let ``returns NotFound when update affects no rows``() =
     task {
+        let now = DateTimeOffset.UtcNow
+
         let existingCollection =
             makeCollection 1 1 "Test Collection" None
 
@@ -369,8 +398,17 @@ let ``returns NotFound when update affects no rows``() =
                   CollectionId = CollectionId 1
                   Name = "New Name"
                   Description = None
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = now }
 
         Assert.Equal(Error(UpdateCollectionError.CollectionNotFound(CollectionId 1)), result)
-        Assert.Equal(1, env.UpdateCollectionCalls.Length)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+
+        Assert.Equal<UpdateCollectionData list>(
+            [ ({ CollectionId = CollectionId 1
+                 Name = "New Name"
+                 Description = None
+                 UpdatedAt = now }
+              : UpdateCollectionData) ],
+            env.UpdateCollectionCalls
+        )
     }

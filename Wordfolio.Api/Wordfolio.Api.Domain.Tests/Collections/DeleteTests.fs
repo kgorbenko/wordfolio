@@ -148,5 +148,6 @@ let ``returns NotFound when delete affects no rows``() =
                   CollectionId = CollectionId 1 }
 
         Assert.Equal(Error(DeleteCollectionError.CollectionNotFound(CollectionId 1)), result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.DeleteCollectionCalls)
     }
