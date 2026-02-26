@@ -8,16 +8,17 @@ open Xunit
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.EntryOperations
+
 open Wordfolio.Api.Domain.Entries.Helpers
 
 type TestEnv
     (
         getEntryById: EntryId -> Task<Entry option>,
         getEntryByTextAndVocabularyId: VocabularyId * string -> Task<Entry option>,
-        hasVocabularyAccessInCollection: VocabularyId * CollectionId * UserId -> Task<bool>,
-        createEntry: VocabularyId * string * DateTimeOffset -> Task<EntryId>,
-        createDefinition: EntryId * string * DefinitionSource * int -> Task<DefinitionId>,
-        createTranslation: EntryId * string * TranslationSource * int -> Task<TranslationId>,
+        hasVocabularyAccessInCollection: HasVocabularyAccessInCollectionData -> Task<bool>,
+        createEntry: CreateEntryData -> Task<EntryId>,
+        createDefinition: CreateDefinitionData -> Task<DefinitionId>,
+        createTranslation: CreateTranslationData -> Task<TranslationId>,
         createExamplesForDefinition: DefinitionId * ExampleInput list -> Task<unit>,
         createExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>
     ) =
@@ -28,7 +29,7 @@ type TestEnv
         ResizeArray<VocabularyId * string>()
 
     let hasVocabularyAccessInCollectionCalls =
-        ResizeArray<VocabularyId * CollectionId * UserId>()
+        ResizeArray<HasVocabularyAccessInCollectionData>()
 
     member _.GetEntryByIdCalls =
         getEntryByIdCalls |> Seq.toList
@@ -52,21 +53,18 @@ type TestEnv
             getEntryByTextAndVocabularyId(vocabularyId, text)
 
     interface IHasVocabularyAccessInCollection with
-        member _.HasVocabularyAccessInCollection(vocabularyId, collectionId, userId) =
-            hasVocabularyAccessInCollectionCalls.Add(vocabularyId, collectionId, userId)
-            hasVocabularyAccessInCollection(vocabularyId, collectionId, userId)
+        member _.HasVocabularyAccessInCollection(data) =
+            hasVocabularyAccessInCollectionCalls.Add(data)
+            hasVocabularyAccessInCollection data
 
     interface ICreateEntry with
-        member _.CreateEntry(vocabularyId, text, createdAt) =
-            createEntry(vocabularyId, text, createdAt)
+        member _.CreateEntry(data) = createEntry data
 
     interface ICreateDefinition with
-        member _.CreateDefinition(entryId, text, source, displayOrder) =
-            createDefinition(entryId, text, source, displayOrder)
+        member _.CreateDefinition(data) = createDefinition data
 
     interface ICreateTranslation with
-        member _.CreateTranslation(entryId, text, source, displayOrder) =
-            createTranslation(entryId, text, source, displayOrder)
+        member _.CreateTranslation(data) = createTranslation data
 
     interface ICreateExamplesForDefinition with
         member _.CreateExamplesForDefinition(definitionId, examples) =
@@ -161,12 +159,25 @@ let ``creates entry when vocabulary is in collection``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
         Assert.Equal(Ok createdEntry, result)
 
-        Assert.Equal<(VocabularyId * CollectionId * UserId) list>(
-            [ VocabularyId 10, CollectionId 5, UserId 1 ],
+        Assert.Equal<HasVocabularyAccessInCollectionData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 CollectionId = CollectionId 5
+                 UserId = UserId 1 }
+              : HasVocabularyAccessInCollectionData) ],
             env.HasVocabularyAccessInCollectionCalls
         )
     }
@@ -192,12 +203,25 @@ let ``returns VocabularyNotFoundOrAccessDenied when vocabulary is not in collect
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
-        Assert.Equal(Error(VocabularyNotFoundOrAccessDenied(VocabularyId 10)), result)
+        Assert.Equal(Error(CreateEntryError.VocabularyNotFoundOrAccessDenied(VocabularyId 10)), result)
 
-        Assert.Equal<(VocabularyId * CollectionId * UserId) list>(
-            [ VocabularyId 10, CollectionId 5, UserId 1 ],
+        Assert.Equal<HasVocabularyAccessInCollectionData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 CollectionId = CollectionId 5
+                 UserId = UserId 1 }
+              : HasVocabularyAccessInCollectionData) ],
             env.HasVocabularyAccessInCollectionCalls
         )
     }
@@ -231,9 +255,19 @@ let ``returns DuplicateEntry when entry text already exists in vocabulary``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
-        Assert.Equal(Error(DuplicateEntry duplicateEntry), result)
+        Assert.Equal(Error(CreateEntryError.DuplicateEntry duplicateEntry), result)
     }
 
 [<Fact>]
@@ -265,7 +299,17 @@ let ``creates entry when AllowDuplicate is true even if duplicate exists``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
         Assert.Equal(Ok createdEntry, result)
         Assert.Empty(env.GetEntryByTextAndVocabularyIdCalls)
@@ -289,9 +333,19 @@ let ``returns NoDefinitionsOrTranslations when both lists are empty``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
-        Assert.Equal(Error NoDefinitionsOrTranslations, result)
+        Assert.Equal(Error CreateEntryError.NoDefinitionsOrTranslations, result)
     }
 
 [<Fact>]
@@ -315,9 +369,19 @@ let ``returns EntryTextRequired when entry text is empty``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
-        Assert.Equal(Error EntryTextRequired, result)
+        Assert.Equal(Error CreateEntryError.EntryTextRequired, result)
     }
 
 [<Fact>]
@@ -344,9 +408,19 @@ let ``returns EntryTextTooLong when entry text exceeds max length``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
-        Assert.Equal(Error(EntryTextTooLong MaxEntryTextLength), result)
+        Assert.Equal(Error(CreateEntryError.EntryTextTooLong MaxEntryTextLength), result)
     }
 
 [<Fact>]
@@ -376,9 +450,19 @@ let ``returns ExampleTextTooLong when definition example text exceeds max length
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
-        Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
+        Assert.Equal(Error(CreateEntryError.ExampleTextTooLong MaxExampleTextLength), result)
     }
 
 [<Fact>]
@@ -410,7 +494,17 @@ let ``creates entry with translations only``() =
                 createExamplesForTranslation = (fun _ -> Task.FromResult(()))
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
         Assert.Equal(Ok createdEntry, result)
     }
@@ -450,7 +544,17 @@ let ``creates entry with both definitions and translations``() =
                 createExamplesForTranslation = (fun _ -> Task.FromResult(()))
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
         Assert.Equal(Ok createdEntry, result)
     }
@@ -475,7 +579,9 @@ let ``trims whitespace from entry text``() =
                 getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(None)),
                 hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
                 createEntry =
-                    (fun (_, text, _) ->
+                    (fun data ->
+                        let text = data.EntryText
+
                         capturedText.Value <- text
                         Task.FromResult(EntryId 1)),
                 createDefinition = (fun _ -> Task.FromResult(DefinitionId 10)),
@@ -484,7 +590,17 @@ let ``trims whitespace from entry text``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
         Assert.Equal(Ok createdEntry, result)
         Assert.Equal("hello", capturedText.Value)
@@ -511,9 +627,19 @@ let ``returns EntryTextRequired when entry text is whitespace only``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
-        Assert.Equal(Error EntryTextRequired, result)
+        Assert.Equal(Error CreateEntryError.EntryTextRequired, result)
     }
 
 [<Fact>]
@@ -541,9 +667,19 @@ let ``returns TooManyExamples when definition has too many examples``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
-        Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
+        Assert.Equal(Error(CreateEntryError.TooManyExamples MaxExamplesPerItem), result)
     }
 
 [<Fact>]
@@ -571,9 +707,19 @@ let ``returns TooManyExamples when translation has too many examples``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
-        Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
+        Assert.Equal(Error(CreateEntryError.TooManyExamples MaxExamplesPerItem), result)
     }
 
 [<Fact>]
@@ -606,7 +752,17 @@ let ``proceeds when duplicate text match finds a stale record``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (CollectionId 5) parameters
+        let! result =
+            create
+                env
+                { UserId = parameters.UserId
+                  CollectionId = CollectionId 5
+                  VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  Definitions = parameters.Definitions
+                  Translations = parameters.Translations
+                  AllowDuplicate = parameters.AllowDuplicate
+                  CreatedAt = parameters.CreatedAt }
 
         Assert.Equal(Ok createdEntry, result)
     }
@@ -634,7 +790,19 @@ let ``throws when post-create entry fetch returns None``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! ex = Assert.ThrowsAsync<Exception>(fun () -> create env (CollectionId 5) parameters :> Task)
+        let! ex =
+            Assert.ThrowsAsync<Exception>(fun () ->
+                create
+                    env
+                    { UserId = parameters.UserId
+                      CollectionId = CollectionId 5
+                      VocabularyId = parameters.VocabularyId
+                      EntryText = parameters.EntryText
+                      Definitions = parameters.Definitions
+                      Translations = parameters.Translations
+                      AllowDuplicate = parameters.AllowDuplicate
+                      CreatedAt = parameters.CreatedAt }
+                :> Task)
 
         Assert.Equal("Entry EntryId 1 not found after creation", ex.Message)
     }

@@ -8,41 +8,17 @@ open Xunit
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations
+
 open Wordfolio.Api.Domain.Entries.Helpers
-
-type UpdateEntryCall =
-    { EntryId: EntryId
-      EntryText: string
-      UpdatedAt: DateTimeOffset }
-
-type CreateDefinitionCall =
-    { EntryId: EntryId
-      Text: string
-      Source: DefinitionSource
-      DisplayOrder: int }
-
-type CreateTranslationCall =
-    { EntryId: EntryId
-      Text: string
-      Source: TranslationSource
-      DisplayOrder: int }
-
-type CreateExamplesForDefinitionCall =
-    { DefinitionId: DefinitionId
-      Examples: ExampleInput list }
-
-type CreateExamplesForTranslationCall =
-    { TranslationId: TranslationId
-      Examples: ExampleInput list }
 
 type TestEnv
     (
         getEntryById: EntryId -> Task<Entry option>,
         hasVocabularyAccess: VocabularyId * UserId -> Task<bool>,
-        updateEntry: EntryId * string * DateTimeOffset -> Task<unit>,
+        updateEntry: UpdateEntryData -> Task<unit>,
         clearEntryChildren: EntryId -> Task<unit>,
-        createDefinition: EntryId * string * DefinitionSource * int -> Task<DefinitionId>,
-        createTranslation: EntryId * string * TranslationSource * int -> Task<TranslationId>,
+        createDefinition: CreateDefinitionData -> Task<DefinitionId>,
+        createTranslation: CreateTranslationData -> Task<TranslationId>,
         createExamplesForDefinition: DefinitionId * ExampleInput list -> Task<unit>,
         createExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>
     ) =
@@ -53,22 +29,22 @@ type TestEnv
         ResizeArray<VocabularyId * UserId>()
 
     let updateEntryCalls =
-        ResizeArray<UpdateEntryCall>()
+        ResizeArray<UpdateEntryData>()
 
     let clearEntryChildrenCalls =
         ResizeArray<EntryId>()
 
     let createDefinitionCalls =
-        ResizeArray<CreateDefinitionCall>()
+        ResizeArray<CreateDefinitionData>()
 
     let createTranslationCalls =
-        ResizeArray<CreateTranslationCall>()
+        ResizeArray<CreateTranslationData>()
 
     let createExamplesForDefinitionCalls =
-        ResizeArray<CreateExamplesForDefinitionCall>()
+        ResizeArray<DefinitionId * ExampleInput list>()
 
     let createExamplesForTranslationCalls =
-        ResizeArray<CreateExamplesForTranslationCall>()
+        ResizeArray<TranslationId * ExampleInput list>()
 
     member _.GetEntryByIdCalls =
         getEntryByIdCalls |> Seq.toList
@@ -107,14 +83,9 @@ type TestEnv
             hasVocabularyAccess(vocabularyId, userId)
 
     interface IUpdateEntry with
-        member _.UpdateEntry(entryId, text, updatedAt) =
-            updateEntryCalls.Add(
-                { EntryId = entryId
-                  EntryText = text
-                  UpdatedAt = updatedAt }
-            )
-
-            updateEntry(entryId, text, updatedAt)
+        member _.UpdateEntry(data) =
+            updateEntryCalls.Add(data)
+            updateEntry data
 
     interface IClearEntryChildren with
         member _.ClearEntryChildren(entryId) =
@@ -122,43 +93,23 @@ type TestEnv
             clearEntryChildren entryId
 
     interface ICreateDefinition with
-        member _.CreateDefinition(entryId, text, source, displayOrder) =
-            createDefinitionCalls.Add(
-                { EntryId = entryId
-                  Text = text
-                  Source = source
-                  DisplayOrder = displayOrder }
-            )
-
-            createDefinition(entryId, text, source, displayOrder)
+        member _.CreateDefinition(data) =
+            createDefinitionCalls.Add(data)
+            createDefinition data
 
     interface ICreateTranslation with
-        member _.CreateTranslation(entryId, text, source, displayOrder) =
-            createTranslationCalls.Add(
-                { EntryId = entryId
-                  Text = text
-                  Source = source
-                  DisplayOrder = displayOrder }
-            )
-
-            createTranslation(entryId, text, source, displayOrder)
+        member _.CreateTranslation(data) =
+            createTranslationCalls.Add(data)
+            createTranslation data
 
     interface ICreateExamplesForDefinition with
         member _.CreateExamplesForDefinition(definitionId, examples) =
-            createExamplesForDefinitionCalls.Add(
-                { DefinitionId = definitionId
-                  Examples = examples }
-            )
-
+            createExamplesForDefinitionCalls.Add(definitionId, examples)
             createExamplesForDefinition(definitionId, examples)
 
     interface ICreateExamplesForTranslation with
         member _.CreateExamplesForTranslation(translationId, examples) =
-            createExamplesForTranslationCalls.Add(
-                { TranslationId = translationId
-                  Examples = examples }
-            )
-
+            createExamplesForTranslationCalls.Add(translationId, examples)
             createExamplesForTranslation(translationId, examples)
 
     interface ITransactional<TestEnv> with
@@ -241,7 +192,10 @@ let ``updates entry with new definitions and translations``() =
                             failwith "Unexpected getEntryById call"),
                 hasVocabularyAccess = (fun _ -> Task.FromResult(true)),
                 updateEntry =
-                    (fun (_, text, updatedAt) ->
+                    (fun data ->
+                        let text = data.EntryText
+                        let updatedAt = data.UpdatedAt
+
                         if text <> "new" then
                             failwith $"Expected trimmed text 'new', got: '{text}'"
 
@@ -268,7 +222,15 @@ let ``updates entry with new definitions and translations``() =
                   TranslationSource.Manual
                   [ makeExampleInput "example" ExampleSource.Custom ] ]
 
-        let! result = update env (UserId 3) (EntryId 1) "  new  " definitions translations now
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.update
+                env
+                { UserId = UserId 3
+                  EntryId = EntryId 1
+                  EntryText = "  new  "
+                  Definitions = definitions
+                  Translations = translations
+                  UpdatedAt = now }
 
         Assert.Equal(Ok updatedEntry, result)
         Assert.Equal<EntryId list>([ EntryId 1; EntryId 1 ], env.GetEntryByIdCalls)
@@ -277,38 +239,38 @@ let ``updates entry with new definitions and translations``() =
 
         Assert.Equal<EntryId list>([ EntryId 1 ], env.ClearEntryChildrenCalls)
 
-        Assert.Equal<UpdateEntryCall list>(
+        Assert.Equal<UpdateEntryData list>(
             [ { EntryId = EntryId 1
                 EntryText = "new"
                 UpdatedAt = now } ],
             env.UpdateEntryCalls
         )
 
-        Assert.Equal<CreateDefinitionCall list>(
-            [ { CreateDefinitionCall.EntryId = EntryId 1
-                Text = "definition"
-                Source = DefinitionSource.Manual
-                DisplayOrder = 0 } ],
+        Assert.Equal<CreateDefinitionData list>(
+            [ ({ EntryId = EntryId 1
+                 Text = "definition"
+                 Source = DefinitionSource.Manual
+                 DisplayOrder = 0 }
+              : CreateDefinitionData) ],
             env.CreateDefinitionCalls
         )
 
-        Assert.Equal<CreateTranslationCall list>(
-            [ { EntryId = EntryId 1
-                Text = "translation"
-                Source = TranslationSource.Manual
-                DisplayOrder = 0 } ],
+        Assert.Equal<CreateTranslationData list>(
+            [ ({ EntryId = EntryId 1
+                 Text = "translation"
+                 Source = TranslationSource.Manual
+                 DisplayOrder = 0 }
+              : CreateTranslationData) ],
             env.CreateTranslationCalls
         )
 
-        Assert.Equal<CreateExamplesForDefinitionCall list>(
-            [ { DefinitionId = DefinitionId 10
-                Examples = [ makeExampleInput "example" ExampleSource.Custom ] } ],
+        Assert.Equal<(DefinitionId * ExampleInput list) list>(
+            [ DefinitionId 10, [ makeExampleInput "example" ExampleSource.Custom ] ],
             env.CreateExamplesForDefinitionCalls
         )
 
-        Assert.Equal<CreateExamplesForTranslationCall list>(
-            [ { TranslationId = TranslationId 20
-                Examples = [ makeExampleInput "example" ExampleSource.Custom ] } ],
+        Assert.Equal<(TranslationId * ExampleInput list) list>(
+            [ TranslationId 20, [ makeExampleInput "example" ExampleSource.Custom ] ],
             env.CreateExamplesForTranslationCalls
         )
     }
@@ -331,9 +293,17 @@ let ``returns EntryNotFound when entry does not exist``() =
         let definitions =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
-        let! result = update env (UserId 1) (EntryId 99) "text" definitions [] DateTimeOffset.UtcNow
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.update
+                env
+                { UserId = UserId 1
+                  EntryId = EntryId 99
+                  EntryText = "text"
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 99)), result)
+        Assert.Equal(Error(UpdateDraftEntryError.EntryNotFound(EntryId 99)), result)
         Assert.Equal<EntryId list>([ EntryId 99 ], env.GetEntryByIdCalls)
         Assert.Empty(env.HasVocabularyAccessCalls)
     }
@@ -359,9 +329,17 @@ let ``returns EntryNotFound when user has no access``() =
         let definitions =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
-        let! result = update env (UserId 2) (EntryId 1) "text" definitions [] DateTimeOffset.UtcNow
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.update
+                env
+                { UserId = UserId 2
+                  EntryId = EntryId 1
+                  EntryText = "text"
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 1)), result)
+        Assert.Equal(Error(UpdateDraftEntryError.EntryNotFound(EntryId 1)), result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
         Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 10, UserId 2 ], env.HasVocabularyAccessCalls)
         Assert.Empty(env.UpdateEntryCalls)
@@ -382,9 +360,17 @@ let ``returns error when no definitions or translations``() =
                 createExamplesForTranslation = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = update env (UserId 2) (EntryId 1) "text" [] [] DateTimeOffset.UtcNow
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.update
+                env
+                { UserId = UserId 2
+                  EntryId = EntryId 1
+                  EntryText = "text"
+                  Definitions = []
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error NoDefinitionsOrTranslations, result)
+        Assert.Equal(Error UpdateDraftEntryError.NoDefinitionsOrTranslations, result)
         Assert.Empty(env.UpdateEntryCalls)
     }
 
@@ -412,9 +398,17 @@ let ``returns error when example text is too long``() =
                   DefinitionSource.Manual
                   [ makeExampleInput longExample ExampleSource.Custom ] ]
 
-        let! result = update env (UserId 2) (EntryId 1) "text" definitions [] DateTimeOffset.UtcNow
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.update
+                env
+                { UserId = UserId 2
+                  EntryId = EntryId 1
+                  EntryText = "text"
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
+        Assert.Equal(Error(UpdateDraftEntryError.ExampleTextTooLong MaxExampleTextLength), result)
         Assert.Empty(env.UpdateEntryCalls)
     }
 
@@ -440,9 +434,17 @@ let ``returns error when too many examples``() =
         let definitions =
             [ makeDefinitionInput "definition" DefinitionSource.Manual examples ]
 
-        let! result = update env (UserId 2) (EntryId 1) "text" definitions [] DateTimeOffset.UtcNow
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.update
+                env
+                { UserId = UserId 2
+                  EntryId = EntryId 1
+                  EntryText = "text"
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
+        Assert.Equal(Error(UpdateDraftEntryError.TooManyExamples MaxExamplesPerItem), result)
         Assert.Empty(env.UpdateEntryCalls)
     }
 
@@ -464,9 +466,17 @@ let ``returns error when entry text is empty``() =
         let definitions =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
-        let! result = update env (UserId 1) (EntryId 1) "" definitions [] DateTimeOffset.UtcNow
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.update
+                env
+                { UserId = UserId 1
+                  EntryId = EntryId 1
+                  EntryText = ""
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error EntryTextRequired, result)
+        Assert.Equal(Error UpdateDraftEntryError.EntryTextRequired, result)
         Assert.Empty(env.GetEntryByIdCalls)
     }
 
@@ -488,9 +498,17 @@ let ``returns error when entry text is whitespace only``() =
         let definitions =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
-        let! result = update env (UserId 1) (EntryId 1) "   " definitions [] DateTimeOffset.UtcNow
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.update
+                env
+                { UserId = UserId 1
+                  EntryId = EntryId 1
+                  EntryText = "   "
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error EntryTextRequired, result)
+        Assert.Equal(Error UpdateDraftEntryError.EntryTextRequired, result)
         Assert.Empty(env.GetEntryByIdCalls)
     }
 
@@ -515,9 +533,17 @@ let ``returns error when entry text exceeds max length``() =
         let definitions =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
-        let! result = update env (UserId 1) (EntryId 1) longText definitions [] DateTimeOffset.UtcNow
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.update
+                env
+                { UserId = UserId 1
+                  EntryId = EntryId 1
+                  EntryText = longText
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(EntryTextTooLong MaxEntryTextLength), result)
+        Assert.Equal(Error(UpdateDraftEntryError.EntryTextTooLong MaxEntryTextLength), result)
         Assert.Empty(env.GetEntryByIdCalls)
     }
 
@@ -545,9 +571,17 @@ let ``returns error when translation example text is too long``() =
                   TranslationSource.Manual
                   [ makeExampleInput longExample ExampleSource.Custom ] ]
 
-        let! result = update env (UserId 2) (EntryId 1) "text" [] translations DateTimeOffset.UtcNow
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.update
+                env
+                { UserId = UserId 2
+                  EntryId = EntryId 1
+                  EntryText = "text"
+                  Definitions = []
+                  Translations = translations
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
+        Assert.Equal(Error(UpdateDraftEntryError.ExampleTextTooLong MaxExampleTextLength), result)
         Assert.Empty(env.UpdateEntryCalls)
     }
 
@@ -573,9 +607,17 @@ let ``returns error when too many examples in translation``() =
         let translations =
             [ makeTranslationInput "translation" TranslationSource.Manual examples ]
 
-        let! result = update env (UserId 2) (EntryId 1) "text" [] translations DateTimeOffset.UtcNow
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.update
+                env
+                { UserId = UserId 2
+                  EntryId = EntryId 1
+                  EntryText = "text"
+                  Definitions = []
+                  Translations = translations
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
+        Assert.Equal(Error(UpdateDraftEntryError.TooManyExamples MaxExamplesPerItem), result)
         Assert.Empty(env.UpdateEntryCalls)
     }
 
@@ -620,15 +662,24 @@ let ``updates entry with definitions only``() =
         let definitions =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
-        let! result = update env (UserId 3) (EntryId 1) "word" definitions [] now
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.update
+                env
+                { UserId = UserId 3
+                  EntryId = EntryId 1
+                  EntryText = "word"
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = now }
 
         Assert.Equal(Ok updatedEntry, result)
 
-        Assert.Equal<CreateDefinitionCall list>(
-            [ { CreateDefinitionCall.EntryId = EntryId 1
-                Text = "definition"
-                Source = DefinitionSource.Manual
-                DisplayOrder = 0 } ],
+        Assert.Equal<CreateDefinitionData list>(
+            [ ({ EntryId = EntryId 1
+                 Text = "definition"
+                 Source = DefinitionSource.Manual
+                 DisplayOrder = 0 }
+              : CreateDefinitionData) ],
             env.CreateDefinitionCalls
         )
 
@@ -677,15 +728,24 @@ let ``updates entry with translations only``() =
         let translations =
             [ makeTranslationInput "translation" TranslationSource.Manual [] ]
 
-        let! result = update env (UserId 3) (EntryId 1) "word" [] translations now
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.update
+                env
+                { UserId = UserId 3
+                  EntryId = EntryId 1
+                  EntryText = "word"
+                  Definitions = []
+                  Translations = translations
+                  UpdatedAt = now }
 
         Assert.Equal(Ok updatedEntry, result)
 
-        Assert.Equal<CreateTranslationCall list>(
-            [ { EntryId = EntryId 1
-                Text = "translation"
-                Source = TranslationSource.Manual
-                DisplayOrder = 0 } ],
+        Assert.Equal<CreateTranslationData list>(
+            [ ({ EntryId = EntryId 1
+                 Text = "translation"
+                 Source = TranslationSource.Manual
+                 DisplayOrder = 0 }
+              : CreateTranslationData) ],
             env.CreateTranslationCalls
         )
 

@@ -6,6 +6,49 @@ open System.Threading.Tasks
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries.Capabilities
 
+type CreateDefinitionsParameters =
+    { EntryId: EntryId
+      Definitions: DefinitionInput list }
+
+type CreateTranslationsParameters =
+    { EntryId: EntryId
+      Translations: TranslationInput list }
+
+type CheckVocabularyAccessParameters =
+    { UserId: UserId
+      VocabularyId: VocabularyId }
+
+type ValidateEntryInputsParameters =
+    { EntryText: string
+      Definitions: DefinitionInput list
+      Translations: TranslationInput list }
+
+type CheckForDuplicateParameters =
+    { VocabularyId: VocabularyId
+      EntryText: string
+      AllowDuplicate: bool }
+
+type CreateEntryWithChildrenParameters =
+    { VocabularyId: VocabularyId
+      EntryText: string
+      CreatedAt: DateTimeOffset
+      Definitions: DefinitionInput list
+      Translations: TranslationInput list }
+
+type UpdateEntryWithChildrenParameters =
+    { EntryId: EntryId
+      EntryText: string
+      UpdatedAt: DateTimeOffset
+      Definitions: DefinitionInput list
+      Translations: TranslationInput list }
+
+type EntryValidationError =
+    | EntryTextRequired
+    | EntryTextTooLong of maxLength: int
+    | NoDefinitionsOrTranslations
+    | TooManyExamples of maxCount: int
+    | ExampleTextTooLong of maxLength: int
+
 [<Literal>]
 let MaxEntryTextLength = 200
 
@@ -15,27 +58,29 @@ let MaxExampleTextLength = 200
 [<Literal>]
 let MaxExamplesPerItem = 5
 
-let validateEntryText(text: string) : Result<string, EntryError> =
+let validateEntryText(text: string) : Result<string, EntryValidationError> =
     if String.IsNullOrWhiteSpace(text) then
-        Error EntryTextRequired
+        Error EntryValidationError.EntryTextRequired
     elif text.Length > MaxEntryTextLength then
-        Error(EntryTextTooLong MaxEntryTextLength)
+        Error(EntryValidationError.EntryTextTooLong MaxEntryTextLength)
     else
         Ok text
 
-let validateExamples(examples: ExampleInput list) : Result<ExampleInput list, EntryError> =
+let validateExamples(examples: ExampleInput list) : Result<ExampleInput list, EntryValidationError> =
     if examples.Length > MaxExamplesPerItem then
-        Error(TooManyExamples MaxExamplesPerItem)
+        Error(EntryValidationError.TooManyExamples MaxExamplesPerItem)
     else
         let tooLongExample =
             examples
             |> List.tryFind(fun e -> e.ExampleText.Length > MaxExampleTextLength)
 
         match tooLongExample with
-        | Some _ -> Error(ExampleTextTooLong MaxExampleTextLength)
+        | Some _ -> Error(EntryValidationError.ExampleTextTooLong MaxExampleTextLength)
         | None -> Ok examples
 
-let validateDefinitions(definitions: DefinitionInput list) : Result<DefinitionInput list, EntryError> =
+let private validateDefinitions
+    (definitions: DefinitionInput list)
+    : Result<DefinitionInput list, EntryValidationError> =
     definitions
     |> List.map(fun d ->
         validateExamples d.Examples
@@ -49,7 +94,9 @@ let validateDefinitions(definitions: DefinitionInput list) : Result<DefinitionIn
         (Ok [])
     |> Result.map List.rev
 
-let validateTranslations(translations: TranslationInput list) : Result<TranslationInput list, EntryError> =
+let private validateTranslations
+    (translations: TranslationInput list)
+    : Result<TranslationInput list, EntryValidationError> =
     translations
     |> List.map(fun t ->
         validateExamples t.Examples
@@ -63,118 +110,139 @@ let validateTranslations(translations: TranslationInput list) : Result<Translati
         (Ok [])
     |> Result.map List.rev
 
-let createDefinitionsAsync env entryId (definitions: DefinitionInput list) : Task<unit> =
+let private createDefinitionsAsync env (parameters: CreateDefinitionsParameters) : Task<unit> =
     task {
-        for i in 0 .. definitions.Length - 1 do
-            let def = definitions[i]
+        for i in 0 .. parameters.Definitions.Length - 1 do
+            let def = parameters.Definitions[i]
 
-            let! defId = createDefinition env entryId def.DefinitionText def.Source i
+            let! defId =
+                createDefinition
+                    env
+                    { EntryId = parameters.EntryId
+                      Text = def.DefinitionText
+                      Source = def.Source
+                      DisplayOrder = i }
 
             if not def.Examples.IsEmpty then
                 do! createExamplesForDefinition env defId def.Examples
     }
 
-let createTranslationsAsync env entryId (translations: TranslationInput list) : Task<unit> =
+let private createTranslationsAsync env (parameters: CreateTranslationsParameters) : Task<unit> =
     task {
-        for i in 0 .. translations.Length - 1 do
-            let trans = translations.[i]
+        for i in 0 .. parameters.Translations.Length - 1 do
+            let trans = parameters.Translations[i]
 
-            let! transId = createTranslation env entryId trans.TranslationText trans.Source i
+            let! transId =
+                createTranslation
+                    env
+                    { EntryId = parameters.EntryId
+                      Text = trans.TranslationText
+                      Source = trans.Source
+                      DisplayOrder = i }
 
             if not trans.Examples.IsEmpty then
                 do! createExamplesForTranslation env transId trans.Examples
     }
 
-let checkVocabularyAccess env userId vocabularyId =
+let checkVocabularyAccess env (parameters: CheckVocabularyAccessParameters) : Task<Result<unit, unit>> =
     task {
-        let! hasAccess = hasVocabularyAccess env vocabularyId userId
+        let! hasAccess = hasVocabularyAccess env (parameters.VocabularyId, parameters.UserId)
 
-        return
-            if not hasAccess then
-                Error(VocabularyNotFoundOrAccessDenied vocabularyId)
-            else
-                Ok()
+        return if not hasAccess then Error() else Ok()
     }
 
 let validateEntryInputs
-    entryText
-    (definitions: DefinitionInput list)
-    (translations: TranslationInput list)
-    : Result<string * DefinitionInput list * TranslationInput list, EntryError> =
-    match validateEntryText entryText with
+    (parameters: ValidateEntryInputsParameters)
+    : Result<string * DefinitionInput list * TranslationInput list, EntryValidationError> =
+    match validateEntryText parameters.EntryText with
     | Error error -> Error error
     | Ok validText ->
         if
-            definitions.IsEmpty
-            && translations.IsEmpty
+            parameters.Definitions.IsEmpty
+            && parameters.Translations.IsEmpty
         then
-            Error NoDefinitionsOrTranslations
+            Error EntryValidationError.NoDefinitionsOrTranslations
         else
-            match validateDefinitions definitions with
+            match validateDefinitions parameters.Definitions with
             | Error error -> Error error
             | Ok validDefinitions ->
-                match validateTranslations translations with
+                match validateTranslations parameters.Translations with
                 | Error error -> Error error
                 | Ok validTranslations -> Ok(validText, validDefinitions, validTranslations)
 
-let checkForDuplicate env vocabularyId entryText allowDuplicate : Task<Result<unit, EntryError>> =
-    if allowDuplicate then
+let checkForDuplicate env (parameters: CheckForDuplicateParameters) : Task<Result<unit, Entry>> =
+    if parameters.AllowDuplicate then
         Task.FromResult(Ok())
     else
         task {
-            let! maybeExistingEntry = getEntryByTextAndVocabularyId env vocabularyId entryText
+            let! maybeExistingEntry = getEntryByTextAndVocabularyId env (parameters.VocabularyId, parameters.EntryText)
 
             match maybeExistingEntry with
             | Some existing ->
                 let! maybeFullEntry = getEntryById env existing.Id
 
                 match maybeFullEntry with
-                | Some fullEntry -> return Error(DuplicateEntry fullEntry)
+                | Some fullEntry -> return Error fullEntry
                 | None -> return Ok()
             | None -> return Ok()
         }
 
-let createEntryWithChildren
-    env
-    vocabularyId
-    entryText
-    createdAt
-    (definitions: DefinitionInput list)
-    (translations: TranslationInput list)
-    : Task<Result<Entry, EntryError>> =
+let createEntryWithChildren env (parameters: CreateEntryWithChildrenParameters) : Task<Entry> =
     task {
-        let! entryId = createEntry env vocabularyId entryText createdAt
+        let! entryId =
+            createEntry
+                env
+                { VocabularyId = parameters.VocabularyId
+                  EntryText = parameters.EntryText
+                  CreatedAt = parameters.CreatedAt }
 
-        do! createTranslationsAsync env entryId translations
-        do! createDefinitionsAsync env entryId definitions
+        do!
+            createTranslationsAsync
+                env
+                { EntryId = entryId
+                  Translations = parameters.Translations }
+
+        do!
+            createDefinitionsAsync
+                env
+                { EntryId = entryId
+                  Definitions = parameters.Definitions }
 
         let! maybeEntry = getEntryById env entryId
 
         return
             match maybeEntry with
-            | Some entry -> Ok entry
+            | Some entry -> entry
             | None -> failwith $"Entry {entryId} not found after creation"
     }
 
-let updateEntryWithChildren
-    env
-    entryId
-    entryText
-    now
-    (definitions: DefinitionInput list)
-    (translations: TranslationInput list)
-    : Task<Result<Entry, EntryError>> =
+let updateEntryWithChildren env (parameters: UpdateEntryWithChildrenParameters) : Task<Entry> =
     task {
-        do! clearEntryChildren env entryId
-        do! updateEntry env entryId entryText now
+        do! clearEntryChildren env parameters.EntryId
 
-        do! createTranslationsAsync env entryId translations
-        do! createDefinitionsAsync env entryId definitions
+        do!
+            updateEntry
+                env
+                { EntryId = parameters.EntryId
+                  EntryText = parameters.EntryText
+                  UpdatedAt = parameters.UpdatedAt }
 
-        let! maybeUpdated = getEntryById env entryId
+        do!
+            createTranslationsAsync
+                env
+                { EntryId = parameters.EntryId
+                  Translations = parameters.Translations }
+
+        do!
+            createDefinitionsAsync
+                env
+                { EntryId = parameters.EntryId
+                  Definitions = parameters.Definitions }
+
+        let! maybeUpdated = getEntryById env parameters.EntryId
 
         return
             match maybeUpdated with
-            | Some entry -> Ok entry
-            | None -> failwith $"Entry {entryId} not found after update"
+            | Some entry -> entry
+            | None -> failwith $"Entry {parameters.EntryId} not found after update"
     }

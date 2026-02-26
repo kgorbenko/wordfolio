@@ -71,7 +71,11 @@ let ``deletes entry when user has access``() =
                 deleteEntry = (fun _ -> Task.FromResult(1))
             )
 
-        let! result = delete env (UserId 1) (EntryId 1)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.delete
+                env
+                { UserId = UserId 1
+                  EntryId = EntryId 1 }
 
         Assert.Equal(Ok(), result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
@@ -90,9 +94,13 @@ let ``returns EntryNotFound when entry does not exist``() =
                 deleteEntry = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = delete env (UserId 1) (EntryId 2)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.delete
+                env
+                { UserId = UserId 1
+                  EntryId = EntryId 2 }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 2)), result)
+        Assert.Equal(Error(DeleteDraftEntryError.EntryNotFound(EntryId 2)), result)
         Assert.Equal<EntryId list>([ EntryId 2 ], env.GetEntryByIdCalls)
         Assert.Empty(env.HasVocabularyAccessCalls)
         Assert.Empty(env.DeleteEntryCalls)
@@ -110,9 +118,13 @@ let ``returns EntryNotFound when user has no access``() =
                 deleteEntry = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = delete env (UserId 3) (EntryId 1)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.delete
+                env
+                { UserId = UserId 3
+                  EntryId = EntryId 1 }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 1)), result)
+        Assert.Equal(Error(DeleteDraftEntryError.EntryNotFound(EntryId 1)), result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
         Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 10, UserId 3 ], env.HasVocabularyAccessCalls)
         Assert.Empty(env.DeleteEntryCalls)

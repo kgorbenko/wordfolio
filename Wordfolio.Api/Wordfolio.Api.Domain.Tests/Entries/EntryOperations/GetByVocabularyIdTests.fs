@@ -11,13 +11,13 @@ open Wordfolio.Api.Domain.Entries.EntryOperations
 type TestEnv
     (
         getEntriesHierarchyByVocabularyId: VocabularyId -> Task<Entry list>,
-        hasVocabularyAccessInCollection: VocabularyId * CollectionId * UserId -> Task<bool>
+        hasVocabularyAccessInCollection: HasVocabularyAccessInCollectionData -> Task<bool>
     ) =
     let getEntriesHierarchyByVocabularyIdCalls =
         ResizeArray<VocabularyId>()
 
     let hasVocabularyAccessInCollectionCalls =
-        ResizeArray<VocabularyId * CollectionId * UserId>()
+        ResizeArray<HasVocabularyAccessInCollectionData>()
 
     member _.GetEntriesHierarchyByVocabularyIdCalls =
         getEntriesHierarchyByVocabularyIdCalls
@@ -33,9 +33,9 @@ type TestEnv
             getEntriesHierarchyByVocabularyId vocabularyId
 
     interface IHasVocabularyAccessInCollection with
-        member _.HasVocabularyAccessInCollection(vocabularyId, collectionId, userId) =
-            hasVocabularyAccessInCollectionCalls.Add(vocabularyId, collectionId, userId)
-            hasVocabularyAccessInCollection(vocabularyId, collectionId, userId)
+        member _.HasVocabularyAccessInCollection(data) =
+            hasVocabularyAccessInCollectionCalls.Add(data)
+            hasVocabularyAccessInCollection data
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -61,13 +61,21 @@ let ``returns entries when vocabulary is in collection``() =
                 hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true))
             )
 
-        let! result = getByVocabularyId env (UserId 1) (CollectionId 5) (VocabularyId 9)
+        let! result =
+            Wordfolio.Api.Domain.Entries.EntryOperations.getByVocabularyId
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 9 }
 
         Assert.Equal(Ok entries, result)
         Assert.Equal<VocabularyId list>([ VocabularyId 9 ], env.GetEntriesHierarchyByVocabularyIdCalls)
 
-        Assert.Equal<(VocabularyId * CollectionId * UserId) list>(
-            [ VocabularyId 9, CollectionId 5, UserId 1 ],
+        Assert.Equal<HasVocabularyAccessInCollectionData list>(
+            [ ({ VocabularyId = VocabularyId 9
+                 CollectionId = CollectionId 5
+                 UserId = UserId 1 }
+              : HasVocabularyAccessInCollectionData) ],
             env.HasVocabularyAccessInCollectionCalls
         )
     }
@@ -81,7 +89,12 @@ let ``returns empty list when vocabulary has no entries``() =
                 hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true))
             )
 
-        let! result = getByVocabularyId env (UserId 1) (CollectionId 5) (VocabularyId 9)
+        let! result =
+            Wordfolio.Api.Domain.Entries.EntryOperations.getByVocabularyId
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 9 }
 
         Assert.Equal(Ok [], result)
         Assert.Equal<VocabularyId list>([ VocabularyId 9 ], env.GetEntriesHierarchyByVocabularyIdCalls)
@@ -96,13 +109,21 @@ let ``returns VocabularyNotFoundOrAccessDenied when vocabulary is not in collect
                 hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(false))
             )
 
-        let! result = getByVocabularyId env (UserId 1) (CollectionId 5) (VocabularyId 9)
+        let! result =
+            Wordfolio.Api.Domain.Entries.EntryOperations.getByVocabularyId
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 9 }
 
-        Assert.Equal(Error(VocabularyNotFoundOrAccessDenied(VocabularyId 9)), result)
+        Assert.Equal(Error(GetEntriesByVocabularyIdError.VocabularyNotFoundOrAccessDenied(VocabularyId 9)), result)
         Assert.Empty(env.GetEntriesHierarchyByVocabularyIdCalls)
 
-        Assert.Equal<(VocabularyId * CollectionId * UserId) list>(
-            [ VocabularyId 9, CollectionId 5, UserId 1 ],
+        Assert.Equal<HasVocabularyAccessInCollectionData list>(
+            [ ({ VocabularyId = VocabularyId 9
+                 CollectionId = CollectionId 5
+                 UserId = UserId 1 }
+              : HasVocabularyAccessInCollectionData) ],
             env.HasVocabularyAccessInCollectionCalls
         )
     }

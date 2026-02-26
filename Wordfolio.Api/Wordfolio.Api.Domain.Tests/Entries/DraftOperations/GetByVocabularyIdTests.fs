@@ -57,7 +57,11 @@ let ``returns empty list when vocabulary has no entries``() =
                 hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
-        let! result = getByVocabularyId env (UserId 1) (VocabularyId 9)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.getByVocabularyId
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 9 }
 
         Assert.Equal(Ok [], result)
         Assert.Equal<VocabularyId list>([ VocabularyId 9 ], env.GetEntriesHierarchyByVocabularyIdCalls)
@@ -77,7 +81,11 @@ let ``returns entries when vocabulary has entries``() =
                 hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
-        let! result = getByVocabularyId env (UserId 1) (VocabularyId 9)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.getByVocabularyId
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 9 }
 
         Assert.Equal(Ok entries, result)
         Assert.Equal<VocabularyId list>([ VocabularyId 9 ], env.GetEntriesHierarchyByVocabularyIdCalls)
@@ -94,9 +102,13 @@ let ``returns error when user has no access``() =
                 hasVocabularyAccess = (fun _ -> Task.FromResult(false))
             )
 
-        let! result = getByVocabularyId env (UserId 1) (VocabularyId 9)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.getByVocabularyId
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 9 }
 
-        Assert.Equal(Error(VocabularyNotFoundOrAccessDenied(VocabularyId 9)), result)
+        Assert.Equal(Error(GetDraftEntriesByVocabularyIdError.VocabularyNotFoundOrAccessDenied(VocabularyId 9)), result)
         Assert.Empty(env.GetEntriesHierarchyByVocabularyIdCalls)
 
         Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 9, UserId 1 ], env.HasVocabularyAccessCalls)

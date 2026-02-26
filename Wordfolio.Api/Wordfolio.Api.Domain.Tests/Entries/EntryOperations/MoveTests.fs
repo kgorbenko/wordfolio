@@ -9,30 +9,24 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.EntryOperations
 
-type MoveEntryCall =
-    { EntryId: EntryId
-      OldVocabularyId: VocabularyId
-      NewVocabularyId: VocabularyId
-      UpdatedAt: DateTimeOffset }
-
 type TestEnv
     (
         getEntryById: EntryId -> Task<Entry option>,
-        hasVocabularyAccessInCollection: VocabularyId * CollectionId * UserId -> Task<bool>,
+        hasVocabularyAccessInCollection: HasVocabularyAccessInCollectionData -> Task<bool>,
         hasVocabularyAccess: VocabularyId * UserId -> Task<bool>,
-        moveEntry: EntryId * VocabularyId * VocabularyId * DateTimeOffset -> Task<unit>
+        moveEntry: MoveEntryData -> Task<unit>
     ) =
     let getEntryByIdCalls =
         ResizeArray<EntryId>()
 
     let hasVocabularyAccessInCollectionCalls =
-        ResizeArray<VocabularyId * CollectionId * UserId>()
+        ResizeArray<HasVocabularyAccessInCollectionData>()
 
     let hasVocabularyAccessCalls =
         ResizeArray<VocabularyId * UserId>()
 
     let moveEntryCalls =
-        ResizeArray<MoveEntryCall>()
+        ResizeArray<MoveEntryData>()
 
     member _.GetEntryByIdCalls =
         getEntryByIdCalls |> Seq.toList
@@ -53,9 +47,9 @@ type TestEnv
             getEntryById id
 
     interface IHasVocabularyAccessInCollection with
-        member _.HasVocabularyAccessInCollection(vocabularyId, collectionId, userId) =
-            hasVocabularyAccessInCollectionCalls.Add(vocabularyId, collectionId, userId)
-            hasVocabularyAccessInCollection(vocabularyId, collectionId, userId)
+        member _.HasVocabularyAccessInCollection(data) =
+            hasVocabularyAccessInCollectionCalls.Add(data)
+            hasVocabularyAccessInCollection data
 
     interface IHasVocabularyAccess with
         member _.HasVocabularyAccess(vocabularyId, userId) =
@@ -63,15 +57,9 @@ type TestEnv
             hasVocabularyAccess(vocabularyId, userId)
 
     interface IMoveEntry with
-        member _.MoveEntry(entryId, oldVocabularyId, newVocabularyId, updatedAt) =
-            moveEntryCalls.Add(
-                { EntryId = entryId
-                  OldVocabularyId = oldVocabularyId
-                  NewVocabularyId = newVocabularyId
-                  UpdatedAt = updatedAt }
-            )
-
-            moveEntry(entryId, oldVocabularyId, newVocabularyId, updatedAt)
+        member _.MoveEntry(data) =
+            moveEntryCalls.Add(data)
+            moveEntry data
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -116,19 +104,30 @@ let ``moves entry when vocabulary is in collection and entry belongs to vocabula
                 moveEntry = (fun _ -> Task.FromResult(()))
             )
 
-        let! result = move env (UserId 1) (CollectionId 5) (VocabularyId 100) (EntryId 10) (VocabularyId 200) now
+        let! result =
+            Wordfolio.Api.Domain.Entries.EntryOperations.move
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 100
+                  EntryId = EntryId 10
+                  TargetVocabularyId = VocabularyId 200
+                  UpdatedAt = now }
 
         Assert.Equal(Ok movedEntry, result)
         Assert.Equal<EntryId list>([ EntryId 10; EntryId 10 ], env.GetEntryByIdCalls)
 
-        Assert.Equal<(VocabularyId * CollectionId * UserId) list>(
-            [ VocabularyId 100, CollectionId 5, UserId 1 ],
+        Assert.Equal<HasVocabularyAccessInCollectionData list>(
+            [ ({ VocabularyId = VocabularyId 100
+                 CollectionId = CollectionId 5
+                 UserId = UserId 1 }
+              : HasVocabularyAccessInCollectionData) ],
             env.HasVocabularyAccessInCollectionCalls
         )
 
         Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 200, UserId 1 ], env.HasVocabularyAccessCalls)
 
-        Assert.Equal<MoveEntryCall list>(
+        Assert.Equal<MoveEntryData list>(
             [ { EntryId = EntryId 10
                 OldVocabularyId = VocabularyId 100
                 NewVocabularyId = VocabularyId 200
@@ -149,16 +148,16 @@ let ``returns VocabularyNotFoundOrAccessDenied when source vocabulary is not in 
             )
 
         let! result =
-            move
+            Wordfolio.Api.Domain.Entries.EntryOperations.move
                 env
-                (UserId 1)
-                (CollectionId 5)
-                (VocabularyId 100)
-                (EntryId 10)
-                (VocabularyId 200)
-                DateTimeOffset.UtcNow
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 100
+                  EntryId = EntryId 10
+                  TargetVocabularyId = VocabularyId 200
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(VocabularyNotFoundOrAccessDenied(VocabularyId 100)), result)
+        Assert.Equal(Error(MoveEntryError.VocabularyNotFoundOrAccessDenied(VocabularyId 100)), result)
         Assert.Empty(env.GetEntryByIdCalls)
         Assert.Empty(env.HasVocabularyAccessCalls)
         Assert.Empty(env.MoveEntryCalls)
@@ -176,16 +175,16 @@ let ``returns EntryNotFound when entry does not exist``() =
             )
 
         let! result =
-            move
+            Wordfolio.Api.Domain.Entries.EntryOperations.move
                 env
-                (UserId 1)
-                (CollectionId 5)
-                (VocabularyId 100)
-                (EntryId 99)
-                (VocabularyId 200)
-                DateTimeOffset.UtcNow
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 100
+                  EntryId = EntryId 99
+                  TargetVocabularyId = VocabularyId 200
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 99)), result)
+        Assert.Equal(Error(MoveEntryError.EntryNotFound(EntryId 99)), result)
         Assert.Equal<EntryId list>([ EntryId 99 ], env.GetEntryByIdCalls)
         Assert.Empty(env.HasVocabularyAccessCalls)
         Assert.Empty(env.MoveEntryCalls)
@@ -207,9 +206,17 @@ let ``returns EntryNotFound when entry belongs to different vocabulary``() =
                 moveEntry = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = move env (UserId 1) (CollectionId 5) (VocabularyId 100) (EntryId 10) (VocabularyId 200) now
+        let! result =
+            Wordfolio.Api.Domain.Entries.EntryOperations.move
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 100
+                  EntryId = EntryId 10
+                  TargetVocabularyId = VocabularyId 200
+                  UpdatedAt = now }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 10)), result)
+        Assert.Equal(Error(MoveEntryError.EntryNotFound(EntryId 10)), result)
         Assert.Equal<EntryId list>([ EntryId 10 ], env.GetEntryByIdCalls)
         Assert.Empty(env.HasVocabularyAccessCalls)
         Assert.Empty(env.MoveEntryCalls)
@@ -231,9 +238,17 @@ let ``returns VocabularyNotFoundOrAccessDenied when target vocabulary access is 
                 moveEntry = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = move env (UserId 1) (CollectionId 5) (VocabularyId 100) (EntryId 10) (VocabularyId 200) now
+        let! result =
+            Wordfolio.Api.Domain.Entries.EntryOperations.move
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 100
+                  EntryId = EntryId 10
+                  TargetVocabularyId = VocabularyId 200
+                  UpdatedAt = now }
 
-        Assert.Equal(Error(VocabularyNotFoundOrAccessDenied(VocabularyId 200)), result)
+        Assert.Equal(Error(MoveEntryError.VocabularyNotFoundOrAccessDenied(VocabularyId 200)), result)
         Assert.Equal<EntryId list>([ EntryId 10 ], env.GetEntryByIdCalls)
         Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 200, UserId 1 ], env.HasVocabularyAccessCalls)
         Assert.Empty(env.MoveEntryCalls)
@@ -267,7 +282,15 @@ let ``throws when post-move entry fetch returns None``() =
 
         let! ex =
             Assert.ThrowsAsync<Exception>(fun () ->
-                move env (UserId 1) (CollectionId 5) (VocabularyId 100) (EntryId 10) (VocabularyId 200) now :> Task)
+                Wordfolio.Api.Domain.Entries.EntryOperations.move
+                    env
+                    { UserId = UserId 1
+                      CollectionId = CollectionId 5
+                      VocabularyId = VocabularyId 100
+                      EntryId = EntryId 10
+                      TargetVocabularyId = VocabularyId 200
+                      UpdatedAt = now }
+                :> Task)
 
         Assert.Equal("Entry EntryId 10 not found after move", ex.Message)
     }
@@ -303,7 +326,15 @@ let ``move succeeds without duplicate checks in target vocabulary``() =
                 moveEntry = (fun _ -> Task.FromResult(()))
             )
 
-        let! result = move env (UserId 1) (CollectionId 5) (VocabularyId 100) (EntryId 10) (VocabularyId 200) now
+        let! result =
+            Wordfolio.Api.Domain.Entries.EntryOperations.move
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 100
+                  EntryId = EntryId 10
+                  TargetVocabularyId = VocabularyId 200
+                  UpdatedAt = now }
 
         Assert.Equal(Ok movedEntry, result)
         Assert.Equal(1, env.MoveEntryCalls.Length)

@@ -14,13 +14,13 @@ Refactor `Wordfolio.Api.Domain` to align with the agreed rules:
 
 ## Progress Status
 
-Last updated: 2026-02-23
+Last updated: 2026-02-25
 
 - Phase 0 - Completed
 - Phase 1 - Completed
 - Phase 2 - Completed
 - Phase 3 - Completed
-- Phase 4 - In progress (Collections completed)
+- Phase 4 - Completed
 - Phase 5 - Not started
 
 Completed implementation notes:
@@ -56,6 +56,13 @@ Completed implementation notes:
   - Refactored capability signatures to record-based inputs for non-trivial calls.
   - Updated handler fallback logic to use `Result.defaultValue` for unit-error operations.
   - Updated infrastructure and collections-hierarchy domain tests to the new capability/operation contracts.
+- Entries feature loop (Phase 4) was completed:
+  - Introduced operation parameter-record models for `EntryOperations` and `DraftOperations`.
+  - Updated API handlers and entries domain tests to parameter-based operation contracts.
+  - Renamed `Entries/Entry.fs` to `Entries/Types.fs` and updated compile order.
+  - Refactored non-trivial entries capability contracts to record-based capability input types.
+  - Added operation-specific entry error DUs in `Entries/Errors.fs` with `[<RequireQualifiedAccess>]`.
+  - Removed legacy universal `EntryError` and fully migrated entries tests/assertions to operation-specific error DUs.
 
 Process note:
 
@@ -206,7 +213,7 @@ Status:
   - `Vocabularies` (completed on 2026-02-25)
   - `CollectionsHierarchy` (completed on 2026-02-25)
 - Remaining features:
-  - `Entries`
+  - none
 
 ---
 

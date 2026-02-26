@@ -14,9 +14,9 @@ type TestEnv
     (
         getEntryById: EntryId -> Task<Entry option>,
         getEntryByTextAndVocabularyId: VocabularyId * string -> Task<Entry option>,
-        createEntry: VocabularyId * string * DateTimeOffset -> Task<EntryId>,
-        createDefinition: EntryId * string * DefinitionSource * int -> Task<DefinitionId>,
-        createTranslation: EntryId * string * TranslationSource * int -> Task<TranslationId>,
+        createEntry: CreateEntryData -> Task<EntryId>,
+        createDefinition: CreateDefinitionData -> Task<DefinitionId>,
+        createTranslation: CreateTranslationData -> Task<TranslationId>,
         createExamplesForDefinition: DefinitionId * ExampleInput list -> Task<unit>,
         createExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>,
         getDefaultVocabulary: UserId -> Task<Vocabulary option>,
@@ -31,13 +31,13 @@ type TestEnv
         ResizeArray<VocabularyId * string>()
 
     let createEntryCalls =
-        ResizeArray<VocabularyId * string * DateTimeOffset>()
+        ResizeArray<CreateEntryData>()
 
     let createDefinitionCalls =
-        ResizeArray<EntryId * string * DefinitionSource * int>()
+        ResizeArray<CreateDefinitionData>()
 
     let createTranslationCalls =
-        ResizeArray<EntryId * string * TranslationSource * int>()
+        ResizeArray<CreateTranslationData>()
 
     let createExamplesForDefinitionCalls =
         ResizeArray<DefinitionId * ExampleInput list>()
@@ -80,19 +80,19 @@ type TestEnv
             getEntryByTextAndVocabularyId(vocabularyId, text)
 
     interface ICreateEntry with
-        member _.CreateEntry(vocabularyId, text, createdAt) =
-            createEntryCalls.Add(vocabularyId, text, createdAt)
-            createEntry(vocabularyId, text, createdAt)
+        member _.CreateEntry(data) =
+            createEntryCalls.Add(data)
+            createEntry data
 
     interface ICreateDefinition with
-        member _.CreateDefinition(entryId, text, source, displayOrder) =
-            createDefinitionCalls.Add(entryId, text, source, displayOrder)
-            createDefinition(entryId, text, source, displayOrder)
+        member _.CreateDefinition(data) =
+            createDefinitionCalls.Add(data)
+            createDefinition data
 
     interface ICreateTranslation with
-        member _.CreateTranslation(entryId, text, source, displayOrder) =
-            createTranslationCalls.Add(entryId, text, source, displayOrder)
-            createTranslation(entryId, text, source, displayOrder)
+        member _.CreateTranslation(data) =
+            createTranslationCalls.Add(data)
+            createTranslation data
 
     interface ICreateExamplesForDefinition with
         member _.CreateExamplesForDefinition(definitionId, examples) =
@@ -167,7 +167,7 @@ let makeTranslationInput text source examples =
 
 let makeExampleInput text source = { ExampleText = text; Source = source }
 
-let makeCreateParams userId entryText definitions translations createdAt : CreateDraftParameters =
+let makeCreateParams userId entryText definitions translations createdAt : CreateParameters =
     { UserId = userId
       EntryText = entryText
       Definitions = definitions
@@ -207,7 +207,10 @@ let ``creates entry with definitions only``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.create
+                env
+                (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
 
         Assert.Equal(Ok createdEntry, result)
 
@@ -249,7 +252,10 @@ let ``creates entry with translations only``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" [] translationInputs now)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.create
+                env
+                (makeCreateParams (UserId 1) "test word" [] translationInputs now)
 
         Assert.Equal(Ok createdEntry, result)
 
@@ -297,7 +303,10 @@ let ``creates entry with both definitions and translations``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs translationInputs now)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.create
+                env
+                (makeCreateParams (UserId 1) "test word" definitionInputs translationInputs now)
 
         Assert.Equal(Ok createdEntry, result)
 
@@ -330,7 +339,9 @@ let ``trims whitespace from entry text``() =
                 getEntryById = (fun _ -> Task.FromResult(Some createdEntry)),
                 getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(None)),
                 createEntry =
-                    (fun (_, text, _) ->
+                    (fun data ->
+                        let text = data.EntryText
+
                         if text <> "test word" then
                             failwith $"Expected trimmed text 'test word', got: '{text}'"
 
@@ -345,7 +356,10 @@ let ``trims whitespace from entry text``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "  test word  " definitionInputs [] now)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.create
+                env
+                (makeCreateParams (UserId 1) "  test word  " definitionInputs [] now)
 
         Assert.True(Result.isOk result)
     }
@@ -378,7 +392,7 @@ let ``returns error when entry text is empty``() =
                     []
                     DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error EntryTextRequired, result)
+        Assert.Equal(Error CreateDraftEntryError.EntryTextRequired, result)
         Assert.Empty(env.CreateEntryCalls)
     }
 
@@ -410,7 +424,7 @@ let ``returns error when entry text is whitespace only``() =
                     []
                     DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error EntryTextRequired, result)
+        Assert.Equal(Error CreateDraftEntryError.EntryTextRequired, result)
     }
 
 [<Fact>]
@@ -443,7 +457,7 @@ let ``returns error when entry text exceeds max length``() =
                     []
                     DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error(EntryTextTooLong MaxEntryTextLength), result)
+        Assert.Equal(Error(CreateDraftEntryError.EntryTextTooLong MaxEntryTextLength), result)
     }
 
 [<Fact>]
@@ -464,9 +478,12 @@ let ``returns error when both definitions and translations are empty``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" [] [] DateTimeOffset.UtcNow)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.create
+                env
+                (makeCreateParams (UserId 1) "test word" [] [] DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error NoDefinitionsOrTranslations, result)
+        Assert.Equal(Error CreateDraftEntryError.NoDefinitionsOrTranslations, result)
     }
 
 [<Fact>]
@@ -505,7 +522,7 @@ let ``returns error when duplicate entry exists``() =
                     []
                     now)
 
-        Assert.Equal(Error(DuplicateEntry existingEntry), result)
+        Assert.Equal(Error(CreateDraftEntryError.DuplicateEntry existingEntry), result)
     }
 
 [<Fact>]
@@ -544,7 +561,7 @@ let ``creates entry when duplicate exists and AllowDuplicate is true``() =
             { makeCreateParams (UserId 1) "test word" definitionInputs [] now with
                 AllowDuplicate = true }
 
-        let! result = create env parameters
+        let! result = Wordfolio.Api.Domain.Entries.DraftOperations.create env parameters
 
         Assert.Equal(Ok createdEntry, result)
 
@@ -579,9 +596,12 @@ let ``returns error when example text is too long``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.create
+                env
+                (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
+        Assert.Equal(Error(CreateDraftEntryError.ExampleTextTooLong MaxExampleTextLength), result)
     }
 
 [<Fact>]
@@ -609,9 +629,12 @@ let ``returns error when too many examples in definition``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.create
+                env
+                (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
+        Assert.Equal(Error(CreateDraftEntryError.TooManyExamples MaxExamplesPerItem), result)
     }
 
 [<Fact>]
@@ -639,9 +662,12 @@ let ``returns error when too many examples in translation``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" [] translationInputs DateTimeOffset.UtcNow)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.create
+                env
+                (makeCreateParams (UserId 1) "test word" [] translationInputs DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
+        Assert.Equal(Error(CreateDraftEntryError.TooManyExamples MaxExamplesPerItem), result)
     }
 
 [<Fact>]
@@ -681,7 +707,10 @@ let ``proceeds when duplicate text match finds a stale record``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.create
+                env
+                (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
 
         Assert.Equal(Ok createdEntry, result)
     }
@@ -711,7 +740,10 @@ let ``throws when post-create entry fetch returns None``() =
 
         let! ex =
             Assert.ThrowsAsync<Exception>(fun () ->
-                create env (makeCreateParams (UserId 1) "test word" definitionInputs [] now) :> Task)
+                Wordfolio.Api.Domain.Entries.DraftOperations.create
+                    env
+                    (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
+                :> Task)
 
         Assert.Equal("Entry EntryId 1 not found after creation", ex.Message)
     }
@@ -753,7 +785,10 @@ let ``creates entry when default vocabulary does not exist but default collectio
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.create
+                env
+                (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
 
         Assert.Equal(Ok createdEntry, result)
     }
@@ -787,7 +822,10 @@ let ``creates entry when neither default vocabulary nor default collection exist
                 createDefaultCollection = (fun _ -> Task.FromResult(CollectionId 1))
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.create
+                env
+                (makeCreateParams (UserId 1) "test word" definitionInputs [] now)
 
         Assert.Equal(Ok createdEntry, result)
     }

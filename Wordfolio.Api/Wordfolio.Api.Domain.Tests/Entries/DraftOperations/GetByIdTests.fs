@@ -83,7 +83,11 @@ let ``returns entry when it exists and user has access``() =
                 hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
-        let! result = getById env (UserId 7) (EntryId 1)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.getById
+                env
+                { UserId = UserId 7
+                  EntryId = EntryId 1 }
 
         Assert.Equal(Ok entry, result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
@@ -100,9 +104,13 @@ let ``returns EntryNotFound when entry does not exist``() =
                 hasVocabularyAccess = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = getById env (UserId 1) (EntryId 44)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.getById
+                env
+                { UserId = UserId 1
+                  EntryId = EntryId 44 }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 44)), result)
+        Assert.Equal(Error(GetDraftEntryByIdError.EntryNotFound(EntryId 44)), result)
         Assert.Equal<EntryId list>([ EntryId 44 ], env.GetEntryByIdCalls)
         Assert.Empty(env.HasVocabularyAccessCalls)
     }
@@ -118,9 +126,13 @@ let ``returns EntryNotFound when user has no access``() =
                 hasVocabularyAccess = (fun _ -> Task.FromResult(false))
             )
 
-        let! result = getById env (UserId 2) (EntryId 1)
+        let! result =
+            Wordfolio.Api.Domain.Entries.DraftOperations.getById
+                env
+                { UserId = UserId 2
+                  EntryId = EntryId 1 }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 1)), result)
+        Assert.Equal(Error(GetDraftEntryByIdError.EntryNotFound(EntryId 1)), result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
 
         Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 10, UserId 2 ], env.HasVocabularyAccessCalls)
