@@ -135,7 +135,7 @@ The loop is feature-driven. Each implementation iteration must complete one full
 
 ### 2. Collections feature compliance (domain + tests)
 - [x] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Collections/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Collections/*.fs`.
-- [ ] Improve: Review test call-tracking completeness (`...Calls` type parity and full assertions per test).
+- [x] Improve: Review test call-tracking completeness (`...Calls` type parity and full assertions per test).
 
 ### 3. Vocabularies feature compliance (domain + tests)
 - [ ] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Vocabularies/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Vocabularies/*.fs`.
@@ -172,3 +172,9 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - What was done: Updated collections tests to track capability calls using the exact capability parameter record types (`CreateCollectionData`, `UpdateCollectionData`) and removed duplicate test-only call records. Added explicit assertions in each test for all `...Calls` collections, including expected empties for dependencies that should not be invoked.
 - Issues encountered: Initial compile errors from ambiguous record inference between operation and capability parameter records were resolved by explicitly typing expected call records in assertions.
 - Learnings: Collections operations intentionally use separate operation parameter records and capability data records with overlapping fields, so tests should annotate expected record literals when asserting call lists to keep type parity explicit and unambiguous.
+
+### Improve: Review test call-tracking completeness (`...Calls` type parity and full assertions per test).
+- Files changed: `docs/domain-rules-compliance-sweep/spec.md`
+- What was done: Audited all Collections domain tests (`Create`, `Update`, `Delete`, `GetById`, `GetByUserId`) for call-tracking parity and verified each test asserts every `...Calls` collection relevant to its test environment, including explicit empty assertions for non-invoked dependencies.
+- Issues encountered: None
+- Learnings: Collections tests consistently use exact capability parameter/call types (for example, `CreateCollectionData` and `UpdateCollectionData`) and complete call-list assertions across success and failure paths, so no additional production or test code changes were required in this improve pass.
