@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-import { LoginPage } from "../pages/LoginPage";
+import { LoginPage } from "../features/auth/pages/LoginPage";
 
 const loginSearchSchema = z.object({
     message: z.string().optional(),

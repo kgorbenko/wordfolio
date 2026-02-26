@@ -1,9 +1,10 @@
-import { useAuthStore } from "../stores/authStore";
 import { useNavigate, Link } from "@tanstack/react-router";
-import { loginPath, registerPath } from "../features/auth/routes";
 import { Container, Typography, Box, Button } from "@mui/material";
 
-import "./HomePage.css";
+import { useAuthStore } from "../../../stores/authStore";
+import { loginPath, registerPath } from "../routes";
+
+import styles from "./HomePage.module.scss";
 
 export const HomePage = () => {
     const { isAuthenticated, clearAuth } = useAuthStore();
@@ -15,12 +16,12 @@ export const HomePage = () => {
     };
 
     return (
-        <Container maxWidth="md" className="home-container">
+        <Container maxWidth="md" className={styles.container}>
             <Typography variant="h2" component="h1" gutterBottom>
                 Welcome to Wordfolio
             </Typography>
             {isAuthenticated ? (
-                <Box className="home-content">
+                <Box className={styles.content}>
                     <Typography variant="body1" paragraph>
                         You are logged in!
                     </Typography>
@@ -28,17 +29,17 @@ export const HomePage = () => {
                         variant="contained"
                         color="error"
                         onClick={handleLogout}
-                        className="home-button"
+                        className={styles.button}
                     >
                         Logout
                     </Button>
                 </Box>
             ) : (
-                <Box className="home-content">
+                <Box className={styles.content}>
                     <Typography variant="body1" paragraph>
                         Please log in to continue.
                     </Typography>
-                    <Box className="home-auth-links">
+                    <Box className={styles.authLinks}>
                         <Button
                             component={Link}
                             {...loginPath()}
