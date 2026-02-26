@@ -5,15 +5,13 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 
-import { entryDetailRouteApi } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
-import { collectionsPath } from "../../../routes/_authenticated/collections/routes";
-import { collectionDetailPath } from "../../../routes/_authenticated/collections/routes";
-import { vocabularyDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
+import { entryDetailRouteApi, entryEditPath, entryDetailPath } from "../routes";
 import {
-    entryEditPath,
-    entryDetailPath,
-} from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
-import { draftsEntryDetailPath } from "../../../routes/_authenticated/drafts/routes";
+    collectionsPath,
+    collectionDetailPath,
+} from "../../collections/routes";
+import { vocabularyDetailPath } from "../../vocabularies/routes";
+import { draftsEntryDetailPath } from "../../drafts/routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";

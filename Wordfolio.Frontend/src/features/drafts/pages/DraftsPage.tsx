@@ -3,10 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
-import {
-    draftsEntryDetailPath,
-    draftsCreatePath,
-} from "../../../routes/_authenticated/drafts/routes";
+import { draftsEntryDetailPath, draftsCreatePath } from "../routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";

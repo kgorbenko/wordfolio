@@ -1,4 +1,4 @@
-import { useNavigate, Link, useSearch } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
@@ -17,12 +17,13 @@ import {
     Alert,
     Link as MuiLink,
 } from "@mui/material";
+import { loginRouteApi, homePath, registerPath } from "../features/auth/routes";
 
 import "./LoginPage.css";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
-    const search = useSearch({ from: "/login" });
+    const search = loginRouteApi.useSearch();
     const setTokens = useAuthStore((state) => state.setTokens);
     const { openNotification } = useNotificationContext();
 
@@ -38,7 +39,7 @@ export const LoginPage = () => {
     const loginMutation = useLoginMutation({
         onSuccess: (data) => {
             setTokens(data);
-            navigate({ to: "/" });
+            navigate(homePath());
         },
         onError: (error: ApiError) => {
             const errorMessage =
@@ -126,7 +127,7 @@ export const LoginPage = () => {
                             Don't have an account?{" "}
                             <MuiLink
                                 component={Link}
-                                to="/register"
+                                {...registerPath()}
                                 underline="hover"
                             >
                                 Register here

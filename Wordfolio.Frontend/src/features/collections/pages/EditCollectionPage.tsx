@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
@@ -9,11 +9,14 @@ import { useCollectionQuery } from "../hooks/useCollectionQuery";
 import { useUpdateCollectionMutation } from "../hooks/useUpdateCollectionMutation";
 import { useNotificationContext } from "../../../contexts/NotificationContext";
 import { CollectionFormData } from "../schemas/collectionSchemas";
+import {
+    collectionEditRouteApi,
+    collectionDetailPath,
+    collectionsPath,
+} from "../routes";
 
 export const EditCollectionPage = () => {
-    const { collectionId } = useParams({
-        from: "/_authenticated/collections/$collectionId/edit",
-    });
+    const { collectionId } = collectionEditRouteApi.useParams();
     const navigate = useNavigate();
     const { openErrorNotification, openSuccessNotification } =
         useNotificationContext();
@@ -31,10 +34,7 @@ export const EditCollectionPage = () => {
             openSuccessNotification({
                 message: "Collection updated successfully",
             });
-            void navigate({
-                to: "/collections/$collectionId",
-                params: { collectionId },
-            });
+            void navigate(collectionDetailPath(numericId));
         },
         onError: () => {
             openErrorNotification({ message: "Failed to update collection" });
@@ -46,10 +46,7 @@ export const EditCollectionPage = () => {
     };
 
     const handleCancel = () => {
-        void navigate({
-            to: "/collections/$collectionId",
-            params: { collectionId },
-        });
+        void navigate(collectionDetailPath(numericId));
     };
 
     if (isLoading) {
@@ -76,11 +73,10 @@ export const EditCollectionPage = () => {
         <PageContainer>
             <BreadcrumbNav
                 items={[
-                    { label: "Collections", to: "/collections" },
+                    { label: "Collections", ...collectionsPath() },
                     {
                         label: collection.name,
-                        to: "/collections/$collectionId",
-                        params: { collectionId },
+                        ...collectionDetailPath(numericId),
                     },
                     { label: "Edit" },
                 ]}

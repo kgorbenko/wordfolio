@@ -11,6 +11,7 @@ import { RetryOnError } from "../../../components/common/RetryOnError";
 import { CollectionsContent } from "../components/CollectionsContent";
 import { useCollectionsQuery } from "../hooks/useCollectionsQuery";
 import { CollectionSortBy, SortDirection } from "../api/collectionsApi";
+import { collectionDetailPath, collectionCreatePath } from "../routes";
 
 export const CollectionsPage = () => {
     const navigate = useNavigate();
@@ -30,16 +31,13 @@ export const CollectionsPage = () => {
 
     const handleCollectionClick = useCallback(
         (id: number) => {
-            void navigate({
-                to: "/collections/$collectionId",
-                params: { collectionId: String(id) },
-            });
+            void navigate(collectionDetailPath(id));
         },
         [navigate]
     );
 
     const handleCreateClick = useCallback(() => {
-        void navigate({ to: "/collections/new" });
+        void navigate(collectionCreatePath());
     }, [navigate]);
 
     const renderContent = useCallback(() => {

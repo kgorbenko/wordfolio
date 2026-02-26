@@ -10,8 +10,8 @@ import {
     draftsPath,
     draftsEntryEditPath,
     draftsEntryDetailPath,
-} from "../../../routes/_authenticated/drafts/routes";
-import { entryDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
+} from "../routes";
+import { entryDetailPath } from "../../entries/routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";

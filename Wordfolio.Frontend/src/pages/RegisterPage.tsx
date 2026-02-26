@@ -1,4 +1,5 @@
 import { useNavigate, Link } from "@tanstack/react-router";
+import { loginPath } from "../features/auth/routes";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -38,7 +39,7 @@ export const RegisterPage = () => {
 
     const registerMutation = useRegisterMutation({
         onSuccess: () => {
-            navigate({ to: "/login" });
+            navigate(loginPath());
         },
         onError: (error: ApiError) => {
             const errorMessages = parseApiError(error);
@@ -156,7 +157,7 @@ export const RegisterPage = () => {
                                 Already have an account?{" "}
                                 <MuiLink
                                     component={Link}
-                                    to="/login"
+                                    {...loginPath()}
                                     underline="hover"
                                 >
                                     Login here
