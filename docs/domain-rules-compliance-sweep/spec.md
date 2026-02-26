@@ -139,7 +139,7 @@ The loop is feature-driven. Each implementation iteration must complete one full
 
 ### 3. Vocabularies feature compliance (domain + tests)
 - [x] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Vocabularies/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Vocabularies/*.fs`.
-- [ ] Improve: Review operation-specific error contracts and call-site qualification consistency.
+- [x] Improve: Review operation-specific error contracts and call-site qualification consistency.
 
 ### 4. CollectionsHierarchy feature compliance (domain + tests)
 - [ ] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/CollectionsHierarchy/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/CollectionsHierarchy/*.fs`.
@@ -184,3 +184,9 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - What was done: Updated vocabularies tests to track capability calls with the exact capability input types (`CreateVocabularyData`, `UpdateVocabularyData`) instead of duplicate test-only call records. Added explicit assertions in every vocabularies test for all `...Calls` collections, including explicit empty assertions for non-invoked dependencies.
 - Issues encountered: None
 - Learnings: Vocabularies operations already matched the domain ruleset; the remaining compliance drift was in test call-tracking parity and assertion completeness, which are resolved by reusing capability parameter records directly in test environments.
+
+### Improve: Review operation-specific error contracts and call-site qualification consistency.
+- Files changed: `docs/domain-rules-compliance-sweep/spec.md`
+- What was done: Audited vocabulary operation error unions and corresponding operation implementations/tests to confirm each public operation returns its own `[<RequireQualifiedAccess>]` DU with only relevant cases. Verified vocabulary domain/tests use module-qualified or in-scope operation calls and contain no fully-qualified `Wordfolio.Api.Domain...` call sites.
+- Issues encountered: None
+- Learnings: Vocabularies already follow operation-specific error modeling with explicit per-operation DUs (`GetVocabularyByIdError`, `GetVocabulariesByCollectionIdError`, `CreateVocabularyError`, `UpdateVocabularyError`, `DeleteVocabularyError`), so this improve pass required no production/test code edits beyond recording the compliance review.
