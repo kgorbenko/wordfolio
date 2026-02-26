@@ -2,12 +2,6 @@ import { useNavigate, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-
-import { ApiError } from "../api/authApi";
-import { useAuthStore } from "../stores/authStore";
-import { useLoginMutation } from "../mutations/useLoginMutation";
-import { createLoginSchema, LoginFormData } from "../schemas/authSchemas";
-import { useNotificationContext } from "../contexts/NotificationContext";
 import {
     Container,
     Typography,
@@ -17,9 +11,15 @@ import {
     Alert,
     Link as MuiLink,
 } from "@mui/material";
-import { loginRouteApi, homePath, registerPath } from "../features/auth/routes";
 
-import "./LoginPage.css";
+import { ApiError } from "../../../api/authApi";
+import { useAuthStore } from "../../../stores/authStore";
+import { useLoginMutation } from "../../../mutations/useLoginMutation";
+import { createLoginSchema, LoginFormData } from "../../../schemas/authSchemas";
+import { useNotificationContext } from "../../../contexts/NotificationContext";
+import { loginRouteApi, homePath, registerPath } from "../routes";
+
+import styles from "./LoginPage.module.scss";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -66,9 +66,9 @@ export const LoginPage = () => {
 
     return (
         <div className="centered-page-container">
-            <Container maxWidth="sm" className="login-container">
+            <Container maxWidth="sm" className={styles.container}>
                 <Typography
-                    className="page-header"
+                    className={styles.header}
                     variant="h5"
                     component="h1"
                     gutterBottom
@@ -77,13 +77,13 @@ export const LoginPage = () => {
                     Login to Wordfolio
                 </Typography>
                 <Box
-                    className="login-form"
+                    className={styles.form}
                     component="form"
                     onSubmit={handleSubmit(onSubmit)}
                     noValidate
                 >
                     {errors.root && (
-                        <Alert severity="error" className="login-alert">
+                        <Alert severity="error" className={styles.alert}>
                             {errors.root.message}
                         </Alert>
                     )}
@@ -117,12 +117,12 @@ export const LoginPage = () => {
                         type="submit"
                         variant="contained"
                         disabled={loginMutation.isPending}
-                        className="login-button"
+                        className={styles.button}
                     >
                         {loginMutation.isPending ? "Logging in..." : "Login"}
                     </Button>
 
-                    <Box className="login-footer">
+                    <Box className={styles.footer}>
                         <Typography variant="body2">
                             Don't have an account?{" "}
                             <MuiLink

@@ -1,23 +1,22 @@
-.register-container .page-header {
+.container .header {
     margin-bottom: 2rem;
 }
 
-.register-alert {
+.alert {
     margin-bottom: 1rem;
-    white-space: pre;
 }
 
-.register-button {
+.button {
     margin-top: 1.5rem;
     margin-bottom: 1rem;
 }
 
-.register-footer {
+.footer {
     text-align: center;
     margin-top: 1rem;
 }
 
-.register-form {
+.form {
     display: flex;
     flex-flow: column nowrap;
     gap: 1rem;

@@ -1,13 +1,6 @@
 import { useNavigate, Link } from "@tanstack/react-router";
-import { loginPath } from "../features/auth/routes";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import { ApiError } from "../api/authApi";
-import { useRegisterMutation } from "../mutations/useRegisterMutation";
-import { usePasswordRequirementsQuery } from "../queries/usePasswordRequirementsQuery";
-import { createRegisterSchema, RegisterFormData } from "../schemas/authSchemas";
-import { parseApiError } from "../utils/errorHandling";
 import {
     Container,
     Typography,
@@ -19,7 +12,17 @@ import {
     Alert,
 } from "@mui/material";
 
-import "./RegisterPage.css";
+import { ApiError } from "../../../api/authApi";
+import { useRegisterMutation } from "../../../mutations/useRegisterMutation";
+import { usePasswordRequirementsQuery } from "../../../queries/usePasswordRequirementsQuery";
+import {
+    createRegisterSchema,
+    RegisterFormData,
+} from "../../../schemas/authSchemas";
+import { parseApiError } from "../../../utils/errorHandling";
+import { loginPath } from "../routes";
+
+import styles from "./RegisterPage.module.scss";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
@@ -62,9 +65,9 @@ export const RegisterPage = () => {
 
     return (
         <div className="centered-page-container">
-            <Container maxWidth="sm" className="register-container">
+            <Container maxWidth="sm" className={styles.container}>
                 <Typography
-                    className="page-header"
+                    className={styles.header}
                     variant="h5"
                     component="h1"
                     gutterBottom
@@ -73,33 +76,21 @@ export const RegisterPage = () => {
                     Sign Up for Wordfolio
                 </Typography>
                 {isLoadingRequirements ? (
-                    <Box className="register-loading">
-                        <Skeleton
-                            variant="rectangular"
-                            height={40}
-                            sx={{ mb: "10px" }}
-                        />
-                        <Skeleton
-                            variant="rectangular"
-                            height={40}
-                            sx={{ mb: "10px" }}
-                        />
-                        <Skeleton
-                            variant="rectangular"
-                            height={40}
-                            sx={{ mb: "10px" }}
-                        />
+                    <Box className={styles.loading}>
+                        <Skeleton variant="rectangular" height={40} />
+                        <Skeleton variant="rectangular" height={40} />
+                        <Skeleton variant="rectangular" height={40} />
                         <Skeleton variant="rectangular" height={40} />
                     </Box>
                 ) : (
                     <Box
-                        className="register-form"
+                        className={styles.form}
                         component="form"
                         onSubmit={handleSubmit(onSubmit)}
                         noValidate
                     >
                         {errors.root && (
-                            <Alert severity="error" className="register-alert">
+                            <Alert severity="error" className={styles.alert}>
                                 {errors.root.message}
                             </Alert>
                         )}
@@ -145,14 +136,14 @@ export const RegisterPage = () => {
                             type="submit"
                             variant="contained"
                             disabled={registerMutation.isPending}
-                            className="register-button"
+                            className={styles.button}
                         >
                             {registerMutation.isPending
                                 ? "Registering..."
                                 : "Register"}
                         </Button>
 
-                        <Box className="register-footer">
+                        <Box className={styles.footer}>
                             <Typography variant="body2">
                                 Already have an account?{" "}
                                 <MuiLink
