@@ -58,7 +58,7 @@ let ``returns empty list when vocabulary has no entries``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.getByVocabularyId
+            getByVocabularyId
                 env
                 { UserId = UserId 1
                   VocabularyId = VocabularyId 9 }
@@ -82,7 +82,7 @@ let ``returns entries when vocabulary has entries``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.getByVocabularyId
+            getByVocabularyId
                 env
                 { UserId = UserId 1
                   VocabularyId = VocabularyId 9 }
@@ -103,7 +103,7 @@ let ``returns error when user has no access``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.getByVocabularyId
+            getByVocabularyId
                 env
                 { UserId = UserId 1
                   VocabularyId = VocabularyId 9 }

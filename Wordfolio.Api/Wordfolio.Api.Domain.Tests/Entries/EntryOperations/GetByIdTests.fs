@@ -60,7 +60,7 @@ let ``returns entry when vocabulary is in collection and entry belongs to vocabu
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.getById
+            getById
                 env
                 { UserId = UserId 7
                   CollectionId = CollectionId 5
@@ -89,7 +89,7 @@ let ``returns VocabularyNotFoundOrAccessDenied when vocabulary is not in collect
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.getById
+            getById
                 env
                 { UserId = UserId 7
                   CollectionId = CollectionId 5
@@ -118,7 +118,7 @@ let ``returns EntryNotFound when entry does not exist``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.getById
+            getById
                 env
                 { UserId = UserId 7
                   CollectionId = CollectionId 5
@@ -141,7 +141,7 @@ let ``returns EntryNotFound when entry belongs to different vocabulary``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.getById
+            getById
                 env
                 { UserId = UserId 7
                   CollectionId = CollectionId 5

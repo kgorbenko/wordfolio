@@ -72,7 +72,7 @@ let ``deletes entry when user has access``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.delete
+            delete
                 env
                 { UserId = UserId 1
                   EntryId = EntryId 1 }
@@ -95,7 +95,7 @@ let ``returns EntryNotFound when entry does not exist``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.delete
+            delete
                 env
                 { UserId = UserId 1
                   EntryId = EntryId 2 }
@@ -119,7 +119,7 @@ let ``returns EntryNotFound when user has no access``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.delete
+            delete
                 env
                 { UserId = UserId 3
                   EntryId = EntryId 1 }

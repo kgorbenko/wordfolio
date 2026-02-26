@@ -84,7 +84,7 @@ let ``returns entry when it exists and user has access``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.getById
+            getById
                 env
                 { UserId = UserId 7
                   EntryId = EntryId 1 }
@@ -105,7 +105,7 @@ let ``returns EntryNotFound when entry does not exist``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.getById
+            getById
                 env
                 { UserId = UserId 1
                   EntryId = EntryId 44 }
@@ -127,7 +127,7 @@ let ``returns EntryNotFound when user has no access``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.getById
+            getById
                 env
                 { UserId = UserId 2
                   EntryId = EntryId 1 }

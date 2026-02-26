@@ -105,7 +105,7 @@ let ``moves entry when vocabulary is in collection and entry belongs to vocabula
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.move
+            move
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -148,7 +148,7 @@ let ``returns VocabularyNotFoundOrAccessDenied when source vocabulary is not in 
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.move
+            move
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -175,7 +175,7 @@ let ``returns EntryNotFound when entry does not exist``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.move
+            move
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -207,7 +207,7 @@ let ``returns EntryNotFound when entry belongs to different vocabulary``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.move
+            move
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -239,7 +239,7 @@ let ``returns VocabularyNotFoundOrAccessDenied when target vocabulary access is 
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.move
+            move
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -282,7 +282,7 @@ let ``throws when post-move entry fetch returns None``() =
 
         let! ex =
             Assert.ThrowsAsync<Exception>(fun () ->
-                Wordfolio.Api.Domain.Entries.EntryOperations.move
+                move
                     env
                     { UserId = UserId 1
                       CollectionId = CollectionId 5
@@ -327,7 +327,7 @@ let ``move succeeds without duplicate checks in target vocabulary``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.move
+            move
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5

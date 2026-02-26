@@ -224,7 +224,7 @@ let ``updates entry with new definitions and translations``() =
                   [ makeExampleInput "example" ExampleSource.Custom ] ]
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 3
                   CollectionId = CollectionId 5
@@ -303,7 +303,7 @@ let ``returns VocabularyNotFoundOrAccessDenied when vocabulary is not in collect
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -346,7 +346,7 @@ let ``returns EntryNotFound when entry does not exist``() =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -384,7 +384,7 @@ let ``returns EntryNotFound when entry belongs to different vocabulary``() =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -416,7 +416,7 @@ let ``returns error when no definitions or translations``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -450,7 +450,7 @@ let ``returns error when entry text is empty``() =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -487,7 +487,7 @@ let ``returns error when entry text exceeds max length``() =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -521,7 +521,7 @@ let ``returns error when entry text is whitespace only``() =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -561,7 +561,7 @@ let ``returns error when definition example text is too long``() =
                   [ makeExampleInput longExample ExampleSource.Custom ] ]
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 2
                   CollectionId = CollectionId 5
@@ -599,7 +599,7 @@ let ``returns error when definition has too many examples``() =
             [ makeDefinitionInput "definition" DefinitionSource.Manual examples ]
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 2
                   CollectionId = CollectionId 5
@@ -639,7 +639,7 @@ let ``returns error when translation example text is too long``() =
                   [ makeExampleInput longExample ExampleSource.Custom ] ]
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 2
                   CollectionId = CollectionId 5
@@ -677,7 +677,7 @@ let ``returns error when translation has too many examples``() =
             [ makeTranslationInput "translation" TranslationSource.Manual examples ]
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 2
                   CollectionId = CollectionId 5
@@ -734,7 +734,7 @@ let ``updates entry with definitions only``() =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 3
                   CollectionId = CollectionId 5
@@ -801,7 +801,7 @@ let ``updates entry with translations only``() =
             [ makeTranslationInput "translation" TranslationSource.Manual [] ]
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.update
+            update
                 env
                 { UserId = UserId 3
                   CollectionId = CollectionId 5

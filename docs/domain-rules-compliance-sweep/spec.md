@@ -146,7 +146,7 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - [x] Improve: Review naming precision and cross-feature dependency compliance.
 
 ### 5. Entries feature compliance (domain + tests)
-- [ ] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Entries/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/**/*.fs`.
+- [x] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Entries/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/**/*.fs`.
 - [ ] Improve: Review capability signature parity, no wrapper regressions, and all `...Calls` assertions in every test.
 
 ### 6. Final full-scope compliance and closeout
@@ -202,3 +202,9 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - What was done: Reviewed `CollectionsHierarchy` domain and test modules for naming precision and verified the public types accurately communicate payload depth (`CollectionWithVocabularies`, `CollectionWithVocabularyCount`, `VocabularyWithEntryCount`, `CollectionsHierarchyResult`) without ambiguous aliases. Re-audited dependencies to confirm the feature references only root shared contracts (`Wordfolio.Api.Domain`) and does not import other feature namespaces.
 - Issues encountered: None
 - Learnings: CollectionsHierarchy already preserves dependency boundaries by expressing cross-feature concepts through root shared value types (`CollectionId`, `VocabularyId`, `UserId`) rather than feature-to-feature imports; future naming refinements should keep this boundary intact.
+
+### Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Entries/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/**/*.fs`.
+- Files changed: `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/EntryOperations/GetByVocabularyIdTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/EntryOperations/GetByIdTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/EntryOperations/DeleteTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/EntryOperations/MoveTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/EntryOperations/UpdateTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/DraftOperations/GetDraftsTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/DraftOperations/GetByVocabularyIdTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/DraftOperations/GetByIdTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/DraftOperations/DeleteTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/DraftOperations/MoveTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/DraftOperations/UpdateTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/DraftOperations/CreateTests.fs`, `docs/domain-rules-compliance-sweep/spec.md`
+- What was done: Removed fully-qualified `Wordfolio.Api.Domain.Entries.*` operation call sites across entries domain tests and switched them to direct in-scope operation calls (`create`, `update`, `move`, `delete`, `getById`, `getByVocabularyId`, `getDrafts`) to satisfy call-site qualification rules. Kept entries domain behavior unchanged and verified the full mandatory formatting/build/test suite passes.
+- Issues encountered: None
+- Learnings: Entries tests already import the operation modules, so replacing fully-qualified invocations with direct calls is compile-safe and reduces namespace noise without affecting operation contracts or behavior.

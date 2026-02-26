@@ -92,7 +92,7 @@ let ``moves entry when user has access to source and target vocabularies``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.move
+            move
                 env
                 { UserId = UserId 1
                   EntryId = EntryId 10
@@ -127,7 +127,7 @@ let ``returns EntryNotFound when entry does not exist``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.move
+            move
                 env
                 { UserId = UserId 1
                   EntryId = EntryId 99
@@ -163,7 +163,7 @@ let ``returns EntryNotFound when source vocabulary access is denied``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.move
+            move
                 env
                 { UserId = UserId 1
                   EntryId = EntryId 10
@@ -201,7 +201,7 @@ let ``returns VocabularyNotFoundOrAccessDenied when target vocabulary access is 
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.move
+            move
                 env
                 { UserId = UserId 1
                   EntryId = EntryId 10
@@ -245,7 +245,7 @@ let ``throws when post-move entry fetch returns None``() =
 
         let! ex =
             Assert.ThrowsAsync<Exception>(fun () ->
-                Wordfolio.Api.Domain.Entries.DraftOperations.move
+                move
                     env
                     { UserId = UserId 1
                       EntryId = EntryId 10
@@ -287,7 +287,7 @@ let ``move succeeds without duplicate checks in target vocabulary``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.DraftOperations.move
+            move
                 env
                 { UserId = UserId 1
                   EntryId = EntryId 10

@@ -62,7 +62,7 @@ let ``returns entries when vocabulary is in collection``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.getByVocabularyId
+            getByVocabularyId
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -90,7 +90,7 @@ let ``returns empty list when vocabulary has no entries``() =
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.getByVocabularyId
+            getByVocabularyId
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
@@ -110,7 +110,7 @@ let ``returns VocabularyNotFoundOrAccessDenied when vocabulary is not in collect
             )
 
         let! result =
-            Wordfolio.Api.Domain.Entries.EntryOperations.getByVocabularyId
+            getByVocabularyId
                 env
                 { UserId = UserId 1
                   CollectionId = CollectionId 5
