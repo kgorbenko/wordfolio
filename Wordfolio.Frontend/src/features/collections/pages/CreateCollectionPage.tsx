@@ -6,6 +6,7 @@ import { CollectionForm } from "../components/CollectionForm";
 import { useCreateCollectionMutation } from "../hooks/useCreateCollectionMutation";
 import { useNotificationContext } from "../../../contexts/NotificationContext";
 import { CollectionFormData } from "../schemas/collectionSchemas";
+import { collectionsPath } from "../routes";
 
 export const CreateCollectionPage = () => {
     const navigate = useNavigate();
@@ -17,7 +18,7 @@ export const CreateCollectionPage = () => {
             openSuccessNotification({
                 message: "Collection created successfully",
             });
-            void navigate({ to: "/collections" });
+            void navigate(collectionsPath());
         },
         onError: () => {
             openErrorNotification({ message: "Failed to create collection" });
@@ -29,14 +30,14 @@ export const CreateCollectionPage = () => {
     };
 
     const handleCancel = () => {
-        void navigate({ to: "/collections" });
+        void navigate(collectionsPath());
     };
 
     return (
         <PageContainer>
             <BreadcrumbNav
                 items={[
-                    { label: "Collections", to: "/collections" },
+                    { label: "Collections", ...collectionsPath() },
                     { label: "New Collection" },
                 ]}
             />

@@ -9,6 +9,7 @@ import * as authApi from "../api/authApi";
 
 vi.mock("@tanstack/react-router", () => ({
     useNavigate: () => vi.fn(),
+    getRouteApi: () => ({}),
 }));
 
 const createWrapper = () => {

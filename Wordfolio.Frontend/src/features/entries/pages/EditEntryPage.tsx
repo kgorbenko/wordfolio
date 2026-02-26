@@ -1,11 +1,12 @@
 import { useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
-import { entryEditRouteApi } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
-import { collectionsPath } from "../../../routes/_authenticated/collections/routes";
-import { collectionDetailPath } from "../../../routes/_authenticated/collections/routes";
-import { vocabularyDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
-import { entryDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
+import { entryEditRouteApi, entryDetailPath } from "../routes";
+import {
+    collectionsPath,
+    collectionDetailPath,
+} from "../../collections/routes";
+import { vocabularyDetailPath } from "../../vocabularies/routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";

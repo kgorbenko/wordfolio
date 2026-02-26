@@ -1,5 +1,6 @@
 import { useAuthStore } from "../stores/authStore";
 import { useNavigate, Link } from "@tanstack/react-router";
+import { loginPath, registerPath } from "../features/auth/routes";
 import { Container, Typography, Box, Button } from "@mui/material";
 
 import "./HomePage.css";
@@ -10,7 +11,7 @@ export const HomePage = () => {
 
     const handleLogout = () => {
         clearAuth();
-        navigate({ to: "/login" });
+        navigate(loginPath());
     };
 
     return (
@@ -40,7 +41,7 @@ export const HomePage = () => {
                     <Box className="home-auth-links">
                         <Button
                             component={Link}
-                            to="/login"
+                            {...loginPath()}
                             variant="contained"
                             color="primary"
                         >
@@ -48,7 +49,7 @@ export const HomePage = () => {
                         </Button>
                         <Button
                             component={Link}
-                            to="/register"
+                            {...registerPath()}
                             variant="outlined"
                             color="primary"
                         >

@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 
 import { useAuthStore } from "../stores/authStore";
 import { useRefreshMutation } from "../mutations/useRefreshMutation";
+import { loginPath } from "../features/auth/routes";
 
 const REFRESH_BUFFER_MS = 5 * 60 * 1000;
 
@@ -22,7 +23,7 @@ export const useTokenRefresh = () => {
             clearAuth();
             setIsInitializing(false);
             navigate({
-                to: "/login",
+                ...loginPath(),
                 search: {
                     message: "Your session has expired. Please log in again.",
                 },

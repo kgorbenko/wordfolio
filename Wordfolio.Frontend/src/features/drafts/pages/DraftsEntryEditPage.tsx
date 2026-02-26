@@ -5,7 +5,7 @@ import {
     draftsEntryEditRouteApi,
     draftsPath,
     draftsEntryDetailPath,
-} from "../../../routes/_authenticated/drafts/routes";
+} from "../routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";

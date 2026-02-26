@@ -5,11 +5,15 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 
-import { collectionDetailRouteApi } from "../../../routes/_authenticated/collections/routes";
-import { collectionsPath } from "../../../routes/_authenticated/collections/routes";
-import { collectionEditPath } from "../../../routes/_authenticated/collections/routes";
-import { vocabularyDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
-import { vocabularyCreatePath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
+import {
+    collectionDetailRouteApi,
+    collectionsPath,
+    collectionEditPath,
+} from "../routes";
+import {
+    vocabularyDetailPath,
+    vocabularyCreatePath,
+} from "../../vocabularies/routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import {

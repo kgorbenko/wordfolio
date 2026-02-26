@@ -11,6 +11,7 @@ import { useCreateDraftMutation } from "../../features/drafts/hooks/useCreateDra
 import { CreateEntryRequest } from "../../features/entries/api/entriesApi";
 import { VocabularyContext } from "../../features/entries/components/EntryLookupForm";
 import { WordEntrySheet } from "../../features/entries";
+import { loginPath } from "../../features/auth/routes";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { assertNonNullable } from "../../utils/misc.ts";
@@ -81,7 +82,7 @@ export const AuthenticatedLayout = () => {
 
     const handleLogout = () => {
         clearAuth();
-        void navigate({ to: "/login" });
+        void navigate(loginPath());
     };
 
     const handleSaveEntry = useCallback(

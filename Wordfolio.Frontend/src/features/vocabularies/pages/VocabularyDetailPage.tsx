@@ -6,12 +6,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 
-import { vocabularyDetailRouteApi } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
-import { collectionDetailPath } from "../../../routes/_authenticated/collections/routes";
-import { vocabularyEditPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/routes";
-import { entryDetailPath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
-import { entryCreatePath } from "../../../routes/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/entries/routes";
-import { collectionsPath } from "../../../routes/_authenticated/collections/routes";
+import { vocabularyDetailRouteApi, vocabularyEditPath } from "../routes";
+import {
+    collectionDetailPath,
+    collectionsPath,
+} from "../../collections/routes";
+import { entryDetailPath, entryCreatePath } from "../../entries/routes";
 
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";

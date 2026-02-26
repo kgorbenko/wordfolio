@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
-import { draftsPath } from "../../../routes/_authenticated/drafts/routes";
+import { draftsPath } from "../routes";
 import { PageContainer } from "../../../components/common/PageContainer";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
