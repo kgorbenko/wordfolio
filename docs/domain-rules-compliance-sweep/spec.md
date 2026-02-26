@@ -131,7 +131,7 @@ The loop is feature-driven. Each implementation iteration must complete one full
 
 ### 1. Shared root compliance (`Types.fs`, `Capabilities.fs`, `Operations.fs`)
 - [x] Implement: Audit and fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Types.fs`, `Wordfolio.Api/Wordfolio.Api.Domain/Capabilities.fs`, `Wordfolio.Api/Wordfolio.Api.Domain/Operations.fs`, and any directly impacted tests in `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Shared/*.fs`.
-- [ ] Improve: Review for hidden feature-coupling and compile-order assumptions introduced by shared-type/capability movement.
+- [x] Improve: Review for hidden feature-coupling and compile-order assumptions introduced by shared-type/capability movement.
 
 ### 2. Collections feature compliance (domain + tests)
 - [ ] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Collections/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Collections/*.fs`.
@@ -160,3 +160,9 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - What was done: Audited shared root domain files and related root-domain test coverage for rule compliance. No production or test code changes were required because existing signatures, capability parameter records, call-site qualification, and namespaces already satisfy the inlined ruleset.
 - Issues encountered: None
 - Learnings: Shared root operation `getOrCreateDefaultVocabulary` is intentionally internal and does not trigger the public-operation `Task<Result<_,_>>` contract rule; root-domain tests for it currently live in `Wordfolio.Api.Domain.Tests` rather than `Shared/`, so future spec steps should treat that file as the impacted coverage location.
+
+### Improve: Review for hidden feature-coupling and compile-order assumptions introduced by shared-type/capability movement.
+- Files changed: `docs/domain-rules-compliance-sweep/spec.md`
+- What was done: Re-reviewed root shared domain contracts and operation wiring for cross-feature coupling and compile-order fragility. Confirmed the shared root files remain feature-agnostic and both domain/test `.fsproj` compile order already preserves root-before-feature dependency direction.
+- Issues encountered: None
+- Learnings: Shared root capability contracts (`IGetDefaultCollection`, `ICreateDefaultCollection`, `IGetDefaultVocabulary`, `ICreateDefaultVocabulary`) safely centralize default-vocabulary orchestration without requiring feature-to-feature imports, so future refactors should preserve this boundary by extending root contracts instead of adding cross-feature references.
