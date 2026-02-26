@@ -156,6 +156,8 @@ let ``returns AccessDenied when collection owned by different user``() =
                   VocabularyId = VocabularyId 1 }
 
         Assert.Equal(Error(GetVocabularyByIdError.VocabularyAccessDenied(VocabularyId 1)), result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }
 
 [<Fact>]
@@ -177,4 +179,6 @@ let ``returns CollectionNotFound when collection does not exist``() =
                   VocabularyId = VocabularyId 1 }
 
         Assert.Equal(Error(GetVocabularyByIdError.VocabularyCollectionNotFound(CollectionId 1)), result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
     }

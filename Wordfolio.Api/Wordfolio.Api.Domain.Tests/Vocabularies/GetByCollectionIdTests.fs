@@ -112,6 +112,9 @@ let ``returns empty list when collection has no vocabularies``() =
         match result with
         | Ok vocabularies -> Assert.Empty(vocabularies)
         | Error e -> failwith $"Expected Ok, got Error: {e}"
+
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetVocabulariesByCollectionIdCalls)
     }
 
 [<Fact>]
@@ -162,5 +165,6 @@ let ``returns CollectionNotFound when collection owned by different user``() =
                   CollectionId = CollectionId 1 }
 
         Assert.Equal(Error(GetVocabulariesByCollectionIdError.VocabularyCollectionNotFound(CollectionId 1)), result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.GetVocabulariesByCollectionIdCalls)
     }

@@ -133,6 +133,7 @@ let ``returns NotFound when vocabulary does not exist``() =
 
         Assert.Equal(Error(DeleteVocabularyError.VocabularyNotFound(VocabularyId 1)), result)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Empty(env.GetCollectionByIdCalls)
         Assert.Empty(env.DeleteVocabularyCalls)
     }
 
@@ -158,6 +159,8 @@ let ``returns AccessDenied when collection owned by different user``() =
                   VocabularyId = VocabularyId 1 }
 
         Assert.Equal(Error(DeleteVocabularyError.VocabularyAccessDenied(VocabularyId 1)), result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.DeleteVocabularyCalls)
     }
 
@@ -181,6 +184,8 @@ let ``returns AccessDenied when collection does not exist``() =
                   VocabularyId = VocabularyId 1 }
 
         Assert.Equal(Error(DeleteVocabularyError.VocabularyAccessDenied(VocabularyId 1)), result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.DeleteVocabularyCalls)
     }
 
@@ -206,5 +211,7 @@ let ``returns NotFound when delete affects no rows``() =
                   VocabularyId = VocabularyId 1 }
 
         Assert.Equal(Error(DeleteVocabularyError.VocabularyNotFound(VocabularyId 1)), result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.DeleteVocabularyCalls)
     }

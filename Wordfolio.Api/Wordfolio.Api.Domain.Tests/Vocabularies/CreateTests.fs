@@ -10,12 +10,6 @@ open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.Vocabularies
 open Wordfolio.Api.Domain.Vocabularies.Operations
 
-type CreateVocabularyCall =
-    { CollectionId: CollectionId
-      Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset }
-
 type TestEnv
     (
         getCollectionById: CollectionId -> Task<Collection option>,
@@ -26,7 +20,7 @@ type TestEnv
         ResizeArray<CollectionId>()
 
     let createVocabularyCalls =
-        ResizeArray<CreateVocabularyCall>()
+        ResizeArray<CreateVocabularyData>()
 
     let getVocabularyByIdCalls =
         ResizeArray<VocabularyId>()
@@ -47,13 +41,7 @@ type TestEnv
 
     interface ICreateVocabulary with
         member _.CreateVocabulary(data) =
-            createVocabularyCalls.Add(
-                { CollectionId = data.CollectionId
-                  Name = data.Name
-                  Description = data.Description
-                  CreatedAt = data.CreatedAt }
-            )
-
+            createVocabularyCalls.Add(data)
             createVocabulary(data)
 
     interface IGetVocabularyById with
@@ -131,7 +119,15 @@ let ``creates vocabulary with valid name``() =
 
         Assert.Equal(Ok createdVocabulary, result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
-        Assert.Equal(1, env.CreateVocabularyCalls.Length)
+
+        Assert.Equal<CreateVocabularyData list>(
+            [ { CollectionId = CollectionId 1
+                Name = "Test Vocabulary"
+                Description = None
+                CreatedAt = now } ],
+            env.CreateVocabularyCalls
+        )
+
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
     }
 
@@ -167,6 +163,17 @@ let ``creates vocabulary with description``() =
                   CreatedAt = now }
 
         Assert.Equal(Ok createdVocabulary, result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+
+        Assert.Equal<CreateVocabularyData list>(
+            [ { CollectionId = CollectionId 1
+                Name = "Test Vocabulary"
+                Description = description
+                CreatedAt = now } ],
+            env.CreateVocabularyCalls
+        )
+
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
     }
 
 [<Fact>]
@@ -205,6 +212,9 @@ let ``trims whitespace from name``() =
             env.CreateVocabularyCalls |> List.head
 
         Assert.Equal("Test Vocabulary", call.Name)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal(1, env.CreateVocabularyCalls.Length)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
     }
 
 [<Fact>]
@@ -232,7 +242,9 @@ let ``returns CollectionNotFound when collection does not exist``() =
                   CreatedAt = DateTimeOffset.UtcNow }
 
         Assert.Equal(Error(CreateVocabularyError.VocabularyCollectionNotFound(CollectionId 1)), result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.CreateVocabularyCalls)
+        Assert.Empty(env.GetVocabularyByIdCalls)
     }
 
 [<Fact>]
@@ -257,7 +269,9 @@ let ``returns CollectionNotFound when collection owned by different user``() =
                   CreatedAt = DateTimeOffset.UtcNow }
 
         Assert.Equal(Error(CreateVocabularyError.VocabularyCollectionNotFound(CollectionId 1)), result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.CreateVocabularyCalls)
+        Assert.Empty(env.GetVocabularyByIdCalls)
     }
 
 [<Fact>]
@@ -282,7 +296,9 @@ let ``returns error when name is empty``() =
                   CreatedAt = DateTimeOffset.UtcNow }
 
         Assert.Equal(Error CreateVocabularyError.VocabularyNameRequired, result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.CreateVocabularyCalls)
+        Assert.Empty(env.GetVocabularyByIdCalls)
     }
 
 [<Fact>]
@@ -307,7 +323,9 @@ let ``returns error when name is whitespace only``() =
                   CreatedAt = DateTimeOffset.UtcNow }
 
         Assert.Equal(Error CreateVocabularyError.VocabularyNameRequired, result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.CreateVocabularyCalls)
+        Assert.Empty(env.GetVocabularyByIdCalls)
     }
 
 [<Fact>]
@@ -333,7 +351,9 @@ let ``returns error when name exceeds max length``() =
                   CreatedAt = DateTimeOffset.UtcNow }
 
         Assert.Equal(Error(CreateVocabularyError.VocabularyNameTooLong MaxNameLength), result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.CreateVocabularyCalls)
+        Assert.Empty(env.GetVocabularyByIdCalls)
     }
 
 [<Fact>]
@@ -370,6 +390,17 @@ let ``accepts name at exact max length``() =
                   CreatedAt = now }
 
         Assert.Equal(Ok createdVocabulary, result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+
+        Assert.Equal<CreateVocabularyData list>(
+            [ { CollectionId = CollectionId 1
+                Name = maxLengthName
+                Description = None
+                CreatedAt = now } ],
+            env.CreateVocabularyCalls
+        )
+
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
     }
 
 [<Fact>]
@@ -397,4 +428,15 @@ let ``throws when post-creation vocabulary fetch returns None``() =
                 :> Task)
 
         Assert.Equal("Vocabulary VocabularyId 1 not found after creation", ex.Message)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+
+        Assert.Equal<CreateVocabularyData list>(
+            [ { CollectionId = CollectionId 1
+                Name = "Test Vocabulary"
+                Description = None
+                CreatedAt = now } ],
+            env.CreateVocabularyCalls
+        )
+
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
     }

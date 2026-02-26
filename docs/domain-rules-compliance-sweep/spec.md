@@ -138,7 +138,7 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - [x] Improve: Review test call-tracking completeness (`...Calls` type parity and full assertions per test).
 
 ### 3. Vocabularies feature compliance (domain + tests)
-- [ ] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Vocabularies/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Vocabularies/*.fs`.
+- [x] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Vocabularies/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Vocabularies/*.fs`.
 - [ ] Improve: Review operation-specific error contracts and call-site qualification consistency.
 
 ### 4. CollectionsHierarchy feature compliance (domain + tests)
@@ -178,3 +178,9 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - What was done: Audited all Collections domain tests (`Create`, `Update`, `Delete`, `GetById`, `GetByUserId`) for call-tracking parity and verified each test asserts every `...Calls` collection relevant to its test environment, including explicit empty assertions for non-invoked dependencies.
 - Issues encountered: None
 - Learnings: Collections tests consistently use exact capability parameter/call types (for example, `CreateCollectionData` and `UpdateCollectionData`) and complete call-list assertions across success and failure paths, so no additional production or test code changes were required in this improve pass.
+
+### Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Vocabularies/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Vocabularies/*.fs`.
+- Files changed: `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Vocabularies/CreateTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Vocabularies/UpdateTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Vocabularies/DeleteTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Vocabularies/GetByIdTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Vocabularies/GetByCollectionIdTests.fs`, `docs/domain-rules-compliance-sweep/spec.md`
+- What was done: Updated vocabularies tests to track capability calls with the exact capability input types (`CreateVocabularyData`, `UpdateVocabularyData`) instead of duplicate test-only call records. Added explicit assertions in every vocabularies test for all `...Calls` collections, including explicit empty assertions for non-invoked dependencies.
+- Issues encountered: None
+- Learnings: Vocabularies operations already matched the domain ruleset; the remaining compliance drift was in test call-tracking parity and assertion completeness, which are resolved by reusing capability parameter records directly in test environments.
