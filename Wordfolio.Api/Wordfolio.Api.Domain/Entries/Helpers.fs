@@ -1,4 +1,4 @@
-module Wordfolio.Api.Domain.Entries.Helpers
+module internal Wordfolio.Api.Domain.Entries.Helpers
 
 open System
 open System.Threading.Tasks

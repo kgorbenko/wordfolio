@@ -13,7 +13,7 @@ let SystemCollectionName =
 [<Literal>]
 let DefaultVocabularyName = "[Default]"
 
-let getOrCreateDefaultVocabulary env (userId: UserId) (now: DateTimeOffset) : Task<VocabularyId> =
+let internal getOrCreateDefaultVocabulary env (userId: UserId) (now: DateTimeOffset) : Task<VocabularyId> =
     task {
         let! maybeVocabulary = getDefaultVocabulary env userId
 
