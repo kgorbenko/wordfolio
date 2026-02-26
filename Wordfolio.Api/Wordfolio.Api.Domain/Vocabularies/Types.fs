@@ -4,8 +4,6 @@ open System
 
 open Wordfolio.Api.Domain
 
-type Vocabulary = Wordfolio.Api.Domain.Shared.Vocabulary
-
 type VocabularyDetail =
     { Id: VocabularyId
       CollectionId: CollectionId
@@ -14,3 +12,7 @@ type VocabularyDetail =
       Description: string option
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option }
+
+type VocabularyNameValidationResult =
+    | NameRequired
+    | NameTooLong of maxLength: int

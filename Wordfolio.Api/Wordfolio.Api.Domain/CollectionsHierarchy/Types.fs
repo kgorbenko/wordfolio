@@ -4,7 +4,7 @@ open System
 
 open Wordfolio.Api.Domain
 
-type VocabularySummary =
+type VocabularyWithEntryCount =
     { Id: VocabularyId
       Name: string
       Description: string option
@@ -12,15 +12,15 @@ type VocabularySummary =
       UpdatedAt: DateTimeOffset option
       EntryCount: int }
 
-type CollectionSummary =
+type CollectionWithVocabularies =
     { Id: CollectionId
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option
-      Vocabularies: VocabularySummary list }
+      Vocabularies: VocabularyWithEntryCount list }
 
-type CollectionOverview =
+type CollectionWithVocabularyCount =
     { Id: CollectionId
       Name: string
       Description: string option
@@ -44,16 +44,16 @@ type SearchUserCollectionsQuery =
       SortDirection: SortDirection }
 
 type CollectionsHierarchyResult =
-    { Collections: CollectionSummary list
-      DefaultVocabulary: VocabularySummary option }
+    { Collections: CollectionWithVocabularies list
+      DefaultVocabulary: VocabularyWithEntryCount option }
 
-type VocabularySummarySortBy =
+type VocabularySortBy =
     | Name
     | CreatedAt
     | UpdatedAt
     | EntryCount
 
-type VocabularySummaryQuery =
+type SearchCollectionVocabulariesQuery =
     { Search: string option
-      SortBy: VocabularySummarySortBy
+      SortBy: VocabularySortBy
       SortDirection: SortDirection }

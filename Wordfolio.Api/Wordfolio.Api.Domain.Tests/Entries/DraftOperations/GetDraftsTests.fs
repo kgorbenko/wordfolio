@@ -8,7 +8,6 @@ open Xunit
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations
-open Wordfolio.Api.Domain.Shared
 
 let private shouldNotBeCalled<'a, 'b> : 'a -> Task<'b> =
     fun _ -> failwith "Should not be called"
@@ -82,7 +81,7 @@ let ``returns None when no default vocabulary exists``() =
                 getEntriesHierarchyByVocabularyId = shouldNotBeCalled
             )
 
-        let! result = getDrafts env userId
+        let! result = getDrafts env { UserId = userId }
 
         Assert.Equal(Ok None, result)
         Assert.Equal<UserId list>([ userId ], env.GetDefaultVocabularyCalls)
@@ -98,7 +97,7 @@ let ``returns DraftsVocabularyData with empty entries when vocabulary has no ent
                 getEntriesHierarchyByVocabularyId = (fun _ -> Task.FromResult [])
             )
 
-        let! result = getDrafts env userId
+        let! result = getDrafts env { UserId = userId }
 
         let expected: DraftsVocabularyData =
             { Vocabulary = vocabulary
@@ -118,7 +117,7 @@ let ``returns DraftsVocabularyData with entries when vocabulary has entries``() 
                 getEntriesHierarchyByVocabularyId = (fun _ -> Task.FromResult [ entry ])
             )
 
-        let! result = getDrafts env userId
+        let! result = getDrafts env { UserId = userId }
 
         let expected: DraftsVocabularyData =
             { Vocabulary = vocabulary

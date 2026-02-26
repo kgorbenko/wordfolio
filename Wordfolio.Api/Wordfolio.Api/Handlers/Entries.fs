@@ -186,22 +186,57 @@ let private getUserId(user: ClaimsPrincipal) : int option =
         | true, id -> Some id
         | false, _ -> None
 
-let toErrorResponse(error: EntryError) : IResult =
+let private toGetByVocabularyIdErrorResponse(error: GetEntriesByVocabularyIdError) : IResult =
     match error with
-    | EntryNotFound _ -> Results.NotFound()
-    | EntryTextRequired -> Results.BadRequest({| error = "Entry text is required" |})
-    | EntryTextTooLong maxLength ->
+    | GetEntriesByVocabularyIdError.VocabularyNotFoundOrAccessDenied _ ->
+        Results.NotFound({| error = "Vocabulary not found" |})
+
+let private toCreateErrorResponse(error: CreateEntryError) : IResult =
+    match error with
+    | CreateEntryError.EntryTextRequired -> Results.BadRequest({| error = "Entry text is required" |})
+    | CreateEntryError.EntryTextTooLong maxLength ->
         Results.BadRequest({| error = $"Entry text must be at most {maxLength} characters" |})
-    | VocabularyNotFoundOrAccessDenied _ -> Results.NotFound({| error = "Vocabulary not found" |})
-    | DuplicateEntry existingEntry ->
+    | CreateEntryError.VocabularyNotFoundOrAccessDenied _ -> Results.NotFound({| error = "Vocabulary not found" |})
+    | CreateEntryError.DuplicateEntry existingEntry ->
         Results.Conflict(
             {| error = "A matching entry already exists in this vocabulary"
                existingEntry = toEntryResponse existingEntry |}
         )
-    | NoDefinitionsOrTranslations -> Results.BadRequest({| error = "At least one definition or translation required" |})
-    | TooManyExamples maxCount -> Results.BadRequest({| error = $"Too many examples (max {maxCount} per item)" |})
-    | ExampleTextTooLong maxLength ->
+    | CreateEntryError.NoDefinitionsOrTranslations ->
+        Results.BadRequest({| error = "At least one definition or translation required" |})
+    | CreateEntryError.TooManyExamples maxCount ->
+        Results.BadRequest({| error = $"Too many examples (max {maxCount} per item)" |})
+    | CreateEntryError.ExampleTextTooLong maxLength ->
         Results.BadRequest({| error = $"Example text must be at most {maxLength} characters" |})
+
+let private toGetByIdErrorResponse(error: GetEntryByIdError) : IResult =
+    match error with
+    | GetEntryByIdError.EntryNotFound _ -> Results.NotFound()
+    | GetEntryByIdError.VocabularyNotFoundOrAccessDenied _ -> Results.NotFound({| error = "Vocabulary not found" |})
+
+let private toDeleteErrorResponse(error: DeleteEntryError) : IResult =
+    match error with
+    | DeleteEntryError.EntryNotFound _ -> Results.NotFound()
+    | DeleteEntryError.VocabularyNotFoundOrAccessDenied _ -> Results.NotFound({| error = "Vocabulary not found" |})
+
+let private toUpdateErrorResponse(error: UpdateEntryError) : IResult =
+    match error with
+    | UpdateEntryError.EntryNotFound _ -> Results.NotFound()
+    | UpdateEntryError.EntryTextRequired -> Results.BadRequest({| error = "Entry text is required" |})
+    | UpdateEntryError.EntryTextTooLong maxLength ->
+        Results.BadRequest({| error = $"Entry text must be at most {maxLength} characters" |})
+    | UpdateEntryError.VocabularyNotFoundOrAccessDenied _ -> Results.NotFound({| error = "Vocabulary not found" |})
+    | UpdateEntryError.NoDefinitionsOrTranslations ->
+        Results.BadRequest({| error = "At least one definition or translation required" |})
+    | UpdateEntryError.TooManyExamples maxCount ->
+        Results.BadRequest({| error = $"Too many examples (max {maxCount} per item)" |})
+    | UpdateEntryError.ExampleTextTooLong maxLength ->
+        Results.BadRequest({| error = $"Example text must be at most {maxLength} characters" |})
+
+let private toMoveErrorResponse(error: MoveEntryError) : IResult =
+    match error with
+    | MoveEntryError.EntryNotFound _ -> Results.NotFound()
+    | MoveEntryError.VocabularyNotFoundOrAccessDenied _ -> Results.NotFound({| error = "Vocabulary not found" |})
 
 let mapEntriesEndpoints(group: RouteGroupBuilder) =
     group
@@ -219,9 +254,9 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                             let! result =
                                 getByVocabularyId
                                     env
-                                    (UserId userId)
-                                    (CollectionId collectionId)
-                                    (VocabularyId vocabularyId)
+                                    { UserId = UserId userId
+                                      CollectionId = CollectionId collectionId
+                                      VocabularyId = VocabularyId vocabularyId }
 
                             return
                                 match result with
@@ -230,7 +265,7 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                                         entries |> List.map toEntryResponse
 
                                     Results.Ok(response)
-                                | Error error -> toErrorResponse error
+                                | Error error -> toGetByVocabularyIdErrorResponse error
                     })
         )
         .Produces<EntryResponse list>(StatusCodes.Status200OK)
@@ -250,8 +285,9 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let parameters: CreateEntryParameters =
+                            let parameters: CreateParameters =
                                 { UserId = UserId userId
+                                  CollectionId = CollectionId collectionId
                                   VocabularyId = VocabularyId vocabularyId
                                   EntryText = request.EntryText
                                   Definitions =
@@ -265,7 +301,7 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                                     |> Option.defaultValue false
                                   CreatedAt = DateTimeOffset.UtcNow }
 
-                            let! result = create env (CollectionId collectionId) parameters
+                            let! result = create env parameters
 
                             return
                                 match result with
@@ -274,7 +310,7 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                                         Urls.entryById(collectionId, vocabularyId, EntryId.value entry.Id),
                                         toEntryResponse entry
                                     )
-                                | Error error -> toErrorResponse error
+                                | Error error -> toCreateErrorResponse error
                     })
         )
         .Produces<EntryResponse>(StatusCodes.Status201Created)
@@ -299,15 +335,15 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                             let! result =
                                 getById
                                     env
-                                    (UserId userId)
-                                    (CollectionId collectionId)
-                                    (VocabularyId vocabularyId)
-                                    (EntryId id)
+                                    { UserId = UserId userId
+                                      CollectionId = CollectionId collectionId
+                                      VocabularyId = VocabularyId vocabularyId
+                                      EntryId = EntryId id }
 
                             return
                                 match result with
                                 | Ok entry -> Results.Ok(toEntryResponse entry)
-                                | Error error -> toErrorResponse error
+                                | Error error -> toGetByIdErrorResponse error
                     })
         )
         .Produces<EntryResponse>(StatusCodes.Status200OK)
@@ -330,15 +366,15 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                             let! result =
                                 delete
                                     env
-                                    (UserId userId)
-                                    (CollectionId collectionId)
-                                    (VocabularyId vocabularyId)
-                                    (EntryId id)
+                                    { UserId = UserId userId
+                                      CollectionId = CollectionId collectionId
+                                      VocabularyId = VocabularyId vocabularyId
+                                      EntryId = EntryId id }
 
                             return
                                 match result with
                                 | Ok() -> Results.NoContent()
-                                | Error error -> toErrorResponse error
+                                | Error error -> toDeleteErrorResponse error
                     })
         )
         .Produces(StatusCodes.Status204NoContent)
@@ -369,19 +405,19 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                             let! result =
                                 update
                                     env
-                                    (UserId userId)
-                                    (CollectionId collectionId)
-                                    (VocabularyId vocabularyId)
-                                    (EntryId id)
-                                    request.EntryText
-                                    definitions
-                                    translations
-                                    DateTimeOffset.UtcNow
+                                    { UserId = UserId userId
+                                      CollectionId = CollectionId collectionId
+                                      VocabularyId = VocabularyId vocabularyId
+                                      EntryId = EntryId id
+                                      EntryText = request.EntryText
+                                      Definitions = definitions
+                                      Translations = translations
+                                      UpdatedAt = DateTimeOffset.UtcNow }
 
                             return
                                 match result with
                                 | Ok entry -> Results.Ok(toEntryResponse entry)
-                                | Error error -> toErrorResponse error
+                                | Error error -> toUpdateErrorResponse error
                     })
         )
         .Produces<EntryResponse>(StatusCodes.Status200OK)
@@ -405,17 +441,17 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                             let! result =
                                 move
                                     env
-                                    (UserId userId)
-                                    (CollectionId collectionId)
-                                    (VocabularyId vocabularyId)
-                                    (EntryId id)
-                                    (VocabularyId request.VocabularyId)
-                                    DateTimeOffset.UtcNow
+                                    { UserId = UserId userId
+                                      CollectionId = CollectionId collectionId
+                                      VocabularyId = VocabularyId vocabularyId
+                                      EntryId = EntryId id
+                                      TargetVocabularyId = VocabularyId request.VocabularyId
+                                      UpdatedAt = DateTimeOffset.UtcNow }
 
                             return
                                 match result with
                                 | Ok entry -> Results.Ok(toEntryResponse entry)
-                                | Error error -> toErrorResponse error
+                                | Error error -> toMoveErrorResponse error
                     })
         )
         .Produces<EntryResponse>(StatusCodes.Status200OK)

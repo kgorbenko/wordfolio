@@ -9,42 +9,41 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations
 open Wordfolio.Api.Domain.Entries.Helpers
-open Wordfolio.Api.Domain.Shared
 
 type TestEnv
     (
         getEntryById: EntryId -> Task<Entry option>,
-        getEntryByTextAndVocabularyId: VocabularyId * string -> Task<Entry option>,
-        createEntry: VocabularyId * string * DateTimeOffset -> Task<EntryId>,
-        createDefinition: EntryId * string * DefinitionSource * int -> Task<DefinitionId>,
-        createTranslation: EntryId * string * TranslationSource * int -> Task<TranslationId>,
-        createExamplesForDefinition: DefinitionId * ExampleInput list -> Task<unit>,
-        createExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>,
+        getEntryByTextAndVocabularyId: GetEntryByTextAndVocabularyIdData -> Task<Entry option>,
+        createEntry: CreateEntryData -> Task<EntryId>,
+        createDefinition: CreateDefinitionData -> Task<DefinitionId>,
+        createTranslation: CreateTranslationData -> Task<TranslationId>,
+        createExamplesForDefinition: CreateExamplesForDefinitionData -> Task<unit>,
+        createExamplesForTranslation: CreateExamplesForTranslationData -> Task<unit>,
         getDefaultVocabulary: UserId -> Task<Vocabulary option>,
         getDefaultCollection: UserId -> Task<Collection option>,
-        createDefaultVocabulary: CreateVocabularyParameters -> Task<VocabularyId>,
-        createDefaultCollection: CreateCollectionParameters -> Task<CollectionId>
+        createDefaultVocabulary: CreateDefaultVocabularyParameters -> Task<VocabularyId>,
+        createDefaultCollection: CreateDefaultCollectionParameters -> Task<CollectionId>
     ) =
     let getEntryByIdCalls =
         ResizeArray<EntryId>()
 
     let getEntryByTextAndVocabularyIdCalls =
-        ResizeArray<VocabularyId * string>()
+        ResizeArray<GetEntryByTextAndVocabularyIdData>()
 
     let createEntryCalls =
-        ResizeArray<VocabularyId * string * DateTimeOffset>()
+        ResizeArray<CreateEntryData>()
 
     let createDefinitionCalls =
-        ResizeArray<EntryId * string * DefinitionSource * int>()
+        ResizeArray<CreateDefinitionData>()
 
     let createTranslationCalls =
-        ResizeArray<EntryId * string * TranslationSource * int>()
+        ResizeArray<CreateTranslationData>()
 
     let createExamplesForDefinitionCalls =
-        ResizeArray<DefinitionId * ExampleInput list>()
+        ResizeArray<CreateExamplesForDefinitionData>()
 
     let createExamplesForTranslationCalls =
-        ResizeArray<TranslationId * ExampleInput list>()
+        ResizeArray<CreateExamplesForTranslationData>()
 
     member _.GetEntryByIdCalls =
         getEntryByIdCalls |> Seq.toList
@@ -76,34 +75,34 @@ type TestEnv
             getEntryById id
 
     interface IGetEntryByTextAndVocabularyId with
-        member _.GetEntryByTextAndVocabularyId(vocabularyId, text) =
-            getEntryByTextAndVocabularyIdCalls.Add(vocabularyId, text)
-            getEntryByTextAndVocabularyId(vocabularyId, text)
+        member _.GetEntryByTextAndVocabularyId(data) =
+            getEntryByTextAndVocabularyIdCalls.Add(data)
+            getEntryByTextAndVocabularyId(data)
 
     interface ICreateEntry with
-        member _.CreateEntry(vocabularyId, text, createdAt) =
-            createEntryCalls.Add(vocabularyId, text, createdAt)
-            createEntry(vocabularyId, text, createdAt)
+        member _.CreateEntry(data) =
+            createEntryCalls.Add(data)
+            createEntry data
 
     interface ICreateDefinition with
-        member _.CreateDefinition(entryId, text, source, displayOrder) =
-            createDefinitionCalls.Add(entryId, text, source, displayOrder)
-            createDefinition(entryId, text, source, displayOrder)
+        member _.CreateDefinition(data) =
+            createDefinitionCalls.Add(data)
+            createDefinition data
 
     interface ICreateTranslation with
-        member _.CreateTranslation(entryId, text, source, displayOrder) =
-            createTranslationCalls.Add(entryId, text, source, displayOrder)
-            createTranslation(entryId, text, source, displayOrder)
+        member _.CreateTranslation(data) =
+            createTranslationCalls.Add(data)
+            createTranslation data
 
     interface ICreateExamplesForDefinition with
-        member _.CreateExamplesForDefinition(definitionId, examples) =
-            createExamplesForDefinitionCalls.Add(definitionId, examples)
-            createExamplesForDefinition(definitionId, examples)
+        member _.CreateExamplesForDefinition(data) =
+            createExamplesForDefinitionCalls.Add(data)
+            createExamplesForDefinition(data)
 
     interface ICreateExamplesForTranslation with
-        member _.CreateExamplesForTranslation(translationId, examples) =
-            createExamplesForTranslationCalls.Add(translationId, examples)
-            createExamplesForTranslation(translationId, examples)
+        member _.CreateExamplesForTranslation(data) =
+            createExamplesForTranslationCalls.Add(data)
+            createExamplesForTranslation(data)
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -168,7 +167,7 @@ let makeTranslationInput text source examples =
 
 let makeExampleInput text source = { ExampleText = text; Source = source }
 
-let makeCreateParams userId entryText definitions translations createdAt : CreateDraftParameters =
+let makeCreateParams userId entryText definitions translations createdAt : CreateParameters =
     { UserId = userId
       EntryText = entryText
       Definitions = definitions
@@ -331,7 +330,9 @@ let ``trims whitespace from entry text``() =
                 getEntryById = (fun _ -> Task.FromResult(Some createdEntry)),
                 getEntryByTextAndVocabularyId = (fun _ -> Task.FromResult(None)),
                 createEntry =
-                    (fun (_, text, _) ->
+                    (fun data ->
+                        let text = data.EntryText
+
                         if text <> "test word" then
                             failwith $"Expected trimmed text 'test word', got: '{text}'"
 
@@ -379,7 +380,7 @@ let ``returns error when entry text is empty``() =
                     []
                     DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error EntryTextRequired, result)
+        Assert.Equal(Error CreateDraftEntryError.EntryTextRequired, result)
         Assert.Empty(env.CreateEntryCalls)
     }
 
@@ -411,7 +412,7 @@ let ``returns error when entry text is whitespace only``() =
                     []
                     DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error EntryTextRequired, result)
+        Assert.Equal(Error CreateDraftEntryError.EntryTextRequired, result)
     }
 
 [<Fact>]
@@ -444,7 +445,7 @@ let ``returns error when entry text exceeds max length``() =
                     []
                     DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error(EntryTextTooLong MaxEntryTextLength), result)
+        Assert.Equal(Error(CreateDraftEntryError.EntryTextTooLong MaxEntryTextLength), result)
     }
 
 [<Fact>]
@@ -467,7 +468,7 @@ let ``returns error when both definitions and translations are empty``() =
 
         let! result = create env (makeCreateParams (UserId 1) "test word" [] [] DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error NoDefinitionsOrTranslations, result)
+        Assert.Equal(Error CreateDraftEntryError.NoDefinitionsOrTranslations, result)
     }
 
 [<Fact>]
@@ -506,7 +507,7 @@ let ``returns error when duplicate entry exists``() =
                     []
                     now)
 
-        Assert.Equal(Error(DuplicateEntry existingEntry), result)
+        Assert.Equal(Error(CreateDraftEntryError.DuplicateEntry existingEntry), result)
     }
 
 [<Fact>]
@@ -582,7 +583,7 @@ let ``returns error when example text is too long``() =
 
         let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
+        Assert.Equal(Error(CreateDraftEntryError.ExampleTextTooLong MaxExampleTextLength), result)
     }
 
 [<Fact>]
@@ -612,7 +613,7 @@ let ``returns error when too many examples in definition``() =
 
         let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
+        Assert.Equal(Error(CreateDraftEntryError.TooManyExamples MaxExamplesPerItem), result)
     }
 
 [<Fact>]
@@ -642,7 +643,7 @@ let ``returns error when too many examples in translation``() =
 
         let! result = create env (makeCreateParams (UserId 1) "test word" [] translationInputs DateTimeOffset.UtcNow)
 
-        Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
+        Assert.Equal(Error(CreateDraftEntryError.TooManyExamples MaxExamplesPerItem), result)
     }
 
 [<Fact>]

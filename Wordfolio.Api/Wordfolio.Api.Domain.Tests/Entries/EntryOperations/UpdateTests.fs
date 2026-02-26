@@ -8,67 +8,43 @@ open Xunit
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.EntryOperations
+
 open Wordfolio.Api.Domain.Entries.Helpers
-
-type UpdateEntryCall =
-    { EntryId: EntryId
-      EntryText: string
-      UpdatedAt: DateTimeOffset }
-
-type CreateDefinitionCall =
-    { EntryId: EntryId
-      Text: string
-      Source: DefinitionSource
-      DisplayOrder: int }
-
-type CreateTranslationCall =
-    { EntryId: EntryId
-      Text: string
-      Source: TranslationSource
-      DisplayOrder: int }
-
-type CreateExamplesForDefinitionCall =
-    { DefinitionId: DefinitionId
-      Examples: ExampleInput list }
-
-type CreateExamplesForTranslationCall =
-    { TranslationId: TranslationId
-      Examples: ExampleInput list }
 
 type TestEnv
     (
         getEntryById: EntryId -> Task<Entry option>,
-        hasVocabularyAccessInCollection: VocabularyId * CollectionId * UserId -> Task<bool>,
-        updateEntry: EntryId * string * DateTimeOffset -> Task<unit>,
+        hasVocabularyAccessInCollection: HasVocabularyAccessInCollectionData -> Task<bool>,
+        updateEntry: UpdateEntryData -> Task<unit>,
         clearEntryChildren: EntryId -> Task<unit>,
-        createDefinition: EntryId * string * DefinitionSource * int -> Task<DefinitionId>,
-        createTranslation: EntryId * string * TranslationSource * int -> Task<TranslationId>,
-        createExamplesForDefinition: DefinitionId * ExampleInput list -> Task<unit>,
-        createExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>
+        createDefinition: CreateDefinitionData -> Task<DefinitionId>,
+        createTranslation: CreateTranslationData -> Task<TranslationId>,
+        createExamplesForDefinition: CreateExamplesForDefinitionData -> Task<unit>,
+        createExamplesForTranslation: CreateExamplesForTranslationData -> Task<unit>
     ) =
     let getEntryByIdCalls =
         ResizeArray<EntryId>()
 
     let hasVocabularyAccessInCollectionCalls =
-        ResizeArray<VocabularyId * CollectionId * UserId>()
+        ResizeArray<HasVocabularyAccessInCollectionData>()
 
     let updateEntryCalls =
-        ResizeArray<UpdateEntryCall>()
+        ResizeArray<UpdateEntryData>()
 
     let clearEntryChildrenCalls =
         ResizeArray<EntryId>()
 
     let createDefinitionCalls =
-        ResizeArray<CreateDefinitionCall>()
+        ResizeArray<CreateDefinitionData>()
 
     let createTranslationCalls =
-        ResizeArray<CreateTranslationCall>()
+        ResizeArray<CreateTranslationData>()
 
     let createExamplesForDefinitionCalls =
-        ResizeArray<CreateExamplesForDefinitionCall>()
+        ResizeArray<CreateExamplesForDefinitionData>()
 
     let createExamplesForTranslationCalls =
-        ResizeArray<CreateExamplesForTranslationCall>()
+        ResizeArray<CreateExamplesForTranslationData>()
 
     member _.GetEntryByIdCalls =
         getEntryByIdCalls |> Seq.toList
@@ -103,19 +79,14 @@ type TestEnv
             getEntryById id
 
     interface IHasVocabularyAccessInCollection with
-        member _.HasVocabularyAccessInCollection(vocabularyId, collectionId, userId) =
-            hasVocabularyAccessInCollectionCalls.Add(vocabularyId, collectionId, userId)
-            hasVocabularyAccessInCollection(vocabularyId, collectionId, userId)
+        member _.HasVocabularyAccessInCollection(data) =
+            hasVocabularyAccessInCollectionCalls.Add(data)
+            hasVocabularyAccessInCollection data
 
     interface IUpdateEntry with
-        member _.UpdateEntry(entryId, text, updatedAt) =
-            updateEntryCalls.Add(
-                { EntryId = entryId
-                  EntryText = text
-                  UpdatedAt = updatedAt }
-            )
-
-            updateEntry(entryId, text, updatedAt)
+        member _.UpdateEntry(data) =
+            updateEntryCalls.Add(data)
+            updateEntry data
 
     interface IClearEntryChildren with
         member _.ClearEntryChildren(entryId) =
@@ -123,44 +94,24 @@ type TestEnv
             clearEntryChildren entryId
 
     interface ICreateDefinition with
-        member _.CreateDefinition(entryId, text, source, displayOrder) =
-            createDefinitionCalls.Add(
-                { EntryId = entryId
-                  Text = text
-                  Source = source
-                  DisplayOrder = displayOrder }
-            )
-
-            createDefinition(entryId, text, source, displayOrder)
+        member _.CreateDefinition(data) =
+            createDefinitionCalls.Add(data)
+            createDefinition data
 
     interface ICreateTranslation with
-        member _.CreateTranslation(entryId, text, source, displayOrder) =
-            createTranslationCalls.Add(
-                { EntryId = entryId
-                  Text = text
-                  Source = source
-                  DisplayOrder = displayOrder }
-            )
-
-            createTranslation(entryId, text, source, displayOrder)
+        member _.CreateTranslation(data) =
+            createTranslationCalls.Add(data)
+            createTranslation data
 
     interface ICreateExamplesForDefinition with
-        member _.CreateExamplesForDefinition(definitionId, examples) =
-            createExamplesForDefinitionCalls.Add(
-                { DefinitionId = definitionId
-                  Examples = examples }
-            )
-
-            createExamplesForDefinition(definitionId, examples)
+        member _.CreateExamplesForDefinition(data) =
+            createExamplesForDefinitionCalls.Add(data)
+            createExamplesForDefinition(data)
 
     interface ICreateExamplesForTranslation with
-        member _.CreateExamplesForTranslation(translationId, examples) =
-            createExamplesForTranslationCalls.Add(
-                { TranslationId = translationId
-                  Examples = examples }
-            )
-
-            createExamplesForTranslation(translationId, examples)
+        member _.CreateExamplesForTranslation(data) =
+            createExamplesForTranslationCalls.Add(data)
+            createExamplesForTranslation(data)
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -242,7 +193,10 @@ let ``updates entry with new definitions and translations``() =
                             failwith "Unexpected getEntryById call"),
                 hasVocabularyAccessInCollection = (fun _ -> Task.FromResult(true)),
                 updateEntry =
-                    (fun (_, text, updatedAt) ->
+                    (fun data ->
+                        let text = data.EntryText
+                        let updatedAt = data.UpdatedAt
+
                         if text <> "new" then
                             failwith $"Expected trimmed text 'new', got: '{text}'"
 
@@ -270,50 +224,66 @@ let ``updates entry with new definitions and translations``() =
                   [ makeExampleInput "example" ExampleSource.Custom ] ]
 
         let! result =
-            update env (UserId 3) (CollectionId 5) (VocabularyId 10) (EntryId 1) "  new  " definitions translations now
+            update
+                env
+                { UserId = UserId 3
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 1
+                  EntryText = "  new  "
+                  Definitions = definitions
+                  Translations = translations
+                  UpdatedAt = now }
 
         Assert.Equal(Ok updatedEntry, result)
         Assert.Equal<EntryId list>([ EntryId 1; EntryId 1 ], env.GetEntryByIdCalls)
 
-        Assert.Equal<(VocabularyId * CollectionId * UserId) list>(
-            [ VocabularyId 10, CollectionId 5, UserId 3 ],
+        Assert.Equal<HasVocabularyAccessInCollectionData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 CollectionId = CollectionId 5
+                 UserId = UserId 3 }
+              : HasVocabularyAccessInCollectionData) ],
             env.HasVocabularyAccessInCollectionCalls
         )
 
         Assert.Equal<EntryId list>([ EntryId 1 ], env.ClearEntryChildrenCalls)
 
-        Assert.Equal<UpdateEntryCall list>(
+        Assert.Equal<UpdateEntryData list>(
             [ { EntryId = EntryId 1
                 EntryText = "new"
                 UpdatedAt = now } ],
             env.UpdateEntryCalls
         )
 
-        Assert.Equal<CreateDefinitionCall list>(
-            [ { CreateDefinitionCall.EntryId = EntryId 1
-                Text = "definition"
-                Source = DefinitionSource.Manual
-                DisplayOrder = 0 } ],
+        Assert.Equal<CreateDefinitionData list>(
+            [ ({ EntryId = EntryId 1
+                 Text = "definition"
+                 Source = DefinitionSource.Manual
+                 DisplayOrder = 0 }
+              : CreateDefinitionData) ],
             env.CreateDefinitionCalls
         )
 
-        Assert.Equal<CreateTranslationCall list>(
-            [ { EntryId = EntryId 1
-                Text = "translation"
-                Source = TranslationSource.Manual
-                DisplayOrder = 0 } ],
+        Assert.Equal<CreateTranslationData list>(
+            [ ({ EntryId = EntryId 1
+                 Text = "translation"
+                 Source = TranslationSource.Manual
+                 DisplayOrder = 0 }
+              : CreateTranslationData) ],
             env.CreateTranslationCalls
         )
 
-        Assert.Equal<CreateExamplesForDefinitionCall list>(
-            [ { DefinitionId = DefinitionId 10
-                Examples = [ makeExampleInput "example" ExampleSource.Custom ] } ],
+        Assert.Equal<CreateExamplesForDefinitionData list>(
+            [ ({ DefinitionId = DefinitionId 10
+                 Examples = [ makeExampleInput "example" ExampleSource.Custom ] }
+              : CreateExamplesForDefinitionData) ],
             env.CreateExamplesForDefinitionCalls
         )
 
-        Assert.Equal<CreateExamplesForTranslationCall list>(
-            [ { TranslationId = TranslationId 20
-                Examples = [ makeExampleInput "example" ExampleSource.Custom ] } ],
+        Assert.Equal<CreateExamplesForTranslationData list>(
+            [ ({ TranslationId = TranslationId 20
+                 Examples = [ makeExampleInput "example" ExampleSource.Custom ] }
+              : CreateExamplesForTranslationData) ],
             env.CreateExamplesForTranslationCalls
         )
     }
@@ -339,21 +309,24 @@ let ``returns VocabularyNotFoundOrAccessDenied when vocabulary is not in collect
         let! result =
             update
                 env
-                (UserId 1)
-                (CollectionId 5)
-                (VocabularyId 10)
-                (EntryId 1)
-                "text"
-                definitions
-                []
-                DateTimeOffset.UtcNow
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 1
+                  EntryText = "text"
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(VocabularyNotFoundOrAccessDenied(VocabularyId 10)), result)
+        Assert.Equal(Error(UpdateEntryError.VocabularyNotFoundOrAccessDenied(VocabularyId 10)), result)
         Assert.Empty(env.GetEntryByIdCalls)
         Assert.Empty(env.UpdateEntryCalls)
 
-        Assert.Equal<(VocabularyId * CollectionId * UserId) list>(
-            [ VocabularyId 10, CollectionId 5, UserId 1 ],
+        Assert.Equal<HasVocabularyAccessInCollectionData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 CollectionId = CollectionId 5
+                 UserId = UserId 1 }
+              : HasVocabularyAccessInCollectionData) ],
             env.HasVocabularyAccessInCollectionCalls
         )
     }
@@ -379,16 +352,16 @@ let ``returns EntryNotFound when entry does not exist``() =
         let! result =
             update
                 env
-                (UserId 1)
-                (CollectionId 5)
-                (VocabularyId 10)
-                (EntryId 99)
-                "text"
-                definitions
-                []
-                DateTimeOffset.UtcNow
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 99
+                  EntryText = "text"
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 99)), result)
+        Assert.Equal(Error(UpdateEntryError.EntryNotFound(EntryId 99)), result)
         Assert.Equal<EntryId list>([ EntryId 99 ], env.GetEntryByIdCalls)
         Assert.Empty(env.UpdateEntryCalls)
     }
@@ -417,16 +390,16 @@ let ``returns EntryNotFound when entry belongs to different vocabulary``() =
         let! result =
             update
                 env
-                (UserId 1)
-                (CollectionId 5)
-                (VocabularyId 10)
-                (EntryId 1)
-                "text"
-                definitions
-                []
-                DateTimeOffset.UtcNow
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 1
+                  EntryText = "text"
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 1)), result)
+        Assert.Equal(Error(UpdateEntryError.EntryNotFound(EntryId 1)), result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
         Assert.Empty(env.UpdateEntryCalls)
     }
@@ -447,9 +420,18 @@ let ``returns error when no definitions or translations``() =
             )
 
         let! result =
-            update env (UserId 1) (CollectionId 5) (VocabularyId 10) (EntryId 1) "text" [] [] DateTimeOffset.UtcNow
+            update
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 1
+                  EntryText = "text"
+                  Definitions = []
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error NoDefinitionsOrTranslations, result)
+        Assert.Equal(Error UpdateEntryError.NoDefinitionsOrTranslations, result)
         Assert.Empty(env.UpdateEntryCalls)
     }
 
@@ -472,9 +454,18 @@ let ``returns error when entry text is empty``() =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
         let! result =
-            update env (UserId 1) (CollectionId 5) (VocabularyId 10) (EntryId 1) "" definitions [] DateTimeOffset.UtcNow
+            update
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 1
+                  EntryText = ""
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error EntryTextRequired, result)
+        Assert.Equal(Error UpdateEntryError.EntryTextRequired, result)
         Assert.Empty(env.GetEntryByIdCalls)
     }
 
@@ -502,16 +493,16 @@ let ``returns error when entry text exceeds max length``() =
         let! result =
             update
                 env
-                (UserId 1)
-                (CollectionId 5)
-                (VocabularyId 10)
-                (EntryId 1)
-                longText
-                definitions
-                []
-                DateTimeOffset.UtcNow
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 1
+                  EntryText = longText
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(EntryTextTooLong MaxEntryTextLength), result)
+        Assert.Equal(Error(UpdateEntryError.EntryTextTooLong MaxEntryTextLength), result)
         Assert.Empty(env.GetEntryByIdCalls)
     }
 
@@ -536,16 +527,16 @@ let ``returns error when entry text is whitespace only``() =
         let! result =
             update
                 env
-                (UserId 1)
-                (CollectionId 5)
-                (VocabularyId 10)
-                (EntryId 1)
-                "   "
-                definitions
-                []
-                DateTimeOffset.UtcNow
+                { UserId = UserId 1
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 1
+                  EntryText = "   "
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error EntryTextRequired, result)
+        Assert.Equal(Error UpdateEntryError.EntryTextRequired, result)
         Assert.Empty(env.GetEntryByIdCalls)
     }
 
@@ -576,16 +567,16 @@ let ``returns error when definition example text is too long``() =
         let! result =
             update
                 env
-                (UserId 2)
-                (CollectionId 5)
-                (VocabularyId 10)
-                (EntryId 1)
-                "text"
-                definitions
-                []
-                DateTimeOffset.UtcNow
+                { UserId = UserId 2
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 1
+                  EntryText = "text"
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
+        Assert.Equal(Error(UpdateEntryError.ExampleTextTooLong MaxExampleTextLength), result)
         Assert.Empty(env.UpdateEntryCalls)
     }
 
@@ -614,16 +605,16 @@ let ``returns error when definition has too many examples``() =
         let! result =
             update
                 env
-                (UserId 2)
-                (CollectionId 5)
-                (VocabularyId 10)
-                (EntryId 1)
-                "text"
-                definitions
-                []
-                DateTimeOffset.UtcNow
+                { UserId = UserId 2
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 1
+                  EntryText = "text"
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
+        Assert.Equal(Error(UpdateEntryError.TooManyExamples MaxExamplesPerItem), result)
         Assert.Empty(env.UpdateEntryCalls)
     }
 
@@ -654,16 +645,16 @@ let ``returns error when translation example text is too long``() =
         let! result =
             update
                 env
-                (UserId 2)
-                (CollectionId 5)
-                (VocabularyId 10)
-                (EntryId 1)
-                "text"
-                []
-                translations
-                DateTimeOffset.UtcNow
+                { UserId = UserId 2
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 1
+                  EntryText = "text"
+                  Definitions = []
+                  Translations = translations
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(ExampleTextTooLong MaxExampleTextLength), result)
+        Assert.Equal(Error(UpdateEntryError.ExampleTextTooLong MaxExampleTextLength), result)
         Assert.Empty(env.UpdateEntryCalls)
     }
 
@@ -692,16 +683,16 @@ let ``returns error when translation has too many examples``() =
         let! result =
             update
                 env
-                (UserId 2)
-                (CollectionId 5)
-                (VocabularyId 10)
-                (EntryId 1)
-                "text"
-                []
-                translations
-                DateTimeOffset.UtcNow
+                { UserId = UserId 2
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 1
+                  EntryText = "text"
+                  Definitions = []
+                  Translations = translations
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(TooManyExamples MaxExamplesPerItem), result)
+        Assert.Equal(Error(UpdateEntryError.TooManyExamples MaxExamplesPerItem), result)
         Assert.Empty(env.UpdateEntryCalls)
     }
 
@@ -746,15 +737,26 @@ let ``updates entry with definitions only``() =
         let definitions =
             [ makeDefinitionInput "definition" DefinitionSource.Manual [] ]
 
-        let! result = update env (UserId 3) (CollectionId 5) (VocabularyId 10) (EntryId 1) "word" definitions [] now
+        let! result =
+            update
+                env
+                { UserId = UserId 3
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 1
+                  EntryText = "word"
+                  Definitions = definitions
+                  Translations = []
+                  UpdatedAt = now }
 
         Assert.Equal(Ok updatedEntry, result)
 
-        Assert.Equal<CreateDefinitionCall list>(
-            [ { CreateDefinitionCall.EntryId = EntryId 1
-                Text = "definition"
-                Source = DefinitionSource.Manual
-                DisplayOrder = 0 } ],
+        Assert.Equal<CreateDefinitionData list>(
+            [ ({ EntryId = EntryId 1
+                 Text = "definition"
+                 Source = DefinitionSource.Manual
+                 DisplayOrder = 0 }
+              : CreateDefinitionData) ],
             env.CreateDefinitionCalls
         )
 
@@ -802,15 +804,26 @@ let ``updates entry with translations only``() =
         let translations =
             [ makeTranslationInput "translation" TranslationSource.Manual [] ]
 
-        let! result = update env (UserId 3) (CollectionId 5) (VocabularyId 10) (EntryId 1) "word" [] translations now
+        let! result =
+            update
+                env
+                { UserId = UserId 3
+                  CollectionId = CollectionId 5
+                  VocabularyId = VocabularyId 10
+                  EntryId = EntryId 1
+                  EntryText = "word"
+                  Definitions = []
+                  Translations = translations
+                  UpdatedAt = now }
 
         Assert.Equal(Ok updatedEntry, result)
 
-        Assert.Equal<CreateTranslationCall list>(
-            [ { EntryId = EntryId 1
-                Text = "translation"
-                Source = TranslationSource.Manual
-                DisplayOrder = 0 } ],
+        Assert.Equal<CreateTranslationData list>(
+            [ ({ EntryId = EntryId 1
+                 Text = "translation"
+                 Source = TranslationSource.Manual
+                 DisplayOrder = 0 }
+              : CreateTranslationData) ],
             env.CreateTranslationCalls
         )
 

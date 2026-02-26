@@ -11,14 +11,14 @@ open Wordfolio.Api.Domain.Entries.DraftOperations
 type TestEnv
     (
         getEntryById: EntryId -> Task<Entry option>,
-        hasVocabularyAccess: VocabularyId * UserId -> Task<bool>,
+        hasVocabularyAccess: HasVocabularyAccessData -> Task<bool>,
         deleteEntry: EntryId -> Task<int>
     ) =
     let getEntryByIdCalls =
         ResizeArray<EntryId>()
 
     let hasVocabularyAccessCalls =
-        ResizeArray<VocabularyId * UserId>()
+        ResizeArray<HasVocabularyAccessData>()
 
     let deleteEntryCalls =
         ResizeArray<EntryId>()
@@ -38,9 +38,9 @@ type TestEnv
             getEntryById id
 
     interface IHasVocabularyAccess with
-        member _.HasVocabularyAccess(vocabularyId, userId) =
-            hasVocabularyAccessCalls.Add(vocabularyId, userId)
-            hasVocabularyAccess(vocabularyId, userId)
+        member _.HasVocabularyAccess(data) =
+            hasVocabularyAccessCalls.Add(data)
+            hasVocabularyAccess(data)
 
     interface IDeleteEntry with
         member _.DeleteEntry(entryId) =
@@ -71,13 +71,22 @@ let ``deletes entry when user has access``() =
                 deleteEntry = (fun _ -> Task.FromResult(1))
             )
 
-        let! result = delete env (UserId 1) (EntryId 1)
+        let! result =
+            delete
+                env
+                { UserId = UserId 1
+                  EntryId = EntryId 1 }
 
         Assert.Equal(Ok(), result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.DeleteEntryCalls)
 
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 10, UserId 1 ], env.HasVocabularyAccessCalls)
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 UserId = UserId 1 }
+              : HasVocabularyAccessData) ],
+            env.HasVocabularyAccessCalls
+        )
     }
 
 [<Fact>]
@@ -90,9 +99,13 @@ let ``returns EntryNotFound when entry does not exist``() =
                 deleteEntry = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = delete env (UserId 1) (EntryId 2)
+        let! result =
+            delete
+                env
+                { UserId = UserId 1
+                  EntryId = EntryId 2 }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 2)), result)
+        Assert.Equal(Error(DeleteDraftEntryError.EntryNotFound(EntryId 2)), result)
         Assert.Equal<EntryId list>([ EntryId 2 ], env.GetEntryByIdCalls)
         Assert.Empty(env.HasVocabularyAccessCalls)
         Assert.Empty(env.DeleteEntryCalls)
@@ -110,10 +123,21 @@ let ``returns EntryNotFound when user has no access``() =
                 deleteEntry = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = delete env (UserId 3) (EntryId 1)
+        let! result =
+            delete
+                env
+                { UserId = UserId 3
+                  EntryId = EntryId 1 }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 1)), result)
+        Assert.Equal(Error(DeleteDraftEntryError.EntryNotFound(EntryId 1)), result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 10, UserId 3 ], env.HasVocabularyAccessCalls)
+
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 UserId = UserId 3 }
+              : HasVocabularyAccessData) ],
+            env.HasVocabularyAccessCalls
+        )
+
         Assert.Empty(env.DeleteEntryCalls)
     }

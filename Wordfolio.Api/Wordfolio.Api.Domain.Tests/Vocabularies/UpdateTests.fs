@@ -7,21 +7,14 @@ open Xunit
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
-open Wordfolio.Api.Domain.Shared
 open Wordfolio.Api.Domain.Vocabularies
 open Wordfolio.Api.Domain.Vocabularies.Operations
-
-type UpdateVocabularyCall =
-    { VocabularyId: VocabularyId
-      Name: string
-      Description: string option
-      UpdatedAt: DateTimeOffset }
 
 type TestEnv
     (
         getVocabularyById: VocabularyId -> Task<Vocabulary option>,
         getCollectionById: CollectionId -> Task<Collection option>,
-        updateVocabulary: VocabularyId * string * string option * DateTimeOffset -> Task<int>
+        updateVocabulary: UpdateVocabularyData -> Task<int>
     ) =
     let getVocabularyByIdCalls =
         ResizeArray<VocabularyId>()
@@ -30,7 +23,7 @@ type TestEnv
         ResizeArray<CollectionId>()
 
     let updateVocabularyCalls =
-        ResizeArray<UpdateVocabularyCall>()
+        ResizeArray<UpdateVocabularyData>()
 
     member _.GetVocabularyByIdCalls =
         getVocabularyByIdCalls |> Seq.toList
@@ -52,15 +45,9 @@ type TestEnv
             getCollectionById id
 
     interface IUpdateVocabulary with
-        member _.UpdateVocabulary(vocabularyId, name, description, updatedAt) =
-            updateVocabularyCalls.Add(
-                { VocabularyId = vocabularyId
-                  Name = name
-                  Description = description
-                  UpdatedAt = updatedAt }
-            )
-
-            updateVocabulary(vocabularyId, name, description, updatedAt)
+        member _.UpdateVocabulary(data) =
+            updateVocabularyCalls.Add(data)
+            updateVocabulary(data)
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -106,23 +93,33 @@ let ``updates vocabulary when collection owned by user``() =
 
                         Task.FromResult(Some collection)),
                 updateVocabulary =
-                    (fun (vocabularyId, name, description, updatedAt) ->
-                        if vocabularyId <> VocabularyId 1 then
-                            failwith $"Unexpected vocabularyId: {vocabularyId}"
+                    (fun data ->
+                        if data.VocabularyId <> VocabularyId 1 then
+                            failwith $"Unexpected vocabularyId: {data.VocabularyId}"
 
-                        if name <> "New Name" then
-                            failwith $"Unexpected name: {name}"
+                        if data.Name <> "New Name" then
+                            failwith $"Unexpected name: {data.Name}"
 
-                        if description <> Some "New Description" then
-                            failwith $"Unexpected description: {description}"
+                        if
+                            data.Description
+                            <> Some "New Description"
+                        then
+                            failwith $"Unexpected description: {data.Description}"
 
-                        if updatedAt <> now then
-                            failwith $"Unexpected updatedAt: {updatedAt}"
+                        if data.UpdatedAt <> now then
+                            failwith $"Unexpected updatedAt: {data.UpdatedAt}"
 
                         Task.FromResult(1))
             )
 
-        let! result = update env (UserId 1) (VocabularyId 1) "New Name" (Some "New Description") now
+        let! result =
+            update
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1
+                  Name = "New Name"
+                  Description = Some "New Description"
+                  UpdatedAt = now }
 
         match result with
         | Ok updated ->
@@ -133,7 +130,14 @@ let ``updates vocabulary when collection owned by user``() =
 
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
-        Assert.Equal(1, env.UpdateVocabularyCalls.Length)
+
+        Assert.Equal<UpdateVocabularyData list>(
+            [ { VocabularyId = VocabularyId 1
+                Name = "New Name"
+                Description = Some "New Description"
+                UpdatedAt = now } ],
+            env.UpdateVocabularyCalls
+        )
     }
 
 [<Fact>]
@@ -151,14 +155,21 @@ let ``trims whitespace from name``() =
                 getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
                 getCollectionById = (fun _ -> Task.FromResult(Some collection)),
                 updateVocabulary =
-                    (fun (_, name, _, _) ->
-                        if name <> "New Name" then
-                            failwith $"Expected trimmed name 'New Name', got: '{name}'"
+                    (fun data ->
+                        if data.Name <> "New Name" then
+                            failwith $"Expected trimmed name 'New Name', got: '{data.Name}'"
 
                         Task.FromResult(1))
             )
 
-        let! result = update env (UserId 1) (VocabularyId 1) "  New Name  " None now
+        let! result =
+            update
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1
+                  Name = "  New Name  "
+                  Description = None
+                  UpdatedAt = now }
 
         Assert.True(Result.isOk result)
 
@@ -166,6 +177,9 @@ let ``trims whitespace from name``() =
             env.UpdateVocabularyCalls |> List.head
 
         Assert.Equal("New Name", call.Name)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal(1, env.UpdateVocabularyCalls.Length)
     }
 
 [<Fact>]
@@ -183,9 +197,18 @@ let ``returns NotFound when vocabulary does not exist``() =
                 updateVocabulary = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = update env (UserId 1) (VocabularyId 1) "New Name" None DateTimeOffset.UtcNow
+        let! result =
+            update
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1
+                  Name = "New Name"
+                  Description = None
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(VocabularyNotFound(VocabularyId 1)), result)
+        Assert.Equal(Error(UpdateVocabularyError.VocabularyNotFound(VocabularyId 1)), result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Empty(env.GetCollectionByIdCalls)
         Assert.Empty(env.UpdateVocabularyCalls)
     }
 
@@ -204,9 +227,18 @@ let ``returns AccessDenied when collection owned by different user``() =
                 updateVocabulary = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = update env (UserId 1) (VocabularyId 1) "New Name" None DateTimeOffset.UtcNow
+        let! result =
+            update
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1
+                  Name = "New Name"
+                  Description = None
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(VocabularyAccessDenied(VocabularyId 1)), result)
+        Assert.Equal(Error(UpdateVocabularyError.VocabularyAccessDenied(VocabularyId 1)), result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.UpdateVocabularyCalls)
     }
 
@@ -223,9 +255,18 @@ let ``returns AccessDenied when collection does not exist``() =
                 updateVocabulary = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = update env (UserId 1) (VocabularyId 1) "New Name" None DateTimeOffset.UtcNow
+        let! result =
+            update
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1
+                  Name = "New Name"
+                  Description = None
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(VocabularyAccessDenied(VocabularyId 1)), result)
+        Assert.Equal(Error(UpdateVocabularyError.VocabularyAccessDenied(VocabularyId 1)), result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.UpdateVocabularyCalls)
     }
 
@@ -244,9 +285,18 @@ let ``returns error when name is empty``() =
                 updateVocabulary = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = update env (UserId 1) (VocabularyId 1) "" None DateTimeOffset.UtcNow
+        let! result =
+            update
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1
+                  Name = ""
+                  Description = None
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error VocabularyNameRequired, result)
+        Assert.Equal(Error UpdateVocabularyError.VocabularyNameRequired, result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.UpdateVocabularyCalls)
     }
 
@@ -266,9 +316,18 @@ let ``returns error when name exceeds max length``() =
                 updateVocabulary = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = update env (UserId 1) (VocabularyId 1) longName None DateTimeOffset.UtcNow
+        let! result =
+            update
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1
+                  Name = longName
+                  Description = None
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error(VocabularyNameTooLong MaxNameLength), result)
+        Assert.Equal(Error(UpdateVocabularyError.VocabularyNameTooLong MaxNameLength), result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.UpdateVocabularyCalls)
     }
 
@@ -287,9 +346,18 @@ let ``returns error when name is whitespace only``() =
                 updateVocabulary = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = update env (UserId 1) (VocabularyId 1) "   " None DateTimeOffset.UtcNow
+        let! result =
+            update
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1
+                  Name = "   "
+                  Description = None
+                  UpdatedAt = DateTimeOffset.UtcNow }
 
-        Assert.Equal(Error VocabularyNameRequired, result)
+        Assert.Equal(Error UpdateVocabularyError.VocabularyNameRequired, result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.UpdateVocabularyCalls)
     }
 
@@ -311,21 +379,40 @@ let ``accepts name at exact max length``() =
                 getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
                 getCollectionById = (fun _ -> Task.FromResult(Some collection)),
                 updateVocabulary =
-                    (fun (_, name, _, _) ->
-                        if name <> maxLengthName then
+                    (fun data ->
+                        if data.Name <> maxLengthName then
                             failwith $"Expected name with {MaxNameLength} characters"
 
                         Task.FromResult(1))
             )
 
-        let! result = update env (UserId 1) (VocabularyId 1) maxLengthName None now
+        let! result =
+            update
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1
+                  Name = maxLengthName
+                  Description = None
+                  UpdatedAt = now }
 
         Assert.True(Result.isOk result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+
+        Assert.Equal<UpdateVocabularyData list>(
+            [ { VocabularyId = VocabularyId 1
+                Name = maxLengthName
+                Description = None
+                UpdatedAt = now } ],
+            env.UpdateVocabularyCalls
+        )
     }
 
 [<Fact>]
 let ``returns NotFound when update affects no rows``() =
     task {
+        let now = DateTimeOffset.UtcNow
+
         let existingVocabulary =
             makeVocabulary 1 1 "Test Vocabulary" None
 
@@ -338,8 +425,24 @@ let ``returns NotFound when update affects no rows``() =
                 updateVocabulary = (fun _ -> Task.FromResult(0))
             )
 
-        let! result = update env (UserId 1) (VocabularyId 1) "New Name" None DateTimeOffset.UtcNow
+        let! result =
+            update
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 1
+                  Name = "New Name"
+                  Description = None
+                  UpdatedAt = now }
 
-        Assert.Equal(Error(VocabularyNotFound(VocabularyId 1)), result)
-        Assert.Equal(1, env.UpdateVocabularyCalls.Length)
+        Assert.Equal(Error(UpdateVocabularyError.VocabularyNotFound(VocabularyId 1)), result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+
+        Assert.Equal<UpdateVocabularyData list>(
+            [ { VocabularyId = VocabularyId 1
+                Name = "New Name"
+                Description = None
+                UpdatedAt = now } ],
+            env.UpdateVocabularyCalls
+        )
     }

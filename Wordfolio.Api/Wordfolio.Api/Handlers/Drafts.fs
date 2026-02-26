@@ -48,6 +48,49 @@ let private getUserId(user: ClaimsPrincipal) : int option =
         | true, id -> Some id
         | false, _ -> None
 
+let private toCreateErrorResponse(error: CreateDraftEntryError) : IResult =
+    match error with
+    | CreateDraftEntryError.EntryTextRequired -> Results.BadRequest({| error = "Entry text is required" |})
+    | CreateDraftEntryError.EntryTextTooLong maxLength ->
+        Results.BadRequest({| error = $"Entry text must be at most {maxLength} characters" |})
+    | CreateDraftEntryError.DuplicateEntry existingEntry ->
+        Results.Conflict(
+            {| error = "A matching entry already exists in this vocabulary"
+               existingEntry = toEntryResponse existingEntry |}
+        )
+    | CreateDraftEntryError.NoDefinitionsOrTranslations ->
+        Results.BadRequest({| error = "At least one definition or translation required" |})
+    | CreateDraftEntryError.TooManyExamples maxCount ->
+        Results.BadRequest({| error = $"Too many examples (max {maxCount} per item)" |})
+    | CreateDraftEntryError.ExampleTextTooLong maxLength ->
+        Results.BadRequest({| error = $"Example text must be at most {maxLength} characters" |})
+
+let private toGetByIdErrorResponse(error: GetDraftEntryByIdError) : IResult =
+    match error with
+    | GetDraftEntryByIdError.EntryNotFound _ -> Results.NotFound()
+
+let private toUpdateErrorResponse(error: UpdateDraftEntryError) : IResult =
+    match error with
+    | UpdateDraftEntryError.EntryNotFound _ -> Results.NotFound()
+    | UpdateDraftEntryError.EntryTextRequired -> Results.BadRequest({| error = "Entry text is required" |})
+    | UpdateDraftEntryError.EntryTextTooLong maxLength ->
+        Results.BadRequest({| error = $"Entry text must be at most {maxLength} characters" |})
+    | UpdateDraftEntryError.NoDefinitionsOrTranslations ->
+        Results.BadRequest({| error = "At least one definition or translation required" |})
+    | UpdateDraftEntryError.TooManyExamples maxCount ->
+        Results.BadRequest({| error = $"Too many examples (max {maxCount} per item)" |})
+    | UpdateDraftEntryError.ExampleTextTooLong maxLength ->
+        Results.BadRequest({| error = $"Example text must be at most {maxLength} characters" |})
+
+let private toDeleteErrorResponse(error: DeleteDraftEntryError) : IResult =
+    match error with
+    | DeleteDraftEntryError.EntryNotFound _ -> Results.NotFound()
+
+let private toMoveErrorResponse(error: MoveDraftEntryError) : IResult =
+    match error with
+    | MoveDraftEntryError.EntryNotFound _ -> Results.NotFound()
+    | MoveDraftEntryError.VocabularyNotFoundOrAccessDenied _ -> Results.NotFound({| error = "Vocabulary not found" |})
+
 let mapDraftsEndpoints(group: RouteGroupBuilder) =
     group
         .MapGet(
@@ -60,7 +103,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                         let env =
                             TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result = getDrafts env (UserId userId)
+                        let! result = getDrafts env { UserId = UserId userId }
 
                         return
                             match result with
@@ -99,7 +142,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let parameters: CreateDraftParameters =
+                            let parameters: CreateParameters =
                                 { UserId = UserId userId
                                   EntryText = request.EntryText
                                   Definitions =
@@ -119,7 +162,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                                 match result with
                                 | Ok entry ->
                                     Results.Created(Urls.draftById(EntryId.value entry.Id), toEntryResponse entry)
-                                | Error error -> toErrorResponse error
+                                | Error error -> toCreateErrorResponse error
                     })
         )
         .RequireAuthorization()
@@ -141,12 +184,16 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result = getById env (UserId userId) (EntryId id)
+                            let! result =
+                                getById
+                                    env
+                                    { UserId = UserId userId
+                                      EntryId = EntryId id }
 
                             return
                                 match result with
                                 | Ok entry -> Results.Ok(toEntryResponse entry)
-                                | Error error -> toErrorResponse error
+                                | Error error -> toGetByIdErrorResponse error
                     })
         )
         .RequireAuthorization()
@@ -178,17 +225,17 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                             let! result =
                                 update
                                     env
-                                    (UserId userId)
-                                    (EntryId id)
-                                    request.EntryText
-                                    definitions
-                                    translations
-                                    DateTimeOffset.UtcNow
+                                    { UserId = UserId userId
+                                      EntryId = EntryId id
+                                      EntryText = request.EntryText
+                                      Definitions = definitions
+                                      Translations = translations
+                                      UpdatedAt = DateTimeOffset.UtcNow }
 
                             return
                                 match result with
                                 | Ok entry -> Results.Ok(toEntryResponse entry)
-                                | Error error -> toErrorResponse error
+                                | Error error -> toUpdateErrorResponse error
                     })
         )
         .RequireAuthorization()
@@ -210,12 +257,16 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result = delete env (UserId userId) (EntryId id)
+                            let! result =
+                                delete
+                                    env
+                                    { UserId = UserId userId
+                                      EntryId = EntryId id }
 
                             return
                                 match result with
                                 | Ok() -> Results.NoContent()
-                                | Error error -> toErrorResponse error
+                                | Error error -> toDeleteErrorResponse error
                     })
         )
         .RequireAuthorization()
@@ -239,15 +290,15 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                             let! result =
                                 move
                                     env
-                                    (UserId userId)
-                                    (EntryId id)
-                                    (VocabularyId request.VocabularyId)
-                                    DateTimeOffset.UtcNow
+                                    { UserId = UserId userId
+                                      EntryId = EntryId id
+                                      TargetVocabularyId = VocabularyId request.VocabularyId
+                                      UpdatedAt = DateTimeOffset.UtcNow }
 
                             return
                                 match result with
                                 | Ok entry -> Results.Ok(toEntryResponse entry)
-                                | Error error -> toErrorResponse error
+                                | Error error -> toMoveErrorResponse error
                     })
         )
         .RequireAuthorization()

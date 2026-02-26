@@ -11,21 +11,21 @@ open Wordfolio.Api.Domain.CollectionsHierarchy.Operations
 
 type TestEnv
     (
-        getCollectionsWithVocabularies: UserId -> Task<CollectionSummary list>,
-        getDefaultVocabularySummary: UserId -> Task<VocabularySummary option>
+        getCollectionsWithVocabularies: UserId -> Task<CollectionWithVocabularies list>,
+        getDefaultVocabularyWithEntryCount: UserId -> Task<VocabularyWithEntryCount option>
     ) =
     let getCollectionsWithVocabulariesCalls =
         ResizeArray<UserId>()
 
-    let getDefaultVocabularySummaryCalls =
+    let getDefaultVocabularyWithEntryCountCalls =
         ResizeArray<UserId>()
 
     member _.GetCollectionsWithVocabulariesCalls =
         getCollectionsWithVocabulariesCalls
         |> Seq.toList
 
-    member _.GetDefaultVocabularySummaryCalls =
-        getDefaultVocabularySummaryCalls
+    member _.GetDefaultVocabularyWithEntryCountCalls =
+        getDefaultVocabularyWithEntryCountCalls
         |> Seq.toList
 
     interface IGetCollectionsWithVocabularies with
@@ -33,10 +33,10 @@ type TestEnv
             getCollectionsWithVocabulariesCalls.Add(userId)
             getCollectionsWithVocabularies userId
 
-    interface IGetDefaultVocabularySummary with
-        member _.GetDefaultVocabularySummary(userId) =
-            getDefaultVocabularySummaryCalls.Add(userId)
-            getDefaultVocabularySummary userId
+    interface IGetDefaultVocabularyWithEntryCount with
+        member _.GetDefaultVocabularyWithEntryCount(userId) =
+            getDefaultVocabularyWithEntryCountCalls.Add(userId)
+            getDefaultVocabularyWithEntryCount userId
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -83,7 +83,7 @@ let ``returns collections with vocabularies for user``() =
                 (fun _ -> Task.FromResult(None))
             )
 
-        let! result = getByUserId env (UserId 1)
+        let! result = getByUserId env { UserId = UserId 1 }
 
         let expected: CollectionsHierarchyResult =
             { Collections = collections
@@ -91,6 +91,7 @@ let ``returns collections with vocabularies for user``() =
 
         Assert.Equal(Ok expected, result)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsWithVocabulariesCalls)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularyWithEntryCountCalls)
     }
 
 [<Fact>]
@@ -106,7 +107,7 @@ let ``returns empty list when user has no collections``() =
                 (fun _ -> Task.FromResult(None))
             )
 
-        let! result = getByUserId env (UserId 1)
+        let! result = getByUserId env { UserId = UserId 1 }
 
         let expected: CollectionsHierarchyResult =
             { Collections = []
@@ -114,6 +115,7 @@ let ``returns empty list when user has no collections``() =
 
         Assert.Equal(Ok expected, result)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsWithVocabulariesCalls)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularyWithEntryCountCalls)
     }
 
 [<Fact>]
@@ -132,14 +134,15 @@ let ``returns default vocabulary when it has entries``() =
                     Task.FromResult(Some defaultVocab))
             )
 
-        let! result = getByUserId env (UserId 1)
+        let! result = getByUserId env { UserId = UserId 1 }
 
         let expected: CollectionsHierarchyResult =
             { Collections = []
               DefaultVocabulary = Some defaultVocab }
 
         Assert.Equal(Ok expected, result)
-        Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularySummaryCalls)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsWithVocabulariesCalls)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularyWithEntryCountCalls)
     }
 
 [<Fact>]
@@ -158,11 +161,13 @@ let ``does not return default vocabulary when it has no entries``() =
                     Task.FromResult(Some defaultVocab))
             )
 
-        let! result = getByUserId env (UserId 1)
+        let! result = getByUserId env { UserId = UserId 1 }
 
         let expected: CollectionsHierarchyResult =
             { Collections = []
               DefaultVocabulary = None }
 
         Assert.Equal(Ok expected, result)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetCollectionsWithVocabulariesCalls)
+        Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularyWithEntryCountCalls)
     }

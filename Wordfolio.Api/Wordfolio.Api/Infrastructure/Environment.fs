@@ -12,7 +12,6 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.CollectionsHierarchy
 open Wordfolio.Api.Domain.Entries
-open Wordfolio.Api.Domain.Shared
 open Wordfolio.Api.Domain.Vocabularies
 
 module DataAccess =
@@ -112,9 +111,9 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
           Definitions = definitions
           Translations = translations }
 
-    let toVocabularySummaryDomain
+    let toVocabularyWithEntryCountDomain
         (v: Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummary)
-        : Wordfolio.Api.Domain.CollectionsHierarchy.VocabularySummary =
+        : Wordfolio.Api.Domain.CollectionsHierarchy.VocabularyWithEntryCount =
         { Id = VocabularyId v.Id
           Name = v.Name
           Description = v.Description
@@ -122,9 +121,9 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
           UpdatedAt = v.UpdatedAt
           EntryCount = v.EntryCount }
 
-    let toCollectionSummaryDomain
+    let toCollectionWithVocabulariesDomain
         (c: Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionSummary)
-        : Wordfolio.Api.Domain.CollectionsHierarchy.CollectionSummary =
+        : Wordfolio.Api.Domain.CollectionsHierarchy.CollectionWithVocabularies =
         { Id = CollectionId c.Id
           Name = c.Name
           Description = c.Description
@@ -132,11 +131,11 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
           UpdatedAt = c.UpdatedAt
           Vocabularies =
             c.Vocabularies
-            |> List.map toVocabularySummaryDomain }
+            |> List.map toVocabularyWithEntryCountDomain }
 
     let toCollectionOverviewDomain
         (c: Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionOverview)
-        : Wordfolio.Api.Domain.CollectionsHierarchy.CollectionOverview =
+        : Wordfolio.Api.Domain.CollectionsHierarchy.CollectionWithVocabularyCount =
         { Id = CollectionId c.Id
           Name = c.Name
           Description = c.Description
@@ -164,21 +163,19 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
           SortBy = toCollectionSortByDataAccess query.SortBy
           SortDirection = toSortDirectionDataAccess query.SortDirection }
 
-    let toVocabularySummarySortByDataAccess(sortBy: VocabularySummarySortBy) =
+    let toVocabularySortByDataAccess(sortBy: VocabularySortBy) =
         match sortBy with
-        | VocabularySummarySortBy.Name -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.Name
-        | VocabularySummarySortBy.CreatedAt ->
-            Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.CreatedAt
-        | VocabularySummarySortBy.UpdatedAt ->
-            Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.UpdatedAt
-        | VocabularySummarySortBy.EntryCount ->
+        | VocabularySortBy.Name -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.Name
+        | VocabularySortBy.CreatedAt -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.CreatedAt
+        | VocabularySortBy.UpdatedAt -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.UpdatedAt
+        | VocabularySortBy.EntryCount ->
             Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.EntryCount
 
-    let toVocabularySummaryQueryDataAccess
-        (query: VocabularySummaryQuery)
+    let toSearchCollectionVocabulariesQueryDataAccess
+        (query: SearchCollectionVocabulariesQuery)
         : Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummaryQuery =
         { Search = query.Search
-          SortBy = toVocabularySummarySortByDataAccess query.SortBy
+          SortBy = toVocabularySortByDataAccess query.SortBy
           SortDirection = toSortDirectionDataAccess query.SortDirection }
 
     interface IGetCollectionById with
@@ -208,13 +205,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateCollection with
-        member _.CreateCollection(UserId userId, name, description, createdAt) =
+        member _.CreateCollection(parameters: CreateCollectionData) =
             task {
                 let parameters: DataAccess.CollectionCreationParameters =
-                    { UserId = userId
-                      Name = name
-                      Description = description
-                      CreatedAt = createdAt }
+                    { UserId = UserId.value parameters.UserId
+                      Name = parameters.Name
+                      Description = parameters.Description
+                      CreatedAt = parameters.CreatedAt }
 
                 let! id =
                     Wordfolio.Api.DataAccess.Collections.createCollectionAsync
@@ -227,13 +224,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface IUpdateCollection with
-        member _.UpdateCollection(CollectionId id, name, description, updatedAt) =
+        member _.UpdateCollection(parameters: UpdateCollectionData) =
             task {
                 let parameters: DataAccess.CollectionUpdateParameters =
-                    { Id = id
-                      Name = name
-                      Description = description
-                      UpdatedAt = updatedAt }
+                    { Id = CollectionId.value parameters.CollectionId
+                      Name = parameters.Name
+                      Description = parameters.Description
+                      UpdatedAt = parameters.UpdatedAt }
 
                 return!
                     Wordfolio.Api.DataAccess.Collections.updateCollectionAsync
@@ -281,13 +278,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateVocabulary with
-        member _.CreateVocabulary(CollectionId collectionId, name, description, createdAt) =
+        member _.CreateVocabulary(data: CreateVocabularyData) =
             task {
                 let parameters: DataAccess.VocabularyCreationParameters =
-                    { CollectionId = collectionId
-                      Name = name
-                      Description = description
-                      CreatedAt = createdAt }
+                    { CollectionId = CollectionId.value data.CollectionId
+                      Name = data.Name
+                      Description = data.Description
+                      CreatedAt = data.CreatedAt }
 
                 let! id =
                     Wordfolio.Api.DataAccess.Vocabularies.createVocabularyAsync
@@ -300,13 +297,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface IUpdateVocabulary with
-        member _.UpdateVocabulary(VocabularyId id, name, description, updatedAt) =
+        member _.UpdateVocabulary(data: UpdateVocabularyData) =
             task {
                 let parameters: DataAccess.VocabularyUpdateParameters =
-                    { Id = id
-                      Name = name
-                      Description = description
-                      UpdatedAt = updatedAt }
+                    { Id = VocabularyId.value data.VocabularyId
+                      Name = data.Name
+                      Description = data.Description
+                      UpdatedAt = data.UpdatedAt }
 
                 return!
                     Wordfolio.Api.DataAccess.Vocabularies.updateVocabularyAsync
@@ -341,7 +338,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateDefaultVocabulary with
-        member _.CreateDefaultVocabulary(parameters: CreateVocabularyParameters) =
+        member _.CreateDefaultVocabulary(parameters: CreateDefaultVocabularyParameters) =
             task {
                 let dataAccessParams: DataAccess.VocabularyCreationParameters =
                     { CollectionId = CollectionId.value parameters.CollectionId
@@ -373,7 +370,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateDefaultCollection with
-        member _.CreateDefaultCollection(parameters: CreateCollectionParameters) =
+        member _.CreateDefaultCollection(parameters: CreateDefaultCollectionParameters) =
             task {
                 let dataAccessParams: DataAccess.CollectionCreationParameters =
                     { UserId = UserId.value parameters.UserId
@@ -427,12 +424,12 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface IGetEntryByTextAndVocabularyId with
-        member _.GetEntryByTextAndVocabularyId(VocabularyId vocabularyId, entryText) =
+        member _.GetEntryByTextAndVocabularyId(data: GetEntryByTextAndVocabularyIdData) =
             task {
                 let! maybeEntry =
                     Wordfolio.Api.DataAccess.Entries.getEntryByTextAndVocabularyIdAsync
-                        vocabularyId
-                        entryText
+                        (VocabularyId.value data.VocabularyId)
+                        data.EntryText
                         connection
                         transaction
                         cancellationToken
@@ -443,12 +440,12 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateEntry with
-        member _.CreateEntry(VocabularyId vocabularyId, entryText, createdAt) =
+        member _.CreateEntry(data: CreateEntryData) =
             task {
                 let parameters: DataAccess.EntryCreationParameters =
-                    { VocabularyId = vocabularyId
-                      EntryText = entryText
-                      CreatedAt = createdAt }
+                    { VocabularyId = VocabularyId.value data.VocabularyId
+                      EntryText = data.EntryText
+                      CreatedAt = data.CreatedAt }
 
                 let! entryId =
                     Wordfolio.Api.DataAccess.Entries.createEntryAsync
@@ -461,13 +458,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateDefinition with
-        member _.CreateDefinition(EntryId entryId, text, source, displayOrder) =
+        member _.CreateDefinition(data: CreateDefinitionData) =
             task {
                 let parameters: DataAccess.DefinitionCreationParameters =
-                    { EntryId = entryId
-                      DefinitionText = text
-                      Source = fromDefinitionSource source
-                      DisplayOrder = displayOrder }
+                    { EntryId = EntryId.value data.EntryId
+                      DefinitionText = data.Text
+                      Source = fromDefinitionSource data.Source
+                      DisplayOrder = data.DisplayOrder }
 
                 let! ids =
                     Wordfolio.Api.DataAccess.Definitions.createDefinitionsAsync
@@ -480,13 +477,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateTranslation with
-        member _.CreateTranslation(EntryId entryId, text, source, displayOrder) =
+        member _.CreateTranslation(data: CreateTranslationData) =
             task {
                 let parameters: DataAccess.TranslationCreationParameters =
-                    { EntryId = entryId
-                      TranslationText = text
-                      Source = fromTranslationSource source
-                      DisplayOrder = displayOrder }
+                    { EntryId = EntryId.value data.EntryId
+                      TranslationText = data.Text
+                      Source = fromTranslationSource data.Source
+                      DisplayOrder = data.DisplayOrder }
 
                 let! ids =
                     Wordfolio.Api.DataAccess.Translations.createTranslationsAsync
@@ -499,12 +496,12 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateExamplesForDefinition with
-        member _.CreateExamplesForDefinition(DefinitionId definitionId, examples) =
+        member _.CreateExamplesForDefinition(data: CreateExamplesForDefinitionData) =
             task {
                 let parameters: DataAccess.ExampleCreationParameters list =
-                    examples
+                    data.Examples
                     |> List.map(fun ex ->
-                        { DefinitionId = Some definitionId
+                        { DefinitionId = Some(DefinitionId.value data.DefinitionId)
                           TranslationId = None
                           ExampleText = ex.ExampleText
                           Source = fromExampleSource ex.Source })
@@ -520,13 +517,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateExamplesForTranslation with
-        member _.CreateExamplesForTranslation(TranslationId translationId, examples) =
+        member _.CreateExamplesForTranslation(data: CreateExamplesForTranslationData) =
             task {
                 let parameters: DataAccess.ExampleCreationParameters list =
-                    examples
+                    data.Examples
                     |> List.map(fun ex ->
                         { DefinitionId = None
-                          TranslationId = Some translationId
+                          TranslationId = Some(TranslationId.value data.TranslationId)
                           ExampleText = ex.ExampleText
                           Source = fromExampleSource ex.Source })
 
@@ -541,12 +538,12 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface IUpdateEntry with
-        member _.UpdateEntry(EntryId id, entryText, updatedAt) =
+        member _.UpdateEntry(data: UpdateEntryData) =
             task {
                 let parameters: Wordfolio.Api.DataAccess.Entries.EntryUpdateParameters =
-                    { Id = id
-                      EntryText = entryText
-                      UpdatedAt = updatedAt }
+                    { Id = EntryId.value data.EntryId
+                      EntryText = data.EntryText
+                      UpdatedAt = data.UpdatedAt }
 
                 let! _ =
                     Wordfolio.Api.DataAccess.Entries.updateEntryAsync
@@ -559,13 +556,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface IMoveEntry with
-        member _.MoveEntry(EntryId id, VocabularyId oldVocabularyId, VocabularyId newVocabularyId, updatedAt) =
+        member _.MoveEntry(data: MoveEntryData) =
             task {
                 let parameters: Wordfolio.Api.DataAccess.Entries.EntryMoveParameters =
-                    { Id = id
-                      OldVocabularyId = oldVocabularyId
-                      NewVocabularyId = newVocabularyId
-                      UpdatedAt = updatedAt }
+                    { Id = EntryId.value data.EntryId
+                      OldVocabularyId = VocabularyId.value data.OldVocabularyId
+                      NewVocabularyId = VocabularyId.value data.NewVocabularyId
+                      UpdatedAt = data.UpdatedAt }
 
                 let! _ =
                     Wordfolio.Api.DataAccess.Entries.moveEntryAsync parameters connection transaction cancellationToken
@@ -587,12 +584,12 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface IHasVocabularyAccess with
-        member _.HasVocabularyAccess(VocabularyId vocabularyId, UserId userId) =
+        member _.HasVocabularyAccess(data: HasVocabularyAccessData) =
             task {
                 let! hasAccess =
                     Wordfolio.Api.DataAccess.Entries.hasVocabularyAccessAsync
-                        vocabularyId
-                        userId
+                        (VocabularyId.value data.VocabularyId)
+                        (UserId.value data.UserId)
                         connection
                         transaction
                         cancellationToken
@@ -601,13 +598,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface IHasVocabularyAccessInCollection with
-        member _.HasVocabularyAccessInCollection(VocabularyId vocabularyId, CollectionId collectionId, UserId userId) =
+        member _.HasVocabularyAccessInCollection(data: HasVocabularyAccessInCollectionData) =
             task {
                 let! hasAccess =
                     Wordfolio.Api.DataAccess.Entries.hasVocabularyAccessInCollectionAsync
-                        vocabularyId
-                        collectionId
-                        userId
+                        (VocabularyId.value data.VocabularyId)
+                        (CollectionId.value data.CollectionId)
+                        (UserId.value data.UserId)
                         connection
                         transaction
                         cancellationToken
@@ -633,16 +630,16 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
 
                 return
                     results
-                    |> List.map toCollectionSummaryDomain
+                    |> List.map toCollectionWithVocabulariesDomain
             }
 
     interface ISearchUserCollections with
-        member _.SearchUserCollections(UserId userId, query) =
+        member _.SearchUserCollections(data: SearchUserCollectionsData) =
             task {
                 let! results =
                     Wordfolio.Api.DataAccess.CollectionsHierarchy.searchUserCollectionsAsync
-                        userId
-                        (query
+                        (UserId.value data.UserId)
+                        (data.Query
                          |> toSearchUserCollectionsQueryDataAccess)
                         connection
                         transaction
@@ -654,25 +651,25 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ISearchCollectionVocabularies with
-        member _.SearchCollectionVocabularies(UserId userId, CollectionId collectionId, query) =
+        member _.SearchCollectionVocabularies(data: SearchCollectionVocabulariesData) =
             task {
                 let! results =
                     Wordfolio.Api.DataAccess.CollectionsHierarchy.searchCollectionVocabulariesAsync
-                        userId
-                        collectionId
-                        (query
-                         |> toVocabularySummaryQueryDataAccess)
+                        (UserId.value data.UserId)
+                        (CollectionId.value data.CollectionId)
+                        (data.Query
+                         |> toSearchCollectionVocabulariesQueryDataAccess)
                         connection
                         transaction
                         cancellationToken
 
                 return
                     results
-                    |> List.map toVocabularySummaryDomain
+                    |> List.map toVocabularyWithEntryCountDomain
             }
 
-    interface IGetDefaultVocabularySummary with
-        member _.GetDefaultVocabularySummary(UserId userId) =
+    interface IGetDefaultVocabularyWithEntryCount with
+        member _.GetDefaultVocabularyWithEntryCount(UserId userId) =
             task {
                 let! result =
                     Wordfolio.Api.DataAccess.CollectionsHierarchy.getDefaultVocabularySummaryByUserIdAsync

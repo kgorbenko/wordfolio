@@ -4,28 +4,34 @@ open System.Threading.Tasks
 
 open Wordfolio.Api.Domain
 
+type SearchUserCollectionsData =
+    { UserId: UserId
+      Query: SearchUserCollectionsQuery }
+
+type SearchCollectionVocabulariesData =
+    { UserId: UserId
+      CollectionId: CollectionId
+      Query: SearchCollectionVocabulariesQuery }
+
 type IGetCollectionsWithVocabularies =
-    abstract GetCollectionsWithVocabularies: UserId -> Task<CollectionSummary list>
+    abstract GetCollectionsWithVocabularies: UserId -> Task<CollectionWithVocabularies list>
 
 type ISearchUserCollections =
-    abstract SearchUserCollections: UserId * SearchUserCollectionsQuery -> Task<CollectionOverview list>
+    abstract SearchUserCollections: SearchUserCollectionsData -> Task<CollectionWithVocabularyCount list>
 
 type ISearchCollectionVocabularies =
-    abstract SearchCollectionVocabularies:
-        UserId * CollectionId * VocabularySummaryQuery -> Task<VocabularySummary list>
+    abstract SearchCollectionVocabularies: SearchCollectionVocabulariesData -> Task<VocabularyWithEntryCount list>
 
-type IGetDefaultVocabularySummary =
-    abstract GetDefaultVocabularySummary: UserId -> Task<VocabularySummary option>
+type IGetDefaultVocabularyWithEntryCount =
+    abstract GetDefaultVocabularyWithEntryCount: UserId -> Task<VocabularyWithEntryCount option>
 
 module Capabilities =
     let getCollectionsWithVocabularies (env: #IGetCollectionsWithVocabularies) userId =
         env.GetCollectionsWithVocabularies(userId)
 
-    let searchUserCollections (env: #ISearchUserCollections) userId query =
-        env.SearchUserCollections(userId, query)
+    let searchUserCollections (env: #ISearchUserCollections) data = env.SearchUserCollections(data)
 
-    let searchCollectionVocabularies (env: #ISearchCollectionVocabularies) userId collectionId query =
-        env.SearchCollectionVocabularies(userId, collectionId, query)
+    let searchCollectionVocabularies (env: #ISearchCollectionVocabularies) data = env.SearchCollectionVocabularies(data)
 
-    let getDefaultVocabularySummary (env: #IGetDefaultVocabularySummary) userId =
-        env.GetDefaultVocabularySummary(userId)
+    let getDefaultVocabularyWithEntryCount (env: #IGetDefaultVocabularyWithEntryCount) userId =
+        env.GetDefaultVocabularyWithEntryCount(userId)

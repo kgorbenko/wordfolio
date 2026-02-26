@@ -8,12 +8,12 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations
 
-type TestEnv(getEntryById: EntryId -> Task<Entry option>, hasVocabularyAccess: VocabularyId * UserId -> Task<bool>) =
+type TestEnv(getEntryById: EntryId -> Task<Entry option>, hasVocabularyAccess: HasVocabularyAccessData -> Task<bool>) =
     let getEntryByIdCalls =
         ResizeArray<EntryId>()
 
     let hasVocabularyAccessCalls =
-        ResizeArray<VocabularyId * UserId>()
+        ResizeArray<HasVocabularyAccessData>()
 
     member _.GetEntryByIdCalls =
         getEntryByIdCalls |> Seq.toList
@@ -27,9 +27,9 @@ type TestEnv(getEntryById: EntryId -> Task<Entry option>, hasVocabularyAccess: V
             getEntryById id
 
     interface IHasVocabularyAccess with
-        member _.HasVocabularyAccess(vocabularyId, userId) =
-            hasVocabularyAccessCalls.Add(vocabularyId, userId)
-            hasVocabularyAccess(vocabularyId, userId)
+        member _.HasVocabularyAccess(data) =
+            hasVocabularyAccessCalls.Add(data)
+            hasVocabularyAccess(data)
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -83,12 +83,21 @@ let ``returns entry when it exists and user has access``() =
                 hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
-        let! result = getById env (UserId 7) (EntryId 1)
+        let! result =
+            getById
+                env
+                { UserId = UserId 7
+                  EntryId = EntryId 1 }
 
         Assert.Equal(Ok entry, result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
 
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 10, UserId 7 ], env.HasVocabularyAccessCalls)
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 UserId = UserId 7 }
+              : HasVocabularyAccessData) ],
+            env.HasVocabularyAccessCalls
+        )
     }
 
 [<Fact>]
@@ -100,9 +109,13 @@ let ``returns EntryNotFound when entry does not exist``() =
                 hasVocabularyAccess = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = getById env (UserId 1) (EntryId 44)
+        let! result =
+            getById
+                env
+                { UserId = UserId 1
+                  EntryId = EntryId 44 }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 44)), result)
+        Assert.Equal(Error(GetDraftEntryByIdError.EntryNotFound(EntryId 44)), result)
         Assert.Equal<EntryId list>([ EntryId 44 ], env.GetEntryByIdCalls)
         Assert.Empty(env.HasVocabularyAccessCalls)
     }
@@ -118,10 +131,19 @@ let ``returns EntryNotFound when user has no access``() =
                 hasVocabularyAccess = (fun _ -> Task.FromResult(false))
             )
 
-        let! result = getById env (UserId 2) (EntryId 1)
+        let! result =
+            getById
+                env
+                { UserId = UserId 2
+                  EntryId = EntryId 1 }
 
-        Assert.Equal(Error(EntryNotFound(EntryId 1)), result)
+        Assert.Equal(Error(GetDraftEntryByIdError.EntryNotFound(EntryId 1)), result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
 
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 10, UserId 2 ], env.HasVocabularyAccessCalls)
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 UserId = UserId 2 }
+              : HasVocabularyAccessData) ],
+            env.HasVocabularyAccessCalls
+        )
     }

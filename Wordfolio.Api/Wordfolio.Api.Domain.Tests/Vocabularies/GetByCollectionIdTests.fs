@@ -7,7 +7,6 @@ open Xunit
 
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
-open Wordfolio.Api.Domain.Shared
 open Wordfolio.Api.Domain.Vocabularies
 open Wordfolio.Api.Domain.Vocabularies.Operations
 
@@ -82,7 +81,11 @@ let ``returns vocabularies when collection owned by user``() =
                         Task.FromResult(vocabularies))
             )
 
-        let! result = getByCollectionId env (UserId 1) (CollectionId 1)
+        let! result =
+            getByCollectionId
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
         Assert.Equal(Ok vocabularies, result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -100,11 +103,18 @@ let ``returns empty list when collection has no vocabularies``() =
                 getVocabulariesByCollectionId = (fun _ -> Task.FromResult([]))
             )
 
-        let! result = getByCollectionId env (UserId 1) (CollectionId 1)
+        let! result =
+            getByCollectionId
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
         match result with
         | Ok vocabularies -> Assert.Empty(vocabularies)
         | Error e -> failwith $"Expected Ok, got Error: {e}"
+
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetVocabulariesByCollectionIdCalls)
     }
 
 [<Fact>]
@@ -121,9 +131,13 @@ let ``returns CollectionNotFound when collection does not exist``() =
                 getVocabulariesByCollectionId = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = getByCollectionId env (UserId 1) (CollectionId 1)
+        let! result =
+            getByCollectionId
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
-        Assert.Equal(Error(VocabularyCollectionNotFound(CollectionId 1)), result)
+        Assert.Equal(Error(GetVocabulariesByCollectionIdError.VocabularyCollectionNotFound(CollectionId 1)), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.GetVocabulariesByCollectionIdCalls)
     }
@@ -144,8 +158,13 @@ let ``returns CollectionNotFound when collection owned by different user``() =
                 getVocabulariesByCollectionId = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = getByCollectionId env (UserId 1) (CollectionId 1)
+        let! result =
+            getByCollectionId
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1 }
 
-        Assert.Equal(Error(VocabularyCollectionNotFound(CollectionId 1)), result)
+        Assert.Equal(Error(GetVocabulariesByCollectionIdError.VocabularyCollectionNotFound(CollectionId 1)), result)
+        Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
         Assert.Empty(env.GetVocabulariesByCollectionIdCalls)
     }

@@ -3,7 +3,6 @@ namespace Wordfolio.Api.Domain.Entries
 open System
 
 open Wordfolio.Api.Domain
-open Wordfolio.Api.Domain.Shared
 
 type DefinitionSource =
     | Api

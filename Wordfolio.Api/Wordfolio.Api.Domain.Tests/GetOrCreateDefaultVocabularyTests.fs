@@ -1,4 +1,4 @@
-module Wordfolio.Api.Domain.Tests.Shared.GetOrCreateDefaultVocabularyTests
+module Wordfolio.Api.Domain.Tests.GetOrCreateDefaultVocabularyTests
 
 open System
 open System.Threading.Tasks
@@ -6,29 +6,26 @@ open System.Threading.Tasks
 open Xunit
 
 open Wordfolio.Api.Domain
-open Wordfolio.Api.Domain.Collections
-open Wordfolio.Api.Domain.Shared
-open Wordfolio.Api.Domain.Shared.Operations
-open Wordfolio.Api.Domain.Vocabularies
+open Wordfolio.Api.Domain.Operations
 
 type TestEnv
     (
         getDefaultVocabulary: UserId -> Task<Vocabulary option>,
-        createDefaultVocabulary: CreateVocabularyParameters -> Task<VocabularyId>,
+        createDefaultVocabulary: CreateDefaultVocabularyParameters -> Task<VocabularyId>,
         getDefaultCollection: UserId -> Task<Collection option>,
-        createDefaultCollection: CreateCollectionParameters -> Task<CollectionId>
+        createDefaultCollection: CreateDefaultCollectionParameters -> Task<CollectionId>
     ) =
     let getDefaultVocabularyCalls =
         ResizeArray<UserId>()
 
     let createDefaultVocabularyCalls =
-        ResizeArray<CreateVocabularyParameters>()
+        ResizeArray<CreateDefaultVocabularyParameters>()
 
     let getDefaultCollectionCalls =
         ResizeArray<UserId>()
 
     let createDefaultCollectionCalls =
-        ResizeArray<CreateCollectionParameters>()
+        ResizeArray<CreateDefaultCollectionParameters>()
 
     member _.GetDefaultVocabularyCalls =
         getDefaultVocabularyCalls |> Seq.toList
@@ -111,7 +108,7 @@ let ``creates vocabulary when collection exists but vocabulary does not``() =
         let now = DateTimeOffset.UtcNow
         let collection = makeCollection 1 1
 
-        let expectedVocabularyParams: CreateVocabularyParameters =
+        let expectedVocabularyParams: CreateDefaultVocabularyParameters =
             { CollectionId = CollectionId 1
               Name = DefaultVocabularyName
               Description = None
@@ -129,7 +126,12 @@ let ``creates vocabulary when collection exists but vocabulary does not``() =
 
         Assert.Equal(VocabularyId 1, result)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularyCalls)
-        Assert.Equal<CreateVocabularyParameters list>([ expectedVocabularyParams ], env.CreateDefaultVocabularyCalls)
+
+        Assert.Equal<CreateDefaultVocabularyParameters list>(
+            [ expectedVocabularyParams ],
+            env.CreateDefaultVocabularyCalls
+        )
+
         Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultCollectionCalls)
         Assert.Empty(env.CreateDefaultCollectionCalls)
     }
@@ -139,13 +141,13 @@ let ``creates both collection and vocabulary when neither exists``() =
     task {
         let now = DateTimeOffset.UtcNow
 
-        let expectedCollectionParams: CreateCollectionParameters =
+        let expectedCollectionParams: CreateDefaultCollectionParameters =
             { UserId = UserId 1
               Name = SystemCollectionName
               Description = None
               CreatedAt = now }
 
-        let expectedVocabularyParams: CreateVocabularyParameters =
+        let expectedVocabularyParams: CreateDefaultVocabularyParameters =
             { CollectionId = CollectionId 1
               Name = DefaultVocabularyName
               Description = None
@@ -163,7 +165,16 @@ let ``creates both collection and vocabulary when neither exists``() =
 
         Assert.Equal(VocabularyId 1, result)
         Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultVocabularyCalls)
-        Assert.Equal<CreateVocabularyParameters list>([ expectedVocabularyParams ], env.CreateDefaultVocabularyCalls)
+
+        Assert.Equal<CreateDefaultVocabularyParameters list>(
+            [ expectedVocabularyParams ],
+            env.CreateDefaultVocabularyCalls
+        )
+
         Assert.Equal<UserId list>([ UserId 1 ], env.GetDefaultCollectionCalls)
-        Assert.Equal<CreateCollectionParameters list>([ expectedCollectionParams ], env.CreateDefaultCollectionCalls)
+
+        Assert.Equal<CreateDefaultCollectionParameters list>(
+            [ expectedCollectionParams ],
+            env.CreateDefaultCollectionCalls
+        )
     }

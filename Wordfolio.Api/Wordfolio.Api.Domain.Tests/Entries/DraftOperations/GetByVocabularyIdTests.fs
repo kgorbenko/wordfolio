@@ -11,13 +11,13 @@ open Wordfolio.Api.Domain.Entries.DraftOperations
 type TestEnv
     (
         getEntriesHierarchyByVocabularyId: VocabularyId -> Task<Entry list>,
-        hasVocabularyAccess: VocabularyId * UserId -> Task<bool>
+        hasVocabularyAccess: HasVocabularyAccessData -> Task<bool>
     ) =
     let getEntriesHierarchyByVocabularyIdCalls =
         ResizeArray<VocabularyId>()
 
     let hasVocabularyAccessCalls =
-        ResizeArray<VocabularyId * UserId>()
+        ResizeArray<HasVocabularyAccessData>()
 
     member _.GetEntriesHierarchyByVocabularyIdCalls =
         getEntriesHierarchyByVocabularyIdCalls
@@ -32,9 +32,9 @@ type TestEnv
             getEntriesHierarchyByVocabularyId vocabularyId
 
     interface IHasVocabularyAccess with
-        member _.HasVocabularyAccess(vocabularyId, userId) =
-            hasVocabularyAccessCalls.Add(vocabularyId, userId)
-            hasVocabularyAccess(vocabularyId, userId)
+        member _.HasVocabularyAccess(data) =
+            hasVocabularyAccessCalls.Add(data)
+            hasVocabularyAccess(data)
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -57,12 +57,21 @@ let ``returns empty list when vocabulary has no entries``() =
                 hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
-        let! result = getByVocabularyId env (UserId 1) (VocabularyId 9)
+        let! result =
+            getByVocabularyId
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 9 }
 
         Assert.Equal(Ok [], result)
         Assert.Equal<VocabularyId list>([ VocabularyId 9 ], env.GetEntriesHierarchyByVocabularyIdCalls)
 
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 9, UserId 1 ], env.HasVocabularyAccessCalls)
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 9
+                 UserId = UserId 1 }
+              : HasVocabularyAccessData) ],
+            env.HasVocabularyAccessCalls
+        )
     }
 
 [<Fact>]
@@ -77,12 +86,21 @@ let ``returns entries when vocabulary has entries``() =
                 hasVocabularyAccess = (fun _ -> Task.FromResult(true))
             )
 
-        let! result = getByVocabularyId env (UserId 1) (VocabularyId 9)
+        let! result =
+            getByVocabularyId
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 9 }
 
         Assert.Equal(Ok entries, result)
         Assert.Equal<VocabularyId list>([ VocabularyId 9 ], env.GetEntriesHierarchyByVocabularyIdCalls)
 
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 9, UserId 1 ], env.HasVocabularyAccessCalls)
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 9
+                 UserId = UserId 1 }
+              : HasVocabularyAccessData) ],
+            env.HasVocabularyAccessCalls
+        )
     }
 
 [<Fact>]
@@ -94,10 +112,19 @@ let ``returns error when user has no access``() =
                 hasVocabularyAccess = (fun _ -> Task.FromResult(false))
             )
 
-        let! result = getByVocabularyId env (UserId 1) (VocabularyId 9)
+        let! result =
+            getByVocabularyId
+                env
+                { UserId = UserId 1
+                  VocabularyId = VocabularyId 9 }
 
-        Assert.Equal(Error(VocabularyNotFoundOrAccessDenied(VocabularyId 9)), result)
+        Assert.Equal(Error(GetDraftEntriesByVocabularyIdError.VocabularyNotFoundOrAccessDenied(VocabularyId 9)), result)
         Assert.Empty(env.GetEntriesHierarchyByVocabularyIdCalls)
 
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 9, UserId 1 ], env.HasVocabularyAccessCalls)
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 9
+                 UserId = UserId 1 }
+              : HasVocabularyAccessData) ],
+            env.HasVocabularyAccessCalls
+        )
     }

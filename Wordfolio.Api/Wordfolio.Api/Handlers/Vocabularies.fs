@@ -71,14 +71,36 @@ let private getUserId(user: ClaimsPrincipal) : int option =
         | true, id -> Some id
         | false, _ -> None
 
-let private toErrorResponse(error: VocabularyError) : IResult =
+let private toGetByIdErrorResponse(error: GetVocabularyByIdError) : IResult =
     match error with
-    | VocabularyNotFound _ -> Results.NotFound()
-    | VocabularyAccessDenied _ -> Results.Forbid()
-    | VocabularyNameRequired -> Results.BadRequest({| error = "Name is required" |})
-    | VocabularyNameTooLong maxLength ->
+    | GetVocabularyByIdError.VocabularyNotFound _ -> Results.NotFound()
+    | GetVocabularyByIdError.VocabularyAccessDenied _ -> Results.Forbid()
+    | GetVocabularyByIdError.VocabularyCollectionNotFound _ -> Results.NotFound({| error = "Collection not found" |})
+
+let private toGetByCollectionIdErrorResponse(error: GetVocabulariesByCollectionIdError) : IResult =
+    match error with
+    | GetVocabulariesByCollectionIdError.VocabularyCollectionNotFound _ ->
+        Results.NotFound({| error = "Collection not found" |})
+
+let private toCreateErrorResponse(error: CreateVocabularyError) : IResult =
+    match error with
+    | CreateVocabularyError.VocabularyNameRequired -> Results.BadRequest({| error = "Name is required" |})
+    | CreateVocabularyError.VocabularyNameTooLong maxLength ->
         Results.BadRequest({| error = $"Name must be at most {maxLength} characters" |})
-    | VocabularyCollectionNotFound _ -> Results.NotFound({| error = "Collection not found" |})
+    | CreateVocabularyError.VocabularyCollectionNotFound _ -> Results.NotFound({| error = "Collection not found" |})
+
+let private toUpdateErrorResponse(error: UpdateVocabularyError) : IResult =
+    match error with
+    | UpdateVocabularyError.VocabularyNotFound _ -> Results.NotFound()
+    | UpdateVocabularyError.VocabularyAccessDenied _ -> Results.Forbid()
+    | UpdateVocabularyError.VocabularyNameRequired -> Results.BadRequest({| error = "Name is required" |})
+    | UpdateVocabularyError.VocabularyNameTooLong maxLength ->
+        Results.BadRequest({| error = $"Name must be at most {maxLength} characters" |})
+
+let private toDeleteErrorResponse(error: DeleteVocabularyError) : IResult =
+    match error with
+    | DeleteVocabularyError.VocabularyNotFound _ -> Results.NotFound()
+    | DeleteVocabularyError.VocabularyAccessDenied _ -> Results.Forbid()
 
 let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
     group
@@ -93,7 +115,11 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result = getByCollectionId env (UserId userId) (CollectionId collectionId)
+                            let! result =
+                                getByCollectionId
+                                    env
+                                    { UserId = UserId userId
+                                      CollectionId = CollectionId collectionId }
 
                             return
                                 match result with
@@ -102,7 +128,7 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                                         vocabularies |> List.map toResponse
 
                                     Results.Ok(response)
-                                | Error error -> toErrorResponse error
+                                | Error error -> toGetByCollectionIdErrorResponse error
                     })
         )
         .Produces<VocabularyResponse list>(StatusCodes.Status200OK)
@@ -125,11 +151,11 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                             let! result =
                                 create
                                     env
-                                    (UserId userId)
-                                    (CollectionId collectionId)
-                                    request.Name
-                                    request.Description
-                                    DateTimeOffset.UtcNow
+                                    { UserId = UserId userId
+                                      CollectionId = CollectionId collectionId
+                                      Name = request.Name
+                                      Description = request.Description
+                                      CreatedAt = DateTimeOffset.UtcNow }
 
                             return
                                 match result with
@@ -138,7 +164,7 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                                         Urls.vocabularyById(collectionId, VocabularyId.value vocabulary.Id),
                                         toResponse vocabulary
                                     )
-                                | Error error -> toErrorResponse error
+                                | Error error -> toCreateErrorResponse error
                     })
         )
         .Produces<VocabularyResponse>(StatusCodes.Status201Created)
@@ -159,12 +185,16 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result = getById env (UserId userId) (VocabularyId id)
+                            let! result =
+                                getById
+                                    env
+                                    { UserId = UserId userId
+                                      VocabularyId = VocabularyId id }
 
                             return
                                 match result with
                                 | Ok detail -> Results.Ok(toDetailResponse detail)
-                                | Error error -> toErrorResponse error
+                                | Error error -> toGetByIdErrorResponse error
                     })
         )
         .Produces<VocabularyDetailResponse>(StatusCodes.Status200OK)
@@ -188,16 +218,16 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                             let! result =
                                 update
                                     env
-                                    (UserId userId)
-                                    (VocabularyId id)
-                                    request.Name
-                                    request.Description
-                                    DateTimeOffset.UtcNow
+                                    { UserId = UserId userId
+                                      VocabularyId = VocabularyId id
+                                      Name = request.Name
+                                      Description = request.Description
+                                      UpdatedAt = DateTimeOffset.UtcNow }
 
                             return
                                 match result with
                                 | Ok vocabulary -> Results.Ok(toResponse vocabulary)
-                                | Error error -> toErrorResponse error
+                                | Error error -> toUpdateErrorResponse error
                     })
         )
         .Produces<VocabularyResponse>(StatusCodes.Status200OK)
@@ -219,12 +249,16 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result = delete env (UserId userId) (VocabularyId id)
+                            let! result =
+                                delete
+                                    env
+                                    { UserId = UserId userId
+                                      VocabularyId = VocabularyId id }
 
                             return
                                 match result with
                                 | Ok() -> Results.NoContent()
-                                | Error error -> toErrorResponse error
+                                | Error error -> toDeleteErrorResponse error
                     })
         )
         .Produces(StatusCodes.Status204NoContent)

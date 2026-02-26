@@ -4,7 +4,18 @@ open System
 open System.Threading.Tasks
 
 open Wordfolio.Api.Domain
-open Wordfolio.Api.Domain.Collections
+
+type CreateVocabularyData =
+    { CollectionId: CollectionId
+      Name: string
+      Description: string option
+      CreatedAt: DateTimeOffset }
+
+type UpdateVocabularyData =
+    { VocabularyId: VocabularyId
+      Name: string
+      Description: string option
+      UpdatedAt: DateTimeOffset }
 
 type IGetVocabularyById =
     abstract GetVocabularyById: VocabularyId -> Task<Vocabulary option>
@@ -13,10 +24,10 @@ type IGetVocabulariesByCollectionId =
     abstract GetVocabulariesByCollectionId: CollectionId -> Task<Vocabulary list>
 
 type ICreateVocabulary =
-    abstract CreateVocabulary: CollectionId * string * string option * DateTimeOffset -> Task<VocabularyId>
+    abstract CreateVocabulary: CreateVocabularyData -> Task<VocabularyId>
 
 type IUpdateVocabulary =
-    abstract UpdateVocabulary: VocabularyId * string * string option * DateTimeOffset -> Task<int>
+    abstract UpdateVocabulary: UpdateVocabularyData -> Task<int>
 
 type IDeleteVocabulary =
     abstract DeleteVocabulary: VocabularyId -> Task<int>
@@ -27,12 +38,8 @@ module Capabilities =
     let getVocabulariesByCollectionId (env: #IGetVocabulariesByCollectionId) collectionId =
         env.GetVocabulariesByCollectionId(collectionId)
 
-    let createVocabulary (env: #ICreateVocabulary) collectionId name description createdAt =
-        env.CreateVocabulary(collectionId, name, description, createdAt)
+    let createVocabulary (env: #ICreateVocabulary) data = env.CreateVocabulary(data)
 
-    let updateVocabulary (env: #IUpdateVocabulary) vocabularyId name description updatedAt =
-        env.UpdateVocabulary(vocabularyId, name, description, updatedAt)
+    let updateVocabulary (env: #IUpdateVocabulary) data = env.UpdateVocabulary(data)
 
     let deleteVocabulary (env: #IDeleteVocabulary) vocabularyId = env.DeleteVocabulary(vocabularyId)
-
-    let getCollectionById (env: #IGetCollectionById) collectionId = env.GetCollectionById(collectionId)

@@ -1,85 +1,127 @@
 namespace Wordfolio.Api.Domain.Entries
 
+open System
 open System.Threading.Tasks
 
 open Wordfolio.Api.Domain
+
+type CreateEntryData =
+    { VocabularyId: VocabularyId
+      EntryText: string
+      CreatedAt: DateTimeOffset }
+
+type CreateDefinitionData =
+    { EntryId: EntryId
+      Text: string
+      Source: DefinitionSource
+      DisplayOrder: int }
+
+type CreateTranslationData =
+    { EntryId: EntryId
+      Text: string
+      Source: TranslationSource
+      DisplayOrder: int }
+
+type GetEntryByTextAndVocabularyIdData =
+    { VocabularyId: VocabularyId
+      EntryText: string }
+
+type CreateExamplesForDefinitionData =
+    { DefinitionId: DefinitionId
+      Examples: ExampleInput list }
+
+type CreateExamplesForTranslationData =
+    { TranslationId: TranslationId
+      Examples: ExampleInput list }
+
+type UpdateEntryData =
+    { EntryId: EntryId
+      EntryText: string
+      UpdatedAt: DateTimeOffset }
+
+type MoveEntryData =
+    { EntryId: EntryId
+      OldVocabularyId: VocabularyId
+      NewVocabularyId: VocabularyId
+      UpdatedAt: DateTimeOffset }
+
+type HasVocabularyAccessInCollectionData =
+    { VocabularyId: VocabularyId
+      CollectionId: CollectionId
+      UserId: UserId }
+
+type HasVocabularyAccessData =
+    { VocabularyId: VocabularyId
+      UserId: UserId }
 
 type IGetEntryById =
     abstract GetEntryById: EntryId -> Task<Entry option>
 
 type IGetEntryByTextAndVocabularyId =
-    abstract GetEntryByTextAndVocabularyId: VocabularyId * string -> Task<Entry option>
+    abstract GetEntryByTextAndVocabularyId: GetEntryByTextAndVocabularyIdData -> Task<Entry option>
 
 type ICreateEntry =
-    abstract CreateEntry: VocabularyId * string * System.DateTimeOffset -> Task<EntryId>
+    abstract CreateEntry: CreateEntryData -> Task<EntryId>
 
 type ICreateDefinition =
-    abstract CreateDefinition: EntryId * string * DefinitionSource * int -> Task<DefinitionId>
+    abstract CreateDefinition: CreateDefinitionData -> Task<DefinitionId>
 
 type ICreateTranslation =
-    abstract CreateTranslation: EntryId * string * TranslationSource * int -> Task<TranslationId>
+    abstract CreateTranslation: CreateTranslationData -> Task<TranslationId>
 
 type ICreateExamplesForDefinition =
-    abstract CreateExamplesForDefinition: DefinitionId * ExampleInput list -> Task<unit>
+    abstract CreateExamplesForDefinition: CreateExamplesForDefinitionData -> Task<unit>
 
 type ICreateExamplesForTranslation =
-    abstract CreateExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>
+    abstract CreateExamplesForTranslation: CreateExamplesForTranslationData -> Task<unit>
 
 type IUpdateEntry =
-    abstract UpdateEntry: EntryId * string * System.DateTimeOffset -> Task<unit>
+    abstract UpdateEntry: UpdateEntryData -> Task<unit>
 
 type IMoveEntry =
-    abstract MoveEntry: EntryId * VocabularyId * VocabularyId * System.DateTimeOffset -> Task<unit>
+    abstract MoveEntry: MoveEntryData -> Task<unit>
 
 type IClearEntryChildren =
     abstract ClearEntryChildren: EntryId -> Task<unit>
 
 type IHasVocabularyAccess =
-    abstract HasVocabularyAccess: VocabularyId * UserId -> Task<bool>
+    abstract HasVocabularyAccess: HasVocabularyAccessData -> Task<bool>
 
 type IHasVocabularyAccessInCollection =
-    abstract HasVocabularyAccessInCollection: VocabularyId * CollectionId * UserId -> Task<bool>
+    abstract HasVocabularyAccessInCollection: HasVocabularyAccessInCollectionData -> Task<bool>
 
 type IDeleteEntry =
     abstract DeleteEntry: EntryId -> Task<int>
 
 type IGetEntriesHierarchyByVocabularyId =
-    abstract member GetEntriesHierarchyByVocabularyId: VocabularyId -> Task<Entry list>
+    abstract GetEntriesHierarchyByVocabularyId: VocabularyId -> Task<Entry list>
 
 module Capabilities =
     let getEntryById (env: #IGetEntryById) entryId = env.GetEntryById(entryId)
 
-    let getEntryByTextAndVocabularyId (env: #IGetEntryByTextAndVocabularyId) vocabularyId entryText =
-        env.GetEntryByTextAndVocabularyId(vocabularyId, entryText)
+    let getEntryByTextAndVocabularyId (env: #IGetEntryByTextAndVocabularyId) data =
+        env.GetEntryByTextAndVocabularyId(data)
 
-    let createEntry (env: #ICreateEntry) vocabularyId entryText createdAt =
-        env.CreateEntry(vocabularyId, entryText, createdAt)
+    let createEntry (env: #ICreateEntry) data = env.CreateEntry(data)
 
-    let createDefinition (env: #ICreateDefinition) entryId text source displayOrder =
-        env.CreateDefinition(entryId, text, source, displayOrder)
+    let createDefinition (env: #ICreateDefinition) data = env.CreateDefinition(data)
 
-    let createTranslation (env: #ICreateTranslation) entryId text source displayOrder =
-        env.CreateTranslation(entryId, text, source, displayOrder)
+    let createTranslation (env: #ICreateTranslation) data = env.CreateTranslation(data)
 
-    let createExamplesForDefinition (env: #ICreateExamplesForDefinition) definitionId examples =
-        env.CreateExamplesForDefinition(definitionId, examples)
+    let createExamplesForDefinition (env: #ICreateExamplesForDefinition) data = env.CreateExamplesForDefinition(data)
 
-    let createExamplesForTranslation (env: #ICreateExamplesForTranslation) translationId examples =
-        env.CreateExamplesForTranslation(translationId, examples)
+    let createExamplesForTranslation (env: #ICreateExamplesForTranslation) data = env.CreateExamplesForTranslation(data)
 
-    let updateEntry (env: #IUpdateEntry) entryId entryText updatedAt =
-        env.UpdateEntry(entryId, entryText, updatedAt)
+    let updateEntry (env: #IUpdateEntry) data = env.UpdateEntry(data)
 
-    let moveEntry (env: #IMoveEntry) entryId oldVocabularyId newVocabularyId updatedAt =
-        env.MoveEntry(entryId, oldVocabularyId, newVocabularyId, updatedAt)
+    let moveEntry (env: #IMoveEntry) data = env.MoveEntry(data)
 
     let clearEntryChildren (env: #IClearEntryChildren) entryId = env.ClearEntryChildren(entryId)
 
-    let hasVocabularyAccess (env: #IHasVocabularyAccess) vocabularyId userId =
-        env.HasVocabularyAccess(vocabularyId, userId)
+    let hasVocabularyAccess (env: #IHasVocabularyAccess) data = env.HasVocabularyAccess(data)
 
-    let hasVocabularyAccessInCollection (env: #IHasVocabularyAccessInCollection) vocabularyId collectionId userId =
-        env.HasVocabularyAccessInCollection(vocabularyId, collectionId, userId)
+    let hasVocabularyAccessInCollection (env: #IHasVocabularyAccessInCollection) data =
+        env.HasVocabularyAccessInCollection(data)
 
     let deleteEntry (env: #IDeleteEntry) entryId = env.DeleteEntry(entryId)
 

@@ -1,10 +1,10 @@
-module Wordfolio.Api.Domain.Shared.Operations
+module Wordfolio.Api.Domain.Operations
 
 open System
 open System.Threading.Tasks
 
 open Wordfolio.Api.Domain
-open Wordfolio.Api.Domain.Shared.Capabilities
+open Wordfolio.Api.Domain.Capabilities
 
 [<Literal>]
 let SystemCollectionName =
@@ -13,7 +13,7 @@ let SystemCollectionName =
 [<Literal>]
 let DefaultVocabularyName = "[Default]"
 
-let getOrCreateDefaultVocabulary env (userId: UserId) (now: DateTimeOffset) : Task<VocabularyId> =
+let internal getOrCreateDefaultVocabulary env (userId: UserId) (now: DateTimeOffset) : Task<VocabularyId> =
     task {
         let! maybeVocabulary = getDefaultVocabulary env userId
 
@@ -26,7 +26,7 @@ let getOrCreateDefaultVocabulary env (userId: UserId) (now: DateTimeOffset) : Ta
                 match maybeCollection with
                 | Some collection -> collection.Id |> Task.FromResult
                 | None ->
-                    let collectionParams: CreateCollectionParameters =
+                    let collectionParams: CreateDefaultCollectionParameters =
                         { UserId = userId
                           Name = SystemCollectionName
                           Description = None
@@ -34,7 +34,7 @@ let getOrCreateDefaultVocabulary env (userId: UserId) (now: DateTimeOffset) : Ta
 
                     createDefaultCollection env collectionParams
 
-            let vocabularyParams: CreateVocabularyParameters =
+            let vocabularyParams: CreateDefaultVocabularyParameters =
                 { CollectionId = collectionId
                   Name = DefaultVocabularyName
                   Description = None

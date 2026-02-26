@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="GetOrCreateDefaultVocabularyTests.fs" />
     <Compile Include="Collections\GetByIdTests.fs" />
     <Compile Include="Collections\GetByUserIdTests.fs" />
     <Compile Include="Collections\CreateTests.fs" />
@@ -29,7 +30,6 @@
     <Compile Include="Vocabularies\CreateTests.fs" />
     <Compile Include="Vocabularies\UpdateTests.fs" />
     <Compile Include="Vocabularies\DeleteTests.fs" />
-    <Compile Include="Shared\GetOrCreateDefaultVocabularyTests.fs" />
     <Compile Include="CollectionsHierarchy\GetByUserIdTests.fs" />
     <Compile Include="CollectionsHierarchy\SearchUserCollectionsTests.fs" />
     <Compile Include="CollectionsHierarchy\SearchCollectionVocabulariesTests.fs" />
