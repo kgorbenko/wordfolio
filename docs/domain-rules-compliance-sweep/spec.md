@@ -147,7 +147,7 @@ The loop is feature-driven. Each implementation iteration must complete one full
 
 ### 5. Entries feature compliance (domain + tests)
 - [x] Implement: In one iteration, fix all applicable rules for `Wordfolio.Api/Wordfolio.Api.Domain/Entries/*.fs` and `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/**/*.fs`.
-- [ ] Improve: Review capability signature parity, no wrapper regressions, and all `...Calls` assertions in every test.
+- [x] Improve: Review capability signature parity, no wrapper regressions, and all `...Calls` assertions in every test.
 
 ### 6. Final full-scope compliance and closeout
 - [ ] Implement: Re-audit all in-scope files and resolve any remaining rule drift across domain and tests.
@@ -208,3 +208,9 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - What was done: Removed fully-qualified `Wordfolio.Api.Domain.Entries.*` operation call sites across entries domain tests and switched them to direct in-scope operation calls (`create`, `update`, `move`, `delete`, `getById`, `getByVocabularyId`, `getDrafts`) to satisfy call-site qualification rules. Kept entries domain behavior unchanged and verified the full mandatory formatting/build/test suite passes.
 - Issues encountered: None
 - Learnings: Entries tests already import the operation modules, so replacing fully-qualified invocations with direct calls is compile-safe and reduces namespace noise without affecting operation contracts or behavior.
+
+### Improve: Review capability signature parity, no wrapper regressions, and all `...Calls` assertions in every test.
+- Files changed: `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/EntryOperations/CreateTests.fs`, `docs/domain-rules-compliance-sweep/spec.md`
+- What was done: Reviewed Entries capability usage and removed assertion drift in `EntryOperations/CreateTests` by introducing shared tracked-call assertions and adding explicit expected call-list checks in every test for all tracked dependencies (`GetEntryById`, `GetEntryByTextAndVocabularyId`, `HasVocabularyAccessInCollection`). Confirmed operation invocation shape remains direct (no test wrappers) and capability signature parity is preserved.
+- Issues encountered: `dotnet fantomas .` initially failed due a parse error from an extra closing parenthesis after the first two helper calls; fixed by removing the stray tokens and rerunning the full mandatory verification suite.
+- Learnings: Centralizing per-test dependency assertions through a small helper keeps call-tracking checks comprehensive while preserving readable test intent; explicit empty expectations on validation failures guard against accidental pre-validation capability calls.
