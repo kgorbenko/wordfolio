@@ -424,12 +424,12 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface IGetEntryByTextAndVocabularyId with
-        member _.GetEntryByTextAndVocabularyId(VocabularyId vocabularyId, entryText) =
+        member _.GetEntryByTextAndVocabularyId(data: GetEntryByTextAndVocabularyIdData) =
             task {
                 let! maybeEntry =
                     Wordfolio.Api.DataAccess.Entries.getEntryByTextAndVocabularyIdAsync
-                        vocabularyId
-                        entryText
+                        (VocabularyId.value data.VocabularyId)
+                        data.EntryText
                         connection
                         transaction
                         cancellationToken
@@ -496,12 +496,12 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateExamplesForDefinition with
-        member _.CreateExamplesForDefinition(DefinitionId definitionId, examples) =
+        member _.CreateExamplesForDefinition(data: CreateExamplesForDefinitionData) =
             task {
                 let parameters: DataAccess.ExampleCreationParameters list =
-                    examples
+                    data.Examples
                     |> List.map(fun ex ->
-                        { DefinitionId = Some definitionId
+                        { DefinitionId = Some(DefinitionId.value data.DefinitionId)
                           TranslationId = None
                           ExampleText = ex.ExampleText
                           Source = fromExampleSource ex.Source })
@@ -517,13 +517,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface ICreateExamplesForTranslation with
-        member _.CreateExamplesForTranslation(TranslationId translationId, examples) =
+        member _.CreateExamplesForTranslation(data: CreateExamplesForTranslationData) =
             task {
                 let parameters: DataAccess.ExampleCreationParameters list =
-                    examples
+                    data.Examples
                     |> List.map(fun ex ->
                         { DefinitionId = None
-                          TranslationId = Some translationId
+                          TranslationId = Some(TranslationId.value data.TranslationId)
                           ExampleText = ex.ExampleText
                           Source = fromExampleSource ex.Source })
 
@@ -584,12 +584,12 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             }
 
     interface IHasVocabularyAccess with
-        member _.HasVocabularyAccess(VocabularyId vocabularyId, UserId userId) =
+        member _.HasVocabularyAccess(data: HasVocabularyAccessData) =
             task {
                 let! hasAccess =
                     Wordfolio.Api.DataAccess.Entries.hasVocabularyAccessAsync
-                        vocabularyId
-                        userId
+                        (VocabularyId.value data.VocabularyId)
+                        (UserId.value data.UserId)
                         connection
                         transaction
                         cancellationToken

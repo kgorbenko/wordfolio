@@ -13,12 +13,12 @@ open Wordfolio.Api.Domain.Entries.Helpers
 type TestEnv
     (
         getEntryById: EntryId -> Task<Entry option>,
-        getEntryByTextAndVocabularyId: VocabularyId * string -> Task<Entry option>,
+        getEntryByTextAndVocabularyId: GetEntryByTextAndVocabularyIdData -> Task<Entry option>,
         createEntry: CreateEntryData -> Task<EntryId>,
         createDefinition: CreateDefinitionData -> Task<DefinitionId>,
         createTranslation: CreateTranslationData -> Task<TranslationId>,
-        createExamplesForDefinition: DefinitionId * ExampleInput list -> Task<unit>,
-        createExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>,
+        createExamplesForDefinition: CreateExamplesForDefinitionData -> Task<unit>,
+        createExamplesForTranslation: CreateExamplesForTranslationData -> Task<unit>,
         getDefaultVocabulary: UserId -> Task<Vocabulary option>,
         getDefaultCollection: UserId -> Task<Collection option>,
         createDefaultVocabulary: CreateDefaultVocabularyParameters -> Task<VocabularyId>,
@@ -28,7 +28,7 @@ type TestEnv
         ResizeArray<EntryId>()
 
     let getEntryByTextAndVocabularyIdCalls =
-        ResizeArray<VocabularyId * string>()
+        ResizeArray<GetEntryByTextAndVocabularyIdData>()
 
     let createEntryCalls =
         ResizeArray<CreateEntryData>()
@@ -40,10 +40,10 @@ type TestEnv
         ResizeArray<CreateTranslationData>()
 
     let createExamplesForDefinitionCalls =
-        ResizeArray<DefinitionId * ExampleInput list>()
+        ResizeArray<CreateExamplesForDefinitionData>()
 
     let createExamplesForTranslationCalls =
-        ResizeArray<TranslationId * ExampleInput list>()
+        ResizeArray<CreateExamplesForTranslationData>()
 
     member _.GetEntryByIdCalls =
         getEntryByIdCalls |> Seq.toList
@@ -75,9 +75,9 @@ type TestEnv
             getEntryById id
 
     interface IGetEntryByTextAndVocabularyId with
-        member _.GetEntryByTextAndVocabularyId(vocabularyId, text) =
-            getEntryByTextAndVocabularyIdCalls.Add(vocabularyId, text)
-            getEntryByTextAndVocabularyId(vocabularyId, text)
+        member _.GetEntryByTextAndVocabularyId(data) =
+            getEntryByTextAndVocabularyIdCalls.Add(data)
+            getEntryByTextAndVocabularyId(data)
 
     interface ICreateEntry with
         member _.CreateEntry(data) =
@@ -95,14 +95,14 @@ type TestEnv
             createTranslation data
 
     interface ICreateExamplesForDefinition with
-        member _.CreateExamplesForDefinition(definitionId, examples) =
-            createExamplesForDefinitionCalls.Add(definitionId, examples)
-            createExamplesForDefinition(definitionId, examples)
+        member _.CreateExamplesForDefinition(data) =
+            createExamplesForDefinitionCalls.Add(data)
+            createExamplesForDefinition(data)
 
     interface ICreateExamplesForTranslation with
-        member _.CreateExamplesForTranslation(translationId, examples) =
-            createExamplesForTranslationCalls.Add(translationId, examples)
-            createExamplesForTranslation(translationId, examples)
+        member _.CreateExamplesForTranslation(data) =
+            createExamplesForTranslationCalls.Add(data)
+            createExamplesForTranslation(data)
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this

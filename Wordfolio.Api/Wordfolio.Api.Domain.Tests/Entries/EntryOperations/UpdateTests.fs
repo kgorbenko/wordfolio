@@ -19,8 +19,8 @@ type TestEnv
         clearEntryChildren: EntryId -> Task<unit>,
         createDefinition: CreateDefinitionData -> Task<DefinitionId>,
         createTranslation: CreateTranslationData -> Task<TranslationId>,
-        createExamplesForDefinition: DefinitionId * ExampleInput list -> Task<unit>,
-        createExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>
+        createExamplesForDefinition: CreateExamplesForDefinitionData -> Task<unit>,
+        createExamplesForTranslation: CreateExamplesForTranslationData -> Task<unit>
     ) =
     let getEntryByIdCalls =
         ResizeArray<EntryId>()
@@ -41,10 +41,10 @@ type TestEnv
         ResizeArray<CreateTranslationData>()
 
     let createExamplesForDefinitionCalls =
-        ResizeArray<DefinitionId * ExampleInput list>()
+        ResizeArray<CreateExamplesForDefinitionData>()
 
     let createExamplesForTranslationCalls =
-        ResizeArray<TranslationId * ExampleInput list>()
+        ResizeArray<CreateExamplesForTranslationData>()
 
     member _.GetEntryByIdCalls =
         getEntryByIdCalls |> Seq.toList
@@ -104,14 +104,14 @@ type TestEnv
             createTranslation data
 
     interface ICreateExamplesForDefinition with
-        member _.CreateExamplesForDefinition(definitionId, examples) =
-            createExamplesForDefinitionCalls.Add(definitionId, examples)
-            createExamplesForDefinition(definitionId, examples)
+        member _.CreateExamplesForDefinition(data) =
+            createExamplesForDefinitionCalls.Add(data)
+            createExamplesForDefinition(data)
 
     interface ICreateExamplesForTranslation with
-        member _.CreateExamplesForTranslation(translationId, examples) =
-            createExamplesForTranslationCalls.Add(translationId, examples)
-            createExamplesForTranslation(translationId, examples)
+        member _.CreateExamplesForTranslation(data) =
+            createExamplesForTranslationCalls.Add(data)
+            createExamplesForTranslation(data)
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -273,13 +273,17 @@ let ``updates entry with new definitions and translations``() =
             env.CreateTranslationCalls
         )
 
-        Assert.Equal<(DefinitionId * ExampleInput list) list>(
-            [ DefinitionId 10, [ makeExampleInput "example" ExampleSource.Custom ] ],
+        Assert.Equal<CreateExamplesForDefinitionData list>(
+            [ ({ DefinitionId = DefinitionId 10
+                 Examples = [ makeExampleInput "example" ExampleSource.Custom ] }
+              : CreateExamplesForDefinitionData) ],
             env.CreateExamplesForDefinitionCalls
         )
 
-        Assert.Equal<(TranslationId * ExampleInput list) list>(
-            [ TranslationId 20, [ makeExampleInput "example" ExampleSource.Custom ] ],
+        Assert.Equal<CreateExamplesForTranslationData list>(
+            [ ({ TranslationId = TranslationId 20
+                 Examples = [ makeExampleInput "example" ExampleSource.Custom ] }
+              : CreateExamplesForTranslationData) ],
             env.CreateExamplesForTranslationCalls
         )
     }

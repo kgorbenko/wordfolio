@@ -124,7 +124,11 @@ let private createDefinitionsAsync env (parameters: CreateDefinitionsParameters)
                       DisplayOrder = i }
 
             if not def.Examples.IsEmpty then
-                do! createExamplesForDefinition env defId def.Examples
+                do!
+                    createExamplesForDefinition
+                        env
+                        { DefinitionId = defId
+                          Examples = def.Examples }
     }
 
 let private createTranslationsAsync env (parameters: CreateTranslationsParameters) : Task<unit> =
@@ -141,12 +145,20 @@ let private createTranslationsAsync env (parameters: CreateTranslationsParameter
                       DisplayOrder = i }
 
             if not trans.Examples.IsEmpty then
-                do! createExamplesForTranslation env transId trans.Examples
+                do!
+                    createExamplesForTranslation
+                        env
+                        { TranslationId = transId
+                          Examples = trans.Examples }
     }
 
 let checkVocabularyAccess env (parameters: CheckVocabularyAccessParameters) : Task<Result<unit, unit>> =
     task {
-        let! hasAccess = hasVocabularyAccess env (parameters.VocabularyId, parameters.UserId)
+        let! hasAccess =
+            hasVocabularyAccess
+                env
+                { VocabularyId = parameters.VocabularyId
+                  UserId = parameters.UserId }
 
         return if not hasAccess then Error() else Ok()
     }
@@ -175,7 +187,11 @@ let checkForDuplicate env (parameters: CheckForDuplicateParameters) : Task<Resul
         Task.FromResult(Ok())
     else
         task {
-            let! maybeExistingEntry = getEntryByTextAndVocabularyId env (parameters.VocabularyId, parameters.EntryText)
+            let! maybeExistingEntry =
+                getEntryByTextAndVocabularyId
+                    env
+                    { VocabularyId = parameters.VocabularyId
+                      EntryText = parameters.EntryText }
 
             match maybeExistingEntry with
             | Some existing ->

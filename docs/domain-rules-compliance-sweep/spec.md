@@ -150,7 +150,7 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - [x] Improve: Review capability signature parity, no wrapper regressions, and all `...Calls` assertions in every test.
 
 ### 6. Final full-scope compliance and closeout
-- [ ] Implement: Re-audit all in-scope files and resolve any remaining rule drift across domain and tests.
+- [x] Implement: Re-audit all in-scope files and resolve any remaining rule drift across domain and tests.
 - [ ] Improve: Review final diff for no-behavior-change compliance, consistency, and removal of fully-qualified domain call-sites.
 
 ## Progress Log
@@ -214,3 +214,9 @@ The loop is feature-driven. Each implementation iteration must complete one full
 - What was done: Reviewed Entries capability usage and removed assertion drift in `EntryOperations/CreateTests` by introducing shared tracked-call assertions and adding explicit expected call-list checks in every test for all tracked dependencies (`GetEntryById`, `GetEntryByTextAndVocabularyId`, `HasVocabularyAccessInCollection`). Confirmed operation invocation shape remains direct (no test wrappers) and capability signature parity is preserved.
 - Issues encountered: `dotnet fantomas .` initially failed due a parse error from an extra closing parenthesis after the first two helper calls; fixed by removing the stray tokens and rerunning the full mandatory verification suite.
 - Learnings: Centralizing per-test dependency assertions through a small helper keeps call-tracking checks comprehensive while preserving readable test intent; explicit empty expectations on validation failures guard against accidental pre-validation capability calls.
+
+### Implement: Re-audit all in-scope files and resolve any remaining rule drift across domain and tests.
+- Files changed: `Wordfolio.Api/Wordfolio.Api.Domain/Entries/Capabilities.fs`, `Wordfolio.Api/Wordfolio.Api.Domain/Entries/Helpers.fs`, `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/EntryOperations/CreateTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/EntryOperations/UpdateTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/EntryOperations/MoveTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/DraftOperations/CreateTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/DraftOperations/UpdateTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/DraftOperations/GetByIdTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/DraftOperations/GetByVocabularyIdTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/DraftOperations/DeleteTests.fs`, `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/DraftOperations/MoveTests.fs`, `docs/domain-rules-compliance-sweep/spec.md`
+- What was done: Re-audited full in-scope domain/test files and fixed remaining capability tuple-signature drift in Entries by introducing named capability data records (`GetEntryByTextAndVocabularyIdData`, `CreateExamplesForDefinitionData`, `CreateExamplesForTranslationData`, `HasVocabularyAccessData`) and updating all domain, infrastructure, and tests call sites to use the exact record types. Updated entries test call-tracking collections/assertions to match capability signatures exactly and reran the full mandatory verification suite successfully.
+- Issues encountered: None
+- Learnings: Final compliance checks should include capability signatures in helper-level dependencies, not only operation-level parameter records; tuple signatures can survive feature passes unless capability contracts and test call-tracking types are explicitly cross-checked together.

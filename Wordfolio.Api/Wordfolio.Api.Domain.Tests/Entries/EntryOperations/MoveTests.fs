@@ -13,7 +13,7 @@ type TestEnv
     (
         getEntryById: EntryId -> Task<Entry option>,
         hasVocabularyAccessInCollection: HasVocabularyAccessInCollectionData -> Task<bool>,
-        hasVocabularyAccess: VocabularyId * UserId -> Task<bool>,
+        hasVocabularyAccess: HasVocabularyAccessData -> Task<bool>,
         moveEntry: MoveEntryData -> Task<unit>
     ) =
     let getEntryByIdCalls =
@@ -23,7 +23,7 @@ type TestEnv
         ResizeArray<HasVocabularyAccessInCollectionData>()
 
     let hasVocabularyAccessCalls =
-        ResizeArray<VocabularyId * UserId>()
+        ResizeArray<HasVocabularyAccessData>()
 
     let moveEntryCalls =
         ResizeArray<MoveEntryData>()
@@ -52,9 +52,9 @@ type TestEnv
             hasVocabularyAccessInCollection data
 
     interface IHasVocabularyAccess with
-        member _.HasVocabularyAccess(vocabularyId, userId) =
-            hasVocabularyAccessCalls.Add(vocabularyId, userId)
-            hasVocabularyAccess(vocabularyId, userId)
+        member _.HasVocabularyAccess(data) =
+            hasVocabularyAccessCalls.Add(data)
+            hasVocabularyAccess(data)
 
     interface IMoveEntry with
         member _.MoveEntry(data) =
@@ -125,7 +125,12 @@ let ``moves entry when vocabulary is in collection and entry belongs to vocabula
             env.HasVocabularyAccessInCollectionCalls
         )
 
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 200, UserId 1 ], env.HasVocabularyAccessCalls)
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 200
+                 UserId = UserId 1 }
+              : HasVocabularyAccessData) ],
+            env.HasVocabularyAccessCalls
+        )
 
         Assert.Equal<MoveEntryData list>(
             [ { EntryId = EntryId 10
@@ -250,7 +255,14 @@ let ``returns VocabularyNotFoundOrAccessDenied when target vocabulary access is 
 
         Assert.Equal(Error(MoveEntryError.VocabularyNotFoundOrAccessDenied(VocabularyId 200)), result)
         Assert.Equal<EntryId list>([ EntryId 10 ], env.GetEntryByIdCalls)
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 200, UserId 1 ], env.HasVocabularyAccessCalls)
+
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 200
+                 UserId = UserId 1 }
+              : HasVocabularyAccessData) ],
+            env.HasVocabularyAccessCalls
+        )
+
         Assert.Empty(env.MoveEntryCalls)
     }
 

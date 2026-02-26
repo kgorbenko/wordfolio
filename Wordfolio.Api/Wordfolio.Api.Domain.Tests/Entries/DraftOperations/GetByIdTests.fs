@@ -8,12 +8,12 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations
 
-type TestEnv(getEntryById: EntryId -> Task<Entry option>, hasVocabularyAccess: VocabularyId * UserId -> Task<bool>) =
+type TestEnv(getEntryById: EntryId -> Task<Entry option>, hasVocabularyAccess: HasVocabularyAccessData -> Task<bool>) =
     let getEntryByIdCalls =
         ResizeArray<EntryId>()
 
     let hasVocabularyAccessCalls =
-        ResizeArray<VocabularyId * UserId>()
+        ResizeArray<HasVocabularyAccessData>()
 
     member _.GetEntryByIdCalls =
         getEntryByIdCalls |> Seq.toList
@@ -27,9 +27,9 @@ type TestEnv(getEntryById: EntryId -> Task<Entry option>, hasVocabularyAccess: V
             getEntryById id
 
     interface IHasVocabularyAccess with
-        member _.HasVocabularyAccess(vocabularyId, userId) =
-            hasVocabularyAccessCalls.Add(vocabularyId, userId)
-            hasVocabularyAccess(vocabularyId, userId)
+        member _.HasVocabularyAccess(data) =
+            hasVocabularyAccessCalls.Add(data)
+            hasVocabularyAccess(data)
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -92,7 +92,12 @@ let ``returns entry when it exists and user has access``() =
         Assert.Equal(Ok entry, result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
 
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 10, UserId 7 ], env.HasVocabularyAccessCalls)
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 UserId = UserId 7 }
+              : HasVocabularyAccessData) ],
+            env.HasVocabularyAccessCalls
+        )
     }
 
 [<Fact>]
@@ -135,5 +140,10 @@ let ``returns EntryNotFound when user has no access``() =
         Assert.Equal(Error(GetDraftEntryByIdError.EntryNotFound(EntryId 1)), result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
 
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 10, UserId 2 ], env.HasVocabularyAccessCalls)
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 UserId = UserId 2 }
+              : HasVocabularyAccessData) ],
+            env.HasVocabularyAccessCalls
+        )
     }

@@ -22,6 +22,18 @@ type CreateTranslationData =
       Source: TranslationSource
       DisplayOrder: int }
 
+type GetEntryByTextAndVocabularyIdData =
+    { VocabularyId: VocabularyId
+      EntryText: string }
+
+type CreateExamplesForDefinitionData =
+    { DefinitionId: DefinitionId
+      Examples: ExampleInput list }
+
+type CreateExamplesForTranslationData =
+    { TranslationId: TranslationId
+      Examples: ExampleInput list }
+
 type UpdateEntryData =
     { EntryId: EntryId
       EntryText: string
@@ -38,11 +50,15 @@ type HasVocabularyAccessInCollectionData =
       CollectionId: CollectionId
       UserId: UserId }
 
+type HasVocabularyAccessData =
+    { VocabularyId: VocabularyId
+      UserId: UserId }
+
 type IGetEntryById =
     abstract GetEntryById: EntryId -> Task<Entry option>
 
 type IGetEntryByTextAndVocabularyId =
-    abstract GetEntryByTextAndVocabularyId: VocabularyId * string -> Task<Entry option>
+    abstract GetEntryByTextAndVocabularyId: GetEntryByTextAndVocabularyIdData -> Task<Entry option>
 
 type ICreateEntry =
     abstract CreateEntry: CreateEntryData -> Task<EntryId>
@@ -54,10 +70,10 @@ type ICreateTranslation =
     abstract CreateTranslation: CreateTranslationData -> Task<TranslationId>
 
 type ICreateExamplesForDefinition =
-    abstract CreateExamplesForDefinition: DefinitionId * ExampleInput list -> Task<unit>
+    abstract CreateExamplesForDefinition: CreateExamplesForDefinitionData -> Task<unit>
 
 type ICreateExamplesForTranslation =
-    abstract CreateExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>
+    abstract CreateExamplesForTranslation: CreateExamplesForTranslationData -> Task<unit>
 
 type IUpdateEntry =
     abstract UpdateEntry: UpdateEntryData -> Task<unit>
@@ -69,7 +85,7 @@ type IClearEntryChildren =
     abstract ClearEntryChildren: EntryId -> Task<unit>
 
 type IHasVocabularyAccess =
-    abstract HasVocabularyAccess: VocabularyId * UserId -> Task<bool>
+    abstract HasVocabularyAccess: HasVocabularyAccessData -> Task<bool>
 
 type IHasVocabularyAccessInCollection =
     abstract HasVocabularyAccessInCollection: HasVocabularyAccessInCollectionData -> Task<bool>
@@ -83,8 +99,8 @@ type IGetEntriesHierarchyByVocabularyId =
 module Capabilities =
     let getEntryById (env: #IGetEntryById) entryId = env.GetEntryById(entryId)
 
-    let getEntryByTextAndVocabularyId (env: #IGetEntryByTextAndVocabularyId) parameters =
-        env.GetEntryByTextAndVocabularyId(parameters)
+    let getEntryByTextAndVocabularyId (env: #IGetEntryByTextAndVocabularyId) data =
+        env.GetEntryByTextAndVocabularyId(data)
 
     let createEntry (env: #ICreateEntry) data = env.CreateEntry(data)
 
@@ -92,11 +108,9 @@ module Capabilities =
 
     let createTranslation (env: #ICreateTranslation) data = env.CreateTranslation(data)
 
-    let createExamplesForDefinition (env: #ICreateExamplesForDefinition) definitionId examples =
-        env.CreateExamplesForDefinition(definitionId, examples)
+    let createExamplesForDefinition (env: #ICreateExamplesForDefinition) data = env.CreateExamplesForDefinition(data)
 
-    let createExamplesForTranslation (env: #ICreateExamplesForTranslation) translationId examples =
-        env.CreateExamplesForTranslation(translationId, examples)
+    let createExamplesForTranslation (env: #ICreateExamplesForTranslation) data = env.CreateExamplesForTranslation(data)
 
     let updateEntry (env: #IUpdateEntry) data = env.UpdateEntry(data)
 
@@ -104,7 +118,7 @@ module Capabilities =
 
     let clearEntryChildren (env: #IClearEntryChildren) entryId = env.ClearEntryChildren(entryId)
 
-    let hasVocabularyAccess (env: #IHasVocabularyAccess) parameters = env.HasVocabularyAccess(parameters)
+    let hasVocabularyAccess (env: #IHasVocabularyAccess) data = env.HasVocabularyAccess(data)
 
     let hasVocabularyAccessInCollection (env: #IHasVocabularyAccessInCollection) data =
         env.HasVocabularyAccessInCollection(data)

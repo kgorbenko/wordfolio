@@ -12,14 +12,14 @@ open Wordfolio.Api.Domain.Entries.DraftOperations
 type TestEnv
     (
         getEntryById: EntryId -> Task<Entry option>,
-        hasVocabularyAccess: VocabularyId * UserId -> Task<bool>,
+        hasVocabularyAccess: HasVocabularyAccessData -> Task<bool>,
         moveEntry: MoveEntryData -> Task<unit>
     ) =
     let getEntryByIdCalls =
         ResizeArray<EntryId>()
 
     let hasVocabularyAccessCalls =
-        ResizeArray<VocabularyId * UserId>()
+        ResizeArray<HasVocabularyAccessData>()
 
     let moveEntryCalls =
         ResizeArray<MoveEntryData>()
@@ -39,9 +39,9 @@ type TestEnv
             getEntryById id
 
     interface IHasVocabularyAccess with
-        member _.HasVocabularyAccess(vocabularyId, userId) =
-            hasVocabularyAccessCalls.Add(vocabularyId, userId)
-            hasVocabularyAccess(vocabularyId, userId)
+        member _.HasVocabularyAccess(data) =
+            hasVocabularyAccessCalls.Add(data)
+            hasVocabularyAccess(data)
 
     interface IMoveEntry with
         member _.MoveEntry(data) =
@@ -102,8 +102,13 @@ let ``moves entry when user has access to source and target vocabularies``() =
         Assert.Equal(Ok movedEntry, result)
         Assert.Equal<EntryId list>([ EntryId 10; EntryId 10 ], env.GetEntryByIdCalls)
 
-        Assert.Equal<(VocabularyId * UserId) list>(
-            [ VocabularyId 100, UserId 1; VocabularyId 200, UserId 1 ],
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 100
+                 UserId = UserId 1 }
+              : HasVocabularyAccessData)
+              ({ VocabularyId = VocabularyId 200
+                 UserId = UserId 1 }
+              : HasVocabularyAccessData) ],
             env.HasVocabularyAccessCalls
         )
 
@@ -171,7 +176,14 @@ let ``returns EntryNotFound when source vocabulary access is denied``() =
                   UpdatedAt = DateTimeOffset.UtcNow }
 
         Assert.Equal(Error(MoveDraftEntryError.EntryNotFound(EntryId 10)), result)
-        Assert.Equal<(VocabularyId * UserId) list>([ VocabularyId 100, UserId 1 ], env.HasVocabularyAccessCalls)
+
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 100
+                 UserId = UserId 1 }
+              : HasVocabularyAccessData) ],
+            env.HasVocabularyAccessCalls
+        )
+
         Assert.Empty(env.MoveEntryCalls)
     }
 
@@ -210,8 +222,13 @@ let ``returns VocabularyNotFoundOrAccessDenied when target vocabulary access is 
 
         Assert.Equal(Error(MoveDraftEntryError.VocabularyNotFoundOrAccessDenied(VocabularyId 200)), result)
 
-        Assert.Equal<(VocabularyId * UserId) list>(
-            [ VocabularyId 100, UserId 1; VocabularyId 200, UserId 1 ],
+        Assert.Equal<HasVocabularyAccessData list>(
+            [ ({ VocabularyId = VocabularyId 100
+                 UserId = UserId 1 }
+              : HasVocabularyAccessData)
+              ({ VocabularyId = VocabularyId 200
+                 UserId = UserId 1 }
+              : HasVocabularyAccessData) ],
             env.HasVocabularyAccessCalls
         )
 

@@ -14,19 +14,19 @@ open Wordfolio.Api.Domain.Entries.Helpers
 type TestEnv
     (
         getEntryById: EntryId -> Task<Entry option>,
-        getEntryByTextAndVocabularyId: VocabularyId * string -> Task<Entry option>,
+        getEntryByTextAndVocabularyId: GetEntryByTextAndVocabularyIdData -> Task<Entry option>,
         hasVocabularyAccessInCollection: HasVocabularyAccessInCollectionData -> Task<bool>,
         createEntry: CreateEntryData -> Task<EntryId>,
         createDefinition: CreateDefinitionData -> Task<DefinitionId>,
         createTranslation: CreateTranslationData -> Task<TranslationId>,
-        createExamplesForDefinition: DefinitionId * ExampleInput list -> Task<unit>,
-        createExamplesForTranslation: TranslationId * ExampleInput list -> Task<unit>
+        createExamplesForDefinition: CreateExamplesForDefinitionData -> Task<unit>,
+        createExamplesForTranslation: CreateExamplesForTranslationData -> Task<unit>
     ) =
     let getEntryByIdCalls =
         ResizeArray<EntryId>()
 
     let getEntryByTextAndVocabularyIdCalls =
-        ResizeArray<VocabularyId * string>()
+        ResizeArray<GetEntryByTextAndVocabularyIdData>()
 
     let hasVocabularyAccessInCollectionCalls =
         ResizeArray<HasVocabularyAccessInCollectionData>()
@@ -48,9 +48,9 @@ type TestEnv
             getEntryById id
 
     interface IGetEntryByTextAndVocabularyId with
-        member _.GetEntryByTextAndVocabularyId(vocabularyId, text) =
-            getEntryByTextAndVocabularyIdCalls.Add(vocabularyId, text)
-            getEntryByTextAndVocabularyId(vocabularyId, text)
+        member _.GetEntryByTextAndVocabularyId(data) =
+            getEntryByTextAndVocabularyIdCalls.Add(data)
+            getEntryByTextAndVocabularyId(data)
 
     interface IHasVocabularyAccessInCollection with
         member _.HasVocabularyAccessInCollection(data) =
@@ -67,12 +67,10 @@ type TestEnv
         member _.CreateTranslation(data) = createTranslation data
 
     interface ICreateExamplesForDefinition with
-        member _.CreateExamplesForDefinition(definitionId, examples) =
-            createExamplesForDefinition(definitionId, examples)
+        member _.CreateExamplesForDefinition(data) = createExamplesForDefinition(data)
 
     interface ICreateExamplesForTranslation with
-        member _.CreateExamplesForTranslation(translationId, examples) =
-            createExamplesForTranslation(translationId, examples)
+        member _.CreateExamplesForTranslation(data) = createExamplesForTranslation(data)
 
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
@@ -174,7 +172,13 @@ let ``creates entry when vocabulary is in collection``() =
         Assert.Equal(Ok createdEntry, result)
 
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
-        Assert.Equal<(VocabularyId * string) list>([ VocabularyId 10, "hello" ], env.GetEntryByTextAndVocabularyIdCalls)
+
+        Assert.Equal<GetEntryByTextAndVocabularyIdData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 EntryText = "hello" }
+              : GetEntryByTextAndVocabularyIdData) ],
+            env.GetEntryByTextAndVocabularyIdCalls
+        )
 
         Assert.Equal<HasVocabularyAccessInCollectionData list>(
             [ ({ VocabularyId = VocabularyId 10
@@ -276,7 +280,13 @@ let ``returns DuplicateEntry when entry text already exists in vocabulary``() =
         Assert.Equal(Error(CreateEntryError.DuplicateEntry duplicateEntry), result)
 
         Assert.Equal<EntryId list>([ EntryId 99 ], env.GetEntryByIdCalls)
-        Assert.Equal<(VocabularyId * string) list>([ VocabularyId 10, "hello" ], env.GetEntryByTextAndVocabularyIdCalls)
+
+        Assert.Equal<GetEntryByTextAndVocabularyIdData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 EntryText = "hello" }
+              : GetEntryByTextAndVocabularyIdData) ],
+            env.GetEntryByTextAndVocabularyIdCalls
+        )
 
         Assert.Equal<HasVocabularyAccessInCollectionData list>(
             [ ({ VocabularyId = VocabularyId 10
@@ -548,7 +558,13 @@ let ``creates entry with translations only``() =
         Assert.Equal(Ok createdEntry, result)
 
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
-        Assert.Equal<(VocabularyId * string) list>([ VocabularyId 10, "hello" ], env.GetEntryByTextAndVocabularyIdCalls)
+
+        Assert.Equal<GetEntryByTextAndVocabularyIdData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 EntryText = "hello" }
+              : GetEntryByTextAndVocabularyIdData) ],
+            env.GetEntryByTextAndVocabularyIdCalls
+        )
 
         Assert.Equal<HasVocabularyAccessInCollectionData list>(
             [ ({ VocabularyId = VocabularyId 10
@@ -609,7 +625,13 @@ let ``creates entry with both definitions and translations``() =
         Assert.Equal(Ok createdEntry, result)
 
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
-        Assert.Equal<(VocabularyId * string) list>([ VocabularyId 10, "hello" ], env.GetEntryByTextAndVocabularyIdCalls)
+
+        Assert.Equal<GetEntryByTextAndVocabularyIdData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 EntryText = "hello" }
+              : GetEntryByTextAndVocabularyIdData) ],
+            env.GetEntryByTextAndVocabularyIdCalls
+        )
 
         Assert.Equal<HasVocabularyAccessInCollectionData list>(
             [ ({ VocabularyId = VocabularyId 10
@@ -667,7 +689,13 @@ let ``trims whitespace from entry text``() =
         Assert.Equal("hello", capturedText.Value)
 
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
-        Assert.Equal<(VocabularyId * string) list>([ VocabularyId 10, "hello" ], env.GetEntryByTextAndVocabularyIdCalls)
+
+        Assert.Equal<GetEntryByTextAndVocabularyIdData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 EntryText = "hello" }
+              : GetEntryByTextAndVocabularyIdData) ],
+            env.GetEntryByTextAndVocabularyIdCalls
+        )
 
         Assert.Equal<HasVocabularyAccessInCollectionData list>(
             [ ({ VocabularyId = VocabularyId 10
@@ -848,7 +876,13 @@ let ``proceeds when duplicate text match finds a stale record``() =
         Assert.Equal(Ok createdEntry, result)
 
         Assert.Equal<EntryId list>([ EntryId 99; EntryId 1 ], env.GetEntryByIdCalls)
-        Assert.Equal<(VocabularyId * string) list>([ VocabularyId 10, "hello" ], env.GetEntryByTextAndVocabularyIdCalls)
+
+        Assert.Equal<GetEntryByTextAndVocabularyIdData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 EntryText = "hello" }
+              : GetEntryByTextAndVocabularyIdData) ],
+            env.GetEntryByTextAndVocabularyIdCalls
+        )
 
         Assert.Equal<HasVocabularyAccessInCollectionData list>(
             [ ({ VocabularyId = VocabularyId 10
@@ -899,7 +933,13 @@ let ``throws when post-create entry fetch returns None``() =
         Assert.Equal("Entry EntryId 1 not found after creation", ex.Message)
 
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
-        Assert.Equal<(VocabularyId * string) list>([ VocabularyId 10, "hello" ], env.GetEntryByTextAndVocabularyIdCalls)
+
+        Assert.Equal<GetEntryByTextAndVocabularyIdData list>(
+            [ ({ VocabularyId = VocabularyId 10
+                 EntryText = "hello" }
+              : GetEntryByTextAndVocabularyIdData) ],
+            env.GetEntryByTextAndVocabularyIdCalls
+        )
 
         Assert.Equal<HasVocabularyAccessInCollectionData list>(
             [ ({ VocabularyId = VocabularyId 10
