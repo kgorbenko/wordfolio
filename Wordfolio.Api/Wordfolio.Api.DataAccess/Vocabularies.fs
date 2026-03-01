@@ -26,13 +26,13 @@ type Vocabulary =
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option }
 
-type VocabularyCreationParameters =
+type CreateVocabularyParameters =
     { CollectionId: int
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset }
 
-type VocabularyUpdateParameters =
+type UpdateVocabularyParameters =
     { Id: int
       Name: string
       Description: string option
@@ -62,25 +62,21 @@ type internal VocabularyInsertParameters =
       CreatedAt: DateTimeOffset
       IsDefault: bool }
 
-let internal vocabulariesInsertTable =
-    table'<VocabularyInsertParameters> Schema.VocabulariesTable.Name
-    |> inSchema Schema.Name
-
 [<CLIMutable>]
 type internal CollectionRecord =
     { Id: int; UserId: int; IsSystem: bool }
 
-let private collectionsTable =
-    table'<CollectionRecord> Schema.CollectionsTable.Name
-    |> inSchema Schema.Name
-
 let createVocabularyAsync
-    (parameters: VocabularyCreationParameters)
+    (parameters: CreateVocabularyParameters)
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
     : Task<int> =
     task {
+        let vocabulariesInsertTable =
+            table'<VocabularyInsertParameters> Schema.VocabulariesTable.Name
+            |> inSchema Schema.Name
+
         let insertParams: VocabularyInsertParameters =
             { CollectionId = parameters.CollectionId
               Name = parameters.Name
@@ -108,6 +104,14 @@ let getVocabularyByIdAsync
     (cancellationToken: CancellationToken)
     : Task<Vocabulary option> =
     task {
+        let vocabulariesTable =
+            table'<VocabularyRecord> Schema.VocabulariesTable.Name
+            |> inSchema Schema.Name
+
+        let collectionsTable =
+            table'<CollectionRecord> Schema.CollectionsTable.Name
+            |> inSchema Schema.Name
+
         let! result =
             select {
                 for v in vocabulariesTable do
@@ -131,6 +135,14 @@ let getVocabulariesByCollectionIdAsync
     (cancellationToken: CancellationToken)
     : Task<Vocabulary list> =
     task {
+        let vocabulariesTable =
+            table'<VocabularyRecord> Schema.VocabulariesTable.Name
+            |> inSchema Schema.Name
+
+        let collectionsTable =
+            table'<CollectionRecord> Schema.CollectionsTable.Name
+            |> inSchema Schema.Name
+
         let! results =
             select {
                 for v in vocabulariesTable do
@@ -148,7 +160,7 @@ let getVocabulariesByCollectionIdAsync
     }
 
 let updateVocabularyAsync
-    (parameters: VocabularyUpdateParameters)
+    (parameters: UpdateVocabularyParameters)
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
@@ -217,6 +229,14 @@ let getDefaultVocabularyByUserIdAsync
     (cancellationToken: CancellationToken)
     : Task<Vocabulary option> =
     task {
+        let vocabulariesTable =
+            table'<VocabularyRecord> Schema.VocabulariesTable.Name
+            |> inSchema Schema.Name
+
+        let collectionsTable =
+            table'<CollectionRecord> Schema.CollectionsTable.Name
+            |> inSchema Schema.Name
+
         let! result =
             select {
                 for v in vocabulariesTable do
@@ -229,12 +249,16 @@ let getDefaultVocabularyByUserIdAsync
     }
 
 let createDefaultVocabularyAsync
-    (parameters: VocabularyCreationParameters)
+    (parameters: CreateVocabularyParameters)
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
     : Task<int> =
     task {
+        let vocabulariesInsertTable =
+            table'<VocabularyInsertParameters> Schema.VocabulariesTable.Name
+            |> inSchema Schema.Name
+
         let insertParams: VocabularyInsertParameters =
             { CollectionId = parameters.CollectionId
               Name = parameters.Name

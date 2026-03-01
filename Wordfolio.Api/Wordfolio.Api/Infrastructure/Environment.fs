@@ -21,8 +21,8 @@ module DataAccess =
     type CreateCollectionParameters = Wordfolio.Api.DataAccess.Collections.CreateCollectionParameters
     type UpdateCollectionParameters = Wordfolio.Api.DataAccess.Collections.UpdateCollectionParameters
     type Vocabulary = Wordfolio.Api.DataAccess.Vocabularies.Vocabulary
-    type VocabularyCreationParameters = Wordfolio.Api.DataAccess.Vocabularies.VocabularyCreationParameters
-    type VocabularyUpdateParameters = Wordfolio.Api.DataAccess.Vocabularies.VocabularyUpdateParameters
+    type CreateVocabularyParameters = Wordfolio.Api.DataAccess.Vocabularies.CreateVocabularyParameters
+    type UpdateVocabularyParameters = Wordfolio.Api.DataAccess.Vocabularies.UpdateVocabularyParameters
     type Entry = Wordfolio.Api.DataAccess.Entries.Entry
     type EntryCreationParameters = Wordfolio.Api.DataAccess.Entries.EntryCreationParameters
     type Definition = Wordfolio.Api.DataAccess.Definitions.Definition
@@ -279,7 +279,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface ICreateVocabulary with
         member _.CreateVocabulary(data: CreateVocabularyData) =
             task {
-                let parameters: DataAccess.VocabularyCreationParameters =
+                let parameters: DataAccess.CreateVocabularyParameters =
                     { CollectionId = CollectionId.value data.CollectionId
                       Name = data.Name
                       Description = data.Description
@@ -298,7 +298,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface IUpdateVocabulary with
         member _.UpdateVocabulary(data: UpdateVocabularyData) =
             task {
-                let parameters: DataAccess.VocabularyUpdateParameters =
+                let parameters: DataAccess.UpdateVocabularyParameters =
                     { Id = VocabularyId.value data.VocabularyId
                       Name = data.Name
                       Description = data.Description
@@ -339,7 +339,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface ICreateDefaultVocabulary with
         member _.CreateDefaultVocabulary(parameters: CreateDefaultVocabularyParameters) =
             task {
-                let dataAccessParams: DataAccess.VocabularyCreationParameters =
+                let dataAccessParams: DataAccess.CreateVocabularyParameters =
                     { CollectionId = CollectionId.value parameters.CollectionId
                       Name = parameters.Name
                       Description = parameters.Description
