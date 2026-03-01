@@ -171,7 +171,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 
 ### 9. Examples file and examples tests
 - [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Examples.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), remove dead test-only APIs (`getExamplesByDefinitionIdAsync`, `getExamplesByTranslationIdAsync`, `updateExamplesAsync`, `deleteExamplesAsync`) if unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/ExamplesTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Examples/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
-- [ ] Improve: Review create-examples coverage for definition/translation branches and constraint behavior, and verify removed dead API tests were deleted in the same step.
+- [x] Improve: Review create-examples coverage for definition/translation branches and constraint behavior, and verify removed dead API tests were deleted in the same step.
 
 ### 10. EntriesHierarchy file and entries hierarchy tests
 - [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/EntriesHierarchy.fs` (naming alignment, table declaration inlining, remove cross-module table dependencies, remove unused `examplesTable`, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchyTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchy/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
@@ -280,3 +280,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Renamed example create input naming to `CreateExampleParameters`, inlined the examples insert-table declaration inside `createExamplesAsync`, and removed dead test-only APIs (`getExamplesByDefinitionIdAsync`, `getExamplesByTranslationIdAsync`, `updateExamplesAsync`, `deleteExamplesAsync`) that had no production call paths. Split the monolithic examples test file into a self-contained `Examples/CreateExamplesTests.fs` file and updated test project compile includes.
 - Issues encountered: None
 - Learnings: For modules with a single production call path, implement-step test splitting should retain only behavior coverage tied to the surviving API surface while deleting tests for removed dead APIs in the same change.
+
+### Review create-examples coverage and dead API test removal
+- Files changed: `docs/data-access-refactoring/spec.md`
+- What was done: Reviewed `Examples/CreateExamplesTests.fs` and confirmed coverage exists for both definition-backed and translation-backed create flows, foreign-key failures for each parent type, and check-constraint failures for invalid parent combinations. Verified removed dead example APIs are no longer referenced by data access tests.
+- Issues encountered: None
+- Learnings: For parent-polymorphic create operations, parity-focused improve checks should explicitly validate both parent branches plus invalid parent-shape constraints, and repo-wide symbol search is sufficient to confirm dead API test removal.
