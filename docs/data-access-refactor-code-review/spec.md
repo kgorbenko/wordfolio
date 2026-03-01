@@ -132,7 +132,7 @@ At the start of every module step, perform and document these baseline checks fo
 - [x] Review `Wordfolio.Api/Wordfolio.Api.DataAccess/Examples.fs` against `origin/main`, verify baseline tests from `origin/main:Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/ExamplesTests.fs` are preserved in `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Examples/CreateExamplesTests.fs`, include `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call-site parity checks, and document removed dead APIs with reachability evidence.
 
 ### 10. Review EntriesHierarchy module parity and finalize matrix
-- [ ] Review `Wordfolio.Api/Wordfolio.Api.DataAccess/EntriesHierarchy.fs` against `origin/main`, verify baseline tests from `origin/main:Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchyTests.fs` are preserved across `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchy/*.fs`, include `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` hierarchy call-site parity checks, and add a final matrix in Progress Log with one row per production module and explicit statuses for behavior parity, coverage parity, and moved-tests preserved.
+- [x] Review `Wordfolio.Api/Wordfolio.Api.DataAccess/EntriesHierarchy.fs` against `origin/main`, verify baseline tests from `origin/main:Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchyTests.fs` are preserved across `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchy/*.fs`, include `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` hierarchy call-site parity checks, and add a final matrix in Progress Log with one row per production module and explicit statuses for behavior parity, coverage parity, and moved-tests preserved.
 
 ## Progress Log
 
@@ -191,3 +191,23 @@ Agents append entries here after completing each step.
 - What was done: Confirmed module scope (`Wordfolio.Api/Wordfolio.Api.DataAccess/Examples.fs`) against `origin/main` and verified behavior parity for the retained `createExamplesAsync` surface: same empty-input behavior, insert table/schema, record mapping (`DefinitionId`, `TranslationId`, `ExampleText`, `Source`), and inserted-id return shape, with only mechanical refactor changes (type rename `ExampleCreationParameters` -> `CreateExampleParameters`, localized insert-table binding, and removal of dead helper/read-write APIs). Verified moved-tests/coverage parity by comparing baseline `origin/main:Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/ExamplesTests.fs` to `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Examples/CreateExamplesTests.fs`: 7 create-surface tests are preserved with exact names, baseline cascade scenarios were mechanically remapped to current entry-anchored deletion coverage (`deleting entry cascades through definitions/translations to delete examples`) and `EntriesHierarchy/ClearEntryChildrenTests.fs` cascade checks, and baseline-only removed-surface tests (`getExamplesByDefinitionIdAsync`, `getExamplesByTranslationIdAsync`, `updateExamplesAsync`, `deleteExamplesAsync`) were validated as dead via reachability evidence (baseline/current `Environment.fs` call sites invoke only `Examples.createExamplesAsync`).
 - Issues encountered: None
 - Learnings: For modules narrowed to write-only production usage, parity evidence should combine one-to-one retained test preservation with explicit dead-surface reachability proof and scenario remapping to successor modules when lifecycle/cascade assertions move to the owning aggregate delete path.
+
+### Review EntriesHierarchy module parity and finalize matrix
+- Files changed: `docs/data-access-refactor-code-review/spec.md`
+- What was done: Confirmed module scope (`Wordfolio.Api/Wordfolio.Api.DataAccess/EntriesHierarchy.fs`) against `origin/main` and verified behavior parity from the production diff: only mechanical renames (`EntryWithHierarchy`/`DefinitionWithExamples`/`TranslationWithExamples` -> `EntryHierarchy`/`DefinitionHierarchy`/`TranslationHierarchy`), localization of table bindings to function scope, and equivalent table references in `clearEntryChildrenAsync`, with unchanged query filters, ordering, hierarchy assembly, and return-shape semantics for `getEntryByIdWithHierarchyAsync`, `clearEntryChildrenAsync`, and `getEntriesHierarchyByVocabularyIdAsync`. Verified coverage and moved-tests parity by comparing baseline `origin/main:Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchyTests.fs` to `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchy/*.fs`, confirming all 20 baseline `member _.``...``` test names are preserved exactly (no missing mappings) with 2 additive cases, and confirmed `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` hierarchy call sites (`IGetEntryById`, `IClearEntryChildren`, `IGetEntriesHierarchyByVocabularyId`) preserve behavior with mechanical variable/type alias renames only.
+- Issues encountered: None
+- Learnings: For modules split into multiple test files, exact baseline-name preservation plus additive-case accounting provides auditable moved-test evidence; pairing that with call-site checks in `Environment.fs` closes parity proof for domain-facing hierarchy flows.
+
+#### Final Parity Matrix
+| Production module | Behavior parity | Coverage parity | Moved tests preserved |
+| --- | --- | --- | --- |
+| `origin/main:Wordfolio.Api/Wordfolio.Api.DataAccess/Database.fs` (removed) | Pass | Pass | Pass |
+| `Wordfolio.Api/Wordfolio.Api.DataAccess/Users.fs` | Pass | Pass | Pass |
+| `Wordfolio.Api/Wordfolio.Api.DataAccess/Collections.fs` | Pass | Pass | Pass |
+| `Wordfolio.Api/Wordfolio.Api.DataAccess/CollectionsHierarchy.fs` | Pass | Pass | Pass |
+| `Wordfolio.Api/Wordfolio.Api.DataAccess/Vocabularies.fs` | Pass | Pass | Pass |
+| `Wordfolio.Api/Wordfolio.Api.DataAccess/Entries.fs` | Pass | Pass | Pass |
+| `Wordfolio.Api/Wordfolio.Api.DataAccess/Definitions.fs` | Pass | Pass | Pass |
+| `Wordfolio.Api/Wordfolio.Api.DataAccess/Translations.fs` | Pass | Pass | Pass |
+| `Wordfolio.Api/Wordfolio.Api.DataAccess/Examples.fs` | Pass | Pass | Pass |
+| `Wordfolio.Api/Wordfolio.Api.DataAccess/EntriesHierarchy.fs` | Pass | Pass | Pass |
