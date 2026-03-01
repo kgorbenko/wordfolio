@@ -151,7 +151,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 
 ### 4. CollectionsHierarchy file and collections hierarchy tests
 - [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/CollectionsHierarchy.fs` (naming alignment to domain hierarchy types, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchyTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchy/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
-- [ ] Improve: Review for search/sort safety and coverage (escape behavior, sort direction, default vocabulary summary semantics) without changing behavior.
+- [x] Improve: Review for search/sort safety and coverage (escape behavior, sort direction, default vocabulary summary semantics) without changing behavior.
 
 ### 5. Vocabularies file and vocabularies tests
 - [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Vocabularies.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/VocabulariesTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Vocabularies/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
@@ -220,3 +220,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Renamed collections-hierarchy data access DTO/query/sort types to align with domain hierarchy naming and updated `Environment.fs` mapping call sites to the new names without changing query behavior. Split the monolithic `CollectionsHierarchyTests.fs` into four self-contained function-focused test files under `CollectionsHierarchy/` and updated the test project compile includes.
 - Issues encountered: Initial verification failed due to a test type-name collision with an existing collections test type in the same namespace; resolved by renaming the new test class types to unique names.
 - Learnings: When splitting data access tests under a shared namespace, test class type names must remain globally unique across the project even when file paths differ.
+
+### Review collections hierarchy search/sort safety and coverage
+- Files changed: `docs/data-access-refactoring/spec.md`
+- What was done: Reviewed `CollectionsHierarchy.fs` and its split test files to confirm wildcard escaping coverage (`%`, `_`, `\`), sort-direction coverage across searchable collection and vocabulary queries, and default-vocabulary summary behavior for present/missing/cross-user scenarios. No production or test code changes were required because existing coverage already satisfied the improve-step concerns.
+- Issues encountered: None
+- Learnings: Improve steps may be validation-only when the preceding implement step already includes comprehensive parity coverage for the required behavioral dimensions.
