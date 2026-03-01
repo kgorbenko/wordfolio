@@ -159,7 +159,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 
 ### 6. Entries file and entries tests
 - [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Entries.fs` (naming alignment, table declaration inlining, remove cross-module table dependencies, `[<CLIMutable>]` review), remove dead test-only APIs (`getEntryByIdAsync`, `getEntriesByVocabularyIdAsync`) if still unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Entries/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
-- [ ] Improve: Review access-check and move/update coverage for positive/negative boundaries while preserving existing query behavior.
+- [x] Improve: Review access-check and move/update coverage for positive/negative boundaries while preserving existing query behavior.
 
 ### 7. Definitions file and definitions tests
 - [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Definitions.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), remove dead test-only APIs (`getDefinitionsByEntryIdAsync`, `updateDefinitionsAsync`, `deleteDefinitionsAsync`) if unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/DefinitionsTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Definitions/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
@@ -244,3 +244,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Renamed entry parameter records to `CreateEntryParameters`, `UpdateEntryParameters`, and `MoveEntryParameters`, inlined table declarations into each entries function, and removed the dead test-only APIs `getEntryByIdAsync` and `getEntriesByVocabularyIdAsync`. Eliminated the cross-module dependency on `Vocabularies.vocabulariesTable`, updated environment call-site type usage, and split `EntriesTests.fs` into self-contained function-focused files under `Entries/` with test project includes updated.
 - Issues encountered: None
 - Learnings: For access-check functions, introducing local query-only record/table declarations removes cross-module table coupling cleanly while preserving SQL and return behavior.
+
+### Review entries access-check and move/update boundary coverage
+- Files changed: `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Entries/UpdateEntryTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Entries/MoveEntryTests.fs`, `docs/data-access-refactoring/spec.md`
+- What was done: Reviewed the entries split tests for positive/negative boundary coverage and added targeted parity checks for update and move behavior: a test ensuring `updateEntryAsync` only modifies the targeted row and a test asserting `moveEntryAsync` preserves foreign-key constraint behavior when the target vocabulary does not exist. These additions keep existing query semantics unchanged and maintain self-contained test setup in each file.
+- Issues encountered: None
+- Learnings: For improve steps on write-path functions, high-value boundary checks are row-target isolation and constraint-surface verification because they confirm SQL `WHERE` scope and database-enforced invariants without altering production code.

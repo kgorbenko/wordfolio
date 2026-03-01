@@ -1,7 +1,9 @@
 namespace Wordfolio.Api.DataAccess.Tests
 
 open System
+open System.Threading.Tasks
 
+open Npgsql
 open Xunit
 
 open Wordfolio.Api.DataAccess
@@ -131,6 +133,61 @@ type MoveEntryTests(fixture: WordfolioTestFixture) =
                 |> fixture.WithConnectionAsync
 
             Assert.Equal(0, affectedRows)
+
+            let! actual = Seeder.getEntryByIdAsync entry.Id fixture.Seeder
+
+            let expected: Entry option =
+                Some
+                    { Id = entry.Id
+                      VocabularyId = sourceVocabulary.Id
+                      EntryText = "move-me"
+                      CreatedAt = createdAt
+                      UpdatedAt = None }
+
+            Assert.Equal(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``moveEntryAsync fails with foreign key violation when target vocabulary does not exist``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let updatedAt =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 326
+
+            let collection =
+                Entities.makeCollection user "Collection 1" None createdAt None false
+
+            let sourceVocabulary =
+                Entities.makeVocabulary collection "Source" None createdAt None false
+
+            let entry =
+                Entities.makeEntry sourceVocabulary "move-me" createdAt None
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ sourceVocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            let! ex =
+                Assert.ThrowsAsync<PostgresException>(fun () ->
+                    (Entries.moveEntryAsync
+                        { Id = entry.Id
+                          OldVocabularyId = sourceVocabulary.Id
+                          NewVocabularyId = 999
+                          UpdatedAt = updatedAt }
+                     |> fixture.WithConnectionAsync
+                    :> Task))
+
+            Assert.Equal(SqlErrorCodes.ForeignKeyViolation, ex.SqlState)
 
             let! actual = Seeder.getEntryByIdAsync entry.Id fixture.Seeder
 
