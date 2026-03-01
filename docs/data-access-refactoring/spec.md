@@ -175,7 +175,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 
 ### 10. EntriesHierarchy file and entries hierarchy tests
 - [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/EntriesHierarchy.fs` (naming alignment, table declaration inlining, remove cross-module table dependencies, remove unused `examplesTable`, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchyTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchy/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
-- [ ] Improve: Review hierarchy assembly and child-clear coverage for empty/partial hierarchies and ensure no behavior drift.
+- [x] Improve: Review hierarchy assembly and child-clear coverage for empty/partial hierarchies and ensure no behavior drift.
 
 ## Progress Log
 
@@ -292,3 +292,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Renamed hierarchy DTOs in `EntriesHierarchy.fs` for domain-aligned naming, inlined Dapper table declarations into function scope, removed the unused `examplesTable`, and removed cross-module table dependencies by using local definition/translation table declarations inside `clearEntryChildrenAsync`. Split `EntriesHierarchyTests.fs` into three self-contained function-focused files under `EntriesHierarchy/`, updated test compile includes, and adjusted environment variable naming at call sites to match the refactored hierarchy naming.
 - Issues encountered: None
 - Learnings: For hierarchy modules, local table declarations inside each query/delete function eliminate module coupling cleanly, and test splitting by public function keeps hierarchy retrieval and child-clearing behavior isolated without changing fixture/seeding patterns.
+
+### Review hierarchy assembly and child-clear coverage
+- Files changed: `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchy/GetEntriesHierarchyByVocabularyIdTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchy/ClearEntryChildrenTests.fs`, `docs/data-access-refactoring/spec.md`
+- What was done: Reviewed entries-hierarchy improve concerns and added targeted parity tests for empty/partial child cases: one test verifies `clearEntryChildrenAsync` returns zero for an existing entry with no children, and one test verifies `getEntriesHierarchyByVocabularyIdAsync` assembles mixed partial hierarchies per entry without cross-associating children while preserving created-at descending ordering.
+- Issues encountered: None
+- Learnings: For hierarchy assembly, a two-entry partial-hierarchy scenario catches both ordering and child-association regressions in one parity-focused test, and for child-clear semantics an explicit existing-entry/no-children case closes the empty-state gap beyond non-existent-entry coverage.

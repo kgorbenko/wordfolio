@@ -171,6 +171,97 @@ type EntriesHierarchyGetEntriesHierarchyByVocabularyIdTests(fixture: WordfolioTe
         }
 
     [<Fact>]
+    member _.``getEntriesHierarchyByVocabularyIdAsync returns partial hierarchies without cross-associating children``
+        ()
+        =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let earlierCreatedAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let laterCreatedAt =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 101
+
+            let collection =
+                Entities.makeCollection user "Col" None earlierCreatedAt None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Vocab" None earlierCreatedAt None false
+
+            let olderEntry =
+                Entities.makeEntry vocabulary "older" earlierCreatedAt None
+
+            let newerEntry =
+                Entities.makeEntry vocabulary "newer" laterCreatedAt None
+
+            let olderDefinition =
+                Entities.makeDefinition olderEntry "older meaning" Definitions.DefinitionSource.Manual 0
+
+            let olderDefinitionExample =
+                Entities.makeExampleForDefinition olderDefinition "older example" Examples.ExampleSource.Api
+
+            let newerTranslation =
+                Entities.makeTranslation newerEntry "новее" Translations.TranslationSource.Api 0
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ olderEntry; newerEntry ]
+                |> Seeder.addDefinitions [ olderDefinition ]
+                |> Seeder.addTranslations [ newerTranslation ]
+                |> Seeder.addExamples [ olderDefinitionExample ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                EntriesHierarchy.getEntriesHierarchyByVocabularyIdAsync vocabulary.Id
+                |> fixture.WithConnectionAsync
+
+            let expected: EntriesHierarchy.EntryHierarchy list =
+                [ { Entry =
+                      { Id = newerEntry.Id
+                        VocabularyId = vocabulary.Id
+                        EntryText = "newer"
+                        CreatedAt = laterCreatedAt
+                        UpdatedAt = None }
+                    Definitions = []
+                    Translations =
+                      [ { Translation =
+                            { Id = newerTranslation.Id
+                              EntryId = newerEntry.Id
+                              TranslationText = "новее"
+                              Source = Translations.TranslationSource.Api
+                              DisplayOrder = 0 }
+                          Examples = [] } ] }
+                  { Entry =
+                      { Id = olderEntry.Id
+                        VocabularyId = vocabulary.Id
+                        EntryText = "older"
+                        CreatedAt = earlierCreatedAt
+                        UpdatedAt = None }
+                    Definitions =
+                      [ { Definition =
+                            { Id = olderDefinition.Id
+                              EntryId = olderEntry.Id
+                              DefinitionText = "older meaning"
+                              Source = Definitions.DefinitionSource.Manual
+                              DisplayOrder = 0 }
+                          Examples =
+                            [ { Id = olderDefinitionExample.Id
+                                DefinitionId = Some olderDefinition.Id
+                                TranslationId = None
+                                ExampleText = "older example"
+                                Source = Examples.ExampleSource.Api } ] } ]
+                    Translations = [] } ]
+
+            Assert.Equal<EntriesHierarchy.EntryHierarchy list>(expected, actual)
+        }
+
+    [<Fact>]
     member _.``getEntriesHierarchyByVocabularyIdAsync returns empty list for non-existent vocabulary``() =
         task {
             do! fixture.ResetDatabaseAsync()

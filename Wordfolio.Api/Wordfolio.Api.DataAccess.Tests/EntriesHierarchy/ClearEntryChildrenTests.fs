@@ -249,6 +249,50 @@ type EntriesHierarchyClearEntryChildrenTests(fixture: WordfolioTestFixture) =
         }
 
     [<Fact>]
+    member _.``clearEntryChildrenAsync returns zero for existing entry with no children``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 507
+
+            let collection =
+                Entities.makeCollection user "Collection 1" None createdAt None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+
+            let entry =
+                Entities.makeEntry vocabulary "standalone" createdAt None
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            let! deletedCount =
+                EntriesHierarchy.clearEntryChildrenAsync entry.Id
+                |> fixture.WithConnectionAsync
+
+            Assert.Equal(0, deletedCount)
+
+            let! actualEntries =
+                fixture.Seeder
+                |> Seeder.getAllEntriesAsync
+
+            let expectedEntries: Entry list =
+                [ { Id = entry.Id
+                    VocabularyId = vocabulary.Id
+                    EntryText = "standalone"
+                    CreatedAt = createdAt
+                    UpdatedAt = None } ]
+
+            Assert.Equal<Entry list>(expectedEntries, actualEntries)
+        }
+
+    [<Fact>]
     member _.``clearEntryChildrenAsync does nothing for non-existent entry``() =
         task {
             do! fixture.ResetDatabaseAsync()
