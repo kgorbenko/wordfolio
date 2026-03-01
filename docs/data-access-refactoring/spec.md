@@ -170,7 +170,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - [x] Improve: Review create-translations coverage for ordering and constraint behavior, and verify removed dead API tests were deleted in the same step.
 
 ### 9. Examples file and examples tests
-- [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Examples.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), remove dead test-only APIs (`getExamplesByDefinitionIdAsync`, `getExamplesByTranslationIdAsync`, `updateExamplesAsync`, `deleteExamplesAsync`) if unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/ExamplesTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Examples/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+- [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Examples.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), remove dead test-only APIs (`getExamplesByDefinitionIdAsync`, `getExamplesByTranslationIdAsync`, `updateExamplesAsync`, `deleteExamplesAsync`) if unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/ExamplesTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Examples/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
 - [ ] Improve: Review create-examples coverage for definition/translation branches and constraint behavior, and verify removed dead API tests were deleted in the same step.
 
 ### 10. EntriesHierarchy file and entries hierarchy tests
@@ -274,3 +274,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Reviewed translations improve-step concerns and confirmed removed dead translation APIs are no longer referenced by data access tests. Added a targeted ordering-parity test that verifies `createTranslationsAsync` returns IDs in the same order as the input parameters while retaining existing foreign-key and unique-constraint coverage.
 - Issues encountered: None
 - Learnings: For bulk create functions, verify ordering by resolving returned IDs back to persisted rows and comparing that sequence against input order to avoid relying on incidental table read ordering.
+
+### Examples file and examples tests
+- Files changed: `Wordfolio.Api/Wordfolio.Api.DataAccess/Examples.fs`, `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Examples/CreateExamplesTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/ExamplesTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`, `docs/data-access-refactoring/spec.md`
+- What was done: Renamed example create input naming to `CreateExampleParameters`, inlined the examples insert-table declaration inside `createExamplesAsync`, and removed dead test-only APIs (`getExamplesByDefinitionIdAsync`, `getExamplesByTranslationIdAsync`, `updateExamplesAsync`, `deleteExamplesAsync`) that had no production call paths. Split the monolithic examples test file into a self-contained `Examples/CreateExamplesTests.fs` file and updated test project compile includes.
+- Issues encountered: None
+- Learnings: For modules with a single production call path, implement-step test splitting should retain only behavior coverage tied to the surviving API surface while deleting tests for removed dead APIs in the same change.

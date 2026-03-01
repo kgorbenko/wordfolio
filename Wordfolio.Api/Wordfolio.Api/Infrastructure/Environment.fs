@@ -32,7 +32,7 @@ module DataAccess =
     type Translation = Wordfolio.Api.DataAccess.Translations.Translation
     type CreateTranslationParameters = Wordfolio.Api.DataAccess.Translations.CreateTranslationParameters
     type Example = Wordfolio.Api.DataAccess.Examples.Example
-    type ExampleCreationParameters = Wordfolio.Api.DataAccess.Examples.ExampleCreationParameters
+    type CreateExampleParameters = Wordfolio.Api.DataAccess.Examples.CreateExampleParameters
 
 type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellationToken: CancellationToken) =
 
@@ -499,7 +499,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface ICreateExamplesForDefinition with
         member _.CreateExamplesForDefinition(data: CreateExamplesForDefinitionData) =
             task {
-                let parameters: DataAccess.ExampleCreationParameters list =
+                let parameters: DataAccess.CreateExampleParameters list =
                     data.Examples
                     |> List.map(fun ex ->
                         { DefinitionId = Some(DefinitionId.value data.DefinitionId)
@@ -520,7 +520,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface ICreateExamplesForTranslation with
         member _.CreateExamplesForTranslation(data: CreateExamplesForTranslationData) =
             task {
-                let parameters: DataAccess.ExampleCreationParameters list =
+                let parameters: DataAccess.CreateExampleParameters list =
                     data.Examples
                     |> List.map(fun ex ->
                         { DefinitionId = None
