@@ -155,7 +155,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 
 ### 5. Vocabularies file and vocabularies tests
 - [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Vocabularies.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/VocabulariesTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Vocabularies/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
-- [ ] Improve: Review default-vocabulary and collection-ownership coverage, including uniqueness/constraint cases and self-contained setup per test file.
+- [x] Improve: Review default-vocabulary and collection-ownership coverage, including uniqueness/constraint cases and self-contained setup per test file.
 
 ### 6. Entries file and entries tests
 - [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Entries.fs` (naming alignment, table declaration inlining, remove cross-module table dependencies, `[<CLIMutable>]` review), remove dead test-only APIs (`getEntryByIdAsync`, `getEntriesByVocabularyIdAsync`) if still unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Entries/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
@@ -232,3 +232,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Renamed vocabulary parameter records to `CreateVocabularyParameters` and `UpdateVocabularyParameters`, and inlined the vocabularies/collections table declarations into each vocabulary data access function without changing query semantics. Split the monolithic vocabularies test file into seven self-contained function-focused files under `Vocabularies/` and updated the test project compile includes.
 - Issues encountered: None
 - Learnings: The collections-step pattern applies directly to vocabularies: keep module-level record mappers intact, inline table declarations per function, and map one public function to one self-contained test file.
+
+### Review vocabularies default and ownership coverage
+- Files changed: `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Vocabularies/CreateDefaultVocabularyTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Vocabularies/GetDefaultVocabularyByUserIdTests.fs`, `docs/data-access-refactoring/spec.md`
+- What was done: Reviewed the split vocabularies tests for default-vocabulary behavior, uniqueness handling, and ownership boundaries, then added a foreign-key constraint test for `createDefaultVocabularyAsync` and a cross-user ownership-boundary test for `getDefaultVocabularyByUserIdAsync`. Both additions keep each test file self-contained with local reset/seed/assert flow.
+- Issues encountered: None
+- Learnings: The improve pass should focus on boundary completeness for already split tests; targeted constraint and ownership assertions close parity gaps without touching production query behavior.
