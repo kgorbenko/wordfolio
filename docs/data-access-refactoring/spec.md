@@ -142,7 +142,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - [x] Improve: Verify there are no remaining references to `Wordfolio.Api.DataAccess.Database` and confirm this cleanup is purely structural.
 
 ### 2. Users file and users tests
-- [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Users.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/IdentityIntegration.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/UsersTests.fs` into `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Users/CreateUserTests.fs`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+- [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Users.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/IdentityIntegration.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/UsersTests.fs` into `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Users/CreateUserTests.fs`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
 - [ ] Improve: Review users changes for parity and readability; ensure duplicate-key and happy-path coverage remain complete and self-contained.
 
 ### 3. Collections file and collections tests
@@ -190,3 +190,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Searched the repository for `Wordfolio.Api.DataAccess.Database` references and found none outside this spec text. Confirmed the prior Database cleanup remains a structural-only change with no behavior impact.
 - Issues encountered: None
 - Learnings: A repo-wide symbol search is sufficient to validate dead-module cleanup for this module because the removed code had no runtime call paths.
+
+### Users file and users tests
+- Files changed: `Wordfolio.Api/Wordfolio.Api.DataAccess/Users.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Users/CreateUserTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/UsersTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`, `docs/data-access-refactoring/spec.md`
+- What was done: Inlined the users table declaration into `createUserAsync` and split the monolithic users data access tests into a self-contained `Users/CreateUserTests.fs` file with the existing happy-path and duplicate-key coverage preserved. Updated test project compile includes to point at the new test file and removed the old file.
+- Issues encountered: None
+- Learnings: For single-operation modules, the per-function test split is a direct file move while preserving fixture and seeder usage unchanged.

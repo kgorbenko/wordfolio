@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <Compile Include="SqlErrorCodes.fs" />
-    <Compile Include="UsersTests.fs" />
+    <Compile Include="Users/CreateUserTests.fs" />
     <Compile Include="CollectionsTests.fs" />
     <Compile Include="CollectionsHierarchyTests.fs" />
     <Compile Include="VocabulariesTests.fs" />
