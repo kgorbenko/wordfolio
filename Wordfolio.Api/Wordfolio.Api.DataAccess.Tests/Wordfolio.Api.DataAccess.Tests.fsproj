@@ -29,7 +29,10 @@
     <Compile Include="Collections/DeleteCollectionTests.fs" />
     <Compile Include="Collections/GetDefaultCollectionByUserIdTests.fs" />
     <Compile Include="Collections/CreateDefaultCollectionTests.fs" />
-    <Compile Include="CollectionsHierarchyTests.fs" />
+    <Compile Include="CollectionsHierarchy/GetCollectionsByUserIdTests.fs" />
+    <Compile Include="CollectionsHierarchy/SearchUserCollectionsTests.fs" />
+    <Compile Include="CollectionsHierarchy/SearchCollectionVocabulariesTests.fs" />
+    <Compile Include="CollectionsHierarchy/GetDefaultVocabularySummaryByUserIdTests.fs" />
     <Compile Include="VocabulariesTests.fs" />
     <Compile Include="EntriesTests.fs" />
     <Compile Include="DefinitionsTests.fs" />

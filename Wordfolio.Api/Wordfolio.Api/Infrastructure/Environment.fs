@@ -112,7 +112,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
           Translations = translations }
 
     let toVocabularyWithEntryCountDomain
-        (v: Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummary)
+        (v: Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularyWithEntryCount)
         : Wordfolio.Api.Domain.CollectionsHierarchy.VocabularyWithEntryCount =
         { Id = VocabularyId v.Id
           Name = v.Name
@@ -122,7 +122,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
           EntryCount = v.EntryCount }
 
     let toCollectionWithVocabulariesDomain
-        (c: Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionSummary)
+        (c: Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionWithVocabularies)
         : Wordfolio.Api.Domain.CollectionsHierarchy.CollectionWithVocabularies =
         { Id = CollectionId c.Id
           Name = c.Name
@@ -134,7 +134,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
             |> List.map toVocabularyWithEntryCountDomain }
 
     let toCollectionOverviewDomain
-        (c: Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionOverview)
+        (c: Wordfolio.Api.DataAccess.CollectionsHierarchy.CollectionWithVocabularyCount)
         : Wordfolio.Api.Domain.CollectionsHierarchy.CollectionWithVocabularyCount =
         { Id = CollectionId c.Id
           Name = c.Name
@@ -165,15 +165,14 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
 
     let toVocabularySortByDataAccess(sortBy: VocabularySortBy) =
         match sortBy with
-        | VocabularySortBy.Name -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.Name
-        | VocabularySortBy.CreatedAt -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.CreatedAt
-        | VocabularySortBy.UpdatedAt -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.UpdatedAt
-        | VocabularySortBy.EntryCount ->
-            Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummarySortBy.EntryCount
+        | VocabularySortBy.Name -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySortBy.Name
+        | VocabularySortBy.CreatedAt -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySortBy.CreatedAt
+        | VocabularySortBy.UpdatedAt -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySortBy.UpdatedAt
+        | VocabularySortBy.EntryCount -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySortBy.EntryCount
 
     let toSearchCollectionVocabulariesQueryDataAccess
         (query: SearchCollectionVocabulariesQuery)
-        : Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySummaryQuery =
+        : Wordfolio.Api.DataAccess.CollectionsHierarchy.SearchCollectionVocabulariesQuery =
         { Search = query.Search
           SortBy = toVocabularySortByDataAccess query.SortBy
           SortDirection = toSortDirectionDataAccess query.SortDirection }

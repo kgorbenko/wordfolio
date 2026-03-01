@@ -150,7 +150,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - [x] Improve: Review for missing filtering and constraint coverage (`IsSystem`, foreign-key failures, non-existent ids) and keep each test file self-contained.
 
 ### 4. CollectionsHierarchy file and collections hierarchy tests
-- [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/CollectionsHierarchy.fs` (naming alignment to domain hierarchy types, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchyTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchy/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+- [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/CollectionsHierarchy.fs` (naming alignment to domain hierarchy types, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchyTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchy/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
 - [ ] Improve: Review for search/sort safety and coverage (escape behavior, sort direction, default vocabulary summary semantics) without changing behavior.
 
 ### 5. Vocabularies file and vocabularies tests
@@ -214,3 +214,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Reviewed all split collections test files for `IsSystem` filtering and non-existent-id behavior coverage, and added a missing foreign-key constraint test for `createDefaultCollectionAsync` with a non-existent user. Kept the test self-contained with its own fixture reset, inputs, and assertions.
 - Issues encountered: None
 - Learnings: Improve steps can stay narrowly targeted by only filling concrete coverage gaps found during review while preserving existing behavior-focused assertions.
+
+### CollectionsHierarchy file and collections hierarchy tests
+- Files changed: `Wordfolio.Api/Wordfolio.Api.DataAccess/CollectionsHierarchy.fs`, `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchy/GetCollectionsByUserIdTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchy/SearchUserCollectionsTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchy/SearchCollectionVocabulariesTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchy/GetDefaultVocabularySummaryByUserIdTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchyTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`, `docs/data-access-refactoring/spec.md`
+- What was done: Renamed collections-hierarchy data access DTO/query/sort types to align with domain hierarchy naming and updated `Environment.fs` mapping call sites to the new names without changing query behavior. Split the monolithic `CollectionsHierarchyTests.fs` into four self-contained function-focused test files under `CollectionsHierarchy/` and updated the test project compile includes.
+- Issues encountered: Initial verification failed due to a test type-name collision with an existing collections test type in the same namespace; resolved by renaming the new test class types to unique names.
+- Learnings: When splitting data access tests under a shared namespace, test class type names must remain globally unique across the project even when file paths differ.
