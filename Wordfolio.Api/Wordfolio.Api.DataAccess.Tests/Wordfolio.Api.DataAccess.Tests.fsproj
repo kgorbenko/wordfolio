@@ -21,15 +21,38 @@
 
   <ItemGroup>
     <Compile Include="SqlErrorCodes.fs" />
-    <Compile Include="UsersTests.fs" />
-    <Compile Include="CollectionsTests.fs" />
-    <Compile Include="CollectionsHierarchyTests.fs" />
-    <Compile Include="VocabulariesTests.fs" />
-    <Compile Include="EntriesTests.fs" />
-    <Compile Include="DefinitionsTests.fs" />
-    <Compile Include="TranslationsTests.fs" />
-    <Compile Include="ExamplesTests.fs" />
-    <Compile Include="EntriesHierarchyTests.fs" />
+    <Compile Include="Users/CreateUserTests.fs" />
+    <Compile Include="Collections/CreateCollectionTests.fs" />
+    <Compile Include="Collections/GetCollectionByIdTests.fs" />
+    <Compile Include="Collections/GetCollectionsByUserIdTests.fs" />
+    <Compile Include="Collections/UpdateCollectionTests.fs" />
+    <Compile Include="Collections/DeleteCollectionTests.fs" />
+    <Compile Include="Collections/GetDefaultCollectionByUserIdTests.fs" />
+    <Compile Include="Collections/CreateDefaultCollectionTests.fs" />
+    <Compile Include="CollectionsHierarchy/GetCollectionsByUserIdTests.fs" />
+    <Compile Include="CollectionsHierarchy/SearchUserCollectionsTests.fs" />
+    <Compile Include="CollectionsHierarchy/SearchCollectionVocabulariesTests.fs" />
+    <Compile Include="CollectionsHierarchy/GetDefaultVocabularySummaryByUserIdTests.fs" />
+    <Compile Include="Vocabularies/CreateVocabularyTests.fs" />
+    <Compile Include="Vocabularies/GetVocabularyByIdTests.fs" />
+    <Compile Include="Vocabularies/GetVocabulariesByCollectionIdTests.fs" />
+    <Compile Include="Vocabularies/UpdateVocabularyTests.fs" />
+    <Compile Include="Vocabularies/DeleteVocabularyTests.fs" />
+    <Compile Include="Vocabularies/GetDefaultVocabularyByUserIdTests.fs" />
+    <Compile Include="Vocabularies/CreateDefaultVocabularyTests.fs" />
+    <Compile Include="Entries/CreateEntryTests.fs" />
+    <Compile Include="Entries/GetEntryByTextAndVocabularyIdTests.fs" />
+    <Compile Include="Entries/UpdateEntryTests.fs" />
+    <Compile Include="Entries/MoveEntryTests.fs" />
+    <Compile Include="Entries/DeleteEntryTests.fs" />
+    <Compile Include="Entries/HasVocabularyAccessTests.fs" />
+    <Compile Include="Entries/HasVocabularyAccessInCollectionTests.fs" />
+    <Compile Include="Definitions/CreateDefinitionsTests.fs" />
+    <Compile Include="Translations/CreateTranslationsTests.fs" />
+    <Compile Include="Examples/CreateExamplesTests.fs" />
+    <Compile Include="EntriesHierarchy/GetEntryByIdWithHierarchyTests.fs" />
+    <Compile Include="EntriesHierarchy/ClearEntryChildrenTests.fs" />
+    <Compile Include="EntriesHierarchy/GetEntriesHierarchyByVocabularyIdTests.fs" />
   </ItemGroup>
 
 </Project>

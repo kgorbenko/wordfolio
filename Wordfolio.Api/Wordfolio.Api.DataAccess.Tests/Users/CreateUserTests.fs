@@ -1,4 +1,4 @@
-namespace Wordfolio.Api.DataAccess.Tests
+namespace Wordfolio.Api.DataAccess.Tests.Users
 
 open System.Threading.Tasks
 
@@ -6,10 +6,11 @@ open Npgsql
 open Xunit
 
 open Wordfolio.Api.DataAccess
+open Wordfolio.Api.DataAccess.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
-type UsersTests(fixture: WordfolioTestFixture) =
+type CreateUserTests(fixture: WordfolioTestFixture) =
     interface IClassFixture<WordfolioTestFixture>
 
     [<Fact>]

@@ -7,7 +7,7 @@ open System.Threading.Tasks
 
 open Dapper
 
-type VocabularySummary =
+type VocabularyWithEntryCount =
     { Id: int
       Name: string
       Description: string option
@@ -15,16 +15,16 @@ type VocabularySummary =
       UpdatedAt: DateTimeOffset option
       EntryCount: int }
 
-type CollectionSummary =
+type CollectionWithVocabularies =
     { Id: int
       UserId: int
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option
-      Vocabularies: VocabularySummary list }
+      Vocabularies: VocabularyWithEntryCount list }
 
-type CollectionOverview =
+type CollectionWithVocabularyCount =
     { Id: int
       UserId: int
       Name: string
@@ -49,7 +49,7 @@ type SearchUserCollectionsQuery =
       SortDirection: SortDirection }
 
 [<CLIMutable>]
-type internal CollectionOverviewRecord =
+type internal CollectionWithVocabularyCountRecord =
     { Id: int
       UserId: int
       Name: string
@@ -78,7 +78,9 @@ type internal VocabularyRecord =
       IsDefault: bool
       EntryCount: int }
 
-let private toCollectionSummaries(results: seq<CollectionRecord * VocabularyRecord option>) : CollectionSummary list =
+let private toCollectionWithVocabularies
+    (results: seq<CollectionRecord * VocabularyRecord option>)
+    : CollectionWithVocabularies list =
     results
     |> Seq.groupBy fst
     |> Seq.map(fun (collection, rows) ->
@@ -110,7 +112,7 @@ let getCollectionsByUserIdAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<CollectionSummary list> =
+    : Task<CollectionWithVocabularies list> =
     task {
         let sql =
             """
@@ -144,7 +146,7 @@ let getCollectionsByUserIdAsync
                 splitOn = "Id"
             )
 
-        return toCollectionSummaries results
+        return toCollectionWithVocabularies results
     }
 
 let private escapeLikeWildcards(input: string) : string =
@@ -156,7 +158,7 @@ let searchUserCollectionsAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<CollectionOverview list> =
+    : Task<CollectionWithVocabularyCount list> =
     task {
         let sortDirection =
             match query.SortDirection with
@@ -208,7 +210,7 @@ let searchUserCollectionsAsync
                 cancellationToken = cancellationToken
             )
 
-        let! results = connection.QueryAsync<CollectionOverviewRecord>(commandDefinition)
+        let! results = connection.QueryAsync<CollectionWithVocabularyCountRecord>(commandDefinition)
 
         return
             results
@@ -220,29 +222,29 @@ let searchUserCollectionsAsync
                   CreatedAt = c.CreatedAt
                   UpdatedAt = c.UpdatedAt |> Option.ofNullable
                   VocabularyCount = c.VocabularyCount }
-                : CollectionOverview)
+                : CollectionWithVocabularyCount)
             |> Seq.toList
     }
 
-type VocabularySummarySortBy =
+type VocabularySortBy =
     | Name
     | CreatedAt
     | UpdatedAt
     | EntryCount
 
-type VocabularySummaryQuery =
+type SearchCollectionVocabulariesQuery =
     { Search: string option
-      SortBy: VocabularySummarySortBy
+      SortBy: VocabularySortBy
       SortDirection: SortDirection }
 
 let searchCollectionVocabulariesAsync
     (userId: int)
     (collectionId: int)
-    (query: VocabularySummaryQuery)
+    (query: SearchCollectionVocabulariesQuery)
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<VocabularySummary list> =
+    : Task<VocabularyWithEntryCount list> =
     task {
         let sortDirection =
             match query.SortDirection with
@@ -251,10 +253,10 @@ let searchCollectionVocabulariesAsync
 
         let orderByColumn =
             match query.SortBy with
-            | VocabularySummarySortBy.Name -> "LOWER(v.\"Name\")"
-            | VocabularySummarySortBy.CreatedAt -> "v.\"CreatedAt\""
-            | VocabularySummarySortBy.UpdatedAt -> "v.\"UpdatedAt\""
-            | VocabularySummarySortBy.EntryCount -> "\"EntryCount\""
+            | VocabularySortBy.Name -> "LOWER(v.\"Name\")"
+            | VocabularySortBy.CreatedAt -> "v.\"CreatedAt\""
+            | VocabularySortBy.UpdatedAt -> "v.\"UpdatedAt\""
+            | VocabularySortBy.EntryCount -> "\"EntryCount\""
 
         let searchText = "CAST(@Search AS text)"
 
@@ -312,7 +314,7 @@ let getDefaultVocabularySummaryByUserIdAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<VocabularySummary option> =
+    : Task<VocabularyWithEntryCount option> =
     task {
         let sql =
             """

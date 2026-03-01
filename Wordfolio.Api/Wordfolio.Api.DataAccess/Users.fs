@@ -13,10 +13,6 @@ type User = { Id: int }
 
 type UserCreationParameters = { Id: int }
 
-let usersTable =
-    table'<User> Schema.UsersTable.Name
-    |> inSchema Schema.Name
-
 let createUserAsync
     (parameters: UserCreationParameters)
     (connection: IDbConnection)
@@ -24,6 +20,10 @@ let createUserAsync
     (cancellationToken: CancellationToken)
     : Task<unit> =
     task {
+        let usersTable =
+            table'<User> Schema.UsersTable.Name
+            |> inSchema Schema.Name
+
         let userToInsert: User =
             { Id = parameters.Id }
 

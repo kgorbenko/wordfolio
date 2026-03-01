@@ -12,18 +12,18 @@ open Dapper.FSharp.PostgreSQL
 
 open Wordfolio.Api.DataAccess.Dapper
 
-type DefinitionWithExamples =
+type DefinitionHierarchy =
     { Definition: Definitions.Definition
       Examples: Examples.Example list }
 
-type TranslationWithExamples =
+type TranslationHierarchy =
     { Translation: Translations.Translation
       Examples: Examples.Example list }
 
-type EntryWithHierarchy =
+type EntryHierarchy =
     { Entry: Entries.Entry
-      Definitions: DefinitionWithExamples list
-      Translations: TranslationWithExamples list }
+      Definitions: DefinitionHierarchy list
+      Translations: TranslationHierarchy list }
 
 [<CLIMutable>]
 type private EntryRecord =
@@ -57,28 +57,12 @@ type private ExampleRecord =
       ExampleText: string
       Source: int16 }
 
-let private entriesTable =
-    table'<EntryRecord> Schema.EntriesTable.Name
-    |> inSchema Schema.Name
-
-let private definitionsTable =
-    table'<DefinitionRecord> Schema.DefinitionsTable.Name
-    |> inSchema Schema.Name
-
-let private translationsTable =
-    table'<TranslationRecord> Schema.TranslationsTable.Name
-    |> inSchema Schema.Name
-
-let private examplesTable =
-    table'<ExampleRecord> Schema.ExamplesTable.Name
-    |> inSchema Schema.Name
-
 let private assembleEntriesWithHierarchy
     (entries: seq<EntryRecord>)
     (definitions: seq<DefinitionRecord>)
     (translations: seq<TranslationRecord>)
     (examples: seq<ExampleRecord>)
-    : EntryWithHierarchy list =
+    : EntryHierarchy list =
     let examplesByDefinition =
         examples
         |> Seq.choose(fun e ->
@@ -186,6 +170,10 @@ let private getEntryRecordByIdAsync
     (cancellationToken: CancellationToken)
     : Task<EntryRecord option> =
     task {
+        let entriesTable =
+            table'<EntryRecord> Schema.EntriesTable.Name
+            |> inSchema Schema.Name
+
         return!
             select {
                 for e in entriesTable do
@@ -201,6 +189,10 @@ let private getEntryRecordsByVocabularyIdAsync
     (cancellationToken: CancellationToken)
     : Task<EntryRecord list> =
     task {
+        let entriesTable =
+            table'<EntryRecord> Schema.EntriesTable.Name
+            |> inSchema Schema.Name
+
         return!
             select {
                 for e in entriesTable do
@@ -217,6 +209,10 @@ let private getDefinitionRecordsByEntryIdsAsync
     (cancellationToken: CancellationToken)
     : Task<DefinitionRecord list> =
     task {
+        let definitionsTable =
+            table'<DefinitionRecord> Schema.DefinitionsTable.Name
+            |> inSchema Schema.Name
+
         if entryIds.IsEmpty then
             return []
         else
@@ -237,6 +233,10 @@ let private getTranslationRecordsByEntryIdsAsync
     (cancellationToken: CancellationToken)
     : Task<TranslationRecord list> =
     task {
+        let translationsTable =
+            table'<TranslationRecord> Schema.TranslationsTable.Name
+            |> inSchema Schema.Name
+
         if entryIds.IsEmpty then
             return []
         else
@@ -317,7 +317,7 @@ let getEntryByIdWithHierarchyAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<EntryWithHierarchy option> =
+    : Task<EntryHierarchy option> =
     task {
         let! entryRecord = getEntryRecordByIdAsync entryId connection transaction cancellationToken
 
@@ -360,15 +360,23 @@ let clearEntryChildrenAsync
     : Task<int> =
     task {
         let! deletedDefinitions =
+            let definitionsTable =
+                table'<DefinitionRecord> Schema.DefinitionsTable.Name
+                |> inSchema Schema.Name
+
             delete {
-                for d in Definitions.definitionsTable do
+                for d in definitionsTable do
                     where(d.EntryId = entryId)
             }
             |> deleteAsync connection transaction cancellationToken
 
         let! deletedTranslations =
+            let translationsTable =
+                table'<TranslationRecord> Schema.TranslationsTable.Name
+                |> inSchema Schema.Name
+
             delete {
-                for t in Translations.translationsTable do
+                for t in translationsTable do
                     where(t.EntryId = entryId)
             }
             |> deleteAsync connection transaction cancellationToken
@@ -381,7 +389,7 @@ let getEntriesHierarchyByVocabularyIdAsync
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
-    : Task<EntryWithHierarchy list> =
+    : Task<EntryHierarchy list> =
     task {
         let! entries = getEntryRecordsByVocabularyIdAsync vocabularyId connection transaction cancellationToken
 
