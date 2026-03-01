@@ -1,4 +1,4 @@
-namespace Wordfolio.Api.DataAccess.Tests
+namespace Wordfolio.Api.DataAccess.Tests.Collections
 
 open System
 

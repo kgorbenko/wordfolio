@@ -1,4 +1,4 @@
-namespace Wordfolio.Api.DataAccess.Tests
+namespace Wordfolio.Api.DataAccess.Tests.EntriesHierarchy
 
 open System
 open System.Threading.Tasks

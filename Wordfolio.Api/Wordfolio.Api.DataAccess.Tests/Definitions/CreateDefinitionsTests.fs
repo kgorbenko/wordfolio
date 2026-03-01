@@ -1,4 +1,4 @@
-namespace Wordfolio.Api.DataAccess.Tests
+namespace Wordfolio.Api.DataAccess.Tests.Definitions
 
 open System
 open System.Threading.Tasks
@@ -7,6 +7,7 @@ open Npgsql
 open Xunit
 
 open Wordfolio.Api.DataAccess
+open Wordfolio.Api.DataAccess.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
