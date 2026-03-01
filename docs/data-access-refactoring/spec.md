@@ -143,7 +143,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 
 ### 2. Users file and users tests
 - [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Users.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/IdentityIntegration.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/UsersTests.fs` into `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Users/CreateUserTests.fs`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
-- [ ] Improve: Review users changes for parity and readability; ensure duplicate-key and happy-path coverage remain complete and self-contained.
+- [x] Improve: Review users changes for parity and readability; ensure duplicate-key and happy-path coverage remain complete and self-contained.
 
 ### 3. Collections file and collections tests
 - [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Collections.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Collections/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
@@ -196,3 +196,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Inlined the users table declaration into `createUserAsync` and split the monolithic users data access tests into a self-contained `Users/CreateUserTests.fs` file with the existing happy-path and duplicate-key coverage preserved. Updated test project compile includes to point at the new test file and removed the old file.
 - Issues encountered: None
 - Learnings: For single-operation modules, the per-function test split is a direct file move while preserving fixture and seeder usage unchanged.
+
+### Review users changes for parity and readability
+- Files changed: `docs/data-access-refactoring/spec.md`
+- What was done: Reviewed `Users.fs`, `IdentityIntegration.fs`, and `Users/CreateUserTests.fs` for behavior parity and readability, and confirmed happy-path plus duplicate-key coverage remain present in a self-contained test file. Re-ran full verification with `dotnet fantomas . && dotnet build && dotnet test` and all checks passed.
+- Issues encountered: None
+- Learnings: Improve steps can be validation-only when implement output already satisfies rulebook concerns; the required outcome is explicit parity confirmation plus green verification.
