@@ -18,8 +18,8 @@ module DataAccess =
     open Wordfolio.Api.DataAccess
 
     type Collection = Wordfolio.Api.DataAccess.Collections.Collection
-    type CollectionCreationParameters = Wordfolio.Api.DataAccess.Collections.CollectionCreationParameters
-    type CollectionUpdateParameters = Wordfolio.Api.DataAccess.Collections.CollectionUpdateParameters
+    type CreateCollectionParameters = Wordfolio.Api.DataAccess.Collections.CreateCollectionParameters
+    type UpdateCollectionParameters = Wordfolio.Api.DataAccess.Collections.UpdateCollectionParameters
     type Vocabulary = Wordfolio.Api.DataAccess.Vocabularies.Vocabulary
     type VocabularyCreationParameters = Wordfolio.Api.DataAccess.Vocabularies.VocabularyCreationParameters
     type VocabularyUpdateParameters = Wordfolio.Api.DataAccess.Vocabularies.VocabularyUpdateParameters
@@ -207,7 +207,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface ICreateCollection with
         member _.CreateCollection(parameters: CreateCollectionData) =
             task {
-                let parameters: DataAccess.CollectionCreationParameters =
+                let parameters: DataAccess.CreateCollectionParameters =
                     { UserId = UserId.value parameters.UserId
                       Name = parameters.Name
                       Description = parameters.Description
@@ -226,7 +226,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface IUpdateCollection with
         member _.UpdateCollection(parameters: UpdateCollectionData) =
             task {
-                let parameters: DataAccess.CollectionUpdateParameters =
+                let parameters: DataAccess.UpdateCollectionParameters =
                     { Id = CollectionId.value parameters.CollectionId
                       Name = parameters.Name
                       Description = parameters.Description
@@ -372,7 +372,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface ICreateDefaultCollection with
         member _.CreateDefaultCollection(parameters: CreateDefaultCollectionParameters) =
             task {
-                let dataAccessParams: DataAccess.CollectionCreationParameters =
+                let dataAccessParams: DataAccess.CreateCollectionParameters =
                     { UserId = UserId.value parameters.UserId
                       Name = parameters.Name
                       Description = parameters.Description

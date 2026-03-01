@@ -22,7 +22,13 @@
   <ItemGroup>
     <Compile Include="SqlErrorCodes.fs" />
     <Compile Include="Users/CreateUserTests.fs" />
-    <Compile Include="CollectionsTests.fs" />
+    <Compile Include="Collections/CreateCollectionTests.fs" />
+    <Compile Include="Collections/GetCollectionByIdTests.fs" />
+    <Compile Include="Collections/GetCollectionsByUserIdTests.fs" />
+    <Compile Include="Collections/UpdateCollectionTests.fs" />
+    <Compile Include="Collections/DeleteCollectionTests.fs" />
+    <Compile Include="Collections/GetDefaultCollectionByUserIdTests.fs" />
+    <Compile Include="Collections/CreateDefaultCollectionTests.fs" />
     <Compile Include="CollectionsHierarchyTests.fs" />
     <Compile Include="VocabulariesTests.fs" />
     <Compile Include="EntriesTests.fs" />

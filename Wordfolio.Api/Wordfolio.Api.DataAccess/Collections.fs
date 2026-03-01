@@ -27,13 +27,13 @@ type Collection =
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option }
 
-type CollectionCreationParameters =
+type CreateCollectionParameters =
     { UserId: int
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset }
 
-type CollectionUpdateParameters =
+type UpdateCollectionParameters =
     { Id: int
       Name: string
       Description: string option
@@ -47,10 +47,6 @@ let private fromRecord(record: CollectionRecord) : Collection =
       CreatedAt = record.CreatedAt
       UpdatedAt = record.UpdatedAt |> Option.ofNullable }
 
-let internal collectionsTable =
-    table'<CollectionRecord> Schema.CollectionsTable.Name
-    |> inSchema Schema.Name
-
 [<CLIMutable>]
 type internal CollectionInsertParameters =
     { UserId: int
@@ -59,17 +55,17 @@ type internal CollectionInsertParameters =
       CreatedAt: DateTimeOffset
       IsSystem: bool }
 
-let internal collectionsInsertTable =
-    table'<CollectionInsertParameters> Schema.CollectionsTable.Name
-    |> inSchema Schema.Name
-
 let createCollectionAsync
-    (parameters: CollectionCreationParameters)
+    (parameters: CreateCollectionParameters)
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
     : Task<int> =
     task {
+        let collectionsInsertTable =
+            table'<CollectionInsertParameters> Schema.CollectionsTable.Name
+            |> inSchema Schema.Name
+
         let insertParams: CollectionInsertParameters =
             { UserId = parameters.UserId
               Name = parameters.Name
@@ -97,6 +93,10 @@ let getCollectionByIdAsync
     (cancellationToken: CancellationToken)
     : Task<Collection option> =
     task {
+        let collectionsTable =
+            table'<CollectionRecord> Schema.CollectionsTable.Name
+            |> inSchema Schema.Name
+
         let! result =
             select {
                 for c in collectionsTable do
@@ -114,6 +114,10 @@ let getCollectionsByUserIdAsync
     (cancellationToken: CancellationToken)
     : Task<Collection list> =
     task {
+        let collectionsTable =
+            table'<CollectionRecord> Schema.CollectionsTable.Name
+            |> inSchema Schema.Name
+
         let! results =
             select {
                 for c in collectionsTable do
@@ -125,12 +129,16 @@ let getCollectionsByUserIdAsync
     }
 
 let updateCollectionAsync
-    (parameters: CollectionUpdateParameters)
+    (parameters: UpdateCollectionParameters)
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
     : Task<int> =
     task {
+        let collectionsTable =
+            table'<CollectionRecord> Schema.CollectionsTable.Name
+            |> inSchema Schema.Name
+
         let! affectedRows =
             update {
                 for c in collectionsTable do
@@ -155,6 +163,10 @@ let deleteCollectionAsync
     (cancellationToken: CancellationToken)
     : Task<int> =
     task {
+        let collectionsTable =
+            table'<CollectionRecord> Schema.CollectionsTable.Name
+            |> inSchema Schema.Name
+
         let! affectedRows =
             delete {
                 for c in collectionsTable do
@@ -172,6 +184,10 @@ let getDefaultCollectionByUserIdAsync
     (cancellationToken: CancellationToken)
     : Task<Collection option> =
     task {
+        let collectionsTable =
+            table'<CollectionRecord> Schema.CollectionsTable.Name
+            |> inSchema Schema.Name
+
         let! result =
             select {
                 for c in collectionsTable do
@@ -183,12 +199,16 @@ let getDefaultCollectionByUserIdAsync
     }
 
 let createDefaultCollectionAsync
-    (parameters: CollectionCreationParameters)
+    (parameters: CreateCollectionParameters)
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
     : Task<int> =
     task {
+        let collectionsInsertTable =
+            table'<CollectionInsertParameters> Schema.CollectionsTable.Name
+            |> inSchema Schema.Name
+
         let insertParams: CollectionInsertParameters =
             { UserId = parameters.UserId
               Name = parameters.Name

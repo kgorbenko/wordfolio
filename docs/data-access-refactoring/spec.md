@@ -146,7 +146,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - [x] Improve: Review users changes for parity and readability; ensure duplicate-key and happy-path coverage remain complete and self-contained.
 
 ### 3. Collections file and collections tests
-- [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Collections.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Collections/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+- [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Collections.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Collections/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
 - [ ] Improve: Review for missing filtering and constraint coverage (`IsSystem`, foreign-key failures, non-existent ids) and keep each test file self-contained.
 
 ### 4. CollectionsHierarchy file and collections hierarchy tests
@@ -202,3 +202,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Reviewed `Users.fs`, `IdentityIntegration.fs`, and `Users/CreateUserTests.fs` for behavior parity and readability, and confirmed happy-path plus duplicate-key coverage remain present in a self-contained test file. Re-ran full verification with `dotnet fantomas . && dotnet build && dotnet test` and all checks passed.
 - Issues encountered: None
 - Learnings: Improve steps can be validation-only when implement output already satisfies rulebook concerns; the required outcome is explicit parity confirmation plus green verification.
+
+### Collections file and collections tests
+- Files changed: `Wordfolio.Api/Wordfolio.Api.DataAccess/Collections.fs`, `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Collections/CreateCollectionTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Collections/GetCollectionByIdTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Collections/GetCollectionsByUserIdTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Collections/UpdateCollectionTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Collections/DeleteCollectionTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Collections/GetDefaultCollectionByUserIdTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Collections/CreateDefaultCollectionTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsTests.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`, `docs/data-access-refactoring/spec.md`
+- What was done: Renamed collection data access parameter records to `CreateCollectionParameters` and `UpdateCollectionParameters` to align with domain naming, and inlined table declarations into each collection function while keeping query behavior unchanged. Split monolithic collections tests into self-contained, function-focused files under `Collections/` and updated the test project compile includes accordingly.
+- Issues encountered: None
+- Learnings: Collections function-level test splitting maps cleanly to one file per public data access function, and local table declarations remove shared module state without changing SQL behavior.
