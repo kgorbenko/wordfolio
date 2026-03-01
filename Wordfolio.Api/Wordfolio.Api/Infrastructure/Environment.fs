@@ -392,18 +392,18 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface IGetEntryById with
         member _.GetEntryById(EntryId id) =
             task {
-                let! maybeEntryWithHierarchy =
+                let! maybeEntryHierarchy =
                     Wordfolio.Api.DataAccess.EntriesHierarchy.getEntryByIdWithHierarchyAsync
                         id
                         connection
                         transaction
                         cancellationToken
 
-                match maybeEntryWithHierarchy with
+                match maybeEntryHierarchy with
                 | None -> return None
-                | Some entryWithHierarchy ->
+                | Some entryHierarchy ->
                     let definitionsWithExamples =
-                        entryWithHierarchy.Definitions
+                        entryHierarchy.Definitions
                         |> List.map(fun dwithEx ->
                             let examples =
                                 dwithEx.Examples
@@ -412,7 +412,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                             toDefinitionDomain(dwithEx.Definition, examples))
 
                     let translationsWithExamples =
-                        entryWithHierarchy.Translations
+                        entryHierarchy.Translations
                         |> List.map(fun twithEx ->
                             let examples =
                                 twithEx.Examples
@@ -420,8 +420,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
 
                             toTranslationDomain(twithEx.Translation, examples))
 
-                    return
-                        Some(toEntryDomain(entryWithHierarchy.Entry, definitionsWithExamples, translationsWithExamples))
+                    return Some(toEntryDomain(entryHierarchy.Entry, definitionsWithExamples, translationsWithExamples))
             }
 
     interface IGetEntryByTextAndVocabularyId with
@@ -702,9 +701,9 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
 
                 return
                     entries
-                    |> List.map(fun entryWithHierarchy ->
+                    |> List.map(fun entryHierarchy ->
                         let definitionsWithExamples =
-                            entryWithHierarchy.Definitions
+                            entryHierarchy.Definitions
                             |> List.map(fun dwithEx ->
                                 let examples =
                                     dwithEx.Examples
@@ -713,7 +712,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                                 toDefinitionDomain(dwithEx.Definition, examples))
 
                         let translationsWithExamples =
-                            entryWithHierarchy.Translations
+                            entryHierarchy.Translations
                             |> List.map(fun twithEx ->
                                 let examples =
                                     twithEx.Examples
@@ -721,7 +720,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
 
                                 toTranslationDomain(twithEx.Translation, examples))
 
-                        toEntryDomain(entryWithHierarchy.Entry, definitionsWithExamples, translationsWithExamples))
+                        toEntryDomain(entryHierarchy.Entry, definitionsWithExamples, translationsWithExamples))
             }
 
 type TransactionalEnv(dataSource: NpgsqlDataSource, cancellationToken: CancellationToken) =

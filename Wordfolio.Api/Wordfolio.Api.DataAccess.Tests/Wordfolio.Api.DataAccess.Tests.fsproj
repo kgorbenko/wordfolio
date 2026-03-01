@@ -50,7 +50,9 @@
     <Compile Include="Definitions/CreateDefinitionsTests.fs" />
     <Compile Include="Translations/CreateTranslationsTests.fs" />
     <Compile Include="Examples/CreateExamplesTests.fs" />
-    <Compile Include="EntriesHierarchyTests.fs" />
+    <Compile Include="EntriesHierarchy/GetEntryByIdWithHierarchyTests.fs" />
+    <Compile Include="EntriesHierarchy/ClearEntryChildrenTests.fs" />
+    <Compile Include="EntriesHierarchy/GetEntriesHierarchyByVocabularyIdTests.fs" />
   </ItemGroup>
 
 </Project>
