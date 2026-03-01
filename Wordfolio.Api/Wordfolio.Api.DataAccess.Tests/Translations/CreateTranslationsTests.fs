@@ -94,6 +94,68 @@ type CreateTranslationsTests(fixture: WordfolioTestFixture) =
         }
 
     [<Fact>]
+    member _.``createTranslationsAsync returns ids in the same order as input parameters``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 511
+
+            let collection =
+                Entities.makeCollection user "Collection 1" None createdAt None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+
+            let entry =
+                Entities.makeEntry vocabulary "serendipity" createdAt None
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            let parameters: Translations.CreateTranslationParameters list =
+                [ { EntryId = entry.Id
+                    TranslationText = "third"
+                    Source = Translations.TranslationSource.Manual
+                    DisplayOrder = 3 }
+                  { EntryId = entry.Id
+                    TranslationText = "first"
+                    Source = Translations.TranslationSource.Manual
+                    DisplayOrder = 1 }
+                  { EntryId = entry.Id
+                    TranslationText = "second"
+                    Source = Translations.TranslationSource.Api
+                    DisplayOrder = 2 } ]
+
+            let! createdIds =
+                Translations.createTranslationsAsync parameters
+                |> fixture.WithConnectionAsync
+
+            let! allTranslations =
+                fixture.Seeder
+                |> Seeder.getAllTranslationsAsync
+
+            let translationsById =
+                allTranslations
+                |> List.map(fun translation -> translation.Id, translation.TranslationText)
+                |> Map.ofList
+
+            let createdTextsInReturnedOrder =
+                createdIds
+                |> List.map(fun id -> translationsById.[id])
+
+            let expectedTextsInInputOrder =
+                parameters
+                |> List.map(fun parameter -> parameter.TranslationText)
+
+            Assert.Equal<string list>(expectedTextsInInputOrder, createdTextsInReturnedOrder)
+        }
+
+    [<Fact>]
     member _.``createTranslationsAsync fails with foreign key violation for non-existent entry``() =
         task {
             do! fixture.ResetDatabaseAsync()

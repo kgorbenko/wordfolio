@@ -167,7 +167,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 
 ### 8. Translations file and translations tests
 - [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Translations.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), remove dead test-only APIs (`getTranslationsByEntryIdAsync`, `updateTranslationsAsync`, `deleteTranslationsAsync`) if unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/TranslationsTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Translations/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
-- [ ] Improve: Review create-translations coverage for ordering and constraint behavior, and verify removed dead API tests were deleted in the same step.
+- [x] Improve: Review create-translations coverage for ordering and constraint behavior, and verify removed dead API tests were deleted in the same step.
 
 ### 9. Examples file and examples tests
 - [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Examples.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), remove dead test-only APIs (`getExamplesByDefinitionIdAsync`, `getExamplesByTranslationIdAsync`, `updateExamplesAsync`, `deleteExamplesAsync`) if unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/ExamplesTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Examples/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
@@ -268,3 +268,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Renamed translation create input type to `CreateTranslationParameters`, inlined the insert-table declaration into `createTranslationsAsync`, and removed dead test-only APIs (`getTranslationsByEntryIdAsync`, `updateTranslationsAsync`, `deleteTranslationsAsync`) that had no production call paths. Split monolithic translations tests into a self-contained `Translations/CreateTranslationsTests.fs` file, updated test project includes, and updated the examples cascade test to stop relying on removed dead translation APIs.
 - Issues encountered: None
 - Learnings: When removing dead data-access APIs, update any cross-module tests that called those APIs in the same step so behavior-focused coverage remains while eliminating unused production surface area.
+
+### Review create-translations coverage and dead API test removal
+- Files changed: `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Translations/CreateTranslationsTests.fs`, `docs/data-access-refactoring/spec.md`
+- What was done: Reviewed translations improve-step concerns and confirmed removed dead translation APIs are no longer referenced by data access tests. Added a targeted ordering-parity test that verifies `createTranslationsAsync` returns IDs in the same order as the input parameters while retaining existing foreign-key and unique-constraint coverage.
+- Issues encountered: None
+- Learnings: For bulk create functions, verify ordering by resolving returned IDs back to persisted rows and comparing that sequence against input order to avoid relying on incidental table read ordering.
