@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Compile Include="Dapper.fs" />
-    <Compile Include="Database.fs" />
     <Compile Include="Schema.fs" />
     <Compile Include="Users.fs" />
     <Compile Include="Collections.fs" />

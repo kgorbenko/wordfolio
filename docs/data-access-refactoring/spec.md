@@ -1,0 +1,186 @@
+# Data Access Refactoring
+
+## Overview
+
+This refactor aligns the data access layer with the completed domain refactor while preserving runtime behavior. The goal is to make naming consistent with the domain model, remove dead data access APIs, inline Dapper table declarations to reduce cross-module coupling, and make data access tests easier to own by splitting them into self-contained function-focused files.
+
+The loop executes one data access file per iteration unit. Each implement step updates exactly one production file in `Wordfolio.Api.DataAccess` plus all related tests (and required call-site/project updates), then an improve step validates quality and parity for that same unit.
+
+## Specification
+
+## Scope and Constraints
+
+- In scope:
+  - `Wordfolio.Api/Wordfolio.Api.DataAccess/*.fs`
+  - `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/**`
+  - Required call-site updates in `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs`
+  - Required call-site updates in `Wordfolio.Api/Wordfolio.Api/IdentityIntegration.fs`
+  - Project include updates in `Wordfolio.Api/Wordfolio.Api.DataAccess/Wordfolio.Api.DataAccess.fsproj`
+  - Project include updates in `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`
+- Out of scope:
+  - Frontend changes
+  - Domain-layer behavior changes
+  - API contract behavior changes
+- Hard constraints:
+  - No behavior changes (query semantics, business rules, response behavior remain equivalent)
+  - Keep production file structure in `Wordfolio.Api.DataAccess` as-is (do not split production functions into separate files)
+  - Tests must be self-contained per file (no shared seed/setup helper files)
+  - Test file names must not include `Async`
+
+## Pattern to Follow
+
+- Domain refactor naming and test-organization reference commit:
+  - `1a71b727cf04d1d6cd82ca52364f8fa36ada0a51`
+- Domain per-operation test split examples:
+  - `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Collections/CreateTests.fs`
+  - `Wordfolio.Api/Wordfolio.Api.Domain.Tests/Entries/EntryOperations/GetByIdTests.fs`
+- Data access integration-test fixture pattern:
+  - `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/UsersTests.fs`
+  - `Wordfolio.Api/Wordfolio.Api.Tests.Utils/WordfolioTestFixture.fs`
+  - `Wordfolio.Api/Wordfolio.Api.Tests.Utils/Wordfolio/Seeder.fs`
+- Rule source:
+  - `docs/data-access-refactoring/rulebook.md`
+
+## Naming and Reachability Rules
+
+- Align data access type/function/property names with renamed domain concepts when they represent the same business meaning.
+- Remove data access functions with no production call path (test-only APIs are considered dead for this refactor).
+- Keep names explicit and intent-focused (avoid mixed naming schemes for equivalent patterns).
+- Keep updates mechanical and parity-preserving; when renaming, update all call sites in the same step.
+
+## Dapper and Record Rules
+
+- Inline Dapper table declarations into the function that uses them.
+- Remove cross-module table coupling (for example, one module using another module's internal table declaration).
+- Re-evaluate `[<CLIMutable>]` on every record and keep it only where required for Dapper materialization.
+- Remove dead private declarations discovered during each module refactor.
+
+## Test Restructure Rules
+
+- Split monolithic module test files into function-focused files under module folders.
+- Keep every test file fully self-contained (fixture setup, seed setup, assertions).
+- Keep existing test behavior coverage, then add missing high-value cases discovered during split.
+- Keep test project compile includes explicit and ordered in `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+
+## Dead/Test-Only API Candidates (Validate Per Step)
+
+- `Wordfolio.Api/Wordfolio.Api.DataAccess/Database.fs`
+  - private helpers only, no call sites
+- `Wordfolio.Api/Wordfolio.Api.DataAccess/Entries.fs`
+  - `getEntryByIdAsync`
+  - `getEntriesByVocabularyIdAsync`
+- `Wordfolio.Api/Wordfolio.Api.DataAccess/Definitions.fs`
+  - `getDefinitionsByEntryIdAsync`
+  - `updateDefinitionsAsync`
+  - `deleteDefinitionsAsync`
+- `Wordfolio.Api/Wordfolio.Api.DataAccess/Translations.fs`
+  - `getTranslationsByEntryIdAsync`
+  - `updateTranslationsAsync`
+  - `deleteTranslationsAsync`
+- `Wordfolio.Api/Wordfolio.Api.DataAccess/Examples.fs`
+  - `getExamplesByDefinitionIdAsync`
+  - `getExamplesByTranslationIdAsync`
+  - `updateExamplesAsync`
+  - `deleteExamplesAsync`
+
+## Target Test Folder Layout
+
+```text
+Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
+  SqlErrorCodes.fs
+  Users/
+    CreateUserTests.fs
+  Collections/
+    CreateCollectionTests.fs
+    GetCollectionByIdTests.fs
+    GetCollectionsByUserIdTests.fs
+    UpdateCollectionTests.fs
+    DeleteCollectionTests.fs
+    GetDefaultCollectionByUserIdTests.fs
+    CreateDefaultCollectionTests.fs
+  CollectionsHierarchy/
+    GetCollectionsByUserIdTests.fs
+    SearchUserCollectionsTests.fs
+    SearchCollectionVocabulariesTests.fs
+    GetDefaultVocabularySummaryByUserIdTests.fs
+  Vocabularies/
+    CreateVocabularyTests.fs
+    GetVocabularyByIdTests.fs
+    GetVocabulariesByCollectionIdTests.fs
+    UpdateVocabularyTests.fs
+    DeleteVocabularyTests.fs
+    GetDefaultVocabularyByUserIdTests.fs
+    CreateDefaultVocabularyTests.fs
+  Entries/
+    CreateEntryTests.fs
+    GetEntryByTextAndVocabularyIdTests.fs
+    UpdateEntryTests.fs
+    MoveEntryTests.fs
+    DeleteEntryTests.fs
+    HasVocabularyAccessTests.fs
+    HasVocabularyAccessInCollectionTests.fs
+  Definitions/
+    CreateDefinitionsTests.fs
+  Translations/
+    CreateTranslationsTests.fs
+  Examples/
+    CreateExamplesTests.fs
+  EntriesHierarchy/
+    GetEntryByIdWithHierarchyTests.fs
+    ClearEntryChildrenTests.fs
+    GetEntriesHierarchyByVocabularyIdTests.fs
+```
+
+## Verification Commands
+
+`dotnet fantomas . && dotnet build && dotnet test`
+
+## Implementation Steps
+
+### 1. Database module cleanup
+- [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Database.fs` by removing dead private helpers; if the file becomes empty, delete it and remove its compile include from `Wordfolio.Api/Wordfolio.Api.DataAccess/Wordfolio.Api.DataAccess.fsproj`.
+- [ ] Improve: Verify there are no remaining references to `Wordfolio.Api.DataAccess.Database` and confirm this cleanup is purely structural.
+
+### 2. Users file and users tests
+- [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Users.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/IdentityIntegration.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/UsersTests.fs` into `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Users/CreateUserTests.fs`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+- [ ] Improve: Review users changes for parity and readability; ensure duplicate-key and happy-path coverage remain complete and self-contained.
+
+### 3. Collections file and collections tests
+- [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Collections.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Collections/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+- [ ] Improve: Review for missing filtering and constraint coverage (`IsSystem`, foreign-key failures, non-existent ids) and keep each test file self-contained.
+
+### 4. CollectionsHierarchy file and collections hierarchy tests
+- [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/CollectionsHierarchy.fs` (naming alignment to domain hierarchy types, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchyTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchy/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+- [ ] Improve: Review for search/sort safety and coverage (escape behavior, sort direction, default vocabulary summary semantics) without changing behavior.
+
+### 5. Vocabularies file and vocabularies tests
+- [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Vocabularies.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/VocabulariesTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Vocabularies/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+- [ ] Improve: Review default-vocabulary and collection-ownership coverage, including uniqueness/constraint cases and self-contained setup per test file.
+
+### 6. Entries file and entries tests
+- [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Entries.fs` (naming alignment, table declaration inlining, remove cross-module table dependencies, `[<CLIMutable>]` review), remove dead test-only APIs (`getEntryByIdAsync`, `getEntriesByVocabularyIdAsync`) if still unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Entries/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+- [ ] Improve: Review access-check and move/update coverage for positive/negative boundaries while preserving existing query behavior.
+
+### 7. Definitions file and definitions tests
+- [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Definitions.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), remove dead test-only APIs (`getDefinitionsByEntryIdAsync`, `updateDefinitionsAsync`, `deleteDefinitionsAsync`) if unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/DefinitionsTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Definitions/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+- [ ] Improve: Review create-definitions coverage for ordering and constraint behavior, and verify removed dead API tests were deleted in the same step.
+
+### 8. Translations file and translations tests
+- [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Translations.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), remove dead test-only APIs (`getTranslationsByEntryIdAsync`, `updateTranslationsAsync`, `deleteTranslationsAsync`) if unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/TranslationsTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Translations/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+- [ ] Improve: Review create-translations coverage for ordering and constraint behavior, and verify removed dead API tests were deleted in the same step.
+
+### 9. Examples file and examples tests
+- [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Examples.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), remove dead test-only APIs (`getExamplesByDefinitionIdAsync`, `getExamplesByTranslationIdAsync`, `updateExamplesAsync`, `deleteExamplesAsync`) if unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/ExamplesTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Examples/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+- [ ] Improve: Review create-examples coverage for definition/translation branches and constraint behavior, and verify removed dead API tests were deleted in the same step.
+
+### 10. EntriesHierarchy file and entries hierarchy tests
+- [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/EntriesHierarchy.fs` (naming alignment, table declaration inlining, remove cross-module table dependencies, remove unused `examplesTable`, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchyTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/EntriesHierarchy/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
+- [ ] Improve: Review hierarchy assembly and child-clear coverage for empty/partial hierarchies and ensure no behavior drift.
+
+## Progress Log
+
+### Database module cleanup
+- Files changed: `Wordfolio.Api/Wordfolio.Api.DataAccess/Database.fs`, `Wordfolio.Api/Wordfolio.Api.DataAccess/Wordfolio.Api.DataAccess.fsproj`
+- What was done: Removed the unused `Database.fs` module because it only contained dead private helpers with no consumers. Deleted its compile include from the data access project file.
+- Issues encountered: None
+- Learnings: This module had no production or test call paths, so removing the file and fsproj include is the clean parity-preserving outcome for dead private helper cleanup.
