@@ -621,7 +621,7 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
         }
 
     [<Fact>]
-    member _.``deleting definition cascades to delete examples``() =
+    member _.``deleting entry cascades through definitions to delete examples``() =
         task {
             do! fixture.ResetDatabaseAsync()
 
@@ -651,7 +651,7 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
                 |> Seeder.saveChangesAsync
 
             let! _ =
-                Definitions.deleteDefinitionsAsync [ definition.Id ]
+                Entries.deleteEntryAsync entry.Id
                 |> fixture.WithConnectionAsync
 
             let! actualExamples =

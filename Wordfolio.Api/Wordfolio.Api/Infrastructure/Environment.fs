@@ -28,7 +28,7 @@ module DataAccess =
     type UpdateEntryParameters = Wordfolio.Api.DataAccess.Entries.UpdateEntryParameters
     type MoveEntryParameters = Wordfolio.Api.DataAccess.Entries.MoveEntryParameters
     type Definition = Wordfolio.Api.DataAccess.Definitions.Definition
-    type DefinitionCreationParameters = Wordfolio.Api.DataAccess.Definitions.DefinitionCreationParameters
+    type CreateDefinitionParameters = Wordfolio.Api.DataAccess.Definitions.CreateDefinitionParameters
     type Translation = Wordfolio.Api.DataAccess.Translations.Translation
     type TranslationCreationParameters = Wordfolio.Api.DataAccess.Translations.TranslationCreationParameters
     type Example = Wordfolio.Api.DataAccess.Examples.Example
@@ -461,7 +461,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface ICreateDefinition with
         member _.CreateDefinition(data: CreateDefinitionData) =
             task {
-                let parameters: DataAccess.DefinitionCreationParameters =
+                let parameters: DataAccess.CreateDefinitionParameters =
                     { EntryId = EntryId.value data.EntryId
                       DefinitionText = data.Text
                       Source = fromDefinitionSource data.Source

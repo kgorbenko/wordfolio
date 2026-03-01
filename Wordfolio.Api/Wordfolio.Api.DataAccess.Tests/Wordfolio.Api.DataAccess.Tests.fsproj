@@ -47,7 +47,7 @@
     <Compile Include="Entries/DeleteEntryTests.fs" />
     <Compile Include="Entries/HasVocabularyAccessTests.fs" />
     <Compile Include="Entries/HasVocabularyAccessInCollectionTests.fs" />
-    <Compile Include="DefinitionsTests.fs" />
+    <Compile Include="Definitions/CreateDefinitionsTests.fs" />
     <Compile Include="TranslationsTests.fs" />
     <Compile Include="ExamplesTests.fs" />
     <Compile Include="EntriesHierarchyTests.fs" />
