@@ -24,7 +24,9 @@ module DataAccess =
     type CreateVocabularyParameters = Wordfolio.Api.DataAccess.Vocabularies.CreateVocabularyParameters
     type UpdateVocabularyParameters = Wordfolio.Api.DataAccess.Vocabularies.UpdateVocabularyParameters
     type Entry = Wordfolio.Api.DataAccess.Entries.Entry
-    type EntryCreationParameters = Wordfolio.Api.DataAccess.Entries.EntryCreationParameters
+    type CreateEntryParameters = Wordfolio.Api.DataAccess.Entries.CreateEntryParameters
+    type UpdateEntryParameters = Wordfolio.Api.DataAccess.Entries.UpdateEntryParameters
+    type MoveEntryParameters = Wordfolio.Api.DataAccess.Entries.MoveEntryParameters
     type Definition = Wordfolio.Api.DataAccess.Definitions.Definition
     type DefinitionCreationParameters = Wordfolio.Api.DataAccess.Definitions.DefinitionCreationParameters
     type Translation = Wordfolio.Api.DataAccess.Translations.Translation
@@ -441,7 +443,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface ICreateEntry with
         member _.CreateEntry(data: CreateEntryData) =
             task {
-                let parameters: DataAccess.EntryCreationParameters =
+                let parameters: DataAccess.CreateEntryParameters =
                     { VocabularyId = VocabularyId.value data.VocabularyId
                       EntryText = data.EntryText
                       CreatedAt = data.CreatedAt }
@@ -539,7 +541,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface IUpdateEntry with
         member _.UpdateEntry(data: UpdateEntryData) =
             task {
-                let parameters: Wordfolio.Api.DataAccess.Entries.EntryUpdateParameters =
+                let parameters: DataAccess.UpdateEntryParameters =
                     { Id = EntryId.value data.EntryId
                       EntryText = data.EntryText
                       UpdatedAt = data.UpdatedAt }
@@ -557,7 +559,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface IMoveEntry with
         member _.MoveEntry(data: MoveEntryData) =
             task {
-                let parameters: Wordfolio.Api.DataAccess.Entries.EntryMoveParameters =
+                let parameters: DataAccess.MoveEntryParameters =
                     { Id = EntryId.value data.EntryId
                       OldVocabularyId = VocabularyId.value data.OldVocabularyId
                       NewVocabularyId = VocabularyId.value data.NewVocabularyId
