@@ -163,7 +163,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 
 ### 7. Definitions file and definitions tests
 - [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Definitions.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), remove dead test-only APIs (`getDefinitionsByEntryIdAsync`, `updateDefinitionsAsync`, `deleteDefinitionsAsync`) if unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/DefinitionsTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Definitions/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
-- [ ] Improve: Review create-definitions coverage for ordering and constraint behavior, and verify removed dead API tests were deleted in the same step.
+- [x] Improve: Review create-definitions coverage for ordering and constraint behavior, and verify removed dead API tests were deleted in the same step.
 
 ### 8. Translations file and translations tests
 - [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Translations.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), remove dead test-only APIs (`getTranslationsByEntryIdAsync`, `updateTranslationsAsync`, `deleteTranslationsAsync`) if unreferenced, update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/TranslationsTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Translations/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
@@ -256,3 +256,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Renamed definitions create input type to `CreateDefinitionParameters`, inlined insert table declaration into `createDefinitionsAsync`, and removed dead test-only APIs (`getDefinitionsByEntryIdAsync`, `updateDefinitionsAsync`, `deleteDefinitionsAsync`) that had no production call paths. Split monolithic definitions tests into a self-contained function-focused `Definitions/CreateDefinitionsTests.fs` file, updated test project includes, and adjusted the examples cascade test to avoid relying on removed dead APIs.
 - Issues encountered: None
 - Learnings: When dead data-access APIs are removed, any cross-module tests using them should be updated in the same step so the refactor stays parity-preserving and keeps test intent while eliminating test-only production surface area.
+
+### Review create-definitions coverage and dead API test removal
+- Files changed: `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Definitions/CreateDefinitionsTests.fs`, `docs/data-access-refactoring/spec.md`
+- What was done: Reviewed definitions improve concerns and confirmed dead API tests are no longer present by validating only `Definitions/CreateDefinitionsTests.fs` remains for definitions data access tests. Added a targeted ordering-parity test that verifies `createDefinitionsAsync` returns IDs in the same order as input parameters while keeping existing foreign-key and unique-constraint coverage intact.
+- Issues encountered: None
+- Learnings: For bulk-insert functions, pairing constraint tests with an explicit output-order assertion keeps improve-step coverage aligned with parity goals without changing production logic.

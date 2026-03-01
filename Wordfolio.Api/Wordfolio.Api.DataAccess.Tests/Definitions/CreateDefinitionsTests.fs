@@ -155,3 +155,70 @@ type CreateDefinitionsTests(fixture: WordfolioTestFixture) =
 
             Assert.Equal(SqlErrorCodes.UniqueViolation, ex.SqlState)
         }
+
+    [<Fact>]
+    member _.``createDefinitionsAsync returns ids in the same order as input parameters``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 402
+
+            let collection =
+                Entities.makeCollection user "Collection 1" None createdAt None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+
+            let entry =
+                Entities.makeEntry vocabulary "ordered" createdAt None
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            let parameters: Definitions.CreateDefinitionParameters list =
+                [ { EntryId = entry.Id
+                    DefinitionText = "Third"
+                    Source = Definitions.DefinitionSource.Manual
+                    DisplayOrder = 3 }
+                  { EntryId = entry.Id
+                    DefinitionText = "First"
+                    Source = Definitions.DefinitionSource.Api
+                    DisplayOrder = 1 }
+                  { EntryId = entry.Id
+                    DefinitionText = "Second"
+                    Source = Definitions.DefinitionSource.Manual
+                    DisplayOrder = 2 } ]
+
+            let! createdIds =
+                Definitions.createDefinitionsAsync parameters
+                |> fixture.WithConnectionAsync
+
+            let! actualDefinitions =
+                fixture.Seeder
+                |> Seeder.getAllDefinitionsAsync
+
+            let definitionsById =
+                actualDefinitions
+                |> List.map(fun definition -> definition.Id, definition)
+                |> Map.ofList
+
+            let createdDefinitions =
+                createdIds
+                |> List.map(fun id -> definitionsById.[id])
+
+            let actualDisplayOrders =
+                createdDefinitions
+                |> List.map(fun definition -> definition.DisplayOrder)
+
+            let actualDefinitionTexts =
+                createdDefinitions
+                |> List.map(fun definition -> definition.DefinitionText)
+
+            Assert.Equal<int list>([ 3; 1; 2 ], actualDisplayOrders)
+            Assert.Equal<string list>([ "Third"; "First"; "Second" ], actualDefinitionTexts)
+        }
