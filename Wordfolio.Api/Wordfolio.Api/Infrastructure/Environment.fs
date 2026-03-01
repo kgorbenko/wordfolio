@@ -30,7 +30,7 @@ module DataAccess =
     type Definition = Wordfolio.Api.DataAccess.Definitions.Definition
     type CreateDefinitionParameters = Wordfolio.Api.DataAccess.Definitions.CreateDefinitionParameters
     type Translation = Wordfolio.Api.DataAccess.Translations.Translation
-    type TranslationCreationParameters = Wordfolio.Api.DataAccess.Translations.TranslationCreationParameters
+    type CreateTranslationParameters = Wordfolio.Api.DataAccess.Translations.CreateTranslationParameters
     type Example = Wordfolio.Api.DataAccess.Examples.Example
     type ExampleCreationParameters = Wordfolio.Api.DataAccess.Examples.ExampleCreationParameters
 
@@ -480,7 +480,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     interface ICreateTranslation with
         member _.CreateTranslation(data: CreateTranslationData) =
             task {
-                let parameters: DataAccess.TranslationCreationParameters =
+                let parameters: DataAccess.CreateTranslationParameters =
                     { EntryId = EntryId.value data.EntryId
                       TranslationText = data.Text
                       Source = fromTranslationSource data.Source

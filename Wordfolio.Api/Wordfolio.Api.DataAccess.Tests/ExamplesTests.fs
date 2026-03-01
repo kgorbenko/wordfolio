@@ -662,7 +662,7 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
         }
 
     [<Fact>]
-    member _.``deleting translation cascades to delete examples``() =
+    member _.``deleting entry cascades through translations to delete examples``() =
         task {
             do! fixture.ResetDatabaseAsync()
 
@@ -692,7 +692,7 @@ type ExamplesTests(fixture: WordfolioTestFixture) =
                 |> Seeder.saveChangesAsync
 
             let! _ =
-                Translations.deleteTranslationsAsync [ translation.Id ]
+                Entries.deleteEntryAsync entry.Id
                 |> fixture.WithConnectionAsync
 
             let! actualExamples =

@@ -48,7 +48,7 @@
     <Compile Include="Entries/HasVocabularyAccessTests.fs" />
     <Compile Include="Entries/HasVocabularyAccessInCollectionTests.fs" />
     <Compile Include="Definitions/CreateDefinitionsTests.fs" />
-    <Compile Include="TranslationsTests.fs" />
+    <Compile Include="Translations/CreateTranslationsTests.fs" />
     <Compile Include="ExamplesTests.fs" />
     <Compile Include="EntriesHierarchyTests.fs" />
   </ItemGroup>
