@@ -147,7 +147,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 
 ### 3. Collections file and collections tests
 - [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Collections.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Collections/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
-- [ ] Improve: Review for missing filtering and constraint coverage (`IsSystem`, foreign-key failures, non-existent ids) and keep each test file self-contained.
+- [x] Improve: Review for missing filtering and constraint coverage (`IsSystem`, foreign-key failures, non-existent ids) and keep each test file self-contained.
 
 ### 4. CollectionsHierarchy file and collections hierarchy tests
 - [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/CollectionsHierarchy.fs` (naming alignment to domain hierarchy types, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/Infrastructure/Environment.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchyTests.fs` into function-focused files under `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/CollectionsHierarchy/`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
@@ -208,3 +208,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Renamed collection data access parameter records to `CreateCollectionParameters` and `UpdateCollectionParameters` to align with domain naming, and inlined table declarations into each collection function while keeping query behavior unchanged. Split monolithic collections tests into self-contained, function-focused files under `Collections/` and updated the test project compile includes accordingly.
 - Issues encountered: None
 - Learnings: Collections function-level test splitting maps cleanly to one file per public data access function, and local table declarations remove shared module state without changing SQL behavior.
+
+### Review collections filtering and constraint coverage
+- Files changed: `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Collections/CreateDefaultCollectionTests.fs`, `docs/data-access-refactoring/spec.md`
+- What was done: Reviewed all split collections test files for `IsSystem` filtering and non-existent-id behavior coverage, and added a missing foreign-key constraint test for `createDefaultCollectionAsync` with a non-existent user. Kept the test self-contained with its own fixture reset, inputs, and assertions.
+- Issues encountered: None
+- Learnings: Improve steps can stay narrowly targeted by only filling concrete coverage gaps found during review while preserving existing behavior-focused assertions.

@@ -1,7 +1,9 @@
 namespace Wordfolio.Api.DataAccess.Tests
 
 open System
+open System.Threading.Tasks
 
+open Npgsql
 open Xunit
 
 open Wordfolio.Api.DataAccess
@@ -49,4 +51,25 @@ type CreateDefaultCollectionTests(fixture: WordfolioTestFixture) =
                       IsSystem = true }
 
             Assert.Equivalent(expected, actualCollection)
+        }
+
+    [<Fact>]
+    member _.``createDefaultCollectionAsync fails with foreign key violation for non-existent user``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let! ex =
+                Assert.ThrowsAsync<PostgresException>(fun () ->
+                    (Collections.createDefaultCollectionAsync
+                        { UserId = 999
+                          Name = "Unsorted"
+                          Description = None
+                          CreatedAt = createdAt }
+                     |> fixture.WithConnectionAsync
+                    :> Task))
+
+            Assert.Equal(SqlErrorCodes.ForeignKeyViolation, ex.SqlState)
         }
