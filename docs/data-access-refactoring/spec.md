@@ -139,7 +139,7 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 
 ### 1. Database module cleanup
 - [x] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Database.fs` by removing dead private helpers; if the file becomes empty, delete it and remove its compile include from `Wordfolio.Api/Wordfolio.Api.DataAccess/Wordfolio.Api.DataAccess.fsproj`.
-- [ ] Improve: Verify there are no remaining references to `Wordfolio.Api.DataAccess.Database` and confirm this cleanup is purely structural.
+- [x] Improve: Verify there are no remaining references to `Wordfolio.Api.DataAccess.Database` and confirm this cleanup is purely structural.
 
 ### 2. Users file and users tests
 - [ ] Implement: Refactor `Wordfolio.Api/Wordfolio.Api.DataAccess/Users.fs` (naming alignment, table declaration inlining, `[<CLIMutable>]` review), update `Wordfolio.Api/Wordfolio.Api/IdentityIntegration.fs` call sites, split `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/UsersTests.fs` into `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Users/CreateUserTests.fs`, and update `Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/Wordfolio.Api.DataAccess.Tests.fsproj`.
@@ -184,3 +184,9 @@ Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/
 - What was done: Removed the unused `Database.fs` module because it only contained dead private helpers with no consumers. Deleted its compile include from the data access project file.
 - Issues encountered: None
 - Learnings: This module had no production or test call paths, so removing the file and fsproj include is the clean parity-preserving outcome for dead private helper cleanup.
+
+### Verify no remaining Database module references
+- Files changed: `docs/data-access-refactoring/spec.md`
+- What was done: Searched the repository for `Wordfolio.Api.DataAccess.Database` references and found none outside this spec text. Confirmed the prior Database cleanup remains a structural-only change with no behavior impact.
+- Issues encountered: None
+- Learnings: A repo-wide symbol search is sufficient to validate dead-module cleanup for this module because the removed code had no runtime call paths.
