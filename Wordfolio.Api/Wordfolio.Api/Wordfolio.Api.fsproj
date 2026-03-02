@@ -22,7 +22,9 @@
     <Compile Include="Api\Auth\Types.fs" />
     <Compile Include="Api\Auth\Mappers.fs" />
     <Compile Include="Api\Auth\Handlers.fs" />
-    <Compile Include="Handlers\Collections.fs" />
+    <Compile Include="Api\Collections\Types.fs" />
+    <Compile Include="Api\Collections\Mappers.fs" />
+    <Compile Include="Api\Collections\Handlers.fs" />
     <Compile Include="Handlers\CollectionsHierarchy.fs" />
     <Compile Include="Handlers\Vocabularies.fs" />
     <Compile Include="Handlers\Entries.fs" />

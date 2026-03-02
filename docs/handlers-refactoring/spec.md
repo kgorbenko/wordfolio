@@ -114,7 +114,7 @@ Modify:
 - [x] Improve: Review Auth migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 2. Collections Feature
-- [ ] Implement: Migrate Collections feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- [x] Implement: Migrate Collections feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
 - [ ] Improve: Review Collections migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 3. CollectionsHierarchy Feature
@@ -150,3 +150,9 @@ Modify:
 - What was done: Reviewed the migrated Auth slice against namespace, feature-boundary, API-contract, and compile-order rules and confirmed it already complied without requiring code changes. Re-ran `dotnet fantomas . && dotnet build && dotnet test` to verify no regressions.
 - Issues encountered: None
 - Learnings: The Auth migration is already aligned with the vertical-slice contracts, so future iterations can focus on migrating the remaining handlers while preserving the same endpoint compatibility checks.
+
+### Implement: Migrate Collections feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- Files changed: Wordfolio.Api/Wordfolio.Api/Api/Collections/Types.fs, Wordfolio.Api/Wordfolio.Api/Api/Collections/Mappers.fs, Wordfolio.Api/Wordfolio.Api/Api/Collections/Handlers.fs, Wordfolio.Api/Wordfolio.Api/Api/Helpers.fs, Wordfolio.Api/Wordfolio.Api/Handlers/Collections.fs, Wordfolio.Api/Wordfolio.Api/Program.fs, Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj, Wordfolio.Api/Wordfolio.Api.Tests/CollectionsTests.fs, docs/handlers-refactoring/spec.md
+- What was done: Migrated Collections into `Api/Collections` with separated transport types, pure mappers, and handler endpoint composition while preserving routes, auth, status codes, and payload contracts. Updated compile order and endpoint imports to reference the new slice and moved shared `getUserId` plus fail-fast unit-result handling into root `Api/Helpers.fs`.
+- Issues encountered: None
+- Learnings: Feature migrations should centralize shared handler utilities in `Api/Helpers.fs` during the first migration that needs them, which reduces duplication and keeps upcoming feature moves within dependency rules.
