@@ -10,10 +10,11 @@ open Microsoft.AspNetCore.Routing
 
 open Npgsql
 
+open Wordfolio.Api.Api.Entries.Mappers
+open Wordfolio.Api.Api.Entries.Types
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations
-open Wordfolio.Api.Handlers.Entries
 open Wordfolio.Api.Infrastructure.Environment
 
 module EntryUrls = Wordfolio.Api.Urls.Entries
