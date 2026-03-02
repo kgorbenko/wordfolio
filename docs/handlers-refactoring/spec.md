@@ -118,7 +118,7 @@ Modify:
 - [x] Improve: Review Collections migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 3. CollectionsHierarchy Feature
-- [ ] Implement: Migrate CollectionsHierarchy feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- [x] Implement: Migrate CollectionsHierarchy feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
 - [ ] Improve: Review CollectionsHierarchy migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 4. Vocabularies Feature
@@ -162,3 +162,9 @@ Modify:
 - What was done: Reviewed the Collections slice against the vertical file structure, feature dependency boundaries, API-contract compatibility requirements, and fail-fast helper rule; no additional code changes were required because the migration already complied. Re-ran `dotnet fantomas . && dotnet build && dotnet test` to verify formatting, compilation, and test stability.
 - Issues encountered: None
 - Learnings: The Collections slice now serves as a stable reference for remaining feature migrations by demonstrating the expected separation of types, pure mappers, thin handlers, and root helper reuse without cross-feature API imports.
+
+### Implement: Migrate CollectionsHierarchy feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- Files changed: Wordfolio.Api/Wordfolio.Api/Api/CollectionsHierarchy/Types.fs, Wordfolio.Api/Wordfolio.Api/Api/CollectionsHierarchy/Mappers.fs, Wordfolio.Api/Wordfolio.Api/Api/CollectionsHierarchy/Handlers.fs, Wordfolio.Api/Wordfolio.Api/Handlers/CollectionsHierarchy.fs, Wordfolio.Api/Wordfolio.Api/Program.fs, Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj, Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchyTests.fs, docs/handlers-refactoring/spec.md
+- What was done: Migrated CollectionsHierarchy into `Api/CollectionsHierarchy` by extracting transport contracts and pure mapping/query conversion functions into dedicated Types and Mappers modules, then wired endpoint composition in the new Handlers module. Updated compile order and Program imports to use the new slice, removed the legacy flat handler file, and replaced unit-result default fallbacks with shared fail-fast helper usage.
+- Issues encountered: None
+- Learnings: For hierarchy endpoints with unit-error operation results, `Api/Helpers.failOnUnitError` preserves structural refactoring goals while aligning with the explicit fail-fast rule and avoiding hidden fallback payloads.
