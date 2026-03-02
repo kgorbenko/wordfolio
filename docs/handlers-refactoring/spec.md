@@ -123,7 +123,7 @@ Modify:
 
 ### 4. Vocabularies Feature
 - [x] Implement: Migrate Vocabularies feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
-- [ ] Improve: Review Vocabularies migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- [x] Improve: Review Vocabularies migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 5. Entries Feature
 - [ ] Implement: Migrate Entries feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
@@ -180,3 +180,9 @@ Modify:
 - What was done: Migrated Vocabularies into `Api/Vocabularies` by extracting transport contracts and pure mapping functions into dedicated Types and Mappers modules and keeping endpoint composition plus error-to-response mapping in the new Handlers module. Updated compile order and Program imports to use the new vertical slice, removed the legacy flat handler file, and kept all route/auth/status/payload behavior unchanged.
 - Issues encountered: None
 - Learnings: The Vocabularies migration follows the same stable feature pattern as prior slices, and test updates were limited to namespace/type import relocation because API wire contracts remained intact.
+
+### Improve: Review Vocabularies migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- Files changed: docs/handlers-refactoring/spec.md
+- What was done: Reviewed the Vocabularies slice against vertical structure, feature-boundary constraints, API-compatibility requirements, and handler/type/mapper separation rules and confirmed it already complied without requiring code changes. Re-ran `dotnet fantomas . && dotnet build && dotnet test` to verify formatting, compilation, and full test stability.
+- Issues encountered: None
+- Learnings: The Vocabularies slice is a clean baseline for remaining migrations, showing that preserving route and response contracts can coexist with strict feature isolation and explicit API contracts.
