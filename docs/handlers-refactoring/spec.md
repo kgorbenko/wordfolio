@@ -110,7 +110,7 @@ Modify:
 ## Implementation Steps
 
 ### 1. Auth Feature
-- [ ] Implement: Migrate Auth feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- [x] Implement: Migrate Auth feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
 - [ ] Improve: Review Auth migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 2. Collections Feature
@@ -139,4 +139,8 @@ Modify:
 
 ## Progress Log
 
-_No entries yet._
+### Implement: Migrate Auth feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- Files changed: Wordfolio.Api/Wordfolio.Api/Api/Types.fs, Wordfolio.Api/Wordfolio.Api/Api/Mappers.fs, Wordfolio.Api/Wordfolio.Api/Api/Helpers.fs, Wordfolio.Api/Wordfolio.Api/Api/Auth/Types.fs, Wordfolio.Api/Wordfolio.Api/Api/Auth/Mappers.fs, Wordfolio.Api/Wordfolio.Api/Api/Auth/Handlers.fs, Wordfolio.Api/Wordfolio.Api/Handlers/Auth.fs, Wordfolio.Api/Wordfolio.Api/Program.fs, Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj, Wordfolio.Api/Wordfolio.Api.Tests/AuthTests.fs, docs/handlers-refactoring/spec.md
+- What was done: Migrated the Auth handler into the new vertical slice under Api/Auth with transport types and pure mapper extraction, and introduced root Api shared files required by the compile-order contract. Updated Program and project compile includes to use the new Auth handler module and removed the old flat handler file.
+- Issues encountered: None
+- Learnings: Root Api files must be introduced early (even if minimal) so future feature slices can depend on them without compile-order churn; Auth tests only needed namespace cleanup because endpoint contracts remained unchanged.

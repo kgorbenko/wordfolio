@@ -8,7 +8,6 @@ open System.Threading.Tasks
 open Xunit
 
 open Wordfolio.Api
-open Wordfolio.Api.Handlers.Auth
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 

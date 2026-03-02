@@ -7,7 +7,7 @@ open Microsoft.Extensions.Hosting
 open Wordfolio.Api
 open Wordfolio.Api.Configuration.GroqApi
 open Wordfolio.Api.DataAccess
-open Wordfolio.Api.Handlers.Auth
+open Wordfolio.Api.Api.Auth.Handlers
 open Wordfolio.Api.Handlers.Collections
 open Wordfolio.Api.Handlers.CollectionsHierarchy
 open Wordfolio.Api.Handlers.Dictionary
