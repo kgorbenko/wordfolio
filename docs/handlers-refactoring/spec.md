@@ -135,7 +135,7 @@ Modify:
 
 ### 7. Dictionary Feature
 - [x] Implement: Migrate Dictionary feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
-- [ ] Improve: Review Dictionary migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- [x] Improve: Review Dictionary migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ## Progress Log
 
@@ -216,3 +216,9 @@ Modify:
 - What was done: Migrated Dictionary into `Api/Dictionary` by splitting endpoint composition, prompt-mapping logic, and transport contract types across dedicated Handlers, Mappers, and Types modules while preserving lookup route, auth requirements, SSE event framing, status codes, and payload shapes. Updated compile order and Program imports to use the new slice and removed the legacy flat Dictionary handler file.
 - Issues encountered: Initial build failed because a mapper function exposed a less-accessible stream event type; resolved by keeping stream event-to-SSE conversion inside Dictionary handlers.
 - Learnings: Dictionary migration confirms that even streaming endpoints can follow the vertical slice layout by moving pure prompt construction into feature mappers while leaving infrastructure event handling in handlers.
+
+### Improve: Review Dictionary migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- Files changed: Wordfolio.Api/Wordfolio.Api/Api/Dictionary/Mappers.fs, docs/handlers-refactoring/spec.md
+- What was done: Reviewed the Dictionary slice against namespace alignment, feature dependency rules, and mapper purity constraints, then removed an unused infrastructure-layer import from `Api/Dictionary/Mappers.fs` to keep the mapper module strictly feature-local and pure. Re-ran `dotnet fantomas . && dotnet build && dotnet test` to verify formatting, compilation, and full test stability.
+- Issues encountered: None
+- Learnings: Improvement passes are valuable for trimming migration residue like unnecessary opens, which helps enforce the vertical-slice dependency boundary without changing endpoint behavior.
