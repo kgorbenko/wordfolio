@@ -115,7 +115,7 @@ Modify:
 
 ### 2. Collections Feature
 - [x] Implement: Migrate Collections feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
-- [ ] Improve: Review Collections migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- [x] Improve: Review Collections migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 3. CollectionsHierarchy Feature
 - [ ] Implement: Migrate CollectionsHierarchy feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
@@ -156,3 +156,9 @@ Modify:
 - What was done: Migrated Collections into `Api/Collections` with separated transport types, pure mappers, and handler endpoint composition while preserving routes, auth, status codes, and payload contracts. Updated compile order and endpoint imports to reference the new slice and moved shared `getUserId` plus fail-fast unit-result handling into root `Api/Helpers.fs`.
 - Issues encountered: None
 - Learnings: Feature migrations should centralize shared handler utilities in `Api/Helpers.fs` during the first migration that needs them, which reduces duplication and keeps upcoming feature moves within dependency rules.
+
+### Improve: Review Collections migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- Files changed: docs/handlers-refactoring/spec.md
+- What was done: Reviewed the Collections slice against the vertical file structure, feature dependency boundaries, API-contract compatibility requirements, and fail-fast helper rule; no additional code changes were required because the migration already complied. Re-ran `dotnet fantomas . && dotnet build && dotnet test` to verify formatting, compilation, and test stability.
+- Issues encountered: None
+- Learnings: The Collections slice now serves as a stable reference for remaining feature migrations by demonstrating the expected separation of types, pure mappers, thin handlers, and root helper reuse without cross-feature API imports.
