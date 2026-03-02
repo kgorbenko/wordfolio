@@ -1,4 +1,4 @@
-module Wordfolio.Api.Handlers.Drafts
+module Wordfolio.Api.Api.Drafts.Handlers
 
 open System
 open System.Security.Claims
@@ -10,43 +10,18 @@ open Microsoft.AspNetCore.Routing
 
 open Npgsql
 
+open Wordfolio.Api.Api.Drafts.Mappers
+open Wordfolio.Api.Api.Drafts
+open Wordfolio.Api.Api.Helpers
+open Wordfolio.Api.Api.Mappers
+open Wordfolio.Api.Api
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations
-open Wordfolio.Api.Handlers.Entries
 open Wordfolio.Api.Infrastructure.Environment
 
-module EntryUrls = Wordfolio.Api.Urls.Entries
 module UrlTokens = Wordfolio.Api.Urls
 module Urls = Wordfolio.Api.Urls.Drafts
-
-type CreateDraftRequest =
-    { EntryText: string
-      Definitions: DefinitionRequest list
-      Translations: TranslationRequest list
-      AllowDuplicate: bool option }
-
-type VocabularyResponse =
-    { Id: int
-      Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
-
-type DraftsResponse =
-    { Vocabulary: VocabularyResponse
-      Entries: EntryResponse list }
-
-let private getUserId(user: ClaimsPrincipal) : int option =
-    let claim =
-        user.FindFirst(ClaimTypes.NameIdentifier)
-
-    match claim with
-    | null -> None
-    | c ->
-        match Int32.TryParse(c.Value) with
-        | true, id -> Some id
-        | false, _ -> None
 
 let private toCreateErrorResponse(error: CreateDraftEntryError) : IResult =
     match error with
@@ -105,23 +80,13 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
 
                         let! result = getDrafts env { UserId = UserId userId }
 
-                        return
-                            match result with
-                            | Error _ -> Results.StatusCode(StatusCodes.Status500InternalServerError)
-                            | Ok None -> Results.NotFound()
-                            | Ok(Some drafts) ->
-                                let response: DraftsResponse =
-                                    { Vocabulary =
-                                        { Id = VocabularyId.value drafts.Vocabulary.Id
-                                          Name = drafts.Vocabulary.Name
-                                          Description = drafts.Vocabulary.Description
-                                          CreatedAt = drafts.Vocabulary.CreatedAt
-                                          UpdatedAt = drafts.Vocabulary.UpdatedAt }
-                                      Entries =
-                                        drafts.Entries
-                                        |> List.map toEntryResponse }
+                        let drafts =
+                            failOnUnitError "Drafts.getDrafts" result
 
-                                Results.Ok(response)
+                        return
+                            match drafts with
+                            | None -> Results.NotFound()
+                            | Some data -> Results.Ok(toDraftsResponse data)
                 })
         )
         .RequireAuthorization()

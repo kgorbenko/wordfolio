@@ -1,4 +1,4 @@
-module Wordfolio.Api.Handlers.Collections
+module Wordfolio.Api.Api.Collections.Handlers
 
 open System
 open System.Security.Claims
@@ -10,6 +10,10 @@ open Microsoft.AspNetCore.Routing
 
 open Npgsql
 
+open Wordfolio.Api
+open Wordfolio.Api.Api.Collections.Mappers
+open Wordfolio.Api.Api.Collections
+open Wordfolio.Api.Api.Helpers
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.Collections.Operations
@@ -17,39 +21,6 @@ open Wordfolio.Api.Infrastructure.Environment
 
 module UrlTokens = Wordfolio.Api.Urls
 module Urls = Wordfolio.Api.Urls.Collections
-
-type CollectionResponse =
-    { Id: int
-      Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
-
-type CreateCollectionRequest =
-    { Name: string
-      Description: string option }
-
-type UpdateCollectionRequest =
-    { Name: string
-      Description: string option }
-
-let private toResponse(collection: Collection) : CollectionResponse =
-    { Id = CollectionId.value collection.Id
-      Name = collection.Name
-      Description = collection.Description
-      CreatedAt = collection.CreatedAt
-      UpdatedAt = collection.UpdatedAt }
-
-let private getUserId(user: ClaimsPrincipal) : int option =
-    let claim =
-        user.FindFirst(ClaimTypes.NameIdentifier)
-
-    match claim with
-    | null -> None
-    | c ->
-        match Int32.TryParse(c.Value) with
-        | true, id -> Some id
-        | false, _ -> None
 
 let private toGetByIdErrorResponse(error: GetCollectionByIdError) : IResult =
     match error with
@@ -90,9 +61,13 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
                         let! result = getByUserId env { UserId = UserId userId }
 
                         let collections =
-                            Result.defaultValue [] result
+                            failOnUnitError "Collections.getByUserId" result
 
-                        return Results.Ok(collections |> List.map toResponse)
+                        return
+                            Results.Ok(
+                                collections
+                                |> List.map toCollectionResponse
+                            )
                 })
         )
         .Produces<CollectionResponse list>(StatusCodes.Status200OK)
@@ -119,7 +94,7 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
 
                             return
                                 match result with
-                                | Ok collection -> Results.Ok(toResponse collection)
+                                | Ok collection -> Results.Ok(toCollectionResponse collection)
                                 | Error error -> toGetByIdErrorResponse error
                     })
         )
@@ -154,7 +129,7 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
                                 | Ok collection ->
                                     Results.Created(
                                         Urls.collectionById(CollectionId.value collection.Id),
-                                        toResponse collection
+                                        toCollectionResponse collection
                                     )
                                 | Error error -> toCreateErrorResponse error
                     })
@@ -187,7 +162,7 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
 
                             return
                                 match result with
-                                | Ok collection -> Results.Ok(toResponse collection)
+                                | Ok collection -> Results.Ok(toCollectionResponse collection)
                                 | Error error -> toUpdateErrorResponse error
                     })
         )

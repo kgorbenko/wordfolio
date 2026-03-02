@@ -1,8 +1,7 @@
-module Wordfolio.Api.Handlers.Entries
+module Wordfolio.Api.Api.Entries.Handlers
 
 open System
 open System.Security.Claims
-open System.Text.Json.Serialization
 open System.Threading
 
 open Microsoft.AspNetCore.Builder
@@ -11,6 +10,11 @@ open Microsoft.AspNetCore.Routing
 
 open Npgsql
 
+open Wordfolio.Api
+open Wordfolio.Api.Api
+open Wordfolio.Api.Api.Entries.Mappers
+open Wordfolio.Api.Api.Entries
+open Wordfolio.Api.Api.Helpers
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.EntryOperations
@@ -18,173 +22,6 @@ open Wordfolio.Api.Infrastructure.Environment
 
 module UrlTokens = Wordfolio.Api.Urls
 module Urls = Wordfolio.Api.Urls.Entries
-
-type DefinitionSourceDto =
-    | Api = 0
-    | Manual = 1
-
-type TranslationSourceDto =
-    | Api = 0
-    | Manual = 1
-
-type ExampleSourceDto =
-    | Api = 0
-    | Custom = 1
-
-type ExampleRequest =
-    { ExampleText: string
-      [<JsonConverter(typeof<JsonStringEnumConverter>)>]
-      Source: ExampleSourceDto }
-
-type DefinitionRequest =
-    { DefinitionText: string
-      [<JsonConverter(typeof<JsonStringEnumConverter>)>]
-      Source: DefinitionSourceDto
-      Examples: ExampleRequest list }
-
-type TranslationRequest =
-    { TranslationText: string
-      [<JsonConverter(typeof<JsonStringEnumConverter>)>]
-      Source: TranslationSourceDto
-      Examples: ExampleRequest list }
-
-type CreateEntryRequest =
-    { EntryText: string
-      Definitions: DefinitionRequest list
-      Translations: TranslationRequest list
-      AllowDuplicate: bool option }
-
-type UpdateEntryRequest =
-    { EntryText: string
-      Definitions: DefinitionRequest list
-      Translations: TranslationRequest list }
-
-type MoveEntryRequest = { VocabularyId: int }
-
-type ExampleResponse =
-    { Id: int
-      ExampleText: string
-      [<JsonConverter(typeof<JsonStringEnumConverter>)>]
-      Source: ExampleSourceDto }
-
-type DefinitionResponse =
-    { Id: int
-      DefinitionText: string
-      [<JsonConverter(typeof<JsonStringEnumConverter>)>]
-      Source: DefinitionSourceDto
-      DisplayOrder: int
-      Examples: ExampleResponse list }
-
-type TranslationResponse =
-    { Id: int
-      TranslationText: string
-      [<JsonConverter(typeof<JsonStringEnumConverter>)>]
-      Source: TranslationSourceDto
-      DisplayOrder: int
-      Examples: ExampleResponse list }
-
-type EntryResponse =
-    { Id: int
-      VocabularyId: int
-      EntryText: string
-      CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
-      Definitions: DefinitionResponse list
-      Translations: TranslationResponse list }
-
-let private toDefinitionSourceDomain(source: DefinitionSourceDto) : DefinitionSource =
-    match source with
-    | DefinitionSourceDto.Api -> DefinitionSource.Api
-    | DefinitionSourceDto.Manual -> DefinitionSource.Manual
-    | _ -> DefinitionSource.Manual
-
-let private toTranslationSourceDomain(source: TranslationSourceDto) : TranslationSource =
-    match source with
-    | TranslationSourceDto.Api -> TranslationSource.Api
-    | TranslationSourceDto.Manual -> TranslationSource.Manual
-    | _ -> TranslationSource.Manual
-
-let private toExampleSourceDomain(source: ExampleSourceDto) : ExampleSource =
-    match source with
-    | ExampleSourceDto.Api -> ExampleSource.Api
-    | ExampleSourceDto.Custom -> ExampleSource.Custom
-    | _ -> ExampleSource.Custom
-
-let private toExampleSourceDto(source: ExampleSource) : ExampleSourceDto =
-    match source with
-    | ExampleSource.Api -> ExampleSourceDto.Api
-    | ExampleSource.Custom -> ExampleSourceDto.Custom
-
-let private toDefinitionSourceDto(source: DefinitionSource) : DefinitionSourceDto =
-    match source with
-    | DefinitionSource.Api -> DefinitionSourceDto.Api
-    | DefinitionSource.Manual -> DefinitionSourceDto.Manual
-
-let private toTranslationSourceDto(source: TranslationSource) : TranslationSourceDto =
-    match source with
-    | TranslationSource.Api -> TranslationSourceDto.Api
-    | TranslationSource.Manual -> TranslationSourceDto.Manual
-
-let toExampleInput(req: ExampleRequest) : ExampleInput =
-    { ExampleText = req.ExampleText
-      Source = toExampleSourceDomain req.Source }
-
-let toDefinitionInput(req: DefinitionRequest) : DefinitionInput =
-    { DefinitionText = req.DefinitionText
-      Source = toDefinitionSourceDomain req.Source
-      Examples = req.Examples |> List.map toExampleInput }
-
-let toTranslationInput(req: TranslationRequest) : TranslationInput =
-    { TranslationText = req.TranslationText
-      Source = toTranslationSourceDomain req.Source
-      Examples = req.Examples |> List.map toExampleInput }
-
-let private toExampleResponse(ex: Example) : ExampleResponse =
-    { Id = ExampleId.value ex.Id
-      ExampleText = ex.ExampleText
-      Source = toExampleSourceDto ex.Source }
-
-let private toDefinitionResponse(def: Definition) : DefinitionResponse =
-    { Id = DefinitionId.value def.Id
-      DefinitionText = def.DefinitionText
-      Source = toDefinitionSourceDto def.Source
-      DisplayOrder = def.DisplayOrder
-      Examples =
-        def.Examples
-        |> List.map toExampleResponse }
-
-let private toTranslationResponse(trans: Translation) : TranslationResponse =
-    { Id = TranslationId.value trans.Id
-      TranslationText = trans.TranslationText
-      Source = toTranslationSourceDto trans.Source
-      DisplayOrder = trans.DisplayOrder
-      Examples =
-        trans.Examples
-        |> List.map toExampleResponse }
-
-let toEntryResponse(entry: Entry) : EntryResponse =
-    { Id = EntryId.value entry.Id
-      VocabularyId = VocabularyId.value entry.VocabularyId
-      EntryText = entry.EntryText
-      CreatedAt = entry.CreatedAt
-      UpdatedAt = entry.UpdatedAt
-      Definitions =
-        entry.Definitions
-        |> List.map toDefinitionResponse
-      Translations =
-        entry.Translations
-        |> List.map toTranslationResponse }
-
-let private getUserId(user: ClaimsPrincipal) : int option =
-    let claim =
-        user.FindFirst(ClaimTypes.NameIdentifier)
-
-    match claim with
-    | null -> None
-    | c ->
-        match Int32.TryParse(c.Value) with
-        | true, id -> Some id
-        | false, _ -> None
 
 let private toGetByVocabularyIdErrorResponse(error: GetEntriesByVocabularyIdError) : IResult =
     match error with

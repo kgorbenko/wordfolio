@@ -7,11 +7,9 @@ open System.Threading.Tasks
 
 open Xunit
 
-open Wordfolio.Api.Handlers.Entries
+open Wordfolio.Api.Api.Entries
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
-
-module Dto = Wordfolio.Api.Handlers.Entries
 
 module Urls = Wordfolio.Api.Urls
 

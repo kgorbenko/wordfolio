@@ -7,7 +7,7 @@ open System.Threading.Tasks
 
 open Xunit
 
-open Wordfolio.Api.Handlers.Collections
+open Wordfolio.Api.Api.Collections
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
