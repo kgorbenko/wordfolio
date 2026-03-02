@@ -1,4 +1,4 @@
-module Wordfolio.Api.Api.Types
+namespace Wordfolio.Api.Api
 
 open System
 open System.Text.Json.Serialization

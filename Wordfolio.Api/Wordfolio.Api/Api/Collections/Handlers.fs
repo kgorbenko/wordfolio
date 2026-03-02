@@ -12,7 +12,7 @@ open Npgsql
 
 open Wordfolio.Api
 open Wordfolio.Api.Api.Collections.Mappers
-open Wordfolio.Api.Api.Collections.Types
+open Wordfolio.Api.Api.Collections
 open Wordfolio.Api.Api.Helpers
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections

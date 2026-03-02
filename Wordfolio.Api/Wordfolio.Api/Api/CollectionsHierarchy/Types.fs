@@ -1,4 +1,4 @@
-module Wordfolio.Api.Api.CollectionsHierarchy.Types
+namespace Wordfolio.Api.Api.CollectionsHierarchy
 
 open System
 

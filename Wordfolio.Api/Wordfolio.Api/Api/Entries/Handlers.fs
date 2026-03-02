@@ -11,9 +11,9 @@ open Microsoft.AspNetCore.Routing
 open Npgsql
 
 open Wordfolio.Api
-open Wordfolio.Api.Api.Types
+open Wordfolio.Api.Api
 open Wordfolio.Api.Api.Entries.Mappers
-open Wordfolio.Api.Api.Entries.Types
+open Wordfolio.Api.Api.Entries
 open Wordfolio.Api.Api.Helpers
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries

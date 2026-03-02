@@ -1,22 +1,20 @@
-module Wordfolio.Api.Api.Entries.Types
+namespace Wordfolio.Api.Api.Entries
 
-open Wordfolio.Api.Api.Types
+type DefinitionSourceDto = Wordfolio.Api.Api.DefinitionSourceDto
+type TranslationSourceDto = Wordfolio.Api.Api.TranslationSourceDto
+type ExampleSourceDto = Wordfolio.Api.Api.ExampleSourceDto
 
-type DefinitionSourceDto = Wordfolio.Api.Api.Types.DefinitionSourceDto
-type TranslationSourceDto = Wordfolio.Api.Api.Types.TranslationSourceDto
-type ExampleSourceDto = Wordfolio.Api.Api.Types.ExampleSourceDto
+type ExampleRequest = Wordfolio.Api.Api.ExampleRequest
+type DefinitionRequest = Wordfolio.Api.Api.DefinitionRequest
+type TranslationRequest = Wordfolio.Api.Api.TranslationRequest
 
-type ExampleRequest = Wordfolio.Api.Api.Types.ExampleRequest
-type DefinitionRequest = Wordfolio.Api.Api.Types.DefinitionRequest
-type TranslationRequest = Wordfolio.Api.Api.Types.TranslationRequest
+type UpdateEntryRequest = Wordfolio.Api.Api.UpdateEntryRequest
+type MoveEntryRequest = Wordfolio.Api.Api.MoveEntryRequest
 
-type UpdateEntryRequest = Wordfolio.Api.Api.Types.UpdateEntryRequest
-type MoveEntryRequest = Wordfolio.Api.Api.Types.MoveEntryRequest
-
-type ExampleResponse = Wordfolio.Api.Api.Types.ExampleResponse
-type DefinitionResponse = Wordfolio.Api.Api.Types.DefinitionResponse
-type TranslationResponse = Wordfolio.Api.Api.Types.TranslationResponse
-type EntryResponse = Wordfolio.Api.Api.Types.EntryResponse
+type ExampleResponse = Wordfolio.Api.Api.ExampleResponse
+type DefinitionResponse = Wordfolio.Api.Api.DefinitionResponse
+type TranslationResponse = Wordfolio.Api.Api.TranslationResponse
+type EntryResponse = Wordfolio.Api.Api.EntryResponse
 
 type CreateEntryRequest =
     { EntryText: string

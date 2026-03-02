@@ -11,10 +11,10 @@ open Microsoft.AspNetCore.Routing
 open Npgsql
 
 open Wordfolio.Api.Api.Drafts.Mappers
-open Wordfolio.Api.Api.Drafts.Types
+open Wordfolio.Api.Api.Drafts
 open Wordfolio.Api.Api.Helpers
 open Wordfolio.Api.Api.Mappers
-open Wordfolio.Api.Api.Types
+open Wordfolio.Api.Api
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations

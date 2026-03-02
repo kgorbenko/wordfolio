@@ -1,4 +1,4 @@
-module Wordfolio.Api.Api.Auth.Types
+namespace Wordfolio.Api.Api.Auth
 
 type PasswordRequirementsResponse =
     { RequiredLength: int

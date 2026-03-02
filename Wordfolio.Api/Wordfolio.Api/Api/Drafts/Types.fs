@@ -1,8 +1,8 @@
-module Wordfolio.Api.Api.Drafts.Types
+namespace Wordfolio.Api.Api.Drafts
 
 open System
 
-open Wordfolio.Api.Api.Types
+open Wordfolio.Api.Api
 
 type CreateDraftRequest =
     { EntryText: string

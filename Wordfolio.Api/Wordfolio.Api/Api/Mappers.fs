@@ -1,6 +1,6 @@
 module Wordfolio.Api.Api.Mappers
 
-open Wordfolio.Api.Api.Types
+open Wordfolio.Api.Api
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 
