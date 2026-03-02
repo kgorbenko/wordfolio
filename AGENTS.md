@@ -237,3 +237,6 @@ Every async operation must explicitly handle `Loading`, `Error`, and `Empty` sta
 Vitest + React Testing Library. Tests in `Wordfolio.Frontend/tests/`, mirroring the `src/` structure.
 
 @Wordfolio.Api/Wordfolio.Api.Domain/AGENTS.md
+@Wordfolio.Api/Wordfolio.Api.Domain.Tests/AGENTS.md
+@Wordfolio.Api/Wordfolio.Api.DataAccess/AGENTS.md
+@Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/AGENTS.md
