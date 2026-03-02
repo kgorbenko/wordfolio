@@ -130,7 +130,7 @@ Modify:
 - [x] Improve: Review Entries migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 6. Drafts Feature
-- [ ] Implement: Migrate Drafts feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- [x] Implement: Migrate Drafts feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
 - [ ] Improve: Review Drafts migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 7. Dictionary Feature
@@ -198,3 +198,9 @@ Modify:
 - What was done: Extracted shared Entries transport contracts and pure mapping helpers into root `Api/Types.fs` and `Api/Mappers.fs`, then kept `Api/Entries` as a thin feature wrapper so Entries behavior and contracts remain unchanged while Drafts no longer depends on `Api/Entries` modules. Updated Drafts to consume shared root API types/mappers/helpers and re-verified full formatting, build, and test pipeline.
 - Issues encountered: Initial compile errors surfaced missing shared request/response symbols in Drafts and Entries tests; resolved by adding root-shared contracts and preserving Entries type aliases for compatibility.
 - Learnings: When a not-yet-migrated handler shares entry payload shapes, promoting those contracts/mappers to root `Api` early removes cross-feature coupling and keeps incremental slice migrations stable.
+
+### Implement: Migrate Drafts feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- Files changed: Wordfolio.Api/Wordfolio.Api/Api/Drafts/Types.fs, Wordfolio.Api/Wordfolio.Api/Api/Drafts/Mappers.fs, Wordfolio.Api/Wordfolio.Api/Api/Drafts/Handlers.fs, Wordfolio.Api/Wordfolio.Api/Handlers/Drafts.fs, Wordfolio.Api/Wordfolio.Api/Program.fs, Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj, Wordfolio.Api/Wordfolio.Api.Tests/DraftsTests.fs, docs/handlers-refactoring/spec.md
+- What was done: Migrated Drafts into `Api/Drafts` by extracting transport contracts and pure mapping into dedicated Types and Mappers modules, then moved endpoint composition and domain-error-to-HTTP mapping into the new Drafts handlers module without changing route/method/auth/status/JSON contracts. Updated compile order and Program imports to use the new Drafts slice, removed the legacy flat Drafts handler file, and kept tests aligned with namespace relocation.
+- Issues encountered: None
+- Learnings: Drafts can now rely only on root shared `Api` contracts/mappers/helpers plus domain operations, which removes remaining API cross-feature coupling while preserving endpoint behavior.
