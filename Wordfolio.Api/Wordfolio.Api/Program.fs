@@ -10,10 +10,10 @@ open Wordfolio.Api.DataAccess
 open Wordfolio.Api.Api.Auth.Handlers
 open Wordfolio.Api.Api.Collections.Handlers
 open Wordfolio.Api.Api.CollectionsHierarchy.Handlers
+open Wordfolio.Api.Api.Dictionary.Handlers
 open Wordfolio.Api.Api.Drafts.Handlers
 open Wordfolio.Api.Api.Entries.Handlers
 open Wordfolio.Api.Api.Vocabularies.Handlers
-open Wordfolio.Api.Handlers.Dictionary
 open Wordfolio.Api.IdentityIntegration
 open Wordfolio.Api.Infrastructure.ChatClient
 open Wordfolio.Api.Infrastructure.GroqChatClient
