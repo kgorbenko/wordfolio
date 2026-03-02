@@ -1,7 +1,5 @@
 module Wordfolio.Api.Api.Dictionary.Mappers
 
-open Wordfolio.Api.Infrastructure.DelimitedStreamProcessor
-
 [<Literal>]
 let JsonDelimiter = "---JSON---"
 
