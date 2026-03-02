@@ -122,7 +122,7 @@ Modify:
 - [x] Improve: Review CollectionsHierarchy migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 4. Vocabularies Feature
-- [ ] Implement: Migrate Vocabularies feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- [x] Implement: Migrate Vocabularies feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
 - [ ] Improve: Review Vocabularies migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 5. Entries Feature
@@ -174,3 +174,9 @@ Modify:
 - What was done: Reviewed the CollectionsHierarchy slice against the rulebook and removed unused API response type aliases so the feature `Types.fs` contains only concrete transport contracts used by handlers/tests. Re-ran `dotnet fantomas . && dotnet build && dotnet test` to verify formatting, compile order integrity, and full test compatibility.
 - Issues encountered: None
 - Learnings: Improvement passes should trim leftover compatibility scaffolding (like redundant aliases) when it does not affect wire contracts, which keeps vertical slices explicit and easier to maintain.
+
+### Implement: Migrate Vocabularies feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- Files changed: Wordfolio.Api/Wordfolio.Api/Api/Vocabularies/Types.fs, Wordfolio.Api/Wordfolio.Api/Api/Vocabularies/Mappers.fs, Wordfolio.Api/Wordfolio.Api/Api/Vocabularies/Handlers.fs, Wordfolio.Api/Wordfolio.Api/Handlers/Vocabularies.fs, Wordfolio.Api/Wordfolio.Api/Program.fs, Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj, Wordfolio.Api/Wordfolio.Api.Tests/VocabulariesTests.fs, docs/handlers-refactoring/spec.md
+- What was done: Migrated Vocabularies into `Api/Vocabularies` by extracting transport contracts and pure mapping functions into dedicated Types and Mappers modules and keeping endpoint composition plus error-to-response mapping in the new Handlers module. Updated compile order and Program imports to use the new vertical slice, removed the legacy flat handler file, and kept all route/auth/status/payload behavior unchanged.
+- Issues encountered: None
+- Learnings: The Vocabularies migration follows the same stable feature pattern as prior slices, and test updates were limited to namespace/type import relocation because API wire contracts remained intact.
