@@ -1,4 +1,4 @@
-module Wordfolio.Api.Handlers.Vocabularies
+module Wordfolio.Api.Api.Vocabularies.Handlers
 
 open System
 open System.Security.Claims
@@ -10,6 +10,10 @@ open Microsoft.AspNetCore.Routing
 
 open Npgsql
 
+open Wordfolio.Api
+open Wordfolio.Api.Api.Helpers
+open Wordfolio.Api.Api.Vocabularies.Mappers
+open Wordfolio.Api.Api.Vocabularies.Types
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Vocabularies
 open Wordfolio.Api.Domain.Vocabularies.Operations
@@ -17,59 +21,6 @@ open Wordfolio.Api.Infrastructure.Environment
 
 module UrlTokens = Wordfolio.Api.Urls
 module Urls = Wordfolio.Api.Urls.Vocabularies
-
-type VocabularyResponse =
-    { Id: int
-      CollectionId: int
-      Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
-
-type VocabularyDetailResponse =
-    { Id: int
-      CollectionId: int
-      CollectionName: string
-      Name: string
-      Description: string option
-      CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
-
-type CreateVocabularyRequest =
-    { Name: string
-      Description: string option }
-
-type UpdateVocabularyRequest =
-    { Name: string
-      Description: string option }
-
-let private toResponse(vocabulary: Vocabulary) : VocabularyResponse =
-    { Id = VocabularyId.value vocabulary.Id
-      CollectionId = CollectionId.value vocabulary.CollectionId
-      Name = vocabulary.Name
-      Description = vocabulary.Description
-      CreatedAt = vocabulary.CreatedAt
-      UpdatedAt = vocabulary.UpdatedAt }
-
-let private toDetailResponse(detail: VocabularyDetail) : VocabularyDetailResponse =
-    { Id = VocabularyId.value detail.Id
-      CollectionId = CollectionId.value detail.CollectionId
-      CollectionName = detail.CollectionName
-      Name = detail.Name
-      Description = detail.Description
-      CreatedAt = detail.CreatedAt
-      UpdatedAt = detail.UpdatedAt }
-
-let private getUserId(user: ClaimsPrincipal) : int option =
-    let claim =
-        user.FindFirst(ClaimTypes.NameIdentifier)
-
-    match claim with
-    | null -> None
-    | c ->
-        match Int32.TryParse(c.Value) with
-        | true, id -> Some id
-        | false, _ -> None
 
 let private toGetByIdErrorResponse(error: GetVocabularyByIdError) : IResult =
     match error with
@@ -125,7 +76,8 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                                 match result with
                                 | Ok vocabularies ->
                                     let response =
-                                        vocabularies |> List.map toResponse
+                                        vocabularies
+                                        |> List.map toVocabularyResponse
 
                                     Results.Ok(response)
                                 | Error error -> toGetByCollectionIdErrorResponse error
@@ -162,7 +114,7 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                                 | Ok vocabulary ->
                                     Results.Created(
                                         Urls.vocabularyById(collectionId, VocabularyId.value vocabulary.Id),
-                                        toResponse vocabulary
+                                        toVocabularyResponse vocabulary
                                     )
                                 | Error error -> toCreateErrorResponse error
                     })
@@ -193,7 +145,7 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
 
                             return
                                 match result with
-                                | Ok detail -> Results.Ok(toDetailResponse detail)
+                                | Ok detail -> Results.Ok(toVocabularyDetailResponse detail)
                                 | Error error -> toGetByIdErrorResponse error
                     })
         )
@@ -226,7 +178,7 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
 
                             return
                                 match result with
-                                | Ok vocabulary -> Results.Ok(toResponse vocabulary)
+                                | Ok vocabulary -> Results.Ok(toVocabularyResponse vocabulary)
                                 | Error error -> toUpdateErrorResponse error
                     })
         )
