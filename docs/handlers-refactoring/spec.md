@@ -111,7 +111,7 @@ Modify:
 
 ### 1. Auth Feature
 - [x] Implement: Migrate Auth feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
-- [ ] Improve: Review Auth migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- [x] Improve: Review Auth migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 2. Collections Feature
 - [ ] Implement: Migrate Collections feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
@@ -144,3 +144,9 @@ Modify:
 - What was done: Migrated the Auth handler into the new vertical slice under Api/Auth with transport types and pure mapper extraction, and introduced root Api shared files required by the compile-order contract. Updated Program and project compile includes to use the new Auth handler module and removed the old flat handler file.
 - Issues encountered: None
 - Learnings: Root Api files must be introduced early (even if minimal) so future feature slices can depend on them without compile-order churn; Auth tests only needed namespace cleanup because endpoint contracts remained unchanged.
+
+### Improve: Review Auth migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- Files changed: docs/handlers-refactoring/spec.md
+- What was done: Reviewed the migrated Auth slice against namespace, feature-boundary, API-contract, and compile-order rules and confirmed it already complied without requiring code changes. Re-ran `dotnet fantomas . && dotnet build && dotnet test` to verify no regressions.
+- Issues encountered: None
+- Learnings: The Auth migration is already aligned with the vertical-slice contracts, so future iterations can focus on migrating the remaining handlers while preserving the same endpoint compatibility checks.
