@@ -9,7 +9,7 @@ open Wordfolio.Api.Configuration.GroqApi
 open Wordfolio.Api.DataAccess
 open Wordfolio.Api.Api.Auth.Handlers
 open Wordfolio.Api.Api.Collections.Handlers
-open Wordfolio.Api.Handlers.CollectionsHierarchy
+open Wordfolio.Api.Api.CollectionsHierarchy.Handlers
 open Wordfolio.Api.Handlers.Dictionary
 open Wordfolio.Api.Handlers.Drafts
 open Wordfolio.Api.Handlers.Entries
