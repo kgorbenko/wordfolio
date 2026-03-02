@@ -131,7 +131,7 @@ Modify:
 
 ### 6. Drafts Feature
 - [x] Implement: Migrate Drafts feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
-- [ ] Improve: Review Drafts migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- [x] Improve: Review Drafts migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 7. Dictionary Feature
 - [ ] Implement: Migrate Dictionary feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
@@ -204,3 +204,9 @@ Modify:
 - What was done: Migrated Drafts into `Api/Drafts` by extracting transport contracts and pure mapping into dedicated Types and Mappers modules, then moved endpoint composition and domain-error-to-HTTP mapping into the new Drafts handlers module without changing route/method/auth/status/JSON contracts. Updated compile order and Program imports to use the new Drafts slice, removed the legacy flat Drafts handler file, and kept tests aligned with namespace relocation.
 - Issues encountered: None
 - Learnings: Drafts can now rely only on root shared `Api` contracts/mappers/helpers plus domain operations, which removes remaining API cross-feature coupling while preserving endpoint behavior.
+
+### Improve: Review Drafts migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- Files changed: docs/handlers-refactoring/spec.md
+- What was done: Reviewed the Drafts slice against vertical structure, dependency boundaries, API contract compatibility, and fail-fast helper requirements and confirmed it already complied without further code changes. Re-ran `dotnet fantomas . && dotnet build && dotnet test` to verify formatting, compilation, and full test stability.
+- Issues encountered: None
+- Learnings: Drafts now serves as a compliant reference for Dictionary migration by demonstrating feature-local contracts and mappers with shared root API helpers only.
