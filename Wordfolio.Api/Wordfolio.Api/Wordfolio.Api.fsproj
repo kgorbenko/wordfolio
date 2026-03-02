@@ -16,7 +16,12 @@
     <Compile Include="Infrastructure\DelimitedStreamProcessor.fs" />
     <Compile Include="Infrastructure\GroqChatClient.fs" />
     <Compile Include="Infrastructure\Environment.fs" />
-    <Compile Include="Handlers\Auth.fs" />
+    <Compile Include="Api\Types.fs" />
+    <Compile Include="Api\Mappers.fs" />
+    <Compile Include="Api\Helpers.fs" />
+    <Compile Include="Api\Auth\Types.fs" />
+    <Compile Include="Api\Auth\Mappers.fs" />
+    <Compile Include="Api\Auth\Handlers.fs" />
     <Compile Include="Handlers\Collections.fs" />
     <Compile Include="Handlers\CollectionsHierarchy.fs" />
     <Compile Include="Handlers\Vocabularies.fs" />
