@@ -31,7 +31,9 @@
     <Compile Include="Api\Vocabularies\Types.fs" />
     <Compile Include="Api\Vocabularies\Mappers.fs" />
     <Compile Include="Api\Vocabularies\Handlers.fs" />
-    <Compile Include="Handlers\Entries.fs" />
+    <Compile Include="Api\Entries\Types.fs" />
+    <Compile Include="Api\Entries\Mappers.fs" />
+    <Compile Include="Api\Entries\Handlers.fs" />
     <Compile Include="Handlers\Drafts.fs" />
     <Compile Include="Handlers\Dictionary.fs" />
     <Compile Include="OpenApi.fs" />

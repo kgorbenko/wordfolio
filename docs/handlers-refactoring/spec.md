@@ -126,7 +126,7 @@ Modify:
 - [x] Improve: Review Vocabularies migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 5. Entries Feature
-- [ ] Implement: Migrate Entries feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- [x] Implement: Migrate Entries feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
 - [ ] Improve: Review Entries migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 6. Drafts Feature
@@ -186,3 +186,9 @@ Modify:
 - What was done: Reviewed the Vocabularies slice against vertical structure, feature-boundary constraints, API-compatibility requirements, and handler/type/mapper separation rules and confirmed it already complied without requiring code changes. Re-ran `dotnet fantomas . && dotnet build && dotnet test` to verify formatting, compilation, and full test stability.
 - Issues encountered: None
 - Learnings: The Vocabularies slice is a clean baseline for remaining migrations, showing that preserving route and response contracts can coexist with strict feature isolation and explicit API contracts.
+
+### Implement: Migrate Entries feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- Files changed: Wordfolio.Api/Wordfolio.Api/Api/Entries/Types.fs, Wordfolio.Api/Wordfolio.Api/Api/Entries/Mappers.fs, Wordfolio.Api/Wordfolio.Api/Api/Entries/Handlers.fs, Wordfolio.Api/Wordfolio.Api/Handlers/Entries.fs, Wordfolio.Api/Wordfolio.Api/Handlers/Drafts.fs, Wordfolio.Api/Wordfolio.Api/Program.fs, Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj, Wordfolio.Api/Wordfolio.Api.Tests/EntriesTests.fs, Wordfolio.Api/Wordfolio.Api.Tests/DraftsTests.fs, docs/handlers-refactoring/spec.md
+- What was done: Migrated Entries into `Api/Entries` by splitting transport contracts, pure mapping functions, and endpoint composition into dedicated Types, Mappers, and Handlers modules while preserving routes, auth requirements, status codes, and payload shapes. Updated compile order and Program imports to the new module path, removed the legacy flat Entries handler file, and adjusted Drafts/test namespace references to keep behavior unchanged.
+- Issues encountered: None
+- Learnings: Entries contracts and mapper functions are shared by Drafts today, so during incremental migration Drafts can temporarily consume `Api/Entries` modules without introducing `Api.<Feature>` to `Api.<Feature>` imports.
