@@ -119,7 +119,7 @@ Modify:
 
 ### 3. CollectionsHierarchy Feature
 - [x] Implement: Migrate CollectionsHierarchy feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
-- [ ] Improve: Review CollectionsHierarchy migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- [x] Improve: Review CollectionsHierarchy migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 4. Vocabularies Feature
 - [ ] Implement: Migrate Vocabularies feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
@@ -168,3 +168,9 @@ Modify:
 - What was done: Migrated CollectionsHierarchy into `Api/CollectionsHierarchy` by extracting transport contracts and pure mapping/query conversion functions into dedicated Types and Mappers modules, then wired endpoint composition in the new Handlers module. Updated compile order and Program imports to use the new slice, removed the legacy flat handler file, and replaced unit-result default fallbacks with shared fail-fast helper usage.
 - Issues encountered: None
 - Learnings: For hierarchy endpoints with unit-error operation results, `Api/Helpers.failOnUnitError` preserves structural refactoring goals while aligning with the explicit fail-fast rule and avoiding hidden fallback payloads.
+
+### Improve: Review CollectionsHierarchy migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- Files changed: Wordfolio.Api/Wordfolio.Api/Api/CollectionsHierarchy/Types.fs, docs/handlers-refactoring/spec.md
+- What was done: Reviewed the CollectionsHierarchy slice against the rulebook and removed unused API response type aliases so the feature `Types.fs` contains only concrete transport contracts used by handlers/tests. Re-ran `dotnet fantomas . && dotnet build && dotnet test` to verify formatting, compile order integrity, and full test compatibility.
+- Issues encountered: None
+- Learnings: Improvement passes should trim leftover compatibility scaffolding (like redundant aliases) when it does not affect wire contracts, which keeps vertical slices explicit and easier to maintain.

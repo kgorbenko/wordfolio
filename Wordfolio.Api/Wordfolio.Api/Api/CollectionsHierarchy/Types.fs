@@ -42,9 +42,6 @@ type CollectionOverviewResponse =
       UpdatedAt: DateTimeOffset option
       VocabularyCount: int }
 
-type VocabularySummaryResponse = VocabularyWithEntryCountHierarchyResponse
-type CollectionSummaryResponse = CollectionOverviewResponse
-
 type CollectionsHierarchyResponse =
     { Collections: CollectionWithVocabulariesHierarchyResponse list
       DefaultVocabulary: VocabularyWithEntryCountHierarchyResponse option }
