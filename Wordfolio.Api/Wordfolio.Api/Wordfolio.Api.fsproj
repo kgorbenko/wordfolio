@@ -28,7 +28,9 @@
     <Compile Include="Api\CollectionsHierarchy\Types.fs" />
     <Compile Include="Api\CollectionsHierarchy\Mappers.fs" />
     <Compile Include="Api\CollectionsHierarchy\Handlers.fs" />
-    <Compile Include="Handlers\Vocabularies.fs" />
+    <Compile Include="Api\Vocabularies\Types.fs" />
+    <Compile Include="Api\Vocabularies\Mappers.fs" />
+    <Compile Include="Api\Vocabularies\Handlers.fs" />
     <Compile Include="Handlers\Entries.fs" />
     <Compile Include="Handlers\Drafts.fs" />
     <Compile Include="Handlers\Dictionary.fs" />
