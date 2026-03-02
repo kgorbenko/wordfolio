@@ -134,7 +134,7 @@ Modify:
 - [x] Improve: Review Drafts migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 7. Dictionary Feature
-- [ ] Implement: Migrate Dictionary feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- [x] Implement: Migrate Dictionary feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
 - [ ] Improve: Review Dictionary migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ## Progress Log
@@ -210,3 +210,9 @@ Modify:
 - What was done: Reviewed the Drafts slice against vertical structure, dependency boundaries, API contract compatibility, and fail-fast helper requirements and confirmed it already complied without further code changes. Re-ran `dotnet fantomas . && dotnet build && dotnet test` to verify formatting, compilation, and full test stability.
 - Issues encountered: None
 - Learnings: Drafts now serves as a compliant reference for Dictionary migration by demonstrating feature-local contracts and mappers with shared root API helpers only.
+
+### Implement: Migrate Dictionary feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
+- Files changed: Wordfolio.Api/Wordfolio.Api/Api/Dictionary/Types.fs, Wordfolio.Api/Wordfolio.Api/Api/Dictionary/Mappers.fs, Wordfolio.Api/Wordfolio.Api/Api/Dictionary/Handlers.fs, Wordfolio.Api/Wordfolio.Api/Handlers/Dictionary.fs, Wordfolio.Api/Wordfolio.Api/Program.fs, Wordfolio.Api/Wordfolio.Api/Wordfolio.Api.fsproj, docs/handlers-refactoring/spec.md
+- What was done: Migrated Dictionary into `Api/Dictionary` by splitting endpoint composition, prompt-mapping logic, and transport contract types across dedicated Handlers, Mappers, and Types modules while preserving lookup route, auth requirements, SSE event framing, status codes, and payload shapes. Updated compile order and Program imports to use the new slice and removed the legacy flat Dictionary handler file.
+- Issues encountered: Initial build failed because a mapper function exposed a less-accessible stream event type; resolved by keeping stream event-to-SSE conversion inside Dictionary handlers.
+- Learnings: Dictionary migration confirms that even streaming endpoints can follow the vertical slice layout by moving pure prompt construction into feature mappers while leaving infrastructure event handling in handlers.
