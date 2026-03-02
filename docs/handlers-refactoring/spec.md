@@ -127,7 +127,7 @@ Modify:
 
 ### 5. Entries Feature
 - [x] Implement: Migrate Entries feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
-- [ ] Improve: Review Entries migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- [x] Improve: Review Entries migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
 
 ### 6. Drafts Feature
 - [ ] Implement: Migrate Drafts feature by strictly following this specification and `docs/handlers-refactoring/rulebook.md`. Run verification commands after implementation.
@@ -192,3 +192,9 @@ Modify:
 - What was done: Migrated Entries into `Api/Entries` by splitting transport contracts, pure mapping functions, and endpoint composition into dedicated Types, Mappers, and Handlers modules while preserving routes, auth requirements, status codes, and payload shapes. Updated compile order and Program imports to the new module path, removed the legacy flat Entries handler file, and adjusted Drafts/test namespace references to keep behavior unchanged.
 - Issues encountered: None
 - Learnings: Entries contracts and mapper functions are shared by Drafts today, so during incremental migration Drafts can temporarily consume `Api/Entries` modules without introducing `Api.<Feature>` to `Api.<Feature>` imports.
+
+### Improve: Review Entries migration against this specification and `docs/handlers-refactoring/rulebook.md`; apply targeted fixes, then re-run verification commands.
+- Files changed: Wordfolio.Api/Wordfolio.Api/Api/Types.fs, Wordfolio.Api/Wordfolio.Api/Api/Mappers.fs, Wordfolio.Api/Wordfolio.Api/Api/Entries/Types.fs, Wordfolio.Api/Wordfolio.Api/Api/Entries/Mappers.fs, Wordfolio.Api/Wordfolio.Api/Api/Entries/Handlers.fs, Wordfolio.Api/Wordfolio.Api/Handlers/Drafts.fs, docs/handlers-refactoring/spec.md
+- What was done: Extracted shared Entries transport contracts and pure mapping helpers into root `Api/Types.fs` and `Api/Mappers.fs`, then kept `Api/Entries` as a thin feature wrapper so Entries behavior and contracts remain unchanged while Drafts no longer depends on `Api/Entries` modules. Updated Drafts to consume shared root API types/mappers/helpers and re-verified full formatting, build, and test pipeline.
+- Issues encountered: Initial compile errors surfaced missing shared request/response symbols in Drafts and Entries tests; resolved by adding root-shared contracts and preserving Entries type aliases for compatibility.
+- Learnings: When a not-yet-migrated handler shares entry payload shapes, promoting those contracts/mappers to root `Api` early removes cross-feature coupling and keeps incremental slice migrations stable.

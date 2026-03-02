@@ -10,8 +10,9 @@ open Microsoft.AspNetCore.Routing
 
 open Npgsql
 
-open Wordfolio.Api.Api.Entries.Mappers
-open Wordfolio.Api.Api.Entries.Types
+open Wordfolio.Api.Api.Helpers
+open Wordfolio.Api.Api.Mappers
+open Wordfolio.Api.Api.Types
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations
@@ -37,17 +38,6 @@ type VocabularyResponse =
 type DraftsResponse =
     { Vocabulary: VocabularyResponse
       Entries: EntryResponse list }
-
-let private getUserId(user: ClaimsPrincipal) : int option =
-    let claim =
-        user.FindFirst(ClaimTypes.NameIdentifier)
-
-    match claim with
-    | null -> None
-    | c ->
-        match Int32.TryParse(c.Value) with
-        | true, id -> Some id
-        | false, _ -> None
 
 let private toCreateErrorResponse(error: CreateDraftEntryError) : IResult =
     match error with
