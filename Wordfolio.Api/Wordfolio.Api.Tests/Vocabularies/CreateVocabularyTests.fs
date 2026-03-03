@@ -87,6 +87,17 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let! _, wordfolioUser = factory.CreateUserAsync(202, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.saveChangesAsync
+
             use client = factory.CreateClient()
 
             let request: CreateVocabularyRequest =
@@ -94,11 +105,55 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "A test vocabulary" }
 
             let url =
-                Urls.Vocabularies.vocabulariesByCollection 1
+                Urls.Vocabularies.vocabulariesByCollection collection.Id
 
             let! response = client.PostAsJsonAsync(url, request)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+
+            let! databaseState = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+
+            Assert.Equal<Vocabulary list>([], databaseState)
+        }
+
+    [<Fact>]
+    member _.``POST create vocabulary for another user's collection fails``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! _, ownerWordfolioUser = factory.CreateUserAsync(206, "owner@example.com", "P@ssw0rd!")
+
+            let! requesterIdentityUser, requesterWordfolioUser =
+                factory.CreateUserAsync(207, "requester@example.com", "P@ssw0rd!")
+
+            let ownerCollection =
+                Entities.makeCollection ownerWordfolioUser "Owner Collection" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ ownerWordfolioUser; requesterWordfolioUser ]
+                |> Seeder.addCollections [ ownerCollection ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(requesterIdentityUser)
+
+            let request: CreateVocabularyRequest =
+                { Name = "Unauthorized Vocabulary"
+                  Description = Some "Should not be created" }
+
+            let url =
+                Urls.Vocabularies.vocabulariesByCollection ownerCollection.Id
+
+            let! response = client.PostAsJsonAsync(url, request)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+
+            let! databaseState = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+
+            Assert.Equal<Vocabulary list>([], databaseState)
         }
 
     [<Fact>]
@@ -132,4 +187,8 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.PostAsJsonAsync(url, request)
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
+
+            let! databaseState = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+
+            Assert.Equal<Vocabulary list>([], databaseState)
         }

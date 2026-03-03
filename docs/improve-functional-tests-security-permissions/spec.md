@@ -62,7 +62,7 @@ All steps use the **Implement** protocol above.
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetVocabulariesByCollectionTests.fs`
 
 ### 3. Vocabularies
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/CreateVocabularyTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/CreateVocabularyTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabulariesTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabularyByIdTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/UpdateVocabularyTests.fs`
@@ -130,3 +130,8 @@ Agents append entries here after completing each step.
 - Work done: Strengthened cross-user visibility-boundary coverage by seeding both requester-owned and foreign collections/vocabularies, then asserting the requester gets an empty list when querying the foreign collection id. Kept existing success, unauthenticated (`401`), empty/system collection, search, and sorting coverage intact and ran the required verification commands successfully.
 - Issues encountered: None.
 - Learnings: For this user-scoped list endpoint, ownership enforcement is expressed as caller-scoped filtering (empty `200` for foreign collection ids), so robust boundary tests should include owned data in the same scenario to prove responses do not fall back to unrelated caller data.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/CreateVocabularyTests.fs`
+- Work done: Added write-denial persistence assertions for unauthenticated (`401`) and validation-denied (`400`) create requests, and added an explicit cross-user create-denial test asserting `404 NotFound` plus unchanged vocabulary persistence for a foreign collection id.
+- Issues encountered: None.
+- Learnings: Create-vocabulary ownership checks map non-owned collections to `VocabularyCollectionNotFound` (`404`) rather than `403`, so boundary coverage should assert both denial status and that no vocabulary rows were inserted.
