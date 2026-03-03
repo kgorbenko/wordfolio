@@ -24,7 +24,10 @@
     <Compile Include="TestTokenGenerator.fs" />
     <Compile Include="WebApplicationFactory.fs" />
     <Compile Include="Infrastructure\DelimitedStreamProcessorTests.fs" />
-    <Compile Include="AuthTests.fs" />
+    <Compile Include="Auth/RegisterTests.fs" />
+    <Compile Include="Auth/LoginTests.fs" />
+    <Compile Include="Auth/RefreshTests.fs" />
+    <Compile Include="Auth/GetPasswordRequirementsTests.fs" />
     <Compile Include="CollectionsTests.fs" />
     <Compile Include="CollectionsHierarchyTests.fs" />
     <Compile Include="VocabulariesTests.fs" />
