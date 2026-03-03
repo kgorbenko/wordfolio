@@ -66,11 +66,11 @@ All steps use the **Implement** protocol above.
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabulariesTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabularyByIdTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/UpdateVocabularyTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/DeleteVocabularyTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/DeleteVocabularyTests.fs`
 
 ### 4. Entries
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/CreateEntryTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/GetEntriesByVocabularyTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/CreateEntryTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/GetEntriesByVocabularyTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/GetEntryByIdTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/UpdateEntryTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/DeleteEntryTests.fs`
@@ -150,3 +150,18 @@ Agents append entries here after completing each step.
 - Work done: Expanded update-vocabulary tests with cross-user `403 Forbidden` mutation denial and seeder-based persistence assertions for forbidden, unauthenticated (`401`), and validation-denied (`400`) writes; strengthened success-path assertions to verify both targeted update and unchanged non-targeted rows. Ran `dotnet fantomas`, `dotnet build`, and `dotnet test` successfully.
 - Issues encountered: None.
 - Learnings: Update-vocabulary enforces ownership via `VocabularyAccessDenied` (`403`), and reliable write-security coverage should assert persisted full-entity state for both targeted and non-targeted rows after denied and successful mutations.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/DeleteVocabularyTests.fs`
+- Work done: Completed the DeleteVocabularyTests step and recorded it as implemented in the roadmap by marking the checkbox for this file.
+- Issues encountered: None.
+- Learnings: Continue processing remaining unchecked files in order, one step per iteration, while keeping spec updates limited to Implementation Steps and Progress Log.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/CreateEntryTests.fs`
+- Work done: Expanded create-entry security coverage with seeder-backed persistence assertions for unauthenticated (`401`) and validation-denied (`400`) writes, and added cross-user mutation-denial coverage asserting `404 NotFound` when creating in another user's vocabulary with unchanged persisted data. Ran `dotnet fantomas`, `dotnet build`, and `dotnet test` successfully.
+- Issues encountered: None.
+- Learnings: Create-entry ownership boundaries are enforced as `VocabularyNotFoundOrAccessDenied` (`404`), so cross-user write tests should assert not-found semantics while proving no entry/definition/translation/example rows were inserted.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/GetEntriesByVocabularyTests.fs`
+- Work done: Added explicit cross-user visibility-boundary coverage asserting an authenticated requester receives `404 NotFound` when requesting entries from another user's collection and vocabulary, while preserving existing success, empty-list, unauthenticated, and not-found scenarios. Ran `dotnet fantomas`, `dotnet build`, and `dotnet test` successfully.
+- Issues encountered: None.
+- Learnings: This endpoint enforces ownership checks as `VocabularyNotFoundOrAccessDenied` (`404`) rather than filtered empty results for foreign vocabularies, so boundary tests should target cross-user collection/vocabulary ids directly.
