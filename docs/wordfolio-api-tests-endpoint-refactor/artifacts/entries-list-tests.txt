@@ -1,0 +1,185 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Wordfolio.Common -> /home/claude-dev/repos/wordfolio-refactor-functional-tests/Wordfolio.Common/bin/Debug/net10.0/Wordfolio.Common.dll
+  Wordfolio.ServiceDefaults -> /home/claude-dev/repos/wordfolio-refactor-functional-tests/Wordfolio.ServiceDefaults/bin/Debug/net10.0/Wordfolio.ServiceDefaults.dll
+  Wordfolio.Api.Migrations -> /home/claude-dev/repos/wordfolio-refactor-functional-tests/Wordfolio.Api/Wordfolio.Api.Migrations/bin/Debug/net10.0/Wordfolio.Api.Migrations.dll
+  Wordfolio.Api.Identity -> /home/claude-dev/repos/wordfolio-refactor-functional-tests/Wordfolio.Api/Wordfolio.Api.Identity/bin/Debug/net10.0/Wordfolio.Api.Identity.dll
+  Wordfolio.Api.Domain -> /home/claude-dev/repos/wordfolio-refactor-functional-tests/Wordfolio.Api/Wordfolio.Api.Domain/bin/Debug/net10.0/Wordfolio.Api.Domain.dll
+  Wordfolio.Api.DataAccess -> /home/claude-dev/repos/wordfolio-refactor-functional-tests/Wordfolio.Api/Wordfolio.Api.DataAccess/bin/Debug/net10.0/Wordfolio.Api.DataAccess.dll
+  Wordfolio.Api -> /home/claude-dev/repos/wordfolio-refactor-functional-tests/Wordfolio.Api/Wordfolio.Api/bin/Debug/net10.0/Wordfolio.Api.dll
+  Wordfolio.Api.Tests.Utils -> /home/claude-dev/repos/wordfolio-refactor-functional-tests/Wordfolio.Api/Wordfolio.Api.Tests.Utils/bin/Debug/net10.0/Wordfolio.Api.Tests.Utils.dll
+  Wordfolio.Api.Tests -> /home/claude-dev/repos/wordfolio-refactor-functional-tests/Wordfolio.Api/Wordfolio.Api.Tests/bin/Debug/net10.0/Wordfolio.Api.Tests.dll
+Test run for /home/claude-dev/repos/wordfolio-refactor-functional-tests/Wordfolio.Api/Wordfolio.Api.Tests/bin/Debug/net10.0/Wordfolio.Api.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.1 (x64)
+
+The following Tests are available:
+    Wordfolio.Api.Tests.Auth.RegisterTests.POST /auth/register succeeds and creates rows in both schemas
+    Wordfolio.Api.Tests.Auth.RegisterTests.POST /auth/register with duplicate email fails
+    Wordfolio.Api.Tests.Auth.RegisterTests.POST /auth/register with weak password fails
+    Wordfolio.Api.Tests.Auth.LoginTests.POST /auth/login with valid credentials succeeds and returns tokens
+    Wordfolio.Api.Tests.Auth.LoginTests.POST /auth/login with invalid credentials fails
+    Wordfolio.Api.Tests.Auth.LoginTests.POST /auth/login with non-existent user fails
+    Wordfolio.Api.Tests.Auth.RefreshTests.POST /auth/refresh with valid token succeeds and returns new tokens
+    Wordfolio.Api.Tests.Auth.RefreshTests.POST /auth/refresh with invalid token fails
+    Wordfolio.Api.Tests.Auth.GetPasswordRequirementsTests.GET /auth/password-requirements returns password requirements
+    Wordfolio.Api.Tests.Collections.CreateCollectionTests.POST creates collection
+    Wordfolio.Api.Tests.Collections.CreateCollectionTests.POST without authentication fails
+    Wordfolio.Api.Tests.Collections.CreateCollectionTests.POST with empty name fails
+    Wordfolio.Api.Tests.Collections.GetCollectionsTests.GET returns empty list when no collections
+    Wordfolio.Api.Tests.Collections.GetCollectionsTests.GET without authentication fails
+    Wordfolio.Api.Tests.Collections.GetCollectionByIdTests.GET by id returns specific collection
+    Wordfolio.Api.Tests.Collections.GetCollectionByIdTests.GET by id returns 404 when collection does not exist
+    Wordfolio.Api.Tests.Collections.GetCollectionByIdTests.GET by id without authentication fails
+    Wordfolio.Api.Tests.Collections.UpdateCollectionTests.PUT updates collection
+    Wordfolio.Api.Tests.Collections.UpdateCollectionTests.PUT returns 404 when collection does not exist
+    Wordfolio.Api.Tests.Collections.UpdateCollectionTests.PUT with empty name fails
+    Wordfolio.Api.Tests.Collections.UpdateCollectionTests.PUT without authentication fails
+    Wordfolio.Api.Tests.Collections.DeleteCollectionTests.DELETE deletes collection
+    Wordfolio.Api.Tests.Collections.DeleteCollectionTests.DELETE returns 404 when collection does not exist
+    Wordfolio.Api.Tests.Collections.DeleteCollectionTests.DELETE without authentication fails
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetCollectionsHierarchyTests.GET returns collections with vocabularies and entry counts
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetCollectionsHierarchyTests.GET excludes system collections
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetCollectionsHierarchyTests.GET excludes default vocabularies
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetCollectionsHierarchyTests.GET returns empty list when no collections
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetCollectionsHierarchyTests.GET returns default vocabulary when it has entries
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetCollectionsHierarchyTests.GET does not return default vocabulary when it has no entries
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetCollectionsHierarchyTests.GET /collections-hierarchy without authentication fails
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetCollectionsListTests.GET collections list endpoint supports filtering and sorting
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetCollectionsListTests.GET collections list endpoint returns only collections owned by user
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetCollectionsListTests.GET collections list endpoint returns vocabulary count excluding system and default vocabularies
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetCollectionsListTests.GET collections list endpoint without authentication fails
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetVocabulariesByCollectionTests.GET vocabularies by collection endpoint returns vocabularies with entry counts
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetVocabulariesByCollectionTests.GET vocabularies by collection endpoint returns empty list for non-owned collection
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetVocabulariesByCollectionTests.GET vocabularies by collection endpoint returns empty list for system collection
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetVocabulariesByCollectionTests.GET vocabularies by collection endpoint without authentication fails
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetVocabulariesByCollectionTests.GET vocabularies by collection endpoint supports search filtering
+    Wordfolio.Api.Tests.CollectionsHierarchy.GetVocabulariesByCollectionTests.GET vocabularies by collection endpoint supports sorting
+    Wordfolio.Api.Tests.Vocabularies.CreateVocabularyTests.POST creates vocabulary
+    Wordfolio.Api.Tests.Vocabularies.CreateVocabularyTests.POST without authentication fails
+    Wordfolio.Api.Tests.Vocabularies.CreateVocabularyTests.POST with empty name fails
+    Wordfolio.Api.Tests.Vocabularies.GetVocabulariesTests.GET returns empty list when no vocabularies
+    Wordfolio.Api.Tests.Vocabularies.GetVocabulariesTests.GET without authentication fails
+    Wordfolio.Api.Tests.Vocabularies.GetVocabularyByIdTests.GET by id returns specific vocabulary
+    Wordfolio.Api.Tests.Vocabularies.GetVocabularyByIdTests.GET by id returns 404 when vocabulary does not exist
+    Wordfolio.Api.Tests.Vocabularies.GetVocabularyByIdTests.GET by id without authentication fails
+    Wordfolio.Api.Tests.Vocabularies.UpdateVocabularyTests.PUT updates vocabulary
+    Wordfolio.Api.Tests.Vocabularies.UpdateVocabularyTests.PUT returns 404 when vocabulary does not exist
+    Wordfolio.Api.Tests.Vocabularies.UpdateVocabularyTests.PUT with empty name fails
+    Wordfolio.Api.Tests.Vocabularies.UpdateVocabularyTests.PUT without authentication fails
+    Wordfolio.Api.Tests.Vocabularies.DeleteVocabularyTests.DELETE deletes vocabulary
+    Wordfolio.Api.Tests.Vocabularies.DeleteVocabularyTests.DELETE returns 404 when vocabulary does not exist
+    Wordfolio.Api.Tests.Vocabularies.DeleteVocabularyTests.DELETE without authentication fails
+    Wordfolio.Api.Tests.Entries.CreateEntryTests.POST creates entry with definitions and translations
+    Wordfolio.Api.Tests.Entries.CreateEntryTests.POST without authentication fails
+    Wordfolio.Api.Tests.Entries.CreateEntryTests.POST with empty entry text fails
+    Wordfolio.Api.Tests.Entries.CreateEntryTests.POST with no definitions or translations fails
+    Wordfolio.Api.Tests.Entries.CreateEntryTests.POST with too many examples fails
+    Wordfolio.Api.Tests.Entries.CreateEntryTests.POST with duplicate entry text fails
+    Wordfolio.Api.Tests.Entries.CreateEntryTests.POST creates duplicate entry when AllowDuplicate is true
+    Wordfolio.Api.Tests.Entries.CreateEntryTests.POST for non-existent vocabulary fails
+    Wordfolio.Api.Tests.Entries.CreateEntryTests.POST create returns 404 when collection does not exist
+    Wordfolio.Api.Tests.Entries.CreateEntryTests.POST create returns 404 when vocabulary does not belong to collection
+    Wordfolio.Api.Tests.Entries.GetEntriesByVocabularyTests.GET by vocabulary id returns all entries
+    Wordfolio.Api.Tests.Entries.GetEntriesByVocabularyTests.GET by vocabulary id returns empty list when no entries
+    Wordfolio.Api.Tests.Entries.GetEntriesByVocabularyTests.GET by vocabulary id without authentication fails
+    Wordfolio.Api.Tests.Entries.GetEntriesByVocabularyTests.GET by vocabulary id for non-existent vocabulary fails
+    Wordfolio.Api.Tests.Entries.GetEntriesByVocabularyTests.GET list returns 404 when collection does not exist
+    Wordfolio.Api.Tests.Entries.GetEntriesByVocabularyTests.GET list returns 404 when vocabulary does not belong to collection
+    Wordfolio.Api.Tests.Entries.GetEntryByIdTests.GET by id returns entry with hierarchy
+    Wordfolio.Api.Tests.Entries.GetEntryByIdTests.GET by id returns 404 when entry does not exist
+    Wordfolio.Api.Tests.Entries.GetEntryByIdTests.GET by id without authentication fails
+    Wordfolio.Api.Tests.Entries.GetEntryByIdTests.GET by id returns 404 when collection does not exist
+    Wordfolio.Api.Tests.Entries.GetEntryByIdTests.GET by id returns 404 when entry belongs to different vocabulary
+    Wordfolio.Api.Tests.Entries.GetEntryByIdTests.GET by id returns 404 when vocabulary does not exist
+    Wordfolio.Api.Tests.Entries.GetEntryByIdTests.GET by id returns 404 when vocabulary belongs to different collection
+    Wordfolio.Api.Tests.Entries.UpdateEntryTests.PUT updates entry with new definitions and translations
+    Wordfolio.Api.Tests.Entries.UpdateEntryTests.PUT without authentication fails
+    Wordfolio.Api.Tests.Entries.UpdateEntryTests.PUT with empty entry text fails
+    Wordfolio.Api.Tests.Entries.UpdateEntryTests.PUT with no definitions or translations fails
+    Wordfolio.Api.Tests.Entries.UpdateEntryTests.PUT for non-existent entry fails
+    Wordfolio.Api.Tests.Entries.UpdateEntryTests.PUT with same entry text succeeds
+    Wordfolio.Api.Tests.Entries.UpdateEntryTests.PUT for another user's entry fails
+    Wordfolio.Api.Tests.Entries.UpdateEntryTests.PUT returns 404 when collection does not exist
+    Wordfolio.Api.Tests.Entries.UpdateEntryTests.PUT returns 404 when entry belongs to different vocabulary
+    Wordfolio.Api.Tests.Entries.UpdateEntryTests.PUT returns 404 when vocabulary belongs to different collection
+    Wordfolio.Api.Tests.Entries.DeleteEntryTests.DELETE deletes entry successfully
+    Wordfolio.Api.Tests.Entries.DeleteEntryTests.DELETE without authentication fails
+    Wordfolio.Api.Tests.Entries.DeleteEntryTests.DELETE for non-existent entry returns 404
+    Wordfolio.Api.Tests.Entries.DeleteEntryTests.DELETE for another user's entry returns 404
+    Wordfolio.Api.Tests.Entries.DeleteEntryTests.DELETE cascades to delete definitions, translations, and examples
+    Wordfolio.Api.Tests.Entries.DeleteEntryTests.DELETE returns 404 when collection does not exist
+    Wordfolio.Api.Tests.Entries.DeleteEntryTests.DELETE returns 404 when entry belongs to different vocabulary
+    Wordfolio.Api.Tests.Entries.DeleteEntryTests.DELETE returns 404 when vocabulary belongs to different collection
+    Wordfolio.Api.Tests.Entries.MoveEntryTests.POST move updates entry vocabulary for owned source and target
+    Wordfolio.Api.Tests.Entries.MoveEntryTests.POST move without authentication fails
+    Wordfolio.Api.Tests.Entries.MoveEntryTests.POST move for non-existent entry returns 404
+    Wordfolio.Api.Tests.Entries.MoveEntryTests.POST move returns 404 when target vocabulary does not exist
+    Wordfolio.Api.Tests.Entries.MoveEntryTests.POST move returns 404 when target vocabulary belongs to another user
+    Wordfolio.Api.Tests.Entries.MoveEntryTests.POST move to default vocabulary succeeds
+    Wordfolio.Api.Tests.Entries.MoveEntryTests.POST move returns 404 when collection does not exist
+    Wordfolio.Api.Tests.Entries.MoveEntryTests.POST move returns 404 when entry belongs to different vocabulary
+    Wordfolio.Api.Tests.Entries.MoveEntryTests.POST move returns 404 when vocabulary belongs to different collection
+    Wordfolio.Api.Tests.DraftsTests.GET /drafts returns 401 when not authenticated
+    Wordfolio.Api.Tests.DraftsTests.GET /drafts returns 404 when no default vocabulary
+    Wordfolio.Api.Tests.DraftsTests.GET /drafts returns drafts with empty entries
+    Wordfolio.Api.Tests.DraftsTests.GET /drafts returns drafts with entries and hierarchy
+    Wordfolio.Api.Tests.DraftsTests.GET /drafts does not return other user's data
+    Wordfolio.Api.Tests.DraftsTests.POST /drafts creates entry in new default vocabulary
+    Wordfolio.Api.Tests.DraftsTests.POST /drafts uses existing default vocabulary
+    Wordfolio.Api.Tests.DraftsTests.POST /drafts creates draft with definitions and translations
+    Wordfolio.Api.Tests.DraftsTests.POST /drafts without authentication fails
+    Wordfolio.Api.Tests.DraftsTests.POST /drafts with empty entry text fails
+    Wordfolio.Api.Tests.DraftsTests.POST /drafts with no definitions or translations fails
+    Wordfolio.Api.Tests.DraftsTests.POST /drafts with too many examples fails
+    Wordfolio.Api.Tests.DraftsTests.POST /drafts with duplicate entry text fails
+    Wordfolio.Api.Tests.DraftsTests.POST /drafts creates duplicate draft when AllowDuplicate is true
+    Wordfolio.Api.Tests.DraftsTests.GET draft by id returns entry with hierarchy
+    Wordfolio.Api.Tests.DraftsTests.GET draft by id returns 404 when entry does not exist
+    Wordfolio.Api.Tests.DraftsTests.GET draft by id without authentication fails
+    Wordfolio.Api.Tests.DraftsTests.PUT draft updates entry with new definitions and translations
+    Wordfolio.Api.Tests.DraftsTests.PUT draft without authentication fails
+    Wordfolio.Api.Tests.DraftsTests.PUT draft with empty entry text fails
+    Wordfolio.Api.Tests.DraftsTests.PUT draft with no definitions or translations fails
+    Wordfolio.Api.Tests.DraftsTests.PUT draft for non-existent entry fails
+    Wordfolio.Api.Tests.DraftsTests.DELETE draft deletes entry successfully
+    Wordfolio.Api.Tests.DraftsTests.DELETE draft without authentication fails
+    Wordfolio.Api.Tests.DraftsTests.DELETE draft for non-existent entry returns 404
+    Wordfolio.Api.Tests.DraftsTests.POST move draft updates entry vocabulary for owned source and target
+    Wordfolio.Api.Tests.DraftsTests.POST move draft without authentication fails
+    Wordfolio.Api.Tests.DraftsTests.POST move draft for non-existent entry returns 404
+    Wordfolio.Api.Tests.DraftsTests.POST move draft returns 404 when target vocabulary does not exist
+    Wordfolio.Api.Tests.DraftsTests.PUT draft with same entry text succeeds
+    Wordfolio.Api.Tests.DraftsTests.PUT draft for another user's entry fails
+    Wordfolio.Api.Tests.DraftsTests.DELETE draft for another user's entry returns 404
+    Wordfolio.Api.Tests.DraftsTests.DELETE draft cascades to delete definitions, translations, and examples
+    Wordfolio.Api.Tests.DraftsTests.POST move draft returns 404 when target vocabulary belongs to another user
+    Wordfolio.Api.Tests.DraftsTests.POST move draft to default vocabulary succeeds
+    Wordfolio.Api.Tests.DictionaryTests.GET lookup returns SSE stream with text and result events
+    Wordfolio.Api.Tests.DictionaryTests.GET lookup with empty text returns BadRequest
+    Wordfolio.Api.Tests.DictionaryTests.GET lookup with whitespace text returns BadRequest
+    Wordfolio.Api.Tests.DictionaryTests.GET lookup without authentication fails
+    Wordfolio.Api.Tests.StatusTests.Status endpoint
+    Wordfolio.Api.Tests.OpenApiTests.OpenApi document is accessible without auth
+    Wordfolio.Api.Tests.OpenApiTests.Swagger UI is accessible without auth
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.passes chunks through as-is until delimiter is found
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.buffers chunk ending with potential delimiter prefix
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles delimiter split across two chunks
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles delimiter split across multiple chunks
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles delimiter in single chunk
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.passes text through when no delimiter present
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles only result after delimiter
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles empty chunks
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles whitespace result
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles empty stream
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles delimiter at very start
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles delimiter at very end
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles multiline text content
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles custom delimiter
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles single character chunks building delimiter
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.emits buffered prefix when delimiter does not complete
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles chunk ending with single dash
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.passes through text not starting with delimiter char
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles Unicode content
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.emits result as single chunk
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.handles false positive delimiter prefix mid-chunk
+    Wordfolio.Api.Tests.Infrastructure.DelimitedStreamProcessorTests.buffers only necessary characters at chunk boundary

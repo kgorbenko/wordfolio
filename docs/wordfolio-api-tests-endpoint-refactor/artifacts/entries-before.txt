@@ -1,0 +1,50 @@
+``DELETE cascades to delete definitions, translations, and examples``
+``DELETE deletes entry successfully``
+``DELETE for another user's entry returns 404``
+``DELETE for non-existent entry returns 404``
+``DELETE returns 404 when collection does not exist``
+``DELETE returns 404 when entry belongs to different vocabulary``
+``DELETE returns 404 when vocabulary belongs to different collection``
+``DELETE without authentication fails``
+``GET by id returns 404 when collection does not exist``
+``GET by id returns 404 when entry belongs to different vocabulary``
+``GET by id returns 404 when entry does not exist``
+``GET by id returns 404 when vocabulary belongs to different collection``
+``GET by id returns 404 when vocabulary does not exist``
+``GET by id returns entry with hierarchy``
+``GET by id without authentication fails``
+``GET by vocabulary id for non-existent vocabulary fails``
+``GET by vocabulary id returns all entries``
+``GET by vocabulary id returns empty list when no entries``
+``GET by vocabulary id without authentication fails``
+``GET list returns 404 when collection does not exist``
+``GET list returns 404 when vocabulary does not belong to collection``
+``POST create returns 404 when collection does not exist``
+``POST create returns 404 when vocabulary does not belong to collection``
+``POST creates duplicate entry when AllowDuplicate is true``
+``POST creates entry with definitions and translations``
+``POST for non-existent vocabulary fails``
+``POST move for non-existent entry returns 404``
+``POST move returns 404 when collection does not exist``
+``POST move returns 404 when entry belongs to different vocabulary``
+``POST move returns 404 when target vocabulary belongs to another user``
+``POST move returns 404 when target vocabulary does not exist``
+``POST move returns 404 when vocabulary belongs to different collection``
+``POST move to default vocabulary succeeds``
+``POST move updates entry vocabulary for owned source and target``
+``POST move without authentication fails``
+``POST with duplicate entry text fails``
+``POST with empty entry text fails``
+``POST with no definitions or translations fails``
+``POST with too many examples fails``
+``POST without authentication fails``
+``PUT for another user's entry fails``
+``PUT for non-existent entry fails``
+``PUT returns 404 when collection does not exist``
+``PUT returns 404 when entry belongs to different vocabulary``
+``PUT returns 404 when vocabulary belongs to different collection``
+``PUT updates entry with new definitions and translations``
+``PUT with empty entry text fails``
+``PUT with no definitions or translations fails``
+``PUT with same entry text succeeds``
+``PUT without authentication fails``

@@ -131,7 +131,7 @@ Verify parity for the same area completed in the preceding Refactor step.
 
 ### 5. Entries endpoints
 - [x] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/EntriesTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Entries/` and update explicit compile includes ordering.
-- [ ] VerifyCoverage: Verify parity for `Entries` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/EntriesTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Entries`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Entries.`.
+- [x] VerifyCoverage: Verify parity for `Entries` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/EntriesTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Entries`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Entries.`.
 
 ### 6. Drafts endpoints
 - [ ] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/DraftsTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/` and update explicit compile includes ordering.
@@ -189,3 +189,8 @@ Agents append entries here after completing each step.
 - Work done: Split `EntriesTests.fs` into six behavior-specific files (`Create`, `GetEntriesByVocabulary`, `GetEntryById`, `Update`, `Delete`, and `Move`) under `Wordfolio.Api/Wordfolio.Api.Tests/Entries/`, preserving all test display names and test logic. Updated `Wordfolio.Api.Tests.fsproj` to include the new Entries files explicitly in area order and removed the legacy monolithic file from disk/includes.
 - Issues encountered: None.
 - Learnings: For large endpoint files, grouping tests by route variant (`POST/GET/PUT/DELETE/move`) keeps file responsibilities clear while maintaining parity-friendly member-name continuity for later coverage verification.
+
+### VerifyCoverage: Verify parity for `Entries` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/EntriesTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Entries`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Entries.`.
+- Work done: Generated Entries source inventories from `HEAD^` and the refactored `Entries` directory, confirmed zero source diff, captured `dotnet test --list-tests` output, and validated exact runtime parity for `Wordfolio.Api.Tests.Entries.` (50 expected and 50 discovered display names).
+- Issues encountered: None.
+- Learnings: For namespace-filtered runtime parity, stripping `Wordfolio.Api.Tests.Entries.<Class>.` from discovered test lines enables exact multiset comparison against source-extracted ``member _.``...```` display names.
