@@ -85,7 +85,7 @@ All steps use the **Implement** protocol above.
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/MoveDraftTests.fs`
 
 ### 6. Dictionary
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Dictionary/GetLookupTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Dictionary/GetLookupTests.fs`
 
 ## Progress Log
 
@@ -215,3 +215,8 @@ Agents append entries here after completing each step.
 - Work done: Strengthened move-draft write security coverage with seeder-based persistence assertions for successful moves (including unchanged non-targeted rows), unauthenticated (`401`) denials, and cross-user target vocabulary denials (`404`). Ran `dotnet fantomas Wordfolio.Api/Wordfolio.Api.Tests`, `dotnet build Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj`, and `dotnet test Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj` successfully.
 - Issues encountered: None.
 - Learnings: Move-draft ownership boundaries are enforced as `VocabularyNotFoundOrAccessDenied` (`404`), and robust mutation-denial tests should verify full persisted entry state remains unchanged across both targeted and non-targeted rows.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Dictionary/GetLookupTests.fs`
+- Work done: Reviewed `GetLookupTests.fs` against dictionary handlers and URL mappings, confirmed existing coverage already includes protected success streaming, unauthenticated (`401`) denial, and key input validation failures (`400`) for empty/whitespace text with no test-file changes required. Ran `dotnet fantomas Wordfolio.Api/Wordfolio.Api.Tests`, `dotnet build Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj`, and `dotnet test Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj` successfully.
+- Issues encountered: None.
+- Learnings: Ownership-boundary cross-user checks are not applicable for `GET /dictionary/lookup` because the endpoint operates on caller-provided lookup text and does not read or mutate user-owned domain entities beyond authentication requirements.
