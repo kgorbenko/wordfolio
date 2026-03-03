@@ -127,7 +127,7 @@ Verify parity for the same area completed in the preceding Refactor step.
 
 ### 4. Vocabularies endpoints
 - [x] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/VocabulariesTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/` and update explicit compile includes ordering.
-- [ ] VerifyCoverage: Verify parity for `Vocabularies` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/VocabulariesTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Vocabularies.`.
+- [x] VerifyCoverage: Verify parity for `Vocabularies` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/VocabulariesTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Vocabularies.`.
 
 ### 5. Entries endpoints
 - [ ] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/EntriesTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Entries/` and update explicit compile includes ordering.
@@ -179,3 +179,8 @@ Agents append entries here after completing each step.
 - Work done: Split the legacy vocabularies endpoint tests into five behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/`, preserving all test display names and assertion intent. Updated `Wordfolio.Api.Tests.fsproj` with explicit ordered includes for the new files and removed the monolithic `VocabulariesTests.fs` file.
 - Issues encountered: None.
 - Learnings: The endpoint split pattern remains stable when each file keeps its own `Urls` module alias and opens `Wordfolio.Api.Tests` for shared fixture and factory access after namespace relocation.
+
+### VerifyCoverage: Verify parity for `Vocabularies` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/VocabulariesTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Vocabularies.`.
+- Work done: Generated Vocabularies source inventories from `HEAD^` and the refactored `Vocabularies` directory, confirmed zero source diff, captured `dotnet test --list-tests` output, and validated exact runtime parity for `Wordfolio.Api.Tests.Vocabularies.` (15 expected and 15 discovered display names).
+- Issues encountered: None.
+- Learnings: Runtime parity validation is reliable by filtering discovered tests to the area namespace prefix and stripping the `<Namespace>.<Class>.` prefix before multiset comparison with extracted ``member _.``...```` source display names.
