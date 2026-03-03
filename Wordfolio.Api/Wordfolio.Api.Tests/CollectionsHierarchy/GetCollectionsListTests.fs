@@ -160,6 +160,40 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
         }
 
     [<Fact>]
+    member _.``GET collections list endpoint returns empty list when user has no collections``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(319, "user@example.com", "P@ssw0rd!")
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let url =
+                CollectionsUrlHelpers.collections
+                    { Search = None
+                      SortBy = CollectionSortByRequest.Name
+                      SortDirection = SortDirectionRequest.Asc }
+
+            let! response = client.GetAsync(url)
+
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+
+            let! actual = response.Content.ReadFromJsonAsync<CollectionOverviewResponse list>()
+
+            Assert.Equal<CollectionOverviewResponse list>([], actual)
+        }
+
+    [<Fact>]
     member _.``GET collections list endpoint returns vocabulary count excluding system and default vocabularies``
         ()
         : Task =

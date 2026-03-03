@@ -36,12 +36,15 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             let entry =
                 Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
 
+            let unaffectedEntry =
+                Entities.makeEntry vocabulary "remain" DateTimeOffset.UtcNow None
+
             do!
                 fixture.WordfolioSeeder
                 |> Seeder.addUsers [ wordfolioUser ]
                 |> Seeder.addCollections [ collection ]
                 |> Seeder.addVocabularies [ vocabulary ]
-                |> Seeder.addEntries [ entry ]
+                |> Seeder.addEntries [ entry; unaffectedEntry ]
                 |> Seeder.saveChangesAsync
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
@@ -57,6 +60,20 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             let expected: Entry option = None
 
             Assert.Equal<Entry option>(expected, actual)
+
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+
+            let unaffectedEntryInDatabase =
+                dbEntries
+                |> List.find(fun currentEntry -> currentEntry.Id = unaffectedEntry.Id)
+
+            let expectedDbEntries =
+                [ { unaffectedEntryInDatabase with
+                      Id = unaffectedEntry.Id
+                      VocabularyId = vocabulary.Id
+                      EntryText = "remain" } ]
+
+            Assert.Equal<Entry list>(expectedDbEntries, dbEntries)
         }
 
     [<Fact>]
@@ -94,6 +111,16 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.DeleteAsync(url)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+
+            let expectedDbEntries =
+                [ { dbEntries.[0] with
+                      Id = entry.Id
+                      VocabularyId = vocabulary.Id
+                      EntryText = "hello" } ]
+
+            Assert.Equal<Entry list>(expectedDbEntries, dbEntries)
         }
 
     [<Fact>]
@@ -141,12 +168,21 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             let entry =
                 Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
 
+            let requesterCollection =
+                Entities.makeCollection wordfolioUser2 "Requester Collection" None DateTimeOffset.UtcNow None false
+
+            let requesterVocabulary =
+                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let requesterEntry =
+                Entities.makeEntry requesterVocabulary "requester entry" DateTimeOffset.UtcNow None
+
             do!
                 fixture.WordfolioSeeder
                 |> Seeder.addUsers [ wordfolioUser1; wordfolioUser2 ]
-                |> Seeder.addCollections [ collection ]
-                |> Seeder.addVocabularies [ vocabulary ]
-                |> Seeder.addEntries [ entry ]
+                |> Seeder.addCollections [ collection; requesterCollection ]
+                |> Seeder.addVocabularies [ vocabulary; requesterVocabulary ]
+                |> Seeder.addEntries [ entry; requesterEntry ]
                 |> Seeder.saveChangesAsync
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser2)
@@ -157,6 +193,33 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.DeleteAsync(url)
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+
+            let ownerEntryInDatabase =
+                dbEntries
+                |> List.find(fun currentEntry -> currentEntry.Id = entry.Id)
+
+            let requesterEntryInDatabase =
+                dbEntries
+                |> List.find(fun currentEntry -> currentEntry.Id = requesterEntry.Id)
+
+            let expectedDbEntries =
+                [ { ownerEntryInDatabase with
+                      Id = entry.Id
+                      VocabularyId = vocabulary.Id
+                      EntryText = "hello" }
+                  { requesterEntryInDatabase with
+                      Id = requesterEntry.Id
+                      VocabularyId = requesterVocabulary.Id
+                      EntryText = "requester entry" } ]
+                |> List.sortBy(fun currentEntry -> currentEntry.Id)
+
+            let actualDbEntries =
+                dbEntries
+                |> List.sortBy(fun currentEntry -> currentEntry.Id)
+
+            Assert.Equal<Entry list>(expectedDbEntries, actualDbEntries)
         }
 
     [<Fact>]

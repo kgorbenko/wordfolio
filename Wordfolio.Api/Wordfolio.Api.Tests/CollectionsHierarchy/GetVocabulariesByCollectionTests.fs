@@ -97,7 +97,7 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
         }
 
     [<Fact>]
-    member _.``GET vocabularies by collection endpoint returns empty list for non-owned collection``() : Task =
+    member _.``GET vocabularies by collection endpoint returns empty list for another user's collection``() : Task =
         task {
             do! fixture.ResetDatabaseAsync()
 
@@ -106,26 +106,35 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(313, "user@example.com", "P@ssw0rd!")
 
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
             let otherUser = Entities.makeUser 314
 
-            let collection =
-                Entities.makeCollection otherUser "Other Collection" None DateTimeOffset.UtcNow None false
+            let requesterCollection =
+                Entities.makeCollection wordfolioUser "Requester Collection" None createdAt None false
 
-            let vocabulary =
-                Entities.makeVocabulary collection "Vocab" None DateTimeOffset.UtcNow None false
+            let requesterVocabulary =
+                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None createdAt None false
+
+            let otherCollection =
+                Entities.makeCollection otherUser "Other Collection" None createdAt None false
+
+            let otherVocabulary =
+                Entities.makeVocabulary otherCollection "Other Vocabulary" None createdAt None false
 
             do!
                 fixture.WordfolioSeeder
                 |> Seeder.addUsers [ wordfolioUser; otherUser ]
-                |> Seeder.addCollections [ collection ]
-                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addCollections [ requesterCollection; otherCollection ]
+                |> Seeder.addVocabularies [ requesterVocabulary; otherVocabulary ]
                 |> Seeder.saveChangesAsync
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
                 VocabulariesUrlHelpers.vocabulariesByCollection
-                    collection.Id
+                    otherCollection.Id
                     { Search = None
                       SortBy = VocabularySummarySortByRequest.Name
                       SortDirection = SortDirectionRequest.Asc }

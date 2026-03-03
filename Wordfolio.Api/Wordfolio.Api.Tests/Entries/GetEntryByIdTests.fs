@@ -143,6 +143,44 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
         }
 
     [<Fact>]
+    member _.``GET by id returns 404 when requesting another user's entry``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! _, ownerWordfolioUser = factory.CreateUserAsync(520, "owner@example.com", "P@ssw0rd!")
+
+            let! requesterIdentityUser, requesterWordfolioUser =
+                factory.CreateUserAsync(521, "requester@example.com", "P@ssw0rd!")
+
+            let ownerCollection =
+                Entities.makeCollection ownerWordfolioUser "Owner Collection" None DateTimeOffset.UtcNow None false
+
+            let ownerVocabulary =
+                Entities.makeVocabulary ownerCollection "Owner Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let ownerEntry =
+                Entities.makeEntry ownerVocabulary "owner-entry" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ ownerWordfolioUser; requesterWordfolioUser ]
+                |> Seeder.addCollections [ ownerCollection ]
+                |> Seeder.addVocabularies [ ownerVocabulary ]
+                |> Seeder.addEntries [ ownerEntry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(requesterIdentityUser)
+
+            let! response =
+                client.GetAsync(Urls.Entries.entryById(ownerCollection.Id, ownerVocabulary.Id, ownerEntry.Id))
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
     member _.``GET by id without authentication fails``() : Task =
         task {
             do! fixture.ResetDatabaseAsync()

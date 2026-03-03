@@ -166,6 +166,55 @@ type GetEntriesByVocabularyTests(fixture: WordfolioIdentityTestFixture) =
         }
 
     [<Fact>]
+    member _.``GET by vocabulary id for another user's vocabulary fails``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! requesterIdentityUser, requesterWordfolioUser =
+                factory.CreateUserAsync(311, "requester@example.com", "P@ssw0rd!")
+
+            let! _, otherWordfolioUser = factory.CreateUserAsync(312, "other@example.com", "P@ssw0rd!")
+
+            let requesterCollection =
+                Entities.makeCollection
+                    requesterWordfolioUser
+                    "Requester Collection"
+                    None
+                    DateTimeOffset.UtcNow
+                    None
+                    false
+
+            let requesterVocabulary =
+                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let otherCollection =
+                Entities.makeCollection otherWordfolioUser "Other Collection" None DateTimeOffset.UtcNow None false
+
+            let otherVocabulary =
+                Entities.makeVocabulary otherCollection "Other Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let otherEntry =
+                Entities.makeEntry otherVocabulary "foreign-entry" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ requesterWordfolioUser; otherWordfolioUser ]
+                |> Seeder.addCollections [ requesterCollection; otherCollection ]
+                |> Seeder.addVocabularies [ requesterVocabulary; otherVocabulary ]
+                |> Seeder.addEntries [ otherEntry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(requesterIdentityUser)
+
+            let! response = client.GetAsync(Urls.Entries.entriesByVocabulary(otherCollection.Id, otherVocabulary.Id))
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
     member _.``GET list returns 404 when collection does not exist``() : Task =
         task {
             do! fixture.ResetDatabaseAsync()

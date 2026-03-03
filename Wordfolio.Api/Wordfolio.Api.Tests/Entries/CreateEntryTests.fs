@@ -158,6 +158,21 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let! _, wordfolioUser = factory.CreateUserAsync(320, "auth-required@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Auth Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Auth Vocabulary" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.saveChangesAsync
+
             use client = factory.CreateClient()
 
             let request: CreateEntryRequest =
@@ -170,11 +185,23 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   AllowDuplicate = None }
 
             let url =
-                Urls.Entries.entriesByVocabulary(1, 1)
+                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            Assert.Equal<Entry list>([], dbEntries)
+
+            let! dbDefinitions = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            Assert.Equal<Definition list>([], dbDefinitions)
+
+            let! dbTranslations = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            Assert.Equal<Translation list>([], dbTranslations)
+
+            let! dbExamples = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+            Assert.Equal<Example list>([], dbExamples)
         }
 
     [<Fact>]
@@ -217,6 +244,86 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.PostAsJsonAsync(url, request)
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
+
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            Assert.Equal<Entry list>([], dbEntries)
+
+            let! dbDefinitions = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            Assert.Equal<Definition list>([], dbDefinitions)
+
+            let! dbTranslations = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            Assert.Equal<Translation list>([], dbTranslations)
+
+            let! dbExamples = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+            Assert.Equal<Example list>([], dbExamples)
+        }
+
+    [<Fact>]
+    member _.``POST create returns 404 for another user's vocabulary and does not mutate data``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! requesterIdentityUser, requesterWordfolioUser =
+                factory.CreateUserAsync(321, "requester@example.com", "P@ssw0rd!")
+
+            let! _, ownerWordfolioUser = factory.CreateUserAsync(322, "owner@example.com", "P@ssw0rd!")
+
+            let ownerCollection =
+                Entities.makeCollection ownerWordfolioUser "Owner Collection" None DateTimeOffset.UtcNow None false
+
+            let ownerVocabulary =
+                Entities.makeVocabulary ownerCollection "Owner Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let ownerEntry =
+                Entities.makeEntry ownerVocabulary "existing entry" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ requesterWordfolioUser; ownerWordfolioUser ]
+                |> Seeder.addCollections [ ownerCollection ]
+                |> Seeder.addVocabularies [ ownerVocabulary ]
+                |> Seeder.addEntries [ ownerEntry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(requesterIdentityUser)
+
+            let request: CreateEntryRequest =
+                { EntryText = "hello"
+                  Definitions =
+                    [ { DefinitionText = "a greeting"
+                        Source = DefinitionSourceDto.Manual
+                        Examples = [] } ]
+                  Translations = []
+                  AllowDuplicate = None }
+
+            let! response =
+                client.PostAsJsonAsync(
+                    Urls.Entries.entriesByVocabulary(ownerCollection.Id, ownerVocabulary.Id),
+                    request
+                )
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+
+            let expectedDbEntries =
+                [ { dbEntries.[0] with
+                      EntryText = "existing entry"
+                      VocabularyId = ownerVocabulary.Id } ]
+
+            Assert.Equal<Entry list>(expectedDbEntries, dbEntries)
+
+            let! dbDefinitions = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            Assert.Equal<Definition list>([], dbDefinitions)
+
+            let! dbTranslations = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            Assert.Equal<Translation list>([], dbTranslations)
+
+            let! dbExamples = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+            Assert.Equal<Example list>([], dbExamples)
         }
 
     [<Fact>]

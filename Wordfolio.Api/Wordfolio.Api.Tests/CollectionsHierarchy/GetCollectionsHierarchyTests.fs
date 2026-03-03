@@ -117,6 +117,103 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
         }
 
     [<Fact>]
+    member _.``GET returns only authenticated user's collections hierarchy``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! requesterIdentityUser, requesterWordfolioUser =
+                factory.CreateUserAsync(306, "requester@example.com", "P@ssw0rd!")
+
+            let! _, otherWordfolioUser = factory.CreateUserAsync(307, "other@example.com", "P@ssw0rd!")
+
+            let requesterCollection =
+                Entities.makeCollection
+                    requesterWordfolioUser
+                    "Requester Collection"
+                    (Some "Requester Description")
+                    DateTimeOffset.UtcNow
+                    None
+                    false
+
+            let requesterVocabulary =
+                Entities.makeVocabulary
+                    requesterCollection
+                    "Requester Vocabulary"
+                    (Some "Requester Vocab Description")
+                    DateTimeOffset.UtcNow
+                    None
+                    false
+
+            let requesterEntry =
+                Entities.makeEntry requesterVocabulary "requester-entry" DateTimeOffset.UtcNow None
+
+            let otherCollection =
+                Entities.makeCollection
+                    otherWordfolioUser
+                    "Other Collection"
+                    (Some "Other Description")
+                    DateTimeOffset.UtcNow
+                    None
+                    false
+
+            let otherVocabulary =
+                Entities.makeVocabulary
+                    otherCollection
+                    "Other Vocabulary"
+                    (Some "Other Vocab Description")
+                    DateTimeOffset.UtcNow
+                    None
+                    false
+
+            let otherEntry =
+                Entities.makeEntry otherVocabulary "other-entry" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ requesterWordfolioUser; otherWordfolioUser ]
+                |> Seeder.addCollections [ requesterCollection; otherCollection ]
+                |> Seeder.addVocabularies [ requesterVocabulary; otherVocabulary ]
+                |> Seeder.addEntries [ requesterEntry; otherEntry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(requesterIdentityUser)
+
+            let! response = client.GetAsync(Urls.CollectionsHierarchy.Path)
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+
+            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResponse>()
+
+            let actualCollection =
+                Assert.Single(actual.Collections)
+
+            let actualVocabulary =
+                Assert.Single(actualCollection.Vocabularies)
+
+            let expected: CollectionsHierarchyResponse =
+                { Collections =
+                    [ { Id = requesterCollection.Id
+                        Name = "Requester Collection"
+                        Description = Some "Requester Description"
+                        CreatedAt = actualCollection.CreatedAt
+                        UpdatedAt = None
+                        Vocabularies =
+                          [ { Id = requesterVocabulary.Id
+                              Name = "Requester Vocabulary"
+                              Description = Some "Requester Vocab Description"
+                              CreatedAt = actualVocabulary.CreatedAt
+                              UpdatedAt = None
+                              EntryCount = 1 } ] } ]
+                  DefaultVocabulary = None }
+
+            Assert.Equal(expected, actual)
+        }
+
+    [<Fact>]
     member _.``GET excludes system collections``() : Task =
         task {
             do! fixture.ResetDatabaseAsync()

@@ -87,6 +87,10 @@ type CreateCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.PostAsJsonAsync(Urls.Collections.Path, request)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+
+            let! databaseState = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+
+            Assert.Equal<Collection list>([], databaseState)
         }
 
     [<Fact>]

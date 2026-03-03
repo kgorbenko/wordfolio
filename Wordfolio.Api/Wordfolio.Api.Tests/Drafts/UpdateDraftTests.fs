@@ -36,6 +36,9 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let entry =
                 Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
 
+            let untouchedEntry =
+                Entities.makeEntry vocabulary "untouched" DateTimeOffset.UtcNow None
+
             let oldDefinition =
                 Entities.makeDefinition
                     entry
@@ -50,14 +53,41 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
                     Wordfolio.Api.DataAccess.Translations.TranslationSource.Manual
                     0
 
+            let untouchedDefinition =
+                Entities.makeDefinition
+                    untouchedEntry
+                    "untouched definition"
+                    Wordfolio.Api.DataAccess.Definitions.DefinitionSource.Manual
+                    0
+
+            let untouchedTranslation =
+                Entities.makeTranslation
+                    untouchedEntry
+                    "untouched translation"
+                    Wordfolio.Api.DataAccess.Translations.TranslationSource.Manual
+                    0
+
+            let untouchedDefinitionExample =
+                Entities.makeExampleForDefinition
+                    untouchedDefinition
+                    "Untouched definition example"
+                    Wordfolio.Api.DataAccess.Examples.ExampleSource.Custom
+
+            let untouchedTranslationExample =
+                Entities.makeExampleForTranslation
+                    untouchedTranslation
+                    "Untouched translation example"
+                    Wordfolio.Api.DataAccess.Examples.ExampleSource.Custom
+
             do!
                 fixture.WordfolioSeeder
                 |> Seeder.addUsers [ wordfolioUser ]
                 |> Seeder.addCollections [ collection ]
                 |> Seeder.addVocabularies [ vocabulary ]
-                |> Seeder.addEntries [ entry ]
-                |> Seeder.addDefinitions [ oldDefinition ]
-                |> Seeder.addTranslations [ oldTranslation ]
+                |> Seeder.addEntries [ entry; untouchedEntry ]
+                |> Seeder.addDefinitions [ oldDefinition; untouchedDefinition ]
+                |> Seeder.addTranslations [ oldTranslation; untouchedTranslation ]
+                |> Seeder.addExamples [ untouchedDefinitionExample; untouchedTranslationExample ]
                 |> Seeder.saveChangesAsync
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
@@ -124,32 +154,55 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
 
+            let dbEntriesSorted =
+                dbEntries
+                |> List.sortBy(fun dbEntry -> dbEntry.EntryText)
+
             let expectedDbEntries =
-                [ { dbEntries.[0] with
+                [ { dbEntriesSorted.[0] with
                       EntryText = "hello updated"
+                      VocabularyId = vocabulary.Id }
+                  { dbEntriesSorted.[1] with
+                      EntryText = "untouched"
                       VocabularyId = vocabulary.Id } ]
 
-            Assert.Equal<Entry list>(expectedDbEntries, dbEntries)
+            Assert.Equal<Entry list>(expectedDbEntries, dbEntriesSorted)
 
             let! dbDefinitions = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
 
+            let dbDefinitionsSorted =
+                dbDefinitions
+                |> List.sortBy(fun dbDefinition -> dbDefinition.DefinitionText)
+
             let expectedDbDefinitions =
-                [ { dbDefinitions.[0] with
+                [ { dbDefinitionsSorted.[0] with
                       DefinitionText = "a new greeting"
+                      Source = Wordfolio.Api.DataAccess.Definitions.DefinitionSource.Manual
+                      DisplayOrder = 0 }
+                  { dbDefinitionsSorted.[1] with
+                      DefinitionText = "untouched definition"
                       Source = Wordfolio.Api.DataAccess.Definitions.DefinitionSource.Manual
                       DisplayOrder = 0 } ]
 
-            Assert.Equal<Definition list>(expectedDbDefinitions, dbDefinitions)
+            Assert.Equal<Definition list>(expectedDbDefinitions, dbDefinitionsSorted)
 
             let! dbTranslations = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
 
+            let dbTranslationsSorted =
+                dbTranslations
+                |> List.sortBy(fun dbTranslation -> dbTranslation.TranslationText)
+
             let expectedDbTranslations =
-                [ { dbTranslations.[0] with
+                [ { dbTranslationsSorted.[0] with
                       TranslationText = "hola actualizado"
+                      Source = Wordfolio.Api.DataAccess.Translations.TranslationSource.Manual
+                      DisplayOrder = 0 }
+                  { dbTranslationsSorted.[1] with
+                      TranslationText = "untouched translation"
                       Source = Wordfolio.Api.DataAccess.Translations.TranslationSource.Manual
                       DisplayOrder = 0 } ]
 
-            Assert.Equal<Translation list>(expectedDbTranslations, dbTranslations)
+            Assert.Equal<Translation list>(expectedDbTranslations, dbTranslationsSorted)
 
             let! dbExamples = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
 
@@ -163,6 +216,12 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
                       Source = Wordfolio.Api.DataAccess.Examples.ExampleSource.Custom }
                   { dbExamplesSorted.[1] with
                       ExampleText = "Hola ahi!"
+                      Source = Wordfolio.Api.DataAccess.Examples.ExampleSource.Custom }
+                  { dbExamplesSorted.[2] with
+                      ExampleText = "Untouched definition example"
+                      Source = Wordfolio.Api.DataAccess.Examples.ExampleSource.Custom }
+                  { dbExamplesSorted.[3] with
+                      ExampleText = "Untouched translation example"
                       Source = Wordfolio.Api.DataAccess.Examples.ExampleSource.Custom } ]
 
             Assert.Equal<Example list>(expectedDbExamples, dbExamplesSorted)
@@ -176,6 +235,48 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let! _, wordfolioUser = factory.CreateUserAsync(715, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+
+            let untouchedEntry =
+                Entities.makeEntry vocabulary "untouched" DateTimeOffset.UtcNow None
+
+            let definition =
+                Entities.makeDefinition
+                    entry
+                    "original definition"
+                    Wordfolio.Api.DataAccess.Definitions.DefinitionSource.Manual
+                    0
+
+            let untouchedDefinition =
+                Entities.makeDefinition
+                    untouchedEntry
+                    "untouched definition"
+                    Wordfolio.Api.DataAccess.Definitions.DefinitionSource.Manual
+                    0
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries [ entry; untouchedEntry ]
+                |> Seeder.addDefinitions [ definition; untouchedDefinition ]
+                |> Seeder.saveChangesAsync
+
+            let! dbEntriesBefore = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            let! dbDefinitionsBefore = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            let! dbTranslationsBefore = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            let! dbExamplesBefore = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+
             use client = factory.CreateClient()
 
             let request: UpdateEntryRequest =
@@ -186,11 +287,21 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
                         Examples = [] } ]
                   Translations = [] }
 
-            let url = Urls.Drafts.draftById 1
+            let url = Urls.Drafts.draftById entry.Id
 
             let! response = client.PutAsJsonAsync(url, request)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+
+            let! dbEntriesAfter = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            let! dbDefinitionsAfter = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            let! dbTranslationsAfter = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            let! dbExamplesAfter = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+
+            Assert.Equal<Entry list>(dbEntriesBefore, dbEntriesAfter)
+            Assert.Equal<Definition list>(dbDefinitionsBefore, dbDefinitionsAfter)
+            Assert.Equal<Translation list>(dbTranslationsBefore, dbTranslationsAfter)
+            Assert.Equal<Example list>(dbExamplesBefore, dbExamplesAfter)
         }
 
     [<Fact>]
@@ -220,6 +331,11 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
                 |> Seeder.addEntries [ entry ]
                 |> Seeder.saveChangesAsync
 
+            let! dbEntriesBefore = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            let! dbDefinitionsBefore = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            let! dbTranslationsBefore = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            let! dbExamplesBefore = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: UpdateEntryRequest =
@@ -235,6 +351,16 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.PutAsJsonAsync(url, request)
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
+
+            let! dbEntriesAfter = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            let! dbDefinitionsAfter = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            let! dbTranslationsAfter = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            let! dbExamplesAfter = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+
+            Assert.Equal<Entry list>(dbEntriesBefore, dbEntriesAfter)
+            Assert.Equal<Definition list>(dbDefinitionsBefore, dbDefinitionsAfter)
+            Assert.Equal<Translation list>(dbTranslationsBefore, dbTranslationsAfter)
+            Assert.Equal<Example list>(dbExamplesBefore, dbExamplesAfter)
         }
 
     [<Fact>]
@@ -264,6 +390,11 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
                 |> Seeder.addEntries [ entry ]
                 |> Seeder.saveChangesAsync
 
+            let! dbEntriesBefore = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            let! dbDefinitionsBefore = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            let! dbTranslationsBefore = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            let! dbExamplesBefore = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: UpdateEntryRequest =
@@ -276,6 +407,16 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.PutAsJsonAsync(url, request)
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
+
+            let! dbEntriesAfter = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            let! dbDefinitionsAfter = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            let! dbTranslationsAfter = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            let! dbExamplesAfter = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+
+            Assert.Equal<Entry list>(dbEntriesBefore, dbEntriesAfter)
+            Assert.Equal<Definition list>(dbDefinitionsBefore, dbDefinitionsAfter)
+            Assert.Equal<Translation list>(dbTranslationsBefore, dbTranslationsAfter)
+            Assert.Equal<Example list>(dbExamplesBefore, dbExamplesAfter)
         }
 
     [<Fact>]
@@ -422,13 +563,34 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let entry =
                 Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
 
+            let definition =
+                Entities.makeDefinition
+                    entry
+                    "owner definition"
+                    Wordfolio.Api.DataAccess.Definitions.DefinitionSource.Manual
+                    0
+
+            let translation =
+                Entities.makeTranslation
+                    entry
+                    "owner translation"
+                    Wordfolio.Api.DataAccess.Translations.TranslationSource.Manual
+                    0
+
             do!
                 fixture.WordfolioSeeder
                 |> Seeder.addUsers [ wordfolioUser1; wordfolioUser2 ]
                 |> Seeder.addCollections [ collection ]
                 |> Seeder.addVocabularies [ vocabulary ]
                 |> Seeder.addEntries [ entry ]
+                |> Seeder.addDefinitions [ definition ]
+                |> Seeder.addTranslations [ translation ]
                 |> Seeder.saveChangesAsync
+
+            let! dbEntriesBefore = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            let! dbDefinitionsBefore = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            let! dbTranslationsBefore = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            let! dbExamplesBefore = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser2)
 
@@ -445,4 +607,14 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.PutAsJsonAsync(url, request)
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+
+            let! dbEntriesAfter = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            let! dbDefinitionsAfter = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            let! dbTranslationsAfter = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            let! dbExamplesAfter = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+
+            Assert.Equal<Entry list>(dbEntriesBefore, dbEntriesAfter)
+            Assert.Equal<Definition list>(dbDefinitionsBefore, dbDefinitionsAfter)
+            Assert.Equal<Translation list>(dbTranslationsBefore, dbTranslationsAfter)
+            Assert.Equal<Example list>(dbExamplesBefore, dbExamplesAfter)
         }
