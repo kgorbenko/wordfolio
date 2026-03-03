@@ -139,7 +139,7 @@ Verify parity for the same area completed in the preceding Refactor step.
 
 ### 7. Dictionary endpoints
 - [x] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/DictionaryTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Dictionary/` and update explicit compile includes ordering.
-- [ ] VerifyCoverage: Verify parity for `Dictionary` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/DictionaryTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Dictionary`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Dictionary.`.
+- [x] VerifyCoverage: Verify parity for `Dictionary` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/DictionaryTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Dictionary`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Dictionary.`.
 
 ## Progress Log
 
@@ -209,3 +209,8 @@ Agents append entries here after completing each step.
 - Work done: Split `DictionaryTests.fs` into a behavior-specific file at `Wordfolio.Api/Wordfolio.Api.Tests/Dictionary/GetLookupTests.fs`, preserved all existing test display names and test logic, and updated `Wordfolio.Api.Tests.fsproj` to include the new Dictionary file explicitly while removing the legacy monolithic file.
 - Issues encountered: None.
 - Learnings: Even when an area currently has a single route variant, placing it in an area namespace/directory keeps compile ordering consistent and preserves a clean path for later endpoint expansion.
+
+### VerifyCoverage: Verify parity for `Dictionary` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/DictionaryTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Dictionary`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Dictionary.`.
+- Work done: Verified Dictionary source parity by comparing test display names extracted from `HEAD^:Wordfolio.Api/Wordfolio.Api.Tests/DictionaryTests.fs` against `Wordfolio.Api/Wordfolio.Api.Tests/Dictionary` with zero diff, then ran `dotnet test --list-tests` and confirmed exact runtime parity for `Wordfolio.Api.Tests.Dictionary.` (4 expected and 4 discovered display names).
+- Issues encountered: Initial runtime/source compare failed because source names included F# backtick delimiters; normalized extracted source names before comparison to match discovered runtime display names.
+- Learnings: For F# ``member _.``...```` extraction, strip enclosing double-backticks before multiset comparison with `--list-tests` output to avoid false parity mismatches.
