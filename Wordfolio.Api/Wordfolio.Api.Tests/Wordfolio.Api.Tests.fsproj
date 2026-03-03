@@ -28,7 +28,11 @@
     <Compile Include="Auth/LoginTests.fs" />
     <Compile Include="Auth/RefreshTests.fs" />
     <Compile Include="Auth/GetPasswordRequirementsTests.fs" />
-    <Compile Include="CollectionsTests.fs" />
+    <Compile Include="Collections/CreateCollectionTests.fs" />
+    <Compile Include="Collections/GetCollectionsTests.fs" />
+    <Compile Include="Collections/GetCollectionByIdTests.fs" />
+    <Compile Include="Collections/UpdateCollectionTests.fs" />
+    <Compile Include="Collections/DeleteCollectionTests.fs" />
     <Compile Include="CollectionsHierarchyTests.fs" />
     <Compile Include="VocabulariesTests.fs" />
     <Compile Include="EntriesTests.fs" />

@@ -118,7 +118,7 @@ Verify parity for the same area completed in the preceding Refactor step.
 - [x] VerifyCoverage: Verify parity for `Auth` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/AuthTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Auth`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Auth.`.
 
 ### 2. Collections endpoints
-- [ ] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Collections/` and update explicit compile includes ordering.
+- [x] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Collections/` and update explicit compile includes ordering.
 - [ ] VerifyCoverage: Verify parity for `Collections` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/CollectionsTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Collections`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Collections.`.
 
 ### 3. Collections hierarchy endpoints
@@ -154,3 +154,8 @@ Agents append entries here after completing each step.
 - Work done: Generated Auth source inventories from `HEAD^` and the refactored Auth directory, confirmed zero diff, then captured `dotnet test --list-tests` output and validated an exact 9/9 runtime-to-source test name match for the `Wordfolio.Api.Tests.Auth.` namespace.
 - Issues encountered: `rg` and `python` were unavailable in this environment; used `grep -P` and `python3` equivalents to complete the same verification workflow.
 - Learnings: Runtime list-test parity checks are easiest by stripping class prefixes via a namespace+class regex (`Wordfolio.Api.Tests.Auth.<Class>.<DisplayName>`) before multiset comparison against extracted source display names.
+
+### Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Collections/` and update explicit compile includes ordering.
+- Work done: Split the legacy Collections endpoint tests into five behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Collections/`, preserving all test display names and test logic as-is. Updated `Wordfolio.Api.Tests.fsproj` with explicit ordered compile includes for the new files and removed the monolithic `CollectionsTests.fs` file.
+- Issues encountered: None.
+- Learnings: Area-level splits compile cleanly when each moved file opens `Wordfolio.Api.Tests` for shared fixture/factory types and keeps its own local `Urls` module alias.
