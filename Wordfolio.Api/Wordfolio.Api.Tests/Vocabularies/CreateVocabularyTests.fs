@@ -1,0 +1,135 @@
+namespace Wordfolio.Api.Tests.Vocabularies
+
+open System
+open System.Net
+open System.Net.Http.Json
+open System.Threading.Tasks
+
+open Xunit
+
+open Wordfolio.Api.Api.Vocabularies.Types
+open Wordfolio.Api.Tests
+open Wordfolio.Api.Tests.Utils
+open Wordfolio.Api.Tests.Utils.Wordfolio
+
+module Urls = Wordfolio.Api.Urls
+
+type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
+    interface IClassFixture<WordfolioIdentityTestFixture>
+
+    [<Fact>]
+    member _.``POST creates vocabulary``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(200, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: CreateVocabularyRequest =
+                { Name = "Test Vocabulary"
+                  Description = Some "A test vocabulary" }
+
+            let url =
+                Urls.Vocabularies.vocabulariesByCollection collection.Id
+
+            let! response = client.PostAsJsonAsync(url, request)
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode)
+
+            let! result = response.Content.ReadFromJsonAsync<VocabularyResponse>()
+
+            let createdVocabularyId = result.Id
+
+            let expectedResult: VocabularyResponse =
+                { Id = createdVocabularyId
+                  CollectionId = collection.Id
+                  Name = "Test Vocabulary"
+                  Description = Some "A test vocabulary"
+                  CreatedAt = result.CreatedAt
+                  UpdatedAt = None }
+
+            Assert.Equal(expectedResult, result)
+
+            let expectedDatabaseState: Wordfolio.Vocabulary list =
+                [ { Id = createdVocabularyId
+                    CollectionId = collection.Id
+                    Name = "Test Vocabulary"
+                    Description = Some "A test vocabulary"
+                    CreatedAt = result.CreatedAt
+                    UpdatedAt = None
+                    IsDefault = false } ]
+
+            let! databaseState = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+
+            Assert.Equal<Vocabulary list>(expectedDatabaseState, databaseState)
+        }
+
+    [<Fact>]
+    member _.``POST without authentication fails``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            use client = factory.CreateClient()
+
+            let request: CreateVocabularyRequest =
+                { Name = "Test Vocabulary"
+                  Description = Some "A test vocabulary" }
+
+            let url =
+                Urls.Vocabularies.vocabulariesByCollection 1
+
+            let! response = client.PostAsJsonAsync(url, request)
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``POST with empty name fails``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(201, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let request: CreateVocabularyRequest =
+                { Name = ""
+                  Description = Some "A test vocabulary" }
+
+            let url =
+                Urls.Vocabularies.vocabulariesByCollection collection.Id
+
+            let! response = client.PostAsJsonAsync(url, request)
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
+        }

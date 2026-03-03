@@ -240,3 +240,4 @@ Vitest + React Testing Library. Tests in `Wordfolio.Frontend/tests/`, mirroring 
 @Wordfolio.Api/Wordfolio.Api.Domain.Tests/AGENTS.md
 @Wordfolio.Api/Wordfolio.Api.DataAccess/AGENTS.md
 @Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/AGENTS.md
+@Wordfolio.Api/Wordfolio.Api.Tests/AGENTS.md
