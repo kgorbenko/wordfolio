@@ -64,7 +64,7 @@ All steps use the **Implement** protocol above.
 ### 3. Vocabularies
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/CreateVocabularyTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabulariesTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabularyByIdTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabularyByIdTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/UpdateVocabularyTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/DeleteVocabularyTests.fs`
 
@@ -140,3 +140,8 @@ Agents append entries here after completing each step.
 - Work done: Added authenticated non-empty list coverage that seeds two vocabularies and asserts the full response DTOs, plus a cross-user ownership-boundary test asserting `404 NotFound` when querying another user's collection. Kept existing empty-list and unauthenticated (`401`) coverage and ran `dotnet fantomas`, `dotnet build`, and `dotnet test` successfully.
 - Issues encountered: None.
 - Learnings: This user-scoped list endpoint enforces ownership as collection lookup denial (`VocabularyCollectionNotFound` -> `404`) rather than filtered empty results, so boundary tests should assert explicit not-found behavior.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabularyByIdTests.fs`
+- Work done: Added explicit cross-user ownership-boundary coverage asserting `403 Forbidden` when an authenticated requester tries to fetch another user's vocabulary by id, while keeping existing success, not-found, and unauthenticated coverage intact. Ran `dotnet fantomas`, `dotnet build`, and `dotnet test` successfully.
+- Issues encountered: None.
+- Learnings: The get-vocabulary-by-id endpoint maps ownership denial to `VocabularyAccessDenied` (`403`) rather than not-found, so user-isolation tests should assert forbidden for foreign vocabulary ids.
