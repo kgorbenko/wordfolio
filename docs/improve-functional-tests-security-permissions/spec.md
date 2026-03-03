@@ -51,7 +51,7 @@ All steps use the **Implement** protocol above.
 
 ### 1. Collections
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/CreateCollectionTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/GetCollectionsTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/GetCollectionsTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/GetCollectionByIdTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/UpdateCollectionTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/DeleteCollectionTests.fs`
@@ -95,3 +95,8 @@ Agents append entries here after completing each step.
 - Work done: Added a persistence assertion to the unauthenticated create-collection test to prove denied writes do not create rows, and validated the file remains compliant with fixture/seeding/assertion rules.
 - Issues encountered: None.
 - Learnings: Create-collection is user-scoped by authenticated user context and has no cross-user target identifier, so ownership-boundary mutation denial is not applicable beyond unauthenticated write denial checks.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/GetCollectionsTests.fs`
+- Work done: Added a non-empty list test that seeds collections for two users and verifies the authenticated caller only receives their own collection, while preserving explicit unauthenticated and empty-list coverage.
+- Issues encountered: Initial equality assertions failed due to timestamp precision differences from HTTP serialization, so expected response timestamps were aligned to API response values.
+- Learnings: For list-response DTO equality in this suite, ownership-boundary assertions should focus on record identity/content while normalizing response timestamps when serialization precision differs from seeded values.
