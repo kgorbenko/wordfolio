@@ -134,7 +134,7 @@ Verify parity for the same area completed in the preceding Refactor step.
 - [x] VerifyCoverage: Verify parity for `Entries` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/EntriesTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Entries`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Entries.`.
 
 ### 6. Drafts endpoints
-- [ ] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/DraftsTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/` and update explicit compile includes ordering.
+- [x] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/DraftsTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/` and update explicit compile includes ordering.
 - [ ] VerifyCoverage: Verify parity for `Drafts` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/DraftsTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Drafts`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Drafts.`.
 
 ### 7. Dictionary endpoints
@@ -194,3 +194,8 @@ Agents append entries here after completing each step.
 - Work done: Generated Entries source inventories from `HEAD^` and the refactored `Entries` directory, confirmed zero source diff, captured `dotnet test --list-tests` output, and validated exact runtime parity for `Wordfolio.Api.Tests.Entries.` (50 expected and 50 discovered display names).
 - Issues encountered: None.
 - Learnings: For namespace-filtered runtime parity, stripping `Wordfolio.Api.Tests.Entries.<Class>.` from discovered test lines enables exact multiset comparison against source-extracted ``member _.``...```` display names.
+
+### Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/DraftsTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/` and update explicit compile includes ordering.
+- Work done: Split `DraftsTests.fs` into six behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/` (`GetDrafts`, `CreateDraft`, `GetDraftById`, `UpdateDraft`, `DeleteDraft`, `MoveDraft`) while preserving all existing test display names and logic. Updated `Wordfolio.Api.Tests.fsproj` to include the new Drafts files explicitly in area order and removed the legacy monolithic file from disk/includes.
+- Issues encountered: None.
+- Learnings: The Drafts split compiles cleanly when each new area file opens `Wordfolio.Api.Tests` for shared fixture/factory types and keeps route-specific tests grouped by endpoint behavior for parity verification.

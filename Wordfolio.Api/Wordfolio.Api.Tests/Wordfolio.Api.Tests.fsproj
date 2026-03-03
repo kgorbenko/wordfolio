@@ -47,7 +47,12 @@
     <Compile Include="Entries/UpdateEntryTests.fs" />
     <Compile Include="Entries/DeleteEntryTests.fs" />
     <Compile Include="Entries/MoveEntryTests.fs" />
-    <Compile Include="DraftsTests.fs" />
+    <Compile Include="Drafts/GetDraftsTests.fs" />
+    <Compile Include="Drafts/CreateDraftTests.fs" />
+    <Compile Include="Drafts/GetDraftByIdTests.fs" />
+    <Compile Include="Drafts/UpdateDraftTests.fs" />
+    <Compile Include="Drafts/DeleteDraftTests.fs" />
+    <Compile Include="Drafts/MoveDraftTests.fs" />
     <Compile Include="DictionaryTests.fs" />
     <Compile Include="StatusTests.fs" />
     <Compile Include="OpenApiTests.fs" />
