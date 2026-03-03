@@ -1,0 +1,9 @@
+``GET /auth/password-requirements returns password requirements``
+``POST /auth/login with invalid credentials fails``
+``POST /auth/login with non-existent user fails``
+``POST /auth/login with valid credentials succeeds and returns tokens``
+``POST /auth/refresh with invalid token fails``
+``POST /auth/refresh with valid token succeeds and returns new tokens``
+``POST /auth/register succeeds and creates rows in both schemas``
+``POST /auth/register with duplicate email fails``
+``POST /auth/register with weak password fails``

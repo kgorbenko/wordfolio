@@ -115,7 +115,7 @@ Verify parity for the same area completed in the preceding Refactor step.
 
 ### 1. Auth endpoints
 - [x] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/AuthTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Auth/` and update explicit compile includes ordering.
-- [ ] VerifyCoverage: Verify parity for `Auth` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/AuthTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Auth`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Auth.`.
+- [x] VerifyCoverage: Verify parity for `Auth` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/AuthTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Auth`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Auth.`.
 
 ### 2. Collections endpoints
 - [ ] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Collections/` and update explicit compile includes ordering.
@@ -149,3 +149,8 @@ Agents append entries here after completing each step.
 - Work done: Split the monolithic auth test file into four endpoint-behavior files under `Wordfolio.Api/Wordfolio.Api.Tests/Auth/`, preserved all existing test names and logic, and updated `Wordfolio.Api.Tests.fsproj` to include the new files explicitly in order.
 - Issues encountered: Initial build failed because files moved into `Wordfolio.Api.Tests.Auth` needed an explicit `open Wordfolio.Api.Tests` to access `WebApplicationFactory`; resolved and re-ran verification commands successfully.
 - Learnings: When moving tests into area namespaces, shared test infrastructure types defined in parent namespaces must be opened explicitly to keep type inference and JSON deserialization assertions compiling cleanly.
+
+### VerifyCoverage: Verify parity for `Auth` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/AuthTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Auth`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Auth.`.
+- Work done: Generated Auth source inventories from `HEAD^` and the refactored Auth directory, confirmed zero diff, then captured `dotnet test --list-tests` output and validated an exact 9/9 runtime-to-source test name match for the `Wordfolio.Api.Tests.Auth.` namespace.
+- Issues encountered: `rg` and `python` were unavailable in this environment; used `grep -P` and `python3` equivalents to complete the same verification workflow.
+- Learnings: Runtime list-test parity checks are easiest by stripping class prefixes via a namespace+class regex (`Wordfolio.Api.Tests.Auth.<Class>.<DisplayName>`) before multiset comparison against extracted source display names.
