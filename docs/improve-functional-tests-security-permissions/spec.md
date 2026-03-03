@@ -1,0 +1,97 @@
+# Improve Functional Tests Security Permissions
+
+## Overview
+
+This roadmap improves security-focused API integration tests in `Wordfolio.Api/Wordfolio.Api.Tests`, with emphasis on two guarantees: protected endpoints reject unauthenticated calls, and user-scoped endpoints do not expose or mutate another user's data.
+
+Each loop iteration handles one test file only. The agent must plan and implement the exact test changes for that file during the iteration.
+
+## Specification
+
+### Goals & Success Criteria
+
+- Each step file is reviewed and updated as needed to satisfy `Wordfolio.Api/Wordfolio.Api.Tests/AGENTS.md`.
+- Security coverage is explicit in each step file:
+  - unauthenticated access behavior is tested for protected endpoints;
+  - user-ownership boundaries are tested for user-scoped read/list/write endpoints.
+- For write-denial scenarios, persistence is asserted with seeder queries to prove unauthorized mutations did not occur.
+- Verification commands pass before any commit is created.
+
+### Scope
+
+- In scope: endpoint test files under `Wordfolio.Api/Wordfolio.Api.Tests/Collections/`, `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/`, `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/`, `Wordfolio.Api/Wordfolio.Api.Tests/Entries/`, `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/`, and `Wordfolio.Api/Wordfolio.Api.Tests/Dictionary/`.
+- Out of scope: `Wordfolio.Api/Wordfolio.Api.Tests/Auth/*`, `Wordfolio.Api/Wordfolio.Api.Tests/StatusTests.fs`, `Wordfolio.Api/Wordfolio.Api.Tests/OpenApiTests.fs`, and all non-test projects.
+
+## Execution Protocol
+
+**Implement:**
+1. Modify only the test file named by the current step scope. Do not modify production code, other test files, or dependencies.
+2. Ensure the file is fully compliant with `Wordfolio.Api/Wordfolio.Api.Tests/AGENTS.md` (fixture usage, reset placement, seeding pattern, assertion pattern, and self-contained structure).
+3. Determine expected authorization behavior for the file's endpoint(s) by checking `Wordfolio.Api/Wordfolio.Api/Api/*/Handlers.fs` and route paths in `Wordfolio.Api/Wordfolio.Api/Urls.fs`.
+4. Extend security coverage if needed:
+   - Ensure unauthenticated (`401`) behavior is explicitly tested for protected endpoint(s).
+   - For user-scoped read/list endpoints, ensure there is explicit cross-user denial/visibility-boundary coverage.
+   - For user-scoped write endpoints (`POST`/`PUT`/`DELETE`/move), ensure there is explicit cross-user mutation-denial coverage and seeder-based persistence assertions proving unauthorized data was not changed.
+   - If ownership-boundary is not applicable to the endpoint shape, keep/ensure unauthenticated coverage and record the non-applicability reason in the Progress Log.
+5. Run all commands in **Verification Commands** in order.
+6. If verification passes, commit and exit.
+7. If verification fails, do not commit; fix and re-run verification. If verification cannot be made green in this iteration, exit without commit and document the blocker in the Progress Log.
+
+## Verification Commands
+
+`dotnet fantomas Wordfolio.Api/Wordfolio.Api.Tests`
+
+`dotnet build Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj`
+
+`dotnet test Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj`
+
+## Implementation Steps
+
+All steps use the **Implement** protocol above.
+
+### 1. Collections
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/CreateCollectionTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/GetCollectionsTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/GetCollectionByIdTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/UpdateCollectionTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/DeleteCollectionTests.fs`
+
+### 2. Collections Hierarchy
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetCollectionsHierarchyTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetCollectionsListTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetVocabulariesByCollectionTests.fs`
+
+### 3. Vocabularies
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/CreateVocabularyTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabulariesTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabularyByIdTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/UpdateVocabularyTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/DeleteVocabularyTests.fs`
+
+### 4. Entries
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/CreateEntryTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/GetEntriesByVocabularyTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/GetEntryByIdTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/UpdateEntryTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/DeleteEntryTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/MoveEntryTests.fs`
+
+### 5. Drafts
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/CreateDraftTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftsTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftByIdTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/UpdateDraftTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/DeleteDraftTests.fs`
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/MoveDraftTests.fs`
+
+### 6. Dictionary
+- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Dictionary/GetLookupTests.fs`
+
+## Progress Log
+
+Agents append entries here after completing each step.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/CreateCollectionTests.fs`
+- Work done: Added a persistence assertion to the unauthenticated create-collection test to prove denied writes do not create rows, and validated the file remains compliant with fixture/seeding/assertion rules.
+- Issues encountered: None.
+- Learnings: Create-collection is user-scoped by authenticated user context and has no cross-user target identifier, so ownership-boundary mutation denial is not applicable beyond unauthenticated write denial checks.
