@@ -72,7 +72,7 @@ All steps use the **Implement** protocol above.
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/CreateEntryTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/GetEntriesByVocabularyTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/GetEntryByIdTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/UpdateEntryTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/UpdateEntryTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/DeleteEntryTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/MoveEntryTests.fs`
 
@@ -170,3 +170,8 @@ Agents append entries here after completing each step.
 - Work done: Added explicit cross-user ownership-boundary coverage asserting an authenticated requester gets `404 NotFound` when fetching another user's entry by collection/vocabulary/entry id, while retaining existing success, unauthenticated, and not-found-path tests. Ran `dotnet fantomas`, `dotnet build`, and `dotnet test` successfully.
 - Issues encountered: None.
 - Learnings: This endpoint maps cross-user access denial to `VocabularyNotFoundOrAccessDenied` (`404`), so boundary tests should assert not-found semantics for foreign user entry routes.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/UpdateEntryTests.fs`
+- Work done: Strengthened update-entry security coverage by adding seeder-based persistence assertions for unauthenticated (`401`), validation-denied (`400`), and cross-user (`404`) write-denial paths, and expanded success-path persistence checks to verify targeted updates while non-targeted entry/definition/translation rows remain unchanged. Ran `dotnet fantomas`, `dotnet build`, and `dotnet test` successfully.
+- Issues encountered: None.
+- Learnings: Update-entry ownership boundaries are enforced as `VocabularyNotFoundOrAccessDenied` (`404`), and robust write-security tests in this suite should assert full persisted state across entries plus related definition/translation/example tables after both denied and successful mutations.
