@@ -1,15 +1,20 @@
 # Setup development environment
 
-1. Specify username and password for the database:
+1. Specify secrets for the AppHost:
 
-    `Wordfolio.AppHost> dotnet user-secrets set Parameters:postgres-username <postgres-username>`
+    ```
+    cd Wordfolio.AppHost
+    dotnet user-secrets set Parameters:postgres-username <postgres-username>
+    dotnet user-secrets set Parameters:postgres-password <postgres-password>
+    dotnet user-secrets set Parameters:groq-api-key <groq-api-key>
+    ```
 
-    `Wordfolio.AppHost> dotnet user-secrets set Parameters:postgres-password <postgres-password>`
+# Build and run
 
-2. Execute identity migrations:
-
-    `dotnet ef database update --startup-project .\Wordfolio.Api\Wordfolio.Api\Wordfolio.Api.fsproj --connection "Host=localhost;Port=5432;Database=wordfoliodb;User ID=<postgres-username>;Password=<postgres-password>"`
-
-3. Execute wordfolio migrations:
-
-    ` dotnet fm migrate -p PostgreSQL15_0 -a ".\Wordfolio.Api\Wordfolio.Api.Migrations\bin\Debug\net10.0\Wordfolio.Api.Migrations.dll" -c "Host=localhost;Port=5432;Database=wordfoliodb;User ID=<postgres-username>;Password=<postgres-password>"`
+```bash
+dotnet build                            # Build all projects
+dotnet test                             # Run all backend tests
+cd Wordfolio.Frontend && npm test       # Run all frontend tests
+cd Wordfolio.Frontend && npm run build  # Build frontend
+dotnet run --project Wordfolio.AppHost  # Start the app (migrations run automatically)
+```
