@@ -52,7 +52,7 @@ All steps use the **Implement** protocol above.
 ### 1. Collections
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/CreateCollectionTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/GetCollectionsTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/GetCollectionByIdTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/GetCollectionByIdTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/UpdateCollectionTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/DeleteCollectionTests.fs`
 
@@ -100,3 +100,8 @@ Agents append entries here after completing each step.
 - Work done: Added a non-empty list test that seeds collections for two users and verifies the authenticated caller only receives their own collection, while preserving explicit unauthenticated and empty-list coverage.
 - Issues encountered: Initial equality assertions failed due to timestamp precision differences from HTTP serialization, so expected response timestamps were aligned to API response values.
 - Learnings: For list-response DTO equality in this suite, ownership-boundary assertions should focus on record identity/content while normalizing response timestamps when serialization precision differs from seeded values.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/GetCollectionByIdTests.fs`
+- Work done: Added a cross-user authorization test that seeds two users and verifies an authenticated requester receives `403 Forbidden` when requesting another user's collection by id; retained existing success, not-found, and unauthenticated coverage.
+- Issues encountered: None.
+- Learnings: This endpoint's ownership boundary is modeled as access denial (`CollectionAccessDenied`) and exposed as HTTP `403`, so user-isolation coverage should assert forbidden rather than not found.

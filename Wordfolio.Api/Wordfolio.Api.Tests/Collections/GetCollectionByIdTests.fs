@@ -84,6 +84,41 @@ type GetCollectionByIdTests(fixture: WordfolioIdentityTestFixture) =
         }
 
     [<Fact>]
+    member _.``GET by id returns 403 when requesting another user's collection``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! _, ownerWordfolioUser = factory.CreateUserAsync(105, "owner@example.com", "P@ssw0rd!")
+
+            let! requesterIdentityUser, requesterWordfolioUser =
+                factory.CreateUserAsync(106, "requester@example.com", "P@ssw0rd!")
+
+            let ownerCollection =
+                Entities.makeCollection
+                    ownerWordfolioUser
+                    "Owner Collection"
+                    (Some "Owner Description")
+                    DateTimeOffset.UtcNow
+                    None
+                    false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ ownerWordfolioUser; requesterWordfolioUser ]
+                |> Seeder.addCollections [ ownerCollection ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(requesterIdentityUser)
+
+            let! response = client.GetAsync(Urls.Collections.collectionById ownerCollection.Id)
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode)
+        }
+
+    [<Fact>]
     member _.``GET by id without authentication fails``() : Task =
         task {
             do! fixture.ResetDatabaseAsync()
