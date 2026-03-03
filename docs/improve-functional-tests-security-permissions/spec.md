@@ -81,7 +81,7 @@ All steps use the **Implement** protocol above.
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftsTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftByIdTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/UpdateDraftTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/DeleteDraftTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/DeleteDraftTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/MoveDraftTests.fs`
 
 ### 6. Dictionary
@@ -205,3 +205,8 @@ Agents append entries here after completing each step.
 - Work done: Strengthened `UpdateDraftTests.fs` with explicit write-denial persistence assertions for unauthenticated (`401`), validation-denied (`400`), and cross-user (`404`) updates, and expanded success-path persistence checks to prove the targeted draft update while non-targeted rows remain unchanged.
 - Issues encountered: Initial build failed due to incorrect example helper usage and mixed mapping/data-access expected types; fixed by using `makeExampleForDefinition`/`makeExampleForTranslation` correctly and asserting unchanged persisted rows from seeder reads.
 - Learnings: Draft update ownership denial maps to `EntryNotFound` (`404`), and robust write-security coverage in this suite should verify full persisted non-mutation across entries, definitions, translations, and examples for denied writes.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/DeleteDraftTests.fs`
+- Work done: Added seeder-based persistence assertions for unauthenticated (`401`) and cross-user (`404`) delete-denial paths, and strengthened the success delete test by verifying the target draft is removed while a non-targeted draft entry remains unchanged.
+- Issues encountered: None.
+- Learnings: Delete-draft ownership enforcement surfaces as `EntryNotFound` (`404`) for foreign users, and write-security coverage should assert both denied-write non-mutation and successful deletion without affecting other persisted draft rows.
