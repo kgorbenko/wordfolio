@@ -141,6 +141,7 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                                 getById
                                     env
                                     { UserId = UserId userId
+                                      CollectionId = CollectionId collectionId
                                       VocabularyId = VocabularyId id }
 
                             return
@@ -171,6 +172,7 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                                 update
                                     env
                                     { UserId = UserId userId
+                                      CollectionId = CollectionId collectionId
                                       VocabularyId = VocabularyId id
                                       Name = request.Name
                                       Description = request.Description
@@ -205,6 +207,7 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                                 delete
                                     env
                                     { UserId = UserId userId
+                                      CollectionId = CollectionId collectionId
                                       VocabularyId = VocabularyId id }
 
                             return

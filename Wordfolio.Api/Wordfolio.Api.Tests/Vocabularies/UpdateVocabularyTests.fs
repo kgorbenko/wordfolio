@@ -158,6 +158,65 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
         }
 
     [<Fact>]
+    member _.``PUT returns 404 when vocabulary belongs to different collection``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(217, "user@example.com", "P@ssw0rd!")
+
+            let collectionA =
+                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+
+            let collectionB =
+                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+
+            let createdAt =
+                DateTimeOffset(2026, 1, 10, 8, 30, 0, TimeSpan.Zero)
+
+            let vocabulary =
+                Entities.makeVocabulary collectionB "Original Name" (Some "Original Description") createdAt None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collectionA; collectionB ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let updateRequest: UpdateVocabularyRequest =
+                { Name = "Updated Name"
+                  Description = Some "Updated Description" }
+
+            let url =
+                Urls.Vocabularies.vocabularyById(collectionA.Id, vocabulary.Id)
+
+            let! response = client.PutAsJsonAsync(url, updateRequest)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+
+            let! vocabularyInDatabaseOption =
+                fixture.WordfolioSeeder
+                |> Seeder.getVocabularyByIdAsync vocabulary.Id
+
+            let expectedVocabularyInDatabase: Wordfolio.Vocabulary option =
+                Some
+                    { Id = vocabulary.Id
+                      CollectionId = collectionB.Id
+                      Name = "Original Name"
+                      Description = Some "Original Description"
+                      CreatedAt = createdAt
+                      UpdatedAt = None
+                      IsDefault = false }
+
+            Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabaseOption)
+        }
+
+    [<Fact>]
     member _.``PUT returns 403 when updating another user's vocabulary``() : Task =
         task {
             do! fixture.ResetDatabaseAsync()
@@ -272,8 +331,11 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
 
+            let createdAt =
+                DateTimeOffset(2026, 1, 10, 9, 0, 0, TimeSpan.Zero)
+
             let vocabulary =
-                Entities.makeVocabulary collection "Original Name" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "Original Name" None createdAt None false
 
             do!
                 fixture.WordfolioSeeder
@@ -299,22 +361,17 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                 fixture.WordfolioSeeder
                 |> Seeder.getVocabularyByIdAsync vocabulary.Id
 
-            let vocabularyInDatabase =
-                Assert.IsType<Wordfolio.Vocabulary>(
-                    vocabularyInDatabaseOption
-                    |> Option.toObj
-                )
+            let expectedVocabularyInDatabase: Wordfolio.Vocabulary option =
+                Some
+                    { Id = vocabulary.Id
+                      CollectionId = collection.Id
+                      Name = "Original Name"
+                      Description = None
+                      CreatedAt = createdAt
+                      UpdatedAt = None
+                      IsDefault = false }
 
-            let expectedVocabularyInDatabase: Wordfolio.Vocabulary =
-                { Id = vocabulary.Id
-                  CollectionId = collection.Id
-                  Name = "Original Name"
-                  Description = None
-                  CreatedAt = vocabularyInDatabase.CreatedAt
-                  UpdatedAt = vocabularyInDatabase.UpdatedAt
-                  IsDefault = false }
-
-            Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabase)
+            Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabaseOption)
         }
 
     [<Fact>]
@@ -330,14 +387,11 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
 
+            let createdAt =
+                DateTimeOffset(2026, 1, 10, 9, 30, 0, TimeSpan.Zero)
+
             let vocabulary =
-                Entities.makeVocabulary
-                    collection
-                    "Original Name"
-                    (Some "Original Description")
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+                Entities.makeVocabulary collection "Original Name" (Some "Original Description") createdAt None false
 
             do!
                 fixture.WordfolioSeeder
@@ -363,20 +417,15 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                 fixture.WordfolioSeeder
                 |> Seeder.getVocabularyByIdAsync vocabulary.Id
 
-            let vocabularyInDatabase =
-                Assert.IsType<Wordfolio.Vocabulary>(
-                    vocabularyInDatabaseOption
-                    |> Option.toObj
-                )
+            let expectedVocabularyInDatabase: Wordfolio.Vocabulary option =
+                Some
+                    { Id = vocabulary.Id
+                      CollectionId = collection.Id
+                      Name = "Original Name"
+                      Description = Some "Original Description"
+                      CreatedAt = createdAt
+                      UpdatedAt = None
+                      IsDefault = false }
 
-            let expectedVocabularyInDatabase: Wordfolio.Vocabulary =
-                { Id = vocabulary.Id
-                  CollectionId = collection.Id
-                  Name = "Original Name"
-                  Description = Some "Original Description"
-                  CreatedAt = vocabularyInDatabase.CreatedAt
-                  UpdatedAt = vocabularyInDatabase.UpdatedAt
-                  IsDefault = false }
-
-            Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabase)
+            Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabaseOption)
         }

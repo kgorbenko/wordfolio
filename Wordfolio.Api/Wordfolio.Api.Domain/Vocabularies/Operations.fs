@@ -12,6 +12,7 @@ let MaxNameLength = 255
 
 type GetVocabularyByIdParameters =
     { UserId: UserId
+      CollectionId: CollectionId
       VocabularyId: VocabularyId }
 
 type GetVocabulariesByCollectionIdParameters =
@@ -27,6 +28,7 @@ type CreateVocabularyParameters =
 
 type UpdateVocabularyParameters =
     { UserId: UserId
+      CollectionId: CollectionId
       VocabularyId: VocabularyId
       Name: string
       Description: string option
@@ -34,6 +36,7 @@ type UpdateVocabularyParameters =
 
 type DeleteVocabularyParameters =
     { UserId: UserId
+      CollectionId: CollectionId
       VocabularyId: VocabularyId }
 
 let private validateName(name: string) : Result<string, VocabularyNameValidationResult> =
@@ -68,10 +71,24 @@ let private checkCollectionOwnership env (userId: UserId) (collectionId: Collect
                     Error()
     }
 
+let private getVocabularyInCollection
+    env
+    (collectionId: CollectionId)
+    (vocabularyId: VocabularyId)
+    : Task<Vocabulary option> =
+    task {
+        let! maybeVocabulary = getVocabularyById env vocabularyId
+
+        return
+            match maybeVocabulary with
+            | Some vocabulary when vocabulary.CollectionId = collectionId -> Some vocabulary
+            | _ -> None
+    }
+
 let getById env (parameters: GetVocabularyByIdParameters) : Task<Result<VocabularyDetail, GetVocabularyByIdError>> =
     runInTransaction env (fun appEnv ->
         task {
-            let! maybeVocabulary = getVocabularyById appEnv parameters.VocabularyId
+            let! maybeVocabulary = getVocabularyInCollection appEnv parameters.CollectionId parameters.VocabularyId
 
             match maybeVocabulary with
             | None -> return Error(GetVocabularyByIdError.VocabularyNotFound parameters.VocabularyId)
@@ -143,7 +160,7 @@ let create env (parameters: CreateVocabularyParameters) : Task<Result<Vocabulary
 let update env (parameters: UpdateVocabularyParameters) : Task<Result<Vocabulary, UpdateVocabularyError>> =
     runInTransaction env (fun appEnv ->
         task {
-            let! maybeVocabulary = getVocabularyById appEnv parameters.VocabularyId
+            let! maybeVocabulary = getVocabularyInCollection appEnv parameters.CollectionId parameters.VocabularyId
 
             match maybeVocabulary with
             | None -> return Error(UpdateVocabularyError.VocabularyNotFound parameters.VocabularyId)
@@ -181,7 +198,7 @@ let update env (parameters: UpdateVocabularyParameters) : Task<Result<Vocabulary
 let delete env (parameters: DeleteVocabularyParameters) : Task<Result<unit, DeleteVocabularyError>> =
     runInTransaction env (fun appEnv ->
         task {
-            let! maybeVocabulary = getVocabularyById appEnv parameters.VocabularyId
+            let! maybeVocabulary = getVocabularyInCollection appEnv parameters.CollectionId parameters.VocabularyId
 
             match maybeVocabulary with
             | None -> return Error(DeleteVocabularyError.VocabularyNotFound parameters.VocabularyId)

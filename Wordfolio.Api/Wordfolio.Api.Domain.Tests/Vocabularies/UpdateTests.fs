@@ -116,6 +116,7 @@ let ``updates vocabulary when collection owned by user``() =
             update
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1
                   Name = "New Name"
                   Description = Some "New Description"
@@ -166,6 +167,7 @@ let ``trims whitespace from name``() =
             update
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1
                   Name = "  New Name  "
                   Description = None
@@ -201,6 +203,36 @@ let ``returns NotFound when vocabulary does not exist``() =
             update
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
+                  VocabularyId = VocabularyId 1
+                  Name = "New Name"
+                  Description = None
+                  UpdatedAt = DateTimeOffset.UtcNow }
+
+        Assert.Equal(Error(UpdateVocabularyError.VocabularyNotFound(VocabularyId 1)), result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Empty(env.GetCollectionByIdCalls)
+        Assert.Empty(env.UpdateVocabularyCalls)
+    }
+
+[<Fact>]
+let ``returns NotFound when vocabulary belongs to different collection``() =
+    task {
+        let existingVocabulary =
+            makeVocabulary 1 2 "Test Vocabulary" None
+
+        let env =
+            TestEnv(
+                getVocabularyById = (fun _ -> Task.FromResult(Some existingVocabulary)),
+                getCollectionById = (fun _ -> failwith "Should not be called"),
+                updateVocabulary = (fun _ -> failwith "Should not be called")
+            )
+
+        let! result =
+            update
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1
                   Name = "New Name"
                   Description = None
@@ -231,6 +263,7 @@ let ``returns AccessDenied when collection owned by different user``() =
             update
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1
                   Name = "New Name"
                   Description = None
@@ -259,6 +292,7 @@ let ``returns AccessDenied when collection does not exist``() =
             update
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1
                   Name = "New Name"
                   Description = None
@@ -289,6 +323,7 @@ let ``returns error when name is empty``() =
             update
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1
                   Name = ""
                   Description = None
@@ -320,6 +355,7 @@ let ``returns error when name exceeds max length``() =
             update
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1
                   Name = longName
                   Description = None
@@ -350,6 +386,7 @@ let ``returns error when name is whitespace only``() =
             update
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1
                   Name = "   "
                   Description = None
@@ -390,6 +427,7 @@ let ``accepts name at exact max length``() =
             update
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1
                   Name = maxLengthName
                   Description = None
@@ -429,6 +467,7 @@ let ``returns NotFound when update affects no rows``() =
             update
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1
                   Name = "New Name"
                   Description = None
