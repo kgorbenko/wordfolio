@@ -36,7 +36,11 @@
     <Compile Include="CollectionsHierarchy/GetCollectionsHierarchyTests.fs" />
     <Compile Include="CollectionsHierarchy/GetCollectionsListTests.fs" />
     <Compile Include="CollectionsHierarchy/GetVocabulariesByCollectionTests.fs" />
-    <Compile Include="VocabulariesTests.fs" />
+    <Compile Include="Vocabularies/CreateVocabularyTests.fs" />
+    <Compile Include="Vocabularies/GetVocabulariesTests.fs" />
+    <Compile Include="Vocabularies/GetVocabularyByIdTests.fs" />
+    <Compile Include="Vocabularies/UpdateVocabularyTests.fs" />
+    <Compile Include="Vocabularies/DeleteVocabularyTests.fs" />
     <Compile Include="EntriesTests.fs" />
     <Compile Include="DraftsTests.fs" />
     <Compile Include="DictionaryTests.fs" />

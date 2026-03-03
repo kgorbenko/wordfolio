@@ -126,7 +126,7 @@ Verify parity for the same area completed in the preceding Refactor step.
 - [x] VerifyCoverage: Verify parity for `CollectionsHierarchy` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchyTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.CollectionsHierarchy.`.
 
 ### 4. Vocabularies endpoints
-- [ ] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/VocabulariesTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/` and update explicit compile includes ordering.
+- [x] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/VocabulariesTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/` and update explicit compile includes ordering.
 - [ ] VerifyCoverage: Verify parity for `Vocabularies` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/VocabulariesTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Vocabularies.`.
 
 ### 5. Entries endpoints
@@ -174,3 +174,8 @@ Agents append entries here after completing each step.
 - Work done: Generated CollectionsHierarchy source inventories from `HEAD^` and the refactored `CollectionsHierarchy` directory, confirmed zero diff, then captured `dotnet test --list-tests` output and validated exact runtime parity for `Wordfolio.Api.Tests.CollectionsHierarchy.` (17 expected and 17 discovered display names).
 - Issues encountered: None.
 - Learnings: For runtime parity, matching `Wordfolio.Api.Tests.CollectionsHierarchy.<Class>.<DisplayName>` and stripping the namespace/class prefix produces a direct multiset comparison against source-extracted ``member _.``...```` names.
+
+### Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/VocabulariesTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/` and update explicit compile includes ordering.
+- Work done: Split the legacy vocabularies endpoint tests into five behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/`, preserving all test display names and assertion intent. Updated `Wordfolio.Api.Tests.fsproj` with explicit ordered includes for the new files and removed the monolithic `VocabulariesTests.fs` file.
+- Issues encountered: None.
+- Learnings: The endpoint split pattern remains stable when each file keeps its own `Urls` module alias and opens `Wordfolio.Api.Tests` for shared fixture and factory access after namespace relocation.
