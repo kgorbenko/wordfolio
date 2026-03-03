@@ -73,7 +73,7 @@ All steps use the **Implement** protocol above.
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/GetEntriesByVocabularyTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/GetEntryByIdTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/UpdateEntryTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/DeleteEntryTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/DeleteEntryTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/MoveEntryTests.fs`
 
 ### 5. Drafts
@@ -175,3 +175,8 @@ Agents append entries here after completing each step.
 - Work done: Strengthened update-entry security coverage by adding seeder-based persistence assertions for unauthenticated (`401`), validation-denied (`400`), and cross-user (`404`) write-denial paths, and expanded success-path persistence checks to verify targeted updates while non-targeted entry/definition/translation rows remain unchanged. Ran `dotnet fantomas`, `dotnet build`, and `dotnet test` successfully.
 - Issues encountered: None.
 - Learnings: Update-entry ownership boundaries are enforced as `VocabularyNotFoundOrAccessDenied` (`404`), and robust write-security tests in this suite should assert full persisted state across entries plus related definition/translation/example tables after both denied and successful mutations.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/DeleteEntryTests.fs`
+- Work done: Added seeder-based persistence assertions for unauthenticated (`401`) and cross-user (`404`) delete-denial scenarios, and strengthened success-path coverage by verifying the targeted entry is deleted while a non-targeted entry remains unchanged. Ran `dotnet fantomas`, `dotnet build`, and `dotnet test` successfully.
+- Issues encountered: None.
+- Learnings: Delete-entry ownership boundaries are surfaced as `VocabularyNotFoundOrAccessDenied` (`404`), and write-security coverage should assert both denied-write non-mutation and successful deletion without collateral changes to other caller-owned rows.
