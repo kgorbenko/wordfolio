@@ -53,12 +53,12 @@ All steps use the **Implement** protocol above.
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/CreateCollectionTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/GetCollectionsTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/GetCollectionByIdTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/UpdateCollectionTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/DeleteCollectionTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/UpdateCollectionTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/DeleteCollectionTests.fs`
 
 ### 2. Collections Hierarchy
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetCollectionsHierarchyTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetCollectionsListTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetCollectionsHierarchyTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetCollectionsListTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetVocabulariesByCollectionTests.fs`
 
 ### 3. Vocabularies
@@ -105,3 +105,23 @@ Agents append entries here after completing each step.
 - Work done: Added a cross-user authorization test that seeds two users and verifies an authenticated requester receives `403 Forbidden` when requesting another user's collection by id; retained existing success, not-found, and unauthenticated coverage.
 - Issues encountered: None.
 - Learnings: This endpoint's ownership boundary is modeled as access denial (`CollectionAccessDenied`) and exposed as HTTP `403`, so user-isolation coverage should assert forbidden rather than not found.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/UpdateCollectionTests.fs`
+- Work done: Expanded update-collection security coverage with a cross-user `403 Forbidden` mutation-denial test and seeder-based persistence assertions proving both owner and requester rows remain unchanged, and added persistence assertions for unauthenticated (`401`) and validation-denied (`400`) writes. Updated the success-path test to assert the targeted row is updated while a non-targeted row remains unchanged.
+- Issues encountered: Initial assertions failed due to timestamp precision differences between seeded values and persisted values; expected objects were normalized to persisted timestamps from seeder reads.
+- Learnings: For write-endpoint persistence assertions in this suite, compare complete entities using database-read timestamps to avoid precision flakiness while still proving mutation and non-mutation guarantees.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Collections/DeleteCollectionTests.fs`
+- Work done: Strengthened delete-collection coverage by asserting successful deletion preserves non-targeted rows, adding a cross-user `403 Forbidden` mutation-denial test with seeder-based persistence checks, and adding persistence assertions for unauthenticated delete attempts.
+- Issues encountered: None.
+- Learnings: Delete-collection enforces ownership boundaries via `403` for cross-user access, and persistence assertions should verify both the protected target remains unchanged and unrelated rows remain intact.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetCollectionsHierarchyTests.fs`
+- Work done: Added a cross-user visibility-boundary test that seeds hierarchy data for two users and verifies the authenticated requester receives only their own collection/vocabulary hierarchy. Confirmed existing unauthenticated (`401`) coverage remains in place for the protected endpoint.
+- Issues encountered: None.
+- Learnings: For the collections-hierarchy read endpoint, ownership isolation is enforced by user-scoped query results rather than `403`; boundary coverage should assert foreign-user data is absent from the returned hierarchy.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetCollectionsListTests.fs`
+- Work done: Added an explicit empty-response test for authenticated users with no collections, while preserving existing filtering/sorting, unauthenticated (`401`), and cross-user visibility-boundary coverage in the file. Ran the required verification commands (`dotnet fantomas`, `dotnet build`, and `dotnet test`) successfully.
+- Issues encountered: None.
+- Learnings: This endpoint enforces ownership boundaries by returning only caller-scoped rows (and empty lists when no owned data exists), so security coverage should assert both cross-user exclusion and empty-state behavior alongside auth checks.
