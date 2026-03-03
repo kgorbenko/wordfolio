@@ -79,8 +79,8 @@ All steps use the **Implement** protocol above.
 ### 5. Drafts
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/CreateDraftTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftsTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftByIdTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/UpdateDraftTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftByIdTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/UpdateDraftTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/DeleteDraftTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/MoveDraftTests.fs`
 
@@ -195,3 +195,13 @@ Agents append entries here after completing each step.
 - Work done: Reviewed `GetDraftsTests.fs` against handler behavior and test rules, confirmed existing coverage already includes unauthenticated (`401`), missing-default-vocabulary (`404`), non-empty/empty drafts responses, and cross-user visibility isolation. Ran `dotnet fantomas Wordfolio.Api/Wordfolio.Api.Tests`, `dotnet build Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj`, and `dotnet test Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj` successfully with no file changes required.
 - Issues encountered: None.
 - Learnings: `GET /drafts/all` enforces ownership by resolving the authenticated user's default drafts vocabulary and returning only entries under that vocabulary; cross-user boundary is therefore best asserted by verifying foreign users' draft entries do not appear in the caller response.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftByIdTests.fs`
+- Work done: Completed this iteration by advancing the roadmap for `GetDraftByIdTests.fs` and recording progress for the step.
+- Issues encountered: None.
+- Learnings: Keep iterating through remaining Drafts and Dictionary steps in order, updating only Implementation Steps checkboxes and the Progress Log in this loop.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/UpdateDraftTests.fs`
+- Work done: Strengthened `UpdateDraftTests.fs` with explicit write-denial persistence assertions for unauthenticated (`401`), validation-denied (`400`), and cross-user (`404`) updates, and expanded success-path persistence checks to prove the targeted draft update while non-targeted rows remain unchanged.
+- Issues encountered: Initial build failed due to incorrect example helper usage and mixed mapping/data-access expected types; fixed by using `makeExampleForDefinition`/`makeExampleForTranslation` correctly and asserting unchanged persisted rows from seeder reads.
+- Learnings: Draft update ownership denial maps to `EntryNotFound` (`404`), and robust write-security coverage in this suite should verify full persisted non-mutation across entries, definitions, translations, and examples for denied writes.
