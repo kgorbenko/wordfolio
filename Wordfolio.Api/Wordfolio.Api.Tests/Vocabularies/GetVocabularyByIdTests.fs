@@ -100,6 +100,42 @@ type GetVocabularyByIdTests(fixture: WordfolioIdentityTestFixture) =
         }
 
     [<Fact>]
+    member _.``GET by id returns 404 when vocabulary belongs to different collection``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(216, "user@example.com", "P@ssw0rd!")
+
+            let collectionA =
+                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+
+            let collectionB =
+                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collectionB "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collectionA; collectionB ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let url =
+                Urls.Vocabularies.vocabularyById(collectionA.Id, vocabulary.Id)
+
+            let! response = client.GetAsync(url)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+        }
+
+    [<Fact>]
     member _.``GET by id returns 403 when requesting another user's vocabulary``() : Task =
         task {
             do! fixture.ResetDatabaseAsync()

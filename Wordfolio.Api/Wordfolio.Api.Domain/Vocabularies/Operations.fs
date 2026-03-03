@@ -12,6 +12,7 @@ let MaxNameLength = 255
 
 type GetVocabularyByIdParameters =
     { UserId: UserId
+      CollectionId: CollectionId
       VocabularyId: VocabularyId }
 
 type GetVocabulariesByCollectionIdParameters =
@@ -27,6 +28,7 @@ type CreateVocabularyParameters =
 
 type UpdateVocabularyParameters =
     { UserId: UserId
+      CollectionId: CollectionId
       VocabularyId: VocabularyId
       Name: string
       Description: string option
@@ -34,6 +36,7 @@ type UpdateVocabularyParameters =
 
 type DeleteVocabularyParameters =
     { UserId: UserId
+      CollectionId: CollectionId
       VocabularyId: VocabularyId }
 
 let private validateName(name: string) : Result<string, VocabularyNameValidationResult> =
@@ -75,6 +78,11 @@ let getById env (parameters: GetVocabularyByIdParameters) : Task<Result<Vocabula
 
             match maybeVocabulary with
             | None -> return Error(GetVocabularyByIdError.VocabularyNotFound parameters.VocabularyId)
+            | Some vocabulary when
+                vocabulary.CollectionId
+                <> parameters.CollectionId
+                ->
+                return Error(GetVocabularyByIdError.VocabularyNotFound parameters.VocabularyId)
             | Some vocabulary ->
                 let! maybeCollection = getCollectionById appEnv vocabulary.CollectionId
 
@@ -147,6 +155,11 @@ let update env (parameters: UpdateVocabularyParameters) : Task<Result<Vocabulary
 
             match maybeVocabulary with
             | None -> return Error(UpdateVocabularyError.VocabularyNotFound parameters.VocabularyId)
+            | Some vocabulary when
+                vocabulary.CollectionId
+                <> parameters.CollectionId
+                ->
+                return Error(UpdateVocabularyError.VocabularyNotFound parameters.VocabularyId)
             | Some vocabulary ->
                 let! ownershipResult = checkCollectionOwnership appEnv parameters.UserId vocabulary.CollectionId
 
@@ -185,6 +198,11 @@ let delete env (parameters: DeleteVocabularyParameters) : Task<Result<unit, Dele
 
             match maybeVocabulary with
             | None -> return Error(DeleteVocabularyError.VocabularyNotFound parameters.VocabularyId)
+            | Some vocabulary when
+                vocabulary.CollectionId
+                <> parameters.CollectionId
+                ->
+                return Error(DeleteVocabularyError.VocabularyNotFound parameters.VocabularyId)
             | Some vocabulary ->
                 let! ownershipResult = checkCollectionOwnership appEnv parameters.UserId vocabulary.CollectionId
 

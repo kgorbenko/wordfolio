@@ -86,6 +86,63 @@ type DeleteVocabularyTests(fixture: WordfolioIdentityTestFixture) =
         }
 
     [<Fact>]
+    member _.``DELETE returns 404 when vocabulary belongs to different collection``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(218, "user@example.com", "P@ssw0rd!")
+
+            let collectionA =
+                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+
+            let collectionB =
+                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+
+            let vocabulary =
+                Entities.makeVocabulary collectionB "Test Vocabulary" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collectionA; collectionB ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let url =
+                Urls.Vocabularies.vocabularyById(collectionA.Id, vocabulary.Id)
+
+            let! response = client.DeleteAsync(url)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
+
+            let! vocabularyInDatabaseOption =
+                fixture.WordfolioSeeder
+                |> Seeder.getVocabularyByIdAsync vocabulary.Id
+
+            let vocabularyInDatabase =
+                Assert.IsType<Wordfolio.Vocabulary>(
+                    vocabularyInDatabaseOption
+                    |> Option.toObj
+                )
+
+            let expectedVocabularyInDatabase: Wordfolio.Vocabulary =
+                { Id = vocabulary.Id
+                  CollectionId = collectionB.Id
+                  Name = "Test Vocabulary"
+                  Description = None
+                  CreatedAt = vocabularyInDatabase.CreatedAt
+                  UpdatedAt = vocabularyInDatabase.UpdatedAt
+                  IsDefault = false }
+
+            Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabase)
+        }
+
+    [<Fact>]
     member _.``DELETE without authentication fails``() : Task =
         task {
             do! fixture.ResetDatabaseAsync()

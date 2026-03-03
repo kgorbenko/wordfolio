@@ -84,6 +84,7 @@ let ``returns vocabulary when found and collection owned by user``() =
             getById
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1 }
 
         let expected: VocabularyDetail =
@@ -118,6 +119,31 @@ let ``returns NotFound when vocabulary does not exist``() =
             getById
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
+                  VocabularyId = VocabularyId 1 }
+
+        Assert.Equal(Error(GetVocabularyByIdError.VocabularyNotFound(VocabularyId 1)), result)
+        Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
+        Assert.Empty(env.GetCollectionByIdCalls)
+    }
+
+[<Fact>]
+let ``returns NotFound when vocabulary belongs to different collection``() =
+    task {
+        let vocabulary =
+            makeVocabulary 1 2 "Test Vocabulary"
+
+        let env =
+            TestEnv(
+                getVocabularyById = (fun _ -> Task.FromResult(Some vocabulary)),
+                getCollectionById = (fun _ -> failwith "Should not be called")
+            )
+
+        let! result =
+            getById
+                env
+                { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1 }
 
         Assert.Equal(Error(GetVocabularyByIdError.VocabularyNotFound(VocabularyId 1)), result)
@@ -153,6 +179,7 @@ let ``returns AccessDenied when collection owned by different user``() =
             getById
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1 }
 
         Assert.Equal(Error(GetVocabularyByIdError.VocabularyAccessDenied(VocabularyId 1)), result)
@@ -176,6 +203,7 @@ let ``returns CollectionNotFound when collection does not exist``() =
             getById
                 env
                 { UserId = UserId 1
+                  CollectionId = CollectionId 1
                   VocabularyId = VocabularyId 1 }
 
         Assert.Equal(Error(GetVocabularyByIdError.VocabularyCollectionNotFound(CollectionId 1)), result)
