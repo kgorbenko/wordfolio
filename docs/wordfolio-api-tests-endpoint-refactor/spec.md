@@ -119,7 +119,7 @@ Verify parity for the same area completed in the preceding Refactor step.
 
 ### 2. Collections endpoints
 - [x] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Collections/` and update explicit compile includes ordering.
-- [ ] VerifyCoverage: Verify parity for `Collections` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/CollectionsTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Collections`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Collections.`.
+- [x] VerifyCoverage: Verify parity for `Collections` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/CollectionsTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Collections`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Collections.`.
 
 ### 3. Collections hierarchy endpoints
 - [ ] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchyTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/` and update explicit compile includes ordering.
@@ -159,3 +159,8 @@ Agents append entries here after completing each step.
 - Work done: Split the legacy Collections endpoint tests into five behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Collections/`, preserving all test display names and test logic as-is. Updated `Wordfolio.Api.Tests.fsproj` with explicit ordered compile includes for the new files and removed the monolithic `CollectionsTests.fs` file.
 - Issues encountered: None.
 - Learnings: Area-level splits compile cleanly when each moved file opens `Wordfolio.Api.Tests` for shared fixture/factory types and keeps its own local `Urls` module alias.
+
+### VerifyCoverage: Verify parity for `Collections` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/CollectionsTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Collections`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Collections.`.
+- Work done: Generated Collections source inventories from `HEAD^` and the refactored `Collections` directory, confirmed zero source diff, then captured `dotnet test --list-tests` output and validated exact runtime parity for `Wordfolio.Api.Tests.Collections.` (15 expected and 15 discovered display names).
+- Issues encountered: None.
+- Learnings: Runtime parity can be validated robustly by filtering `--list-tests` lines to the area namespace prefix and stripping `<Namespace>.<Class>.` so the resulting multiset compares directly against extracted ``member _.``...```` names.
