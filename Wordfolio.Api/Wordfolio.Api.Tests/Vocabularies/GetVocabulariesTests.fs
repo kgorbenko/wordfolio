@@ -18,6 +18,67 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
     interface IClassFixture<WordfolioIdentityTestFixture>
 
     [<Fact>]
+    member _.``GET returns vocabularies for authenticated user's collection``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(208, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "My Collection" None DateTimeOffset.UtcNow None false
+
+            let firstVocabulary =
+                Entities.makeVocabulary collection "Animals" (Some "Animal words") DateTimeOffset.UtcNow None false
+
+            let secondVocabulary =
+                Entities.makeVocabulary collection "Travel" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ firstVocabulary; secondVocabulary ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let url =
+                Urls.Vocabularies.vocabulariesByCollection collection.Id
+
+            let! response = client.GetAsync(url)
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+
+            let! result = response.Content.ReadFromJsonAsync<VocabularyResponse[]>()
+
+            Assert.NotNull(result)
+
+            let sortedResult =
+                result |> Array.sortBy _.Id
+
+            let expected: VocabularyResponse[] =
+                [| { Id = firstVocabulary.Id
+                     CollectionId = collection.Id
+                     Name = "Animals"
+                     Description = Some "Animal words"
+                     CreatedAt = sortedResult[0].CreatedAt
+                     UpdatedAt = None }
+                   { Id = secondVocabulary.Id
+                     CollectionId = collection.Id
+                     Name = "Travel"
+                     Description = None
+                     CreatedAt = sortedResult[1].CreatedAt
+                     UpdatedAt = None } |]
+                |> Array.sortBy _.Id
+
+            Assert.Equal<VocabularyResponse>(expected, sortedResult)
+        }
+
+    [<Fact>]
     member _.``GET returns empty list when no vocabularies``() : Task =
         task {
             do! fixture.ResetDatabaseAsync()
@@ -68,4 +129,52 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.GetAsync(url)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+        }
+
+    [<Fact>]
+    member _.``GET vocabularies for another user's collection returns not found``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! _, ownerWordfolioUser = factory.CreateUserAsync(209, "owner@example.com", "P@ssw0rd!")
+
+            let! requesterIdentityUser, requesterWordfolioUser =
+                factory.CreateUserAsync(210, "requester@example.com", "P@ssw0rd!")
+
+            let ownerCollection =
+                Entities.makeCollection ownerWordfolioUser "Owner Collection" None DateTimeOffset.UtcNow None false
+
+            let ownerVocabulary =
+                Entities.makeVocabulary ownerCollection "Owner Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let requesterCollection =
+                Entities.makeCollection
+                    requesterWordfolioUser
+                    "Requester Collection"
+                    None
+                    DateTimeOffset.UtcNow
+                    None
+                    false
+
+            let requesterVocabulary =
+                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None DateTimeOffset.UtcNow None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ ownerWordfolioUser; requesterWordfolioUser ]
+                |> Seeder.addCollections [ ownerCollection; requesterCollection ]
+                |> Seeder.addVocabularies [ ownerVocabulary; requesterVocabulary ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(requesterIdentityUser)
+
+            let url =
+                Urls.Vocabularies.vocabulariesByCollection ownerCollection.Id
+
+            let! response = client.GetAsync(url)
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }

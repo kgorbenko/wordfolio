@@ -63,7 +63,7 @@ All steps use the **Implement** protocol above.
 
 ### 3. Vocabularies
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/CreateVocabularyTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabulariesTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabulariesTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabularyByIdTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/UpdateVocabularyTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/DeleteVocabularyTests.fs`
@@ -135,3 +135,8 @@ Agents append entries here after completing each step.
 - Work done: Added write-denial persistence assertions for unauthenticated (`401`) and validation-denied (`400`) create requests, and added an explicit cross-user create-denial test asserting `404 NotFound` plus unchanged vocabulary persistence for a foreign collection id.
 - Issues encountered: None.
 - Learnings: Create-vocabulary ownership checks map non-owned collections to `VocabularyCollectionNotFound` (`404`) rather than `403`, so boundary coverage should assert both denial status and that no vocabulary rows were inserted.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/GetVocabulariesTests.fs`
+- Work done: Added authenticated non-empty list coverage that seeds two vocabularies and asserts the full response DTOs, plus a cross-user ownership-boundary test asserting `404 NotFound` when querying another user's collection. Kept existing empty-list and unauthenticated (`401`) coverage and ran `dotnet fantomas`, `dotnet build`, and `dotnet test` successfully.
+- Issues encountered: None.
+- Learnings: This user-scoped list endpoint enforces ownership as collection lookup denial (`VocabularyCollectionNotFound` -> `404`) rather than filtered empty results, so boundary tests should assert explicit not-found behavior.
