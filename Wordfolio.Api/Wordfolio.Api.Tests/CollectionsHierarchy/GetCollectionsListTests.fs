@@ -1,0 +1,251 @@
+namespace Wordfolio.Api.Tests.CollectionsHierarchy
+
+open System
+open System.Net
+open System.Net.Http.Json
+open System.Threading.Tasks
+
+open Xunit
+
+open Wordfolio.Api.Api.CollectionsHierarchy.Types
+open Wordfolio.Api.Tests
+open Wordfolio.Api.Tests.Utils
+open Wordfolio.Api.Tests.Utils.Wordfolio
+
+module Urls = Wordfolio.Api.Urls
+
+type private CollectionsQueryOptions =
+    { Search: string option
+      SortBy: CollectionSortByRequest
+      SortDirection: SortDirectionRequest }
+
+module private CollectionsUrlHelpers =
+    let private toQueryString (search: string option) (sortBy: int) (sortDirection: int) =
+        let searchParam =
+            search
+            |> Option.map(fun search -> $"search={Uri.EscapeDataString search}")
+
+        [ searchParam; Some $"sortBy={sortBy}"; Some $"sortDirection={sortDirection}" ]
+        |> List.choose id
+        |> String.concat "&"
+
+    let collections(query: CollectionsQueryOptions) =
+        $"{Urls.CollectionsHierarchy.collections()}?{toQueryString query.Search (int query.SortBy) (int query.SortDirection)}"
+
+type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
+    interface IClassFixture<WordfolioIdentityTestFixture>
+
+    [<Fact>]
+    member _.``GET collections list endpoint supports filtering and sorting``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(306, "user@example.com", "P@ssw0rd!")
+
+            let createdAt1 =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let createdAt2 =
+                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
+
+            let updatedAt1 =
+                DateTimeOffset(2025, 1, 3, 0, 0, 0, TimeSpan.Zero)
+
+            let updatedAt2 =
+                DateTimeOffset(2025, 1, 4, 0, 0, 0, TimeSpan.Zero)
+
+            let collection1 =
+                Entities.makeCollection wordfolioUser "Biology" (Some "School words") createdAt1 (Some updatedAt1) false
+
+            let collection2 =
+                Entities.makeCollection wordfolioUser "Travel" (Some "Bio terms") createdAt2 (Some updatedAt2) false
+
+            let collection3 =
+                Entities.makeCollection wordfolioUser "Sports" None createdAt2 None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection1; collection2; collection3 ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let url =
+                CollectionsUrlHelpers.collections
+                    { Search = Some "bio"
+                      SortBy = CollectionSortByRequest.UpdatedAt
+                      SortDirection = SortDirectionRequest.Desc }
+
+            let! response = client.GetAsync(url)
+
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+
+            let! actual = response.Content.ReadFromJsonAsync<CollectionOverviewResponse list>()
+
+            let expected: CollectionOverviewResponse list =
+                [ { Id = collection2.Id
+                    Name = "Travel"
+                    Description = Some "Bio terms"
+                    CreatedAt = createdAt2
+                    UpdatedAt = Some updatedAt2
+                    VocabularyCount = 0 }
+                  { Id = collection1.Id
+                    Name = "Biology"
+                    Description = Some "School words"
+                    CreatedAt = createdAt1
+                    UpdatedAt = Some updatedAt1
+                    VocabularyCount = 0 } ]
+
+            Assert.Equal<CollectionOverviewResponse list>(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``GET collections list endpoint returns only collections owned by user``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(310, "user@example.com", "P@ssw0rd!")
+
+            let otherUser = Entities.makeUser 311
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let ownedCollection =
+                Entities.makeCollection wordfolioUser "Owned" None createdAt None false
+
+            let otherCollection =
+                Entities.makeCollection otherUser "Other" None createdAt None false
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser; otherUser ]
+                |> Seeder.addCollections [ ownedCollection; otherCollection ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let url =
+                CollectionsUrlHelpers.collections
+                    { Search = None
+                      SortBy = CollectionSortByRequest.Name
+                      SortDirection = SortDirectionRequest.Asc }
+
+            let! response = client.GetAsync(url)
+
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+
+            let! actual = response.Content.ReadFromJsonAsync<CollectionOverviewResponse list>()
+
+            let expected: CollectionOverviewResponse list =
+                [ { Id = ownedCollection.Id
+                    Name = "Owned"
+                    Description = None
+                    CreatedAt = createdAt
+                    UpdatedAt = None
+                    VocabularyCount = 0 } ]
+
+            Assert.Equal<CollectionOverviewResponse list>(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``GET collections list endpoint returns vocabulary count excluding system and default vocabularies``
+        ()
+        : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(317, "user@example.com", "P@ssw0rd!")
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Regular" None createdAt None false
+
+            let systemCollection =
+                Entities.makeCollection wordfolioUser "System" None createdAt None true
+
+            let regularVocabulary =
+                Entities.makeVocabulary collection "Regular Vocab" None createdAt None false
+
+            let defaultVocabulary =
+                Entities.makeVocabulary collection "Default Vocab" None createdAt None true
+
+            let systemCollectionVocabulary =
+                Entities.makeVocabulary systemCollection "System Vocab" None createdAt None false
+
+            let entry1 =
+                Entities.makeEntry regularVocabulary "word1" createdAt None
+
+            let entry2 =
+                Entities.makeEntry regularVocabulary "word2" createdAt None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection; systemCollection ]
+                |> Seeder.addVocabularies [ regularVocabulary; defaultVocabulary; systemCollectionVocabulary ]
+                |> Seeder.addEntries [ entry1; entry2 ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let url =
+                CollectionsUrlHelpers.collections
+                    { Search = None
+                      SortBy = CollectionSortByRequest.Name
+                      SortDirection = SortDirectionRequest.Asc }
+
+            let! response = client.GetAsync(url)
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+
+            let! actual = response.Content.ReadFromJsonAsync<CollectionOverviewResponse list>()
+
+            let expected: CollectionOverviewResponse list =
+                [ { Id = collection.Id
+                    Name = "Regular"
+                    Description = None
+                    CreatedAt = createdAt
+                    UpdatedAt = None
+                    VocabularyCount = 1 } ]
+
+            Assert.Equal<CollectionOverviewResponse list>(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``GET collections list endpoint without authentication fails``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            use client = factory.CreateClient()
+
+            let url =
+                CollectionsUrlHelpers.collections
+                    { Search = None
+                      SortBy = CollectionSortByRequest.Name
+                      SortDirection = SortDirectionRequest.Asc }
+
+            let! response = client.GetAsync(url)
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+        }

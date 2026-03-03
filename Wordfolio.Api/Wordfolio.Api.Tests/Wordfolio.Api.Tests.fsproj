@@ -33,7 +33,9 @@
     <Compile Include="Collections/GetCollectionByIdTests.fs" />
     <Compile Include="Collections/UpdateCollectionTests.fs" />
     <Compile Include="Collections/DeleteCollectionTests.fs" />
-    <Compile Include="CollectionsHierarchyTests.fs" />
+    <Compile Include="CollectionsHierarchy/GetCollectionsHierarchyTests.fs" />
+    <Compile Include="CollectionsHierarchy/GetCollectionsListTests.fs" />
+    <Compile Include="CollectionsHierarchy/GetVocabulariesByCollectionTests.fs" />
     <Compile Include="VocabulariesTests.fs" />
     <Compile Include="EntriesTests.fs" />
     <Compile Include="DraftsTests.fs" />

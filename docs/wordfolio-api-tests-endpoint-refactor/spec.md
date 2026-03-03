@@ -122,7 +122,7 @@ Verify parity for the same area completed in the preceding Refactor step.
 - [x] VerifyCoverage: Verify parity for `Collections` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/CollectionsTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Collections`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Collections.`.
 
 ### 3. Collections hierarchy endpoints
-- [ ] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchyTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/` and update explicit compile includes ordering.
+- [x] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchyTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/` and update explicit compile includes ordering.
 - [ ] VerifyCoverage: Verify parity for `CollectionsHierarchy` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchyTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.CollectionsHierarchy.`.
 
 ### 4. Vocabularies endpoints
@@ -164,3 +164,8 @@ Agents append entries here after completing each step.
 - Work done: Generated Collections source inventories from `HEAD^` and the refactored `Collections` directory, confirmed zero source diff, then captured `dotnet test --list-tests` output and validated exact runtime parity for `Wordfolio.Api.Tests.Collections.` (15 expected and 15 discovered display names).
 - Issues encountered: None.
 - Learnings: Runtime parity can be validated robustly by filtering `--list-tests` lines to the area namespace prefix and stripping `<Namespace>.<Class>.` so the resulting multiset compares directly against extracted ``member _.``...```` names.
+
+### Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchyTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/` and update explicit compile includes ordering.
+- Work done: Split the legacy `CollectionsHierarchyTests.fs` into three behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/` for hierarchy, collections-list, and vocabularies-by-collection endpoints, preserving all test display names and assertions. Updated `Wordfolio.Api.Tests.fsproj` with explicit ordered includes for the new files and removed the monolithic legacy file.
+- Issues encountered: Initial build failed due to duplicate `UrlHelpers` module names across split files in the same namespace; resolved by using file-specific helper module names and re-running formatting/build/tests.
+- Learnings: In F# split test files sharing a namespace, `module private` names must still be unique per namespace scope, so per-file helper module naming avoids collisions while keeping each file self-contained.
