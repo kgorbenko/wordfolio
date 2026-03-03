@@ -323,6 +323,24 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.PostAsJsonAsync(Urls.Drafts.Path, request)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+
+            let! dbCollections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+            Assert.Equal<Wordfolio.Collection list>([], dbCollections)
+
+            let! dbVocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+            Assert.Equal<Wordfolio.Vocabulary list>([], dbVocabularies)
+
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            Assert.Equal<Entry list>([], dbEntries)
+
+            let! dbDefinitions = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            Assert.Equal<Definition list>([], dbDefinitions)
+
+            let! dbTranslations = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            Assert.Equal<Translation list>([], dbTranslations)
+
+            let! dbExamples = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+            Assert.Equal<Example list>([], dbExamples)
         }
 
     [<Fact>]
@@ -354,6 +372,24 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.PostAsJsonAsync(Urls.Drafts.Path, request)
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
+
+            let! dbCollections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+            Assert.Equal<Wordfolio.Collection list>([], dbCollections)
+
+            let! dbVocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+            Assert.Equal<Wordfolio.Vocabulary list>([], dbVocabularies)
+
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            Assert.Equal<Entry list>([], dbEntries)
+
+            let! dbDefinitions = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            Assert.Equal<Definition list>([], dbDefinitions)
+
+            let! dbTranslations = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            Assert.Equal<Translation list>([], dbTranslations)
+
+            let! dbExamples = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+            Assert.Equal<Example list>([], dbExamples)
         }
 
     [<Fact>]
@@ -382,6 +418,24 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.PostAsJsonAsync(Urls.Drafts.Path, request)
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
+
+            let! dbCollections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+            Assert.Equal<Wordfolio.Collection list>([], dbCollections)
+
+            let! dbVocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+            Assert.Equal<Wordfolio.Vocabulary list>([], dbVocabularies)
+
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            Assert.Equal<Entry list>([], dbEntries)
+
+            let! dbDefinitions = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            Assert.Equal<Definition list>([], dbDefinitions)
+
+            let! dbTranslations = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            Assert.Equal<Translation list>([], dbTranslations)
+
+            let! dbExamples = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+            Assert.Equal<Example list>([], dbExamples)
         }
 
     [<Fact>]
@@ -425,6 +479,24 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let! response = client.PostAsJsonAsync(Urls.Drafts.Path, request)
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
+
+            let! dbCollections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+            Assert.Equal<Wordfolio.Collection list>([], dbCollections)
+
+            let! dbVocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+            Assert.Equal<Wordfolio.Vocabulary list>([], dbVocabularies)
+
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+            Assert.Equal<Entry list>([], dbEntries)
+
+            let! dbDefinitions = Seeder.getAllDefinitionsAsync fixture.WordfolioSeeder
+            Assert.Equal<Definition list>([], dbDefinitions)
+
+            let! dbTranslations = Seeder.getAllTranslationsAsync fixture.WordfolioSeeder
+            Assert.Equal<Translation list>([], dbTranslations)
+
+            let! dbExamples = Seeder.getAllExamplesAsync fixture.WordfolioSeeder
+            Assert.Equal<Example list>([], dbExamples)
         }
 
     [<Fact>]

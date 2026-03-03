@@ -77,7 +77,7 @@ All steps use the **Implement** protocol above.
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/MoveEntryTests.fs`
 
 ### 5. Drafts
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/CreateDraftTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/CreateDraftTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftsTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftByIdTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/UpdateDraftTests.fs`
@@ -185,3 +185,8 @@ Agents append entries here after completing each step.
 - Work done: Added seeder-based persistence assertions for move-entry success and denied-write paths by verifying moved-entry state plus unchanged non-targeted rows for unauthenticated (`401`) and cross-user target-vocabulary (`404`) scenarios. Ran `dotnet fantomas`, `dotnet build`, and `dotnet test` successfully.
 - Issues encountered: None.
 - Learnings: Move-entry ownership boundaries are exposed as `VocabularyNotFoundOrAccessDenied` (`404`), and robust write-security coverage should assert both the intended vocabulary change and full persisted non-mutation guarantees when writes are denied.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/CreateDraftTests.fs`
+- Work done: Added seeder-based persistence assertions to unauthenticated (`401`) and validation-denied (`400`) create-draft tests to prove no collections, vocabularies, entries, definitions, translations, or examples are created on denied writes. Ran `dotnet fantomas Wordfolio.Api/Wordfolio.Api.Tests`, `dotnet build Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj`, and `dotnet test Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj` successfully.
+- Issues encountered: None.
+- Learnings: Create-draft is user-scoped by the authenticated caller and does not take a foreign ownership target, so cross-user mutation-denial is not directly applicable; security coverage should focus on unauthenticated and validation-denied non-mutation guarantees.
