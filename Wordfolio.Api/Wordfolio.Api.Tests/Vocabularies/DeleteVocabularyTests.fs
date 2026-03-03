@@ -101,7 +101,8 @@ type DeleteVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let collectionB =
                 Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
 
-            let createdAt = DateTimeOffset(2026, 1, 10, 10, 0, 0, TimeSpan.Zero)
+            let createdAt =
+                DateTimeOffset(2026, 1, 10, 10, 0, 0, TimeSpan.Zero)
 
             let vocabulary =
                 Entities.makeVocabulary collectionB "Test Vocabulary" None createdAt None false

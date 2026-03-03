@@ -173,16 +173,11 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let collectionB =
                 Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
 
-            let createdAt = DateTimeOffset(2026, 1, 10, 8, 30, 0, TimeSpan.Zero)
+            let createdAt =
+                DateTimeOffset(2026, 1, 10, 8, 30, 0, TimeSpan.Zero)
 
             let vocabulary =
-                Entities.makeVocabulary
-                    collectionB
-                    "Original Name"
-                    (Some "Original Description")
-                    createdAt
-                    None
-                    false
+                Entities.makeVocabulary collectionB "Original Name" (Some "Original Description") createdAt None false
 
             do!
                 fixture.WordfolioSeeder
@@ -336,7 +331,8 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
 
-            let createdAt = DateTimeOffset(2026, 1, 10, 9, 0, 0, TimeSpan.Zero)
+            let createdAt =
+                DateTimeOffset(2026, 1, 10, 9, 0, 0, TimeSpan.Zero)
 
             let vocabulary =
                 Entities.makeVocabulary collection "Original Name" None createdAt None false
@@ -391,16 +387,11 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
 
-            let createdAt = DateTimeOffset(2026, 1, 10, 9, 30, 0, TimeSpan.Zero)
+            let createdAt =
+                DateTimeOffset(2026, 1, 10, 9, 30, 0, TimeSpan.Zero)
 
             let vocabulary =
-                Entities.makeVocabulary
-                    collection
-                    "Original Name"
-                    (Some "Original Description")
-                    createdAt
-                    None
-                    false
+                Entities.makeVocabulary collection "Original Name" (Some "Original Description") createdAt None false
 
             do!
                 fixture.WordfolioSeeder
