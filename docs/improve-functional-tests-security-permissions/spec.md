@@ -78,7 +78,7 @@ All steps use the **Implement** protocol above.
 
 ### 5. Drafts
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/CreateDraftTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftsTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftsTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftByIdTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/UpdateDraftTests.fs`
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/DeleteDraftTests.fs`
@@ -190,3 +190,8 @@ Agents append entries here after completing each step.
 - Work done: Added seeder-based persistence assertions to unauthenticated (`401`) and validation-denied (`400`) create-draft tests to prove no collections, vocabularies, entries, definitions, translations, or examples are created on denied writes. Ran `dotnet fantomas Wordfolio.Api/Wordfolio.Api.Tests`, `dotnet build Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj`, and `dotnet test Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj` successfully.
 - Issues encountered: None.
 - Learnings: Create-draft is user-scoped by the authenticated caller and does not take a foreign ownership target, so cross-user mutation-denial is not directly applicable; security coverage should focus on unauthenticated and validation-denied non-mutation guarantees.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/GetDraftsTests.fs`
+- Work done: Reviewed `GetDraftsTests.fs` against handler behavior and test rules, confirmed existing coverage already includes unauthenticated (`401`), missing-default-vocabulary (`404`), non-empty/empty drafts responses, and cross-user visibility isolation. Ran `dotnet fantomas Wordfolio.Api/Wordfolio.Api.Tests`, `dotnet build Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj`, and `dotnet test Wordfolio.Api/Wordfolio.Api.Tests/Wordfolio.Api.Tests.fsproj` successfully with no file changes required.
+- Issues encountered: None.
+- Learnings: `GET /drafts/all` enforces ownership by resolving the authenticated user's default drafts vocabulary and returning only entries under that vocabulary; cross-user boundary is therefore best asserted by verifying foreign users' draft entries do not appear in the caller response.
