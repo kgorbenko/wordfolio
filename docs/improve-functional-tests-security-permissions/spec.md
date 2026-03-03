@@ -74,7 +74,7 @@ All steps use the **Implement** protocol above.
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/GetEntryByIdTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/UpdateEntryTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/DeleteEntryTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/MoveEntryTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/MoveEntryTests.fs`
 
 ### 5. Drafts
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Drafts/CreateDraftTests.fs`
@@ -180,3 +180,8 @@ Agents append entries here after completing each step.
 - Work done: Added seeder-based persistence assertions for unauthenticated (`401`) and cross-user (`404`) delete-denial scenarios, and strengthened success-path coverage by verifying the targeted entry is deleted while a non-targeted entry remains unchanged. Ran `dotnet fantomas`, `dotnet build`, and `dotnet test` successfully.
 - Issues encountered: None.
 - Learnings: Delete-entry ownership boundaries are surfaced as `VocabularyNotFoundOrAccessDenied` (`404`), and write-security coverage should assert both denied-write non-mutation and successful deletion without collateral changes to other caller-owned rows.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Entries/MoveEntryTests.fs`
+- Work done: Added seeder-based persistence assertions for move-entry success and denied-write paths by verifying moved-entry state plus unchanged non-targeted rows for unauthenticated (`401`) and cross-user target-vocabulary (`404`) scenarios. Ran `dotnet fantomas`, `dotnet build`, and `dotnet test` successfully.
+- Issues encountered: None.
+- Learnings: Move-entry ownership boundaries are exposed as `VocabularyNotFoundOrAccessDenied` (`404`), and robust write-security coverage should assert both the intended vocabulary change and full persisted non-mutation guarantees when writes are denied.
