@@ -130,7 +130,7 @@ Verify parity for the same area completed in the preceding Refactor step.
 - [x] VerifyCoverage: Verify parity for `Vocabularies` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/VocabulariesTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Vocabularies.`.
 
 ### 5. Entries endpoints
-- [ ] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/EntriesTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Entries/` and update explicit compile includes ordering.
+- [x] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/EntriesTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Entries/` and update explicit compile includes ordering.
 - [ ] VerifyCoverage: Verify parity for `Entries` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/EntriesTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Entries`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Entries.`.
 
 ### 6. Drafts endpoints
@@ -184,3 +184,8 @@ Agents append entries here after completing each step.
 - Work done: Generated Vocabularies source inventories from `HEAD^` and the refactored `Vocabularies` directory, confirmed zero source diff, captured `dotnet test --list-tests` output, and validated exact runtime parity for `Wordfolio.Api.Tests.Vocabularies.` (15 expected and 15 discovered display names).
 - Issues encountered: None.
 - Learnings: Runtime parity validation is reliable by filtering discovered tests to the area namespace prefix and stripping the `<Namespace>.<Class>.` prefix before multiset comparison with extracted ``member _.``...```` source display names.
+
+### Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/EntriesTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Entries/` and update explicit compile includes ordering.
+- Work done: Split `EntriesTests.fs` into six behavior-specific files (`Create`, `GetEntriesByVocabulary`, `GetEntryById`, `Update`, `Delete`, and `Move`) under `Wordfolio.Api/Wordfolio.Api.Tests/Entries/`, preserving all test display names and test logic. Updated `Wordfolio.Api.Tests.fsproj` to include the new Entries files explicitly in area order and removed the legacy monolithic file from disk/includes.
+- Issues encountered: None.
+- Learnings: For large endpoint files, grouping tests by route variant (`POST/GET/PUT/DELETE/move`) keeps file responsibilities clear while maintaining parity-friendly member-name continuity for later coverage verification.
