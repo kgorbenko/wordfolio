@@ -173,12 +173,14 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let collectionB =
                 Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
 
+            let createdAt = DateTimeOffset(2026, 1, 10, 8, 30, 0, TimeSpan.Zero)
+
             let vocabulary =
                 Entities.makeVocabulary
                     collectionB
                     "Original Name"
                     (Some "Original Description")
-                    DateTimeOffset.UtcNow
+                    createdAt
                     None
                     false
 
@@ -206,22 +208,17 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                 fixture.WordfolioSeeder
                 |> Seeder.getVocabularyByIdAsync vocabulary.Id
 
-            let vocabularyInDatabase =
-                Assert.IsType<Wordfolio.Vocabulary>(
-                    vocabularyInDatabaseOption
-                    |> Option.toObj
-                )
+            let expectedVocabularyInDatabase: Wordfolio.Vocabulary option =
+                Some
+                    { Id = vocabulary.Id
+                      CollectionId = collectionB.Id
+                      Name = "Original Name"
+                      Description = Some "Original Description"
+                      CreatedAt = createdAt
+                      UpdatedAt = None
+                      IsDefault = false }
 
-            let expectedVocabularyInDatabase: Wordfolio.Vocabulary =
-                { Id = vocabulary.Id
-                  CollectionId = collectionB.Id
-                  Name = "Original Name"
-                  Description = Some "Original Description"
-                  CreatedAt = vocabularyInDatabase.CreatedAt
-                  UpdatedAt = vocabularyInDatabase.UpdatedAt
-                  IsDefault = false }
-
-            Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabase)
+            Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabaseOption)
         }
 
     [<Fact>]
@@ -339,8 +336,10 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
 
+            let createdAt = DateTimeOffset(2026, 1, 10, 9, 0, 0, TimeSpan.Zero)
+
             let vocabulary =
-                Entities.makeVocabulary collection "Original Name" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "Original Name" None createdAt None false
 
             do!
                 fixture.WordfolioSeeder
@@ -366,22 +365,17 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                 fixture.WordfolioSeeder
                 |> Seeder.getVocabularyByIdAsync vocabulary.Id
 
-            let vocabularyInDatabase =
-                Assert.IsType<Wordfolio.Vocabulary>(
-                    vocabularyInDatabaseOption
-                    |> Option.toObj
-                )
+            let expectedVocabularyInDatabase: Wordfolio.Vocabulary option =
+                Some
+                    { Id = vocabulary.Id
+                      CollectionId = collection.Id
+                      Name = "Original Name"
+                      Description = None
+                      CreatedAt = createdAt
+                      UpdatedAt = None
+                      IsDefault = false }
 
-            let expectedVocabularyInDatabase: Wordfolio.Vocabulary =
-                { Id = vocabulary.Id
-                  CollectionId = collection.Id
-                  Name = "Original Name"
-                  Description = None
-                  CreatedAt = vocabularyInDatabase.CreatedAt
-                  UpdatedAt = vocabularyInDatabase.UpdatedAt
-                  IsDefault = false }
-
-            Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabase)
+            Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabaseOption)
         }
 
     [<Fact>]
@@ -397,12 +391,14 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
 
+            let createdAt = DateTimeOffset(2026, 1, 10, 9, 30, 0, TimeSpan.Zero)
+
             let vocabulary =
                 Entities.makeVocabulary
                     collection
                     "Original Name"
                     (Some "Original Description")
-                    DateTimeOffset.UtcNow
+                    createdAt
                     None
                     false
 
@@ -430,20 +426,15 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                 fixture.WordfolioSeeder
                 |> Seeder.getVocabularyByIdAsync vocabulary.Id
 
-            let vocabularyInDatabase =
-                Assert.IsType<Wordfolio.Vocabulary>(
-                    vocabularyInDatabaseOption
-                    |> Option.toObj
-                )
+            let expectedVocabularyInDatabase: Wordfolio.Vocabulary option =
+                Some
+                    { Id = vocabulary.Id
+                      CollectionId = collection.Id
+                      Name = "Original Name"
+                      Description = Some "Original Description"
+                      CreatedAt = createdAt
+                      UpdatedAt = None
+                      IsDefault = false }
 
-            let expectedVocabularyInDatabase: Wordfolio.Vocabulary =
-                { Id = vocabulary.Id
-                  CollectionId = collection.Id
-                  Name = "Original Name"
-                  Description = Some "Original Description"
-                  CreatedAt = vocabularyInDatabase.CreatedAt
-                  UpdatedAt = vocabularyInDatabase.UpdatedAt
-                  IsDefault = false }
-
-            Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabase)
+            Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabaseOption)
         }
