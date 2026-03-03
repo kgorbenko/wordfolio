@@ -59,7 +59,7 @@ All steps use the **Implement** protocol above.
 ### 2. Collections Hierarchy
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetCollectionsHierarchyTests.fs`
 - [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetCollectionsListTests.fs`
-- [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetVocabulariesByCollectionTests.fs`
+- [x] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetVocabulariesByCollectionTests.fs`
 
 ### 3. Vocabularies
 - [ ] Implement: `Wordfolio.Api/Wordfolio.Api.Tests/Vocabularies/CreateVocabularyTests.fs`
@@ -125,3 +125,8 @@ Agents append entries here after completing each step.
 - Work done: Added an explicit empty-response test for authenticated users with no collections, while preserving existing filtering/sorting, unauthenticated (`401`), and cross-user visibility-boundary coverage in the file. Ran the required verification commands (`dotnet fantomas`, `dotnet build`, and `dotnet test`) successfully.
 - Issues encountered: None.
 - Learnings: This endpoint enforces ownership boundaries by returning only caller-scoped rows (and empty lists when no owned data exists), so security coverage should assert both cross-user exclusion and empty-state behavior alongside auth checks.
+
+### Implement: `Wordfolio.Api/Wordfolio.Api.Tests/CollectionsHierarchy/GetVocabulariesByCollectionTests.fs`
+- Work done: Strengthened cross-user visibility-boundary coverage by seeding both requester-owned and foreign collections/vocabularies, then asserting the requester gets an empty list when querying the foreign collection id. Kept existing success, unauthenticated (`401`), empty/system collection, search, and sorting coverage intact and ran the required verification commands successfully.
+- Issues encountered: None.
+- Learnings: For this user-scoped list endpoint, ownership enforcement is expressed as caller-scoped filtering (empty `200` for foreign collection ids), so robust boundary tests should include owned data in the same scenario to prove responses do not fall back to unrelated caller data.
