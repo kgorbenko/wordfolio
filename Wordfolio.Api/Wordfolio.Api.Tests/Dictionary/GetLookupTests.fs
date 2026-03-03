@@ -1,4 +1,4 @@
-namespace Wordfolio.Api.Tests
+namespace Wordfolio.Api.Tests.Dictionary
 
 open System
 open System.Net
@@ -13,6 +13,7 @@ open Microsoft.Extensions.DependencyInjection.Extensions
 open Xunit
 
 open Wordfolio.Api.Infrastructure.ChatClient
+open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.FakeChatClient
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -44,7 +45,7 @@ module private SseReader =
             return events |> List.ofSeq
         }
 
-type DictionaryTests(fixture: WordfolioIdentityTestFixture) =
+type GetLookupTests(fixture: WordfolioIdentityTestFixture) =
     interface IClassFixture<WordfolioIdentityTestFixture>
 
     [<Fact>]

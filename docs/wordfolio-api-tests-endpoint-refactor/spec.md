@@ -138,7 +138,7 @@ Verify parity for the same area completed in the preceding Refactor step.
 - [x] VerifyCoverage: Verify parity for `Drafts` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/DraftsTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Drafts`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Drafts.`.
 
 ### 7. Dictionary endpoints
-- [ ] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/DictionaryTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Dictionary/` and update explicit compile includes ordering.
+- [x] Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/DictionaryTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Dictionary/` and update explicit compile includes ordering.
 - [ ] VerifyCoverage: Verify parity for `Dictionary` using `LEGACY_FILE=Wordfolio.Api/Wordfolio.Api.Tests/DictionaryTests.fs`, `AREA_DIR=Wordfolio.Api/Wordfolio.Api.Tests/Dictionary`, and `AREA_NAMESPACE_PREFIX=Wordfolio.Api.Tests.Dictionary.`.
 
 ## Progress Log
@@ -204,3 +204,8 @@ Agents append entries here after completing each step.
 - Work done: Generated Drafts source inventories from `HEAD^` and the refactored `Drafts` directory, confirmed zero source diff, captured `dotnet test --list-tests` output, and validated exact runtime parity for `Wordfolio.Api.Tests.Drafts.` (35 expected and 35 discovered display names).
 - Issues encountered: None.
 - Learnings: Runtime parity for split endpoint files is reliable by filtering discovery output to `Wordfolio.Api.Tests.Drafts.<Class>.` and comparing stripped display names as an exact multiset against source-extracted ``member _.``...```` names.
+
+### Refactor: Split `Wordfolio.Api/Wordfolio.Api.Tests/DictionaryTests.fs` into behavior-specific files under `Wordfolio.Api/Wordfolio.Api.Tests/Dictionary/` and update explicit compile includes ordering.
+- Work done: Split `DictionaryTests.fs` into a behavior-specific file at `Wordfolio.Api/Wordfolio.Api.Tests/Dictionary/GetLookupTests.fs`, preserved all existing test display names and test logic, and updated `Wordfolio.Api.Tests.fsproj` to include the new Dictionary file explicitly while removing the legacy monolithic file.
+- Issues encountered: None.
+- Learnings: Even when an area currently has a single route variant, placing it in an area namespace/directory keeps compile ordering consistent and preserves a clean path for later endpoint expansion.

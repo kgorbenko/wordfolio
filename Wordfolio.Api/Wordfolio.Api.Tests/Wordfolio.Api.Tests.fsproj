@@ -53,7 +53,7 @@
     <Compile Include="Drafts/UpdateDraftTests.fs" />
     <Compile Include="Drafts/DeleteDraftTests.fs" />
     <Compile Include="Drafts/MoveDraftTests.fs" />
-    <Compile Include="DictionaryTests.fs" />
+    <Compile Include="Dictionary/GetLookupTests.fs" />
     <Compile Include="StatusTests.fs" />
     <Compile Include="OpenApiTests.fs" />
   </ItemGroup>
