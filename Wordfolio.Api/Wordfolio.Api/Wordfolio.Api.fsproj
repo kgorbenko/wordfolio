@@ -32,7 +32,6 @@
     <Compile Include="Api\Vocabularies\Mappers.fs" />
     <Compile Include="Api\Vocabularies\Handlers.fs" />
     <Compile Include="Api\Entries\Types.fs" />
-    <Compile Include="Api\Entries\Mappers.fs" />
     <Compile Include="Api\Entries\Handlers.fs" />
     <Compile Include="Api\Drafts\Types.fs" />
     <Compile Include="Api\Drafts\Mappers.fs" />
