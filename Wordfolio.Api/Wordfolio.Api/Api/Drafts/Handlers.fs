@@ -80,8 +80,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
 
                         let! result = getDrafts env { UserId = UserId userId }
 
-                        let drafts =
-                            failOnUnitError "Drafts.getDrafts" result
+                        let drafts = okOrFail result
 
                         return
                             match drafts with

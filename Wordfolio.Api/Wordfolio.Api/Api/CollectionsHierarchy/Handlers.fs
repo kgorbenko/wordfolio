@@ -36,8 +36,7 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
 
                         let! result = getByUserId env { UserId = UserId userId }
 
-                        let hierarchyResult =
-                            failOnUnitError "CollectionsHierarchy.getByUserId" result
+                        let hierarchyResult = okOrFail result
 
                         let response: CollectionsHierarchyResponse =
                             { Collections =
@@ -75,8 +74,7 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
                                     { UserId = UserId userId
                                       Query = query }
 
-                            let collections =
-                                failOnUnitError "CollectionsHierarchy.searchUserCollections" result
+                            let collections = okOrFail result
 
                             return
                                 collections
@@ -110,8 +108,7 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
                                       CollectionId = CollectionId collectionId
                                       Query = query }
 
-                            let vocabularies =
-                                failOnUnitError "CollectionsHierarchy.searchCollectionVocabularies" result
+                            let vocabularies = okOrFail result
 
                             return
                                 vocabularies

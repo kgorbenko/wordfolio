@@ -60,8 +60,7 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
 
                         let! result = getByUserId env { UserId = UserId userId }
 
-                        let collections =
-                            failOnUnitError "Collections.getByUserId" result
+                        let collections = okOrFail result
 
                         return
                             Results.Ok(
