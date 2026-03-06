@@ -8,19 +8,19 @@ let private toDefinitionSourceDomain(source: DefinitionSourceDto) : DefinitionSo
     match source with
     | DefinitionSourceDto.Api -> DefinitionSource.Api
     | DefinitionSourceDto.Manual -> DefinitionSource.Manual
-    | _ -> DefinitionSource.Manual
+    | x -> failwith $"Unknown {nameof DefinitionSourceDto} value: {x}"
 
 let private toTranslationSourceDomain(source: TranslationSourceDto) : TranslationSource =
     match source with
     | TranslationSourceDto.Api -> TranslationSource.Api
     | TranslationSourceDto.Manual -> TranslationSource.Manual
-    | _ -> TranslationSource.Manual
+    | x -> failwith $"Unknown {nameof TranslationSourceDto} value: {x}"
 
 let private toExampleSourceDomain(source: ExampleSourceDto) : ExampleSource =
     match source with
     | ExampleSourceDto.Api -> ExampleSource.Api
     | ExampleSourceDto.Custom -> ExampleSource.Custom
-    | _ -> ExampleSource.Custom
+    | x -> failwith $"Unknown {nameof ExampleSourceDto} value: {x}"
 
 let private toExampleSourceDto(source: ExampleSource) : ExampleSourceDto =
     match source with

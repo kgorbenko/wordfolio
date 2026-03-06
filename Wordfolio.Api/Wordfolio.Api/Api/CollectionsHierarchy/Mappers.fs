@@ -42,7 +42,7 @@ let toVocabularySortByDomain(sortBy: VocabularySummarySortByRequest) : Vocabular
     | VocabularySummarySortByRequest.CreatedAt -> VocabularySortBy.CreatedAt
     | VocabularySummarySortByRequest.UpdatedAt -> VocabularySortBy.UpdatedAt
     | VocabularySummarySortByRequest.EntryCount -> VocabularySortBy.EntryCount
-    | _ -> VocabularySortBy.Name
+    | x -> failwith $"Unknown {nameof VocabularySummarySortByRequest} value: {x}"
 
 let toCollectionSortByDomain(sortBy: CollectionSortByRequest) : CollectionSortBy =
     match sortBy with
@@ -50,13 +50,13 @@ let toCollectionSortByDomain(sortBy: CollectionSortByRequest) : CollectionSortBy
     | CollectionSortByRequest.CreatedAt -> CollectionSortBy.CreatedAt
     | CollectionSortByRequest.UpdatedAt -> CollectionSortBy.UpdatedAt
     | CollectionSortByRequest.VocabularyCount -> CollectionSortBy.VocabularyCount
-    | _ -> CollectionSortBy.Name
+    | x -> failwith $"Unknown {nameof CollectionSortByRequest} value: {x}"
 
 let toSortDirectionDomain(sortDirection: SortDirectionRequest) : SortDirection =
     match sortDirection with
     | SortDirectionRequest.Asc -> SortDirection.Asc
     | SortDirectionRequest.Desc -> SortDirection.Desc
-    | _ -> SortDirection.Asc
+    | x -> failwith $"Unknown {nameof SortDirectionRequest} value: {x}"
 
 let toSearchQuery
     (search: string)
