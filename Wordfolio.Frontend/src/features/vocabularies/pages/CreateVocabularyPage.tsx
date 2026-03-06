@@ -1,19 +1,20 @@
 import { useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
-import { vocabularyCreateRouteApi, vocabularyDetailPath } from "../routes";
 import {
-    collectionsPath,
-    collectionDetailPath,
-} from "../../collections/routes";
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
-import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
-import { RetryOnError } from "../../../components/common/RetryOnError";
-import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
-import { useNotificationContext } from "../../../contexts/NotificationContext";
-import { useCollectionQuery } from "../../collections/hooks/useCollectionQuery";
+    vocabularyCollectionDetailPath,
+    vocabularyCollectionsPath,
+    vocabularyCreateRouteApi,
+    vocabularyDetailPath,
+} from "../routes";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
+import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { RetryOnError } from "../../../shared/components/RetryOnError";
+import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { useCreateVocabularyMutation } from "../hooks/useCreateVocabularyMutation";
+import { useVocabularyCollectionQuery } from "../hooks/useVocabularyCollectionQuery";
 import { VocabularyForm } from "../components/VocabularyForm";
 import { VocabularyFormData } from "../schemas/vocabularySchemas";
 
@@ -21,18 +22,17 @@ export const CreateVocabularyPage = () => {
     const { collectionId } = vocabularyCreateRouteApi.useParams();
     const navigate = useNavigate();
     const { openErrorNotification } = useNotificationContext();
-    const numericCollectionId = Number(collectionId);
 
     const {
         data: collection,
         isLoading,
         isError,
         refetch,
-    } = useCollectionQuery(numericCollectionId);
+    } = useVocabularyCollectionQuery(collectionId);
 
     const createMutation = useCreateVocabularyMutation({
         onSuccess: (data) => {
-            void navigate(vocabularyDetailPath(numericCollectionId, data.id));
+            void navigate(vocabularyDetailPath(collectionId, data.id));
         },
         onError: () => {
             openErrorNotification({
@@ -43,20 +43,14 @@ export const CreateVocabularyPage = () => {
 
     const handleSubmit = useCallback(
         (data: VocabularyFormData) => {
-            createMutation.mutate({
-                collectionId: numericCollectionId,
-                request: {
-                    name: data.name,
-                    description: data.description,
-                },
-            });
+            createMutation.mutate({ collectionId, data });
         },
-        [createMutation, numericCollectionId]
+        [createMutation, collectionId]
     );
 
     const handleCancel = useCallback(() => {
-        void navigate(collectionDetailPath(numericCollectionId));
-    }, [navigate, numericCollectionId]);
+        void navigate(vocabularyCollectionDetailPath(collectionId));
+    }, [navigate, collectionId]);
 
     const renderContent = useCallback(() => {
         if (isLoading) return <ContentSkeleton variant="form" />;
@@ -93,10 +87,10 @@ export const CreateVocabularyPage = () => {
         <PageContainer>
             <BreadcrumbNav
                 items={[
-                    { label: "Collections", ...collectionsPath() },
+                    { label: "Collections", ...vocabularyCollectionsPath() },
                     {
                         label: collection?.name ?? "...",
-                        ...collectionDetailPath(numericCollectionId),
+                        ...vocabularyCollectionDetailPath(collectionId),
                     },
                     { label: "New Vocabulary" },
                 ]}

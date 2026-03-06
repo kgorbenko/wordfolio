@@ -1,13 +1,13 @@
 import { Box } from "@mui/material";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 
-import { EmptyState } from "../../../components/common/EmptyState";
-import { EntryListItem } from "../../entries/components/EntryListItem";
-import { Entry } from "../../entries/types";
+import { EmptyState } from "../../../shared/components/EmptyState";
+import { EntryListItem } from "../../../shared/components/entries/EntryListItem";
+import { VocabularyEntryPreview } from "../types";
 import styles from "./VocabularyDetailContent.module.scss";
 
 interface VocabularyDetailContentProps {
-    readonly entries: Entry[];
+    readonly entries: VocabularyEntryPreview[];
     readonly onEntryClick: (id: number) => void;
     readonly onAddWordClick: () => void;
 }
@@ -38,10 +38,9 @@ export const VocabularyDetailContent = ({
             {entries.map((entry) => (
                 <EntryListItem
                     key={entry.id}
-                    id={entry.id}
                     entryText={entry.entryText}
-                    firstDefinition={entry.definitions[0]?.definitionText}
-                    firstTranslation={entry.translations[0]?.translationText}
+                    firstDefinition={entry.firstDefinition ?? undefined}
+                    firstTranslation={entry.firstTranslation ?? undefined}
                     createdAt={entry.createdAt}
                     onClick={() => onEntryClick(entry.id)}
                 />

@@ -1,14 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { collectionsApi } from "../api/collectionsApi";
 import {
-    collectionsApi,
-    CreateCollectionRequest,
-    CollectionResponse,
-    ApiError,
-} from "../api/collectionsApi";
+    mapCollectionDetail,
+    mapToCreateCollectionRequest,
+} from "../api/mappers";
+import { CollectionFormData } from "../schemas/collectionSchemas";
+import { Collection } from "../types";
 
 interface UseCreateCollectionMutationOptions {
-    onSuccess?: (data: CollectionResponse) => void;
-    onError?: (error: ApiError) => void;
+    onSuccess?: (data: Collection) => void;
+    onError?: () => void;
 }
 
 export function useCreateCollectionMutation(
@@ -17,11 +18,11 @@ export function useCreateCollectionMutation(
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (request: CreateCollectionRequest) =>
-            collectionsApi.create(request),
+        mutationFn: (data: CollectionFormData) =>
+            collectionsApi.create(mapToCreateCollectionRequest(data)),
         onSuccess: (data) => {
-            void queryClient.invalidateQueries({ queryKey: ["collections"] });
-            options?.onSuccess?.(data);
+            void queryClient.invalidateQueries();
+            options?.onSuccess?.(mapCollectionDetail(data));
         },
         onError: options?.onError,
     });

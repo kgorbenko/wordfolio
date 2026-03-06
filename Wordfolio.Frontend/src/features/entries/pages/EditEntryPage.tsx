@@ -1,25 +1,29 @@
 import { useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
-import { entryEditRouteApi, entryDetailPath } from "../routes";
 import {
+    entryEditRouteApi,
+    entryDetailPath,
     collectionsPath,
     collectionDetailPath,
-} from "../../collections/routes";
-import { vocabularyDetailPath } from "../../vocabularies/routes";
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
-import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
-import { RetryOnError } from "../../../components/common/RetryOnError";
-import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
-import { useNotificationContext } from "../../../contexts/NotificationContext";
+    vocabularyDetailPath,
+} from "../routes";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
+import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { RetryOnError } from "../../../shared/components/RetryOnError";
+import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 
-import { useCollectionQuery } from "../../collections/hooks/useCollectionQuery";
-import { useVocabularyQuery } from "../../vocabularies/hooks/useVocabularyQuery";
+import { useVocabularyDetailQuery } from "../../../shared/queries/useVocabularyDetailQuery";
 import { useEntryQuery } from "../hooks/useEntryQuery";
 import { useUpdateEntryMutation } from "../hooks/useUpdateEntryMutation";
-import { EntryForm } from "../components/EntryForm";
-import { EntryFormValues, EntryFormOutput, Entry } from "../types";
+import { EntryForm } from "../../../shared/components/entries/EntryForm";
+import type {
+    Entry,
+    EntryFormValues,
+    CreateEntryData,
+} from "../../../shared/types/entries";
 
 const mapEntryToFormValues = (entry: Entry): EntryFormValues => ({
     entryText: entry.entryText,
@@ -51,40 +55,23 @@ export const EditEntryPage = () => {
     const navigate = useNavigate();
     const { openErrorNotification } = useNotificationContext();
 
-    const numericCollectionId = Number(collectionId);
-    const numericVocabularyId = Number(vocabularyId);
-    const numericEntryId = Number(entryId);
-
-    const {
-        data: collection,
-        isLoading: isCollectionLoading,
-        isError: isCollectionError,
-        refetch: refetchCollection,
-    } = useCollectionQuery(numericCollectionId);
-
     const {
         data: vocabulary,
         isLoading: isVocabularyLoading,
         isError: isVocabularyError,
         refetch: refetchVocabulary,
-    } = useVocabularyQuery(numericCollectionId, numericVocabularyId);
+    } = useVocabularyDetailQuery(collectionId, vocabularyId);
 
     const {
         data: entry,
         isLoading: isEntryLoading,
         isError: isEntryError,
         refetch: refetchEntry,
-    } = useEntryQuery(numericCollectionId, numericVocabularyId, numericEntryId);
+    } = useEntryQuery(collectionId, vocabularyId, entryId);
 
     const updateMutation = useUpdateEntryMutation({
         onSuccess: () => {
-            void navigate(
-                entryDetailPath(
-                    numericCollectionId,
-                    numericVocabularyId,
-                    numericEntryId
-                )
-            );
+            void navigate(entryDetailPath(collectionId, vocabularyId, entryId));
         },
         onError: () => {
             openErrorNotification({
@@ -94,46 +81,29 @@ export const EditEntryPage = () => {
     });
 
     const handleSubmit = useCallback(
-        (data: EntryFormOutput) => {
+        (data: CreateEntryData) => {
             updateMutation.mutate({
-                collectionId: numericCollectionId,
-                vocabularyId: numericVocabularyId,
-                entryId: numericEntryId,
-                request: {
-                    entryText: data.entryText,
-                    definitions: data.definitions,
-                    translations: data.translations,
-                },
+                collectionId,
+                vocabularyId,
+                entryId,
+                data,
             });
         },
-        [
-            updateMutation,
-            numericCollectionId,
-            numericVocabularyId,
-            numericEntryId,
-        ]
+        [updateMutation, collectionId, vocabularyId, entryId]
     );
 
     const handleCancel = useCallback(() => {
-        void navigate(
-            entryDetailPath(
-                numericCollectionId,
-                numericVocabularyId,
-                numericEntryId
-            )
-        );
-    }, [navigate, numericCollectionId, numericVocabularyId, numericEntryId]);
+        void navigate(entryDetailPath(collectionId, vocabularyId, entryId));
+    }, [collectionId, entryId, navigate, vocabularyId]);
 
-    const isLoading =
-        isCollectionLoading || isVocabularyLoading || isEntryLoading;
-    const isError = isCollectionError || isVocabularyError || isEntryError;
+    const isLoading = isVocabularyLoading || isEntryLoading;
+    const isError = isVocabularyError || isEntryError;
 
     const renderContent = useCallback(() => {
         if (isLoading) return <ContentSkeleton variant="form" />;
 
-        if (isError || !collection || !vocabulary || !entry) {
+        if (isError || !vocabulary || !entry) {
             const handleRetry = () => {
-                if (isCollectionError) void refetchCollection();
                 if (isVocabularyError) void refetchVocabulary();
                 if (isEntryError) void refetchEntry();
             };
@@ -159,13 +129,10 @@ export const EditEntryPage = () => {
     }, [
         isLoading,
         isError,
-        collection,
         vocabulary,
         entry,
-        isCollectionError,
         isVocabularyError,
         isEntryError,
-        refetchCollection,
         refetchVocabulary,
         refetchEntry,
         handleSubmit,
@@ -179,23 +146,16 @@ export const EditEntryPage = () => {
                 items={[
                     { label: "Collections", ...collectionsPath() },
                     {
-                        label: collection?.name ?? "...",
-                        ...collectionDetailPath(numericCollectionId),
+                        label: vocabulary?.collectionName ?? "...",
+                        ...collectionDetailPath(collectionId),
                     },
                     {
                         label: vocabulary?.name ?? "...",
-                        ...vocabularyDetailPath(
-                            numericCollectionId,
-                            numericVocabularyId
-                        ),
+                        ...vocabularyDetailPath(collectionId, vocabularyId),
                     },
                     {
                         label: entry?.entryText ?? "...",
-                        ...entryDetailPath(
-                            numericCollectionId,
-                            numericVocabularyId,
-                            numericEntryId
-                        ),
+                        ...entryDetailPath(collectionId, vocabularyId, entryId),
                     },
                     { label: "Edit" },
                 ]}

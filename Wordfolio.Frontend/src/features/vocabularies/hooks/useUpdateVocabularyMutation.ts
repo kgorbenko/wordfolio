@@ -1,21 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-    vocabulariesApi,
-    UpdateVocabularyRequest,
-    ApiError,
-} from "../api/vocabulariesApi";
-import { mapVocabulary } from "../api/mappers";
+import { vocabulariesApi } from "../api/vocabulariesApi";
+import { mapVocabulary, mapToUpdateVocabularyRequest } from "../api/mappers";
+import { VocabularyFormData } from "../schemas/vocabularySchemas";
 import { Vocabulary } from "../types";
 
 interface UpdateVocabularyMutationVariables {
     collectionId: number;
     vocabularyId: number;
-    request: UpdateVocabularyRequest;
+    data: VocabularyFormData;
 }
 
 interface UseUpdateVocabularyMutationOptions {
     onSuccess?: (data: Vocabulary) => void;
-    onError?: (error: ApiError) => void;
+    onError?: () => void;
 }
 
 export const useUpdateVocabularyMutation = (
@@ -27,25 +24,15 @@ export const useUpdateVocabularyMutation = (
         mutationFn: ({
             collectionId,
             vocabularyId,
-            request,
+            data,
         }: UpdateVocabularyMutationVariables) =>
             vocabulariesApi.updateVocabulary(
                 collectionId,
                 vocabularyId,
-                request
+                mapToUpdateVocabularyRequest(data)
             ),
-        onSuccess: (data, variables) => {
-            void queryClient.invalidateQueries({
-                queryKey: [
-                    "vocabulary",
-                    variables.collectionId,
-                    variables.vocabularyId,
-                ],
-            });
-            void queryClient.invalidateQueries({
-                queryKey: ["vocabularies", variables.collectionId],
-            });
-            void queryClient.invalidateQueries({ queryKey: ["collections"] });
+        onSuccess: (data) => {
+            void queryClient.invalidateQueries();
 
             if (options?.onSuccess) {
                 options.onSuccess(mapVocabulary(data));

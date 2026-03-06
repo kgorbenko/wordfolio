@@ -1,13 +1,13 @@
 import { useNavigate } from "@tanstack/react-router";
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
-import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
-import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
-import { RetryOnError } from "../../../components/common/RetryOnError";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
+import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
+import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { CollectionForm } from "../components/CollectionForm";
 import { useCollectionQuery } from "../hooks/useCollectionQuery";
 import { useUpdateCollectionMutation } from "../hooks/useUpdateCollectionMutation";
-import { useNotificationContext } from "../../../contexts/NotificationContext";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { CollectionFormData } from "../schemas/collectionSchemas";
 import {
     collectionEditRouteApi,
@@ -20,21 +20,19 @@ export const EditCollectionPage = () => {
     const navigate = useNavigate();
     const { openErrorNotification, openSuccessNotification } =
         useNotificationContext();
-    const numericId = Number(collectionId);
-
     const {
         data: collection,
         isLoading,
         isError,
         refetch,
-    } = useCollectionQuery(numericId);
+    } = useCollectionQuery(collectionId);
 
-    const mutation = useUpdateCollectionMutation(numericId, {
+    const mutation = useUpdateCollectionMutation(collectionId, {
         onSuccess: () => {
             openSuccessNotification({
                 message: "Collection updated successfully",
             });
-            void navigate(collectionDetailPath(numericId));
+            void navigate(collectionDetailPath(collectionId));
         },
         onError: () => {
             openErrorNotification({ message: "Failed to update collection" });
@@ -46,7 +44,7 @@ export const EditCollectionPage = () => {
     };
 
     const handleCancel = () => {
-        void navigate(collectionDetailPath(numericId));
+        void navigate(collectionDetailPath(collectionId));
     };
 
     if (isLoading) {
@@ -76,7 +74,7 @@ export const EditCollectionPage = () => {
                     { label: "Collections", ...collectionsPath() },
                     {
                         label: collection.name,
-                        ...collectionDetailPath(numericId),
+                        ...collectionDetailPath(collectionId),
                     },
                     { label: "Edit" },
                 ]}

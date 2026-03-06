@@ -1,18 +1,19 @@
 import { useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
-import { vocabularyEditRouteApi, vocabularyDetailPath } from "../routes";
 import {
-    collectionsPath,
-    collectionDetailPath,
-} from "../../collections/routes";
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
-import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
-import { RetryOnError } from "../../../components/common/RetryOnError";
-import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
-import { useNotificationContext } from "../../../contexts/NotificationContext";
-import { useVocabularyQuery } from "../hooks/useVocabularyQuery";
+    vocabularyCollectionDetailPath,
+    vocabularyCollectionsPath,
+    vocabularyDetailPath,
+    vocabularyEditRouteApi,
+} from "../routes";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
+import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { RetryOnError } from "../../../shared/components/RetryOnError";
+import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
+import { useVocabularyDetailQuery } from "../../../shared/queries/useVocabularyDetailQuery";
 import { useUpdateVocabularyMutation } from "../hooks/useUpdateVocabularyMutation";
 import { VocabularyForm } from "../components/VocabularyForm";
 import { VocabularyFormData } from "../schemas/vocabularySchemas";
@@ -21,21 +22,17 @@ export const EditVocabularyPage = () => {
     const { collectionId, vocabularyId } = vocabularyEditRouteApi.useParams();
     const navigate = useNavigate();
     const { openErrorNotification } = useNotificationContext();
-    const numericCollectionId = Number(collectionId);
-    const numericVocabularyId = Number(vocabularyId);
 
     const {
         data: vocabulary,
         isLoading: isVocabularyLoading,
         isError: isVocabularyError,
         refetch: refetchVocabulary,
-    } = useVocabularyQuery(numericCollectionId, numericVocabularyId);
+    } = useVocabularyDetailQuery(collectionId, vocabularyId);
 
     const updateMutation = useUpdateVocabularyMutation({
         onSuccess: () => {
-            void navigate(
-                vocabularyDetailPath(numericCollectionId, numericVocabularyId)
-            );
+            void navigate(vocabularyDetailPath(collectionId, vocabularyId));
         },
         onError: () => {
             openErrorNotification({
@@ -46,23 +43,14 @@ export const EditVocabularyPage = () => {
 
     const handleSubmit = useCallback(
         (data: VocabularyFormData) => {
-            updateMutation.mutate({
-                collectionId: numericCollectionId,
-                vocabularyId: numericVocabularyId,
-                request: {
-                    name: data.name,
-                    description: data.description,
-                },
-            });
+            updateMutation.mutate({ collectionId, vocabularyId, data });
         },
-        [updateMutation, numericCollectionId, numericVocabularyId]
+        [updateMutation, collectionId, vocabularyId]
     );
 
     const handleCancel = useCallback(() => {
-        void navigate(
-            vocabularyDetailPath(numericCollectionId, numericVocabularyId)
-        );
-    }, [navigate, numericCollectionId, numericVocabularyId]);
+        void navigate(vocabularyDetailPath(collectionId, vocabularyId));
+    }, [navigate, collectionId, vocabularyId]);
 
     const renderContent = useCallback(() => {
         if (isVocabularyLoading) return <ContentSkeleton variant="form" />;
@@ -103,17 +91,14 @@ export const EditVocabularyPage = () => {
         <PageContainer>
             <BreadcrumbNav
                 items={[
-                    { label: "Collections", ...collectionsPath() },
+                    { label: "Collections", ...vocabularyCollectionsPath() },
                     {
                         label: vocabulary?.collectionName ?? "...",
-                        ...collectionDetailPath(numericCollectionId),
+                        ...vocabularyCollectionDetailPath(collectionId),
                     },
                     {
                         label: vocabulary?.name ?? "...",
-                        ...vocabularyDetailPath(
-                            numericCollectionId,
-                            numericVocabularyId
-                        ),
+                        ...vocabularyDetailPath(collectionId, vocabularyId),
                     },
                     { label: "Edit" },
                 ]}

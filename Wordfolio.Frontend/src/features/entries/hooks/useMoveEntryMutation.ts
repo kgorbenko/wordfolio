@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { entriesApi, EntryResponse, ApiError } from "../api/entriesApi";
+import { mapEntry } from "../../../shared/api/entryMappers";
+import { entriesApi } from "../api/entriesApi";
+import type { Entry } from "../../../shared/types/entries";
 
 interface MoveEntryParams {
     readonly collectionId: number;
@@ -10,8 +12,8 @@ interface MoveEntryParams {
 }
 
 interface UseMoveEntryMutationOptions {
-    readonly onSuccess?: (data: EntryResponse) => void;
-    readonly onError?: (error: ApiError) => void;
+    readonly onSuccess?: (data: Entry) => void;
+    readonly onError?: () => void;
 }
 
 export function useMoveEntryMutation(options?: UseMoveEntryMutationOptions) {
@@ -27,22 +29,9 @@ export function useMoveEntryMutation(options?: UseMoveEntryMutationOptions) {
             entriesApi.moveEntry(collectionId, sourceVocabularyId, entryId, {
                 vocabularyId: targetVocabularyId,
             }),
-        onSuccess: (data, variables) => {
-            void queryClient.invalidateQueries({
-                queryKey: [
-                    "entries",
-                    variables.collectionId,
-                    variables.sourceVocabularyId,
-                ],
-            });
-            void queryClient.invalidateQueries({
-                queryKey: ["entries", "detail", data.id],
-            });
-            void queryClient.invalidateQueries({ queryKey: ["drafts"] });
-            void queryClient.invalidateQueries({
-                queryKey: ["collections-hierarchy"],
-            });
-            options?.onSuccess?.(data);
+        onSuccess: (data) => {
+            void queryClient.invalidateQueries();
+            options?.onSuccess?.(mapEntry(data));
         },
         onError: options?.onError,
     });

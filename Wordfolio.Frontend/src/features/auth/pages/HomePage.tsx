@@ -1,7 +1,7 @@
 import { useNavigate, Link } from "@tanstack/react-router";
 import { Container, Typography, Box, Button } from "@mui/material";
 
-import { useAuthStore } from "../../../stores/authStore";
+import { useAuthStore } from "../../../shared/stores/authStore";
 import { loginPath, registerPath } from "../routes";
 
 import styles from "./HomePage.module.scss";

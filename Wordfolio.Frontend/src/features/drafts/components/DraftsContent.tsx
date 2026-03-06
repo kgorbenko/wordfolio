@@ -1,9 +1,9 @@
 import { Box } from "@mui/material";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 
-import { EmptyState } from "../../../components/common/EmptyState";
-import { EntryListItem } from "../../entries/components/EntryListItem";
-import { Entry } from "../../../types/entry";
+import { EmptyState } from "../../../shared/components/EmptyState";
+import { EntryListItem } from "../../../shared/components/entries/EntryListItem";
+import type { Entry } from "../../../shared/types/entries";
 import styles from "./DraftsContent.module.scss";
 
 interface DraftsContentProps {
@@ -38,7 +38,6 @@ export const DraftsContent = ({
             {entries.map((entry) => (
                 <EntryListItem
                     key={entry.id}
-                    id={entry.id}
                     entryText={entry.entryText}
                     firstDefinition={entry.definitions[0]?.definitionText}
                     firstTranslation={entry.translations[0]?.translationText}

@@ -1,6 +1,6 @@
 import MenuBookIcon from "@mui/icons-material/MenuBook";
-import { CardGrid } from "../../../components/common/CardGrid";
-import { EmptyState } from "../../../components/common/EmptyState";
+import { CardGrid } from "../../../shared/components/CardGrid";
+import { EmptyState } from "../../../shared/components/EmptyState";
 import { VocabularyCard } from "./VocabularyCard";
 import { Vocabulary } from "../types";
 import styles from "./CollectionDetailContent.module.scss";

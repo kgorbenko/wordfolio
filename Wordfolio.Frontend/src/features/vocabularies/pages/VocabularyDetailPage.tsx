@@ -6,26 +6,28 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 
-import { vocabularyDetailRouteApi, vocabularyEditPath } from "../routes";
 import {
-    collectionDetailPath,
-    collectionsPath,
-} from "../../collections/routes";
-import { entryDetailPath, entryCreatePath } from "../../entries/routes";
+    vocabularyCollectionDetailPath,
+    vocabularyCollectionsPath,
+    vocabularyDetailRouteApi,
+    vocabularyEditPath,
+    vocabularyEntryCreatePath,
+    vocabularyEntryDetailPath,
+} from "../routes";
 
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
-import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
-import { RetryOnError } from "../../../components/common/RetryOnError";
-import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
-import { useNotificationContext } from "../../../contexts/NotificationContext";
-import { useConfirmDialog } from "../../../contexts/ConfirmDialogContext";
-import { assertNonNullable } from "../../../utils/misc";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
+import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { RetryOnError } from "../../../shared/components/RetryOnError";
+import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
+import { useConfirmDialog } from "../../../shared/contexts/ConfirmDialogContext";
+import { assertNonNullable } from "../../../shared/utils/misc";
 
-import { useVocabularyQuery } from "../hooks/useVocabularyQuery";
+import { useVocabularyDetailQuery } from "../../../shared/queries/useVocabularyDetailQuery";
 import { useDeleteVocabularyMutation } from "../hooks/useDeleteVocabularyMutation";
 import { VocabularyDetailContent } from "../components/VocabularyDetailContent";
-import { useEntriesQuery } from "../../entries/hooks/useEntriesQuery";
+import { useVocabularyEntriesQuery } from "../hooks/useVocabularyEntriesQuery";
 
 import styles from "./VocabularyDetailPage.module.scss";
 
@@ -35,26 +37,23 @@ export const VocabularyDetailPage = () => {
     const { openErrorNotification } = useNotificationContext();
     const { raiseConfirmDialogAsync } = useConfirmDialog();
 
-    const numericCollectionId = Number(collectionId);
-    const numericVocabularyId = Number(vocabularyId);
-
     const {
         data: vocabulary,
         isLoading: isVocabularyLoading,
         isError: isVocabularyError,
         refetch: refetchVocabulary,
-    } = useVocabularyQuery(numericCollectionId, numericVocabularyId);
+    } = useVocabularyDetailQuery(collectionId, vocabularyId);
 
     const {
         data: entries,
         isLoading: isEntriesLoading,
         isError: isEntriesError,
         refetch: refetchEntries,
-    } = useEntriesQuery(numericCollectionId, numericVocabularyId);
+    } = useVocabularyEntriesQuery(collectionId, vocabularyId);
 
     const deleteMutation = useDeleteVocabularyMutation({
         onSuccess: () => {
-            void navigate(collectionDetailPath(numericCollectionId));
+            void navigate(vocabularyCollectionDetailPath(collectionId));
         },
         onError: () => {
             openErrorNotification({
@@ -64,10 +63,8 @@ export const VocabularyDetailPage = () => {
     });
 
     const handleEditClick = useCallback(() => {
-        void navigate(
-            vocabularyEditPath(numericCollectionId, numericVocabularyId)
-        );
-    }, [navigate, numericCollectionId, numericVocabularyId]);
+        void navigate(vocabularyEditPath(collectionId, vocabularyId));
+    }, [navigate, collectionId, vocabularyId]);
 
     const handleDeleteClick = useCallback(async () => {
         assertNonNullable(vocabulary);
@@ -81,36 +78,30 @@ export const VocabularyDetailPage = () => {
 
         if (confirmed) {
             deleteMutation.mutate({
-                collectionId: numericCollectionId,
-                vocabularyId: numericVocabularyId,
+                collectionId,
+                vocabularyId,
             });
         }
     }, [
         vocabulary,
         raiseConfirmDialogAsync,
         deleteMutation,
-        numericCollectionId,
-        numericVocabularyId,
+        collectionId,
+        vocabularyId,
     ]);
 
     const handleEntryClick = useCallback(
         (entryId: number) => {
             void navigate(
-                entryDetailPath(
-                    numericCollectionId,
-                    numericVocabularyId,
-                    entryId
-                )
+                vocabularyEntryDetailPath(collectionId, vocabularyId, entryId)
             );
         },
-        [navigate, numericCollectionId, numericVocabularyId]
+        [navigate, collectionId, vocabularyId]
     );
 
     const handleAddWordClick = useCallback(() => {
-        void navigate(
-            entryCreatePath(numericCollectionId, numericVocabularyId)
-        );
-    }, [navigate, numericCollectionId, numericVocabularyId]);
+        void navigate(vocabularyEntryCreatePath(collectionId, vocabularyId));
+    }, [navigate, collectionId, vocabularyId]);
 
     const isLoading = isVocabularyLoading || isEntriesLoading;
     const isError = isVocabularyError || isEntriesError;
@@ -157,10 +148,10 @@ export const VocabularyDetailPage = () => {
         <PageContainer>
             <BreadcrumbNav
                 items={[
-                    { label: "Collections", ...collectionsPath() },
+                    { label: "Collections", ...vocabularyCollectionsPath() },
                     {
                         label: vocabulary?.collectionName ?? "...",
-                        ...collectionDetailPath(numericCollectionId),
+                        ...vocabularyCollectionDetailPath(collectionId),
                     },
                     { label: vocabulary?.name ?? "Vocabulary" },
                 ]}

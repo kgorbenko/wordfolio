@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore } from "../shared/stores/authStore";
 import { HomePage } from "../features/auth/pages/HomePage";
 import { dashboardPath } from "../features/auth/routes";
 

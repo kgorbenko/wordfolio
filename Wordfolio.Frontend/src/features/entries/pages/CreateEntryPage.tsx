@@ -1,26 +1,26 @@
 import { useCallback, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
-import { entryCreateRouteApi } from "../routes";
 import {
+    entryCreateRouteApi,
     collectionsPath,
     collectionDetailPath,
-} from "../../collections/routes";
-import { vocabularyDetailPath } from "../../vocabularies/routes";
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
-import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
-import { RetryOnError } from "../../../components/common/RetryOnError";
-import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
-import { useNotificationContext } from "../../../contexts/NotificationContext";
-import { useDuplicateEntryDialog } from "../hooks/useDuplicateEntryDialog";
-import { useVocabularyQuery } from "../../vocabularies/hooks/useVocabularyQuery";
-import { useCreateEntryMutation } from "../hooks/useCreateEntryMutation";
-import { CreateEntryRequest } from "../api/entriesApi";
+    vocabularyDetailPath,
+} from "../routes";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
+import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { RetryOnError } from "../../../shared/components/RetryOnError";
+import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
+import { useVocabularyDetailQuery } from "../../../shared/queries/useVocabularyDetailQuery";
+import { useDuplicateEntryDialog } from "../../../shared/hooks/useDuplicateEntryDialog";
+import { useCreateEntryMutation } from "../../../shared/queries/useCreateEntryMutation";
+import type { CreateEntryData } from "../../../shared/types/entries";
 import {
     EntryLookupForm,
     VocabularyContext,
-} from "../components/EntryLookupForm";
+} from "../../../shared/components/entries/EntryLookupForm";
 
 export const CreateEntryPage = () => {
     const { collectionId, vocabularyId } = entryCreateRouteApi.useParams();
@@ -30,23 +30,19 @@ export const CreateEntryPage = () => {
     const { raiseDuplicateEntryDialogAsync, dialogElement } =
         useDuplicateEntryDialog();
 
-    const numericCollectionId = Number(collectionId);
-    const numericVocabularyId = Number(vocabularyId);
-    const pendingRequestRef = useRef<CreateEntryRequest | null>(null);
+    const pendingRequestRef = useRef<CreateEntryData | null>(null);
 
     const {
         data: vocabulary,
         isLoading: isVocabularyLoading,
         isError: isVocabularyError,
         refetch: refetchVocabulary,
-    } = useVocabularyQuery(numericCollectionId, numericVocabularyId);
+    } = useVocabularyDetailQuery(collectionId, vocabularyId);
 
     const createMutation = useCreateEntryMutation({
         onSuccess: () => {
             openSuccessNotification({ message: "Entry created successfully" });
-            void navigate(
-                vocabularyDetailPath(numericCollectionId, numericVocabularyId)
-            );
+            void navigate(vocabularyDetailPath(collectionId, vocabularyId));
         },
         onError: () => {
             openErrorNotification({
@@ -58,34 +54,30 @@ export const CreateEntryPage = () => {
                 await raiseDuplicateEntryDialogAsync(existingEntry);
             if (addAnyway && pendingRequestRef.current) {
                 createMutation.mutate({
-                    collectionId: numericCollectionId,
-                    vocabularyId: numericVocabularyId,
-                    request: {
-                        ...pendingRequestRef.current,
-                        allowDuplicate: true,
-                    },
+                    collectionId,
+                    vocabularyId,
+                    input: pendingRequestRef.current,
+                    allowDuplicate: true,
                 });
             }
         },
     });
 
     const handleSave = useCallback(
-        (context: VocabularyContext | null, request: CreateEntryRequest) => {
-            pendingRequestRef.current = request;
+        (context: VocabularyContext | null, input: CreateEntryData) => {
+            pendingRequestRef.current = input;
             createMutation.mutate({
-                collectionId: context?.collectionId ?? numericCollectionId,
-                vocabularyId: context?.vocabularyId ?? numericVocabularyId,
-                request,
+                collectionId: context?.collectionId ?? collectionId,
+                vocabularyId: context?.vocabularyId ?? vocabularyId,
+                input,
             });
         },
-        [createMutation, numericCollectionId, numericVocabularyId]
+        [collectionId, createMutation, vocabularyId]
     );
 
     const handleCancel = useCallback(() => {
-        void navigate(
-            vocabularyDetailPath(numericCollectionId, numericVocabularyId)
-        );
-    }, [navigate, numericCollectionId, numericVocabularyId]);
+        void navigate(vocabularyDetailPath(collectionId, vocabularyId));
+    }, [collectionId, navigate, vocabularyId]);
 
     const handleLookupError = useCallback(
         (message: string) => {
@@ -109,7 +101,7 @@ export const CreateEntryPage = () => {
 
         return (
             <EntryLookupForm
-                vocabularyId={numericVocabularyId}
+                vocabularyId={vocabularyId}
                 showVocabularySelector={false}
                 isSaving={createMutation.isPending}
                 onSave={handleSave}
@@ -124,7 +116,7 @@ export const CreateEntryPage = () => {
         isVocabularyError,
         vocabulary,
         refetchVocabulary,
-        numericVocabularyId,
+        vocabularyId,
         createMutation.isPending,
         handleSave,
         handleCancel,
@@ -138,14 +130,11 @@ export const CreateEntryPage = () => {
                     { label: "Collections", ...collectionsPath() },
                     {
                         label: vocabulary?.collectionName ?? "...",
-                        ...collectionDetailPath(numericCollectionId),
+                        ...collectionDetailPath(collectionId),
                     },
                     {
                         label: vocabulary?.name ?? "...",
-                        ...vocabularyDetailPath(
-                            numericCollectionId,
-                            numericVocabularyId
-                        ),
+                        ...vocabularyDetailPath(collectionId, vocabularyId),
                     },
                     { label: "New Entry" },
                 ]}

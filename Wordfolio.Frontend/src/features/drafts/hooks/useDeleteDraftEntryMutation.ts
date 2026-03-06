@@ -1,16 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { draftsApi } from "../api/draftsApi";
-import type { ApiError } from "../../entries/api/entriesApi";
 
 interface DeleteEntryParams {
     readonly entryId: number;
-    readonly vocabularyId: number;
 }
 
 interface UseDeleteDraftEntryMutationOptions {
     readonly onSuccess?: () => void;
-    readonly onError?: (error: ApiError) => void;
+    readonly onError?: () => void;
 }
 
 export function useDeleteDraftEntryMutation(
@@ -22,12 +20,7 @@ export function useDeleteDraftEntryMutation(
         mutationFn: ({ entryId }: DeleteEntryParams) =>
             draftsApi.deleteDraftEntry(entryId),
         onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: ["drafts"],
-            });
-            void queryClient.invalidateQueries({
-                queryKey: ["collections-hierarchy"],
-            });
+            void queryClient.invalidateQueries();
             options?.onSuccess?.();
         },
         onError: options?.onError,

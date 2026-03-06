@@ -1,4 +1,4 @@
-import { Entry } from "../../types/entry";
+import type { Entry } from "../../shared/types/entries";
 
 export interface DraftsVocabulary {
     readonly id: number;

@@ -2,17 +2,17 @@ import { useCallback, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
 import { draftsPath } from "../routes";
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
-import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
-import { useNotificationContext } from "../../../contexts/NotificationContext";
-import { useDuplicateEntryDialog } from "../../entries/hooks/useDuplicateEntryDialog";
-import { useCreateDraftMutation } from "../hooks/useCreateDraftMutation";
-import { CreateEntryRequest } from "../../entries/api/entriesApi";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
+import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
+import { useDuplicateEntryDialog } from "../../../shared/hooks/useDuplicateEntryDialog";
+import { useCreateDraftMutation } from "../../../shared/queries/useCreateDraftMutation";
+import type { CreateEntryData } from "../../../shared/types/entries";
 import {
     EntryLookupForm,
     VocabularyContext,
-} from "../../entries/components/EntryLookupForm";
+} from "../../../shared/components/entries/EntryLookupForm";
 
 export const CreateDraftPage = () => {
     const navigate = useNavigate();
@@ -20,7 +20,7 @@ export const CreateDraftPage = () => {
         useNotificationContext();
     const { raiseDuplicateEntryDialogAsync, dialogElement } =
         useDuplicateEntryDialog();
-    const pendingRequestRef = useRef<CreateEntryRequest | null>(null);
+    const pendingRequestRef = useRef<CreateEntryData | null>(null);
 
     const createMutation = useCreateDraftMutation({
         onSuccess: () => {
@@ -37,7 +37,7 @@ export const CreateDraftPage = () => {
                 await raiseDuplicateEntryDialogAsync(existingEntry);
             if (addAnyway && pendingRequestRef.current) {
                 createMutation.mutate({
-                    ...pendingRequestRef.current,
+                    input: pendingRequestRef.current,
                     allowDuplicate: true,
                 });
             }
@@ -45,9 +45,9 @@ export const CreateDraftPage = () => {
     });
 
     const handleSave = useCallback(
-        (_: VocabularyContext | null, request: CreateEntryRequest) => {
+        (_: VocabularyContext | null, request: CreateEntryData) => {
             pendingRequestRef.current = request;
-            createMutation.mutate(request);
+            createMutation.mutate({ input: request });
         },
         [createMutation]
     );

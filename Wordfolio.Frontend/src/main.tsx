@@ -4,12 +4,12 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import { NotificationProvider } from "./contexts/NotificationProvider";
-import { ConfirmDialogProvider } from "./contexts/ConfirmDialogProvider";
+import { NotificationProvider } from "./shared/contexts/NotificationProvider";
+import { ConfirmDialogProvider } from "./shared/contexts/ConfirmDialogProvider";
 import { theme } from "./theme";
 import { routeTree } from "./routeTree.gen";
 
-import "./index.css";
+import "./main.css";
 
 const router = createRouter({ routeTree });
 

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { entriesApi } from "../api/entriesApi";
-import { mapEntry } from "../api/mappers";
+import { mapEntry } from "../../../shared/api/entryMappers";
 
 export function useEntryQuery(
     collectionId: number,

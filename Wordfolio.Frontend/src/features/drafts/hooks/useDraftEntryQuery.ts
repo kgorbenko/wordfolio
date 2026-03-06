@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { draftsApi } from "../api/draftsApi";
-import { mapEntry } from "../../entries/api/mappers";
+import { mapEntry } from "../../../shared/api/entryMappers";
 
 export function useDraftEntryQuery(entryId: number) {
     return useQuery({

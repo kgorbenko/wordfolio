@@ -9,27 +9,25 @@ import {
     collectionDetailRouteApi,
     collectionsPath,
     collectionEditPath,
+    collectionVocabularyDetailPath,
+    collectionVocabularyCreatePath,
 } from "../routes";
-import {
-    vocabularyDetailPath,
-    vocabularyCreatePath,
-} from "../../vocabularies/routes";
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
 import {
     BreadcrumbNav,
     BreadcrumbItem,
-} from "../../../components/common/BreadcrumbNav";
-import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
-import { RetryOnError } from "../../../components/common/RetryOnError";
+} from "../../../shared/components/BreadcrumbNav";
+import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
+import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { CollectionDetailContent } from "../components/CollectionDetailContent";
 import { useCollectionQuery } from "../hooks/useCollectionQuery";
-import { useVocabulariesSummaryQuery } from "../hooks/useVocabulariesSummaryQuery";
+import { useCollectionVocabulariesQuery } from "../hooks/useVocabulariesSummaryQuery";
 import { useDeleteCollectionMutation } from "../hooks/useDeleteCollectionMutation";
-import { useConfirmDialog } from "../../../contexts/ConfirmDialogContext";
-import { useNotificationContext } from "../../../contexts/NotificationContext";
-import { assertNonNullable } from "../../../utils/misc";
-import { SortDirection, VocabularySummarySortBy } from "../api/collectionsApi";
+import { useConfirmDialog } from "../../../shared/contexts/ConfirmDialogContext";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
+import { assertNonNullable } from "../../../shared/utils/misc";
+import { SortDirection, VocabularySortBy } from "../types";
 
 import styles from "./CollectionDetailPage.module.scss";
 
@@ -39,23 +37,21 @@ export const CollectionDetailPage = () => {
     const { raiseConfirmDialogAsync } = useConfirmDialog();
     const { openErrorNotification } = useNotificationContext();
 
-    const numericId = Number(collectionId);
-
     const {
         data: collection,
         isLoading: isCollectionLoading,
         isError: isCollectionError,
         refetch: refetchCollection,
-    } = useCollectionQuery(numericId);
+    } = useCollectionQuery(collectionId);
 
     const {
         data: vocabularies,
         isLoading: isVocabulariesLoading,
         isError: isVocabulariesError,
         refetch: refetchVocabularies,
-    } = useVocabulariesSummaryQuery({
-        collectionId: numericId,
-        sortBy: VocabularySummarySortBy.UpdatedAt,
+    } = useCollectionVocabulariesQuery({
+        collectionId,
+        sortBy: VocabularySortBy.UpdatedAt,
         sortDirection: SortDirection.Desc,
     });
 
@@ -77,24 +73,26 @@ export const CollectionDetailPage = () => {
             confirmColor: "error",
         });
         if (confirmed) {
-            deleteMutation.mutate(numericId);
+            deleteMutation.mutate(collectionId);
         }
     };
 
     const handleEditClick = () => {
-        void navigate(collectionEditPath(numericId));
+        void navigate(collectionEditPath(collectionId));
     };
 
     const handleVocabularyClick = useCallback(
         (vocabId: number) => {
-            void navigate(vocabularyDetailPath(numericId, vocabId));
+            void navigate(
+                collectionVocabularyDetailPath(collectionId, vocabId)
+            );
         },
-        [navigate, numericId]
+        [navigate, collectionId]
     );
 
     const handleCreateVocabulary = useCallback(() => {
-        void navigate(vocabularyCreatePath(numericId));
-    }, [navigate, numericId]);
+        void navigate(collectionVocabularyCreatePath(collectionId));
+    }, [navigate, collectionId]);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { label: "Collections", ...collectionsPath() },

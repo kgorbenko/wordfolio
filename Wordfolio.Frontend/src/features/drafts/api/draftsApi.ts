@@ -1,21 +1,11 @@
-import { useAuthStore } from "../../../stores/authStore";
-import { EntryResponse } from "../../../api/entryTypes";
+import { useAuthStore } from "../../../shared/stores/authStore";
 import type {
-    DefinitionRequest,
-    TranslationRequest,
+    EntryResponse,
     UpdateEntryRequest,
     MoveEntryRequest,
-    ApiError,
-} from "../../entries/api/entriesApi";
+} from "../../../shared/api/entries";
 
-export interface CreateDraftRequest {
-    readonly entryText: string;
-    readonly definitions: DefinitionRequest[];
-    readonly translations: TranslationRequest[];
-    readonly allowDuplicate?: boolean;
-}
-
-export interface DraftsVocabularyResponse {
+export interface VocabularyResponse {
     readonly id: number;
     readonly name: string;
     readonly description: string | null;
@@ -23,8 +13,8 @@ export interface DraftsVocabularyResponse {
     readonly updatedAt: string | null;
 }
 
-export interface DraftsResponse {
-    readonly vocabulary: DraftsVocabularyResponse;
+export interface DraftsVocabularyDataResponse {
+    readonly vocabulary: VocabularyResponse;
     readonly entries: EntryResponse[];
 }
 
@@ -42,24 +32,7 @@ const getAuthHeaders = (): HeadersInit => {
 };
 
 export const draftsApi = {
-    createDraft: async (
-        request: CreateDraftRequest
-    ): Promise<EntryResponse> => {
-        const response = await fetch(`${API_BASE_URL}/drafts`, {
-            method: "POST",
-            headers: getAuthHeaders(),
-            body: JSON.stringify(request),
-        });
-
-        if (!response.ok) {
-            const errorBody = await response.json();
-            throw { ...errorBody, status: response.status };
-        }
-
-        return response.json();
-    },
-
-    getDrafts: async (): Promise<DraftsResponse | null> => {
+    getDrafts: async (): Promise<DraftsVocabularyDataResponse | null> => {
         const response = await fetch(`${API_BASE_URL}/drafts/all`, {
             method: "GET",
             headers: getAuthHeaders(),
@@ -83,8 +56,7 @@ export const draftsApi = {
         });
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
         }
 
         return response.json();
@@ -101,8 +73,7 @@ export const draftsApi = {
         });
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
         }
 
         return response.json();
@@ -115,8 +86,7 @@ export const draftsApi = {
         });
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
         }
     },
 
@@ -131,8 +101,7 @@ export const draftsApi = {
         });
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
         }
 
         return response.json();

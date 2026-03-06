@@ -1,20 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { mapEntry, mapUpdateEntryData } from "../../../shared/api/entryMappers";
 import { draftsApi } from "../api/draftsApi";
-import type {
-    UpdateEntryRequest,
-    EntryResponse,
-    ApiError,
-} from "../../entries/api/entriesApi";
+import type { CreateEntryData, Entry } from "../../../shared/types/entries";
 
 interface UpdateEntryParams {
     readonly entryId: number;
-    readonly request: UpdateEntryRequest;
+    readonly data: CreateEntryData;
 }
 
 interface UseUpdateDraftEntryMutationOptions {
-    readonly onSuccess?: (data: EntryResponse) => void;
-    readonly onError?: (error: ApiError) => void;
+    readonly onSuccess?: (data: Entry) => void;
+    readonly onError?: () => void;
 }
 
 export function useUpdateDraftEntryMutation(
@@ -23,19 +20,11 @@ export function useUpdateDraftEntryMutation(
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ entryId, request }: UpdateEntryParams) =>
-            draftsApi.updateDraftEntry(entryId, request),
+        mutationFn: ({ entryId, data }: UpdateEntryParams) =>
+            draftsApi.updateDraftEntry(entryId, mapUpdateEntryData(data)),
         onSuccess: (data) => {
-            void queryClient.invalidateQueries({
-                queryKey: ["drafts"],
-            });
-            void queryClient.invalidateQueries({
-                queryKey: ["drafts", "detail", data.id],
-            });
-            void queryClient.invalidateQueries({
-                queryKey: ["collections-hierarchy"],
-            });
-            options?.onSuccess?.(data);
+            void queryClient.invalidateQueries();
+            options?.onSuccess?.(mapEntry(data));
         },
         onError: options?.onError,
     });

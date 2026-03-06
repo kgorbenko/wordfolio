@@ -19,17 +19,37 @@ export function collectionsPath() {
 export function collectionDetailPath(collectionId: number) {
     return {
         to: "/collections/$collectionId" as const,
-        params: { collectionId: String(collectionId) },
+        params: { collectionId },
     };
 }
 
 export function collectionEditPath(collectionId: number) {
     return {
         to: "/collections/$collectionId/edit" as const,
-        params: { collectionId: String(collectionId) },
+        params: { collectionId },
     };
 }
 
 export function collectionCreatePath() {
     return { to: "/collections/new" as const };
+}
+
+export function collectionVocabularyDetailPath(
+    collectionId: number,
+    vocabularyId: number
+) {
+    return {
+        to: "/collections/$collectionId/vocabularies/$vocabularyId" as const,
+        params: {
+            collectionId,
+            vocabularyId,
+        },
+    };
+}
+
+export function collectionVocabularyCreatePath(collectionId: number) {
+    return {
+        to: "/collections/$collectionId/vocabularies/new" as const,
+        params: { collectionId },
+    };
 }

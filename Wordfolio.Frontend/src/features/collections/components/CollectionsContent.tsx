@@ -1,6 +1,6 @@
 import FolderIcon from "@mui/icons-material/Folder";
-import { CardGrid } from "../../../components/common/CardGrid";
-import { EmptyState } from "../../../components/common/EmptyState";
+import { CardGrid } from "../../../shared/components/CardGrid";
+import { EmptyState } from "../../../shared/components/EmptyState";
 import { CollectionCard } from "./CollectionCard";
 import { Collection } from "../types";
 import styles from "./CollectionsContent.module.scss";

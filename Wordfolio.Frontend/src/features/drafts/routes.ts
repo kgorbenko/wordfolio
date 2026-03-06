@@ -25,13 +25,28 @@ export function draftsCreatePath() {
 export function draftsEntryDetailPath(entryId: number) {
     return {
         to: "/drafts/entries/$entryId" as const,
-        params: { entryId: String(entryId) },
+        params: { entryId },
     };
 }
 
 export function draftsEntryEditPath(entryId: number) {
     return {
         to: "/drafts/entries/$entryId/edit" as const,
-        params: { entryId: String(entryId) },
+        params: { entryId },
+    };
+}
+
+export function collectionVocabularyEntryDetailPath(
+    collectionId: number,
+    vocabularyId: number,
+    entryId: number
+) {
+    return {
+        to: "/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId" as const,
+        params: {
+            collectionId,
+            vocabularyId,
+            entryId,
+        },
     };
 }
