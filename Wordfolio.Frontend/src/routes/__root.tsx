@@ -1,7 +1,7 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { CircularProgress } from "@mui/material";
 
-import { useTokenRefresh } from "../hooks/useTokenRefresh";
+import { useTokenRefresh } from "../features/auth/hooks/useTokenRefresh";
 
 const RootComponent = () => {
     const { isInitializing } = useTokenRefresh();

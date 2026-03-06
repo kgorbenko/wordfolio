@@ -6,7 +6,12 @@ import { createRef } from "react";
 import {
     EntryForm,
     EntryFormHandle,
-} from "../../../../src/features/entries/components/EntryForm";
+} from "../../../../src/shared/components/entries/EntryForm";
+import {
+    DefinitionSource,
+    ExampleSource,
+    TranslationSource,
+} from "../../../../src/shared/types/entries";
 import {
     createFormValues,
     readFormData,
@@ -604,9 +609,12 @@ describe("EntryForm", () => {
                     definitions: [
                         {
                             definitionText: "a greeting",
-                            source: "Manual",
+                            source: DefinitionSource.Manual,
                             examples: [
-                                { exampleText: "Hello!", source: "Custom" },
+                                {
+                                    exampleText: "Hello!",
+                                    source: ExampleSource.Custom,
+                                },
                             ],
                         },
                     ],
@@ -647,7 +655,7 @@ describe("EntryForm", () => {
                     definitions: [
                         {
                             definitionText: "test def",
-                            source: "Manual",
+                            source: DefinitionSource.Manual,
                             examples: [],
                         },
                     ],
@@ -679,7 +687,7 @@ describe("EntryForm", () => {
                     translations: [
                         {
                             translationText: "test trans",
-                            source: "Manual",
+                            source: TranslationSource.Manual,
                             examples: [],
                         },
                     ],
@@ -714,9 +722,12 @@ describe("EntryForm", () => {
                     definitions: [
                         {
                             definitionText: "test def",
-                            source: "Manual",
+                            source: DefinitionSource.Manual,
                             examples: [
-                                { exampleText: "example", source: "Custom" },
+                                {
+                                    exampleText: "example",
+                                    source: ExampleSource.Custom,
+                                },
                             ],
                         },
                     ],

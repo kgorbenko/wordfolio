@@ -6,17 +6,21 @@ import {
     draftsPath,
     draftsEntryDetailPath,
 } from "../routes";
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
-import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
-import { RetryOnError } from "../../../components/common/RetryOnError";
-import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
-import { useNotificationContext } from "../../../contexts/NotificationContext";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
+import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { RetryOnError } from "../../../shared/components/RetryOnError";
+import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 
 import { useDraftEntryQuery } from "../hooks/useDraftEntryQuery";
 import { useUpdateDraftEntryMutation } from "../hooks/useUpdateDraftEntryMutation";
-import { EntryForm } from "../../entries/components/EntryForm";
-import { EntryFormValues, EntryFormOutput, Entry } from "../../entries/types";
+import type {
+    Entry,
+    EntryFormValues,
+    CreateEntryData,
+} from "../../../shared/types/entries";
+import { EntryForm } from "../../../shared/components/entries/EntryForm";
 
 const mapEntryToFormValues = (entry: Entry): EntryFormValues => ({
     entryText: entry.entryText,
@@ -47,18 +51,16 @@ export const DraftsEntryEditPage = () => {
     const navigate = useNavigate();
     const { openErrorNotification } = useNotificationContext();
 
-    const numericEntryId = Number(entryId);
-
     const {
         data: entry,
         isLoading: isEntryLoading,
         isError: isEntryError,
         refetch: refetchEntry,
-    } = useDraftEntryQuery(numericEntryId);
+    } = useDraftEntryQuery(entryId);
 
     const updateMutation = useUpdateDraftEntryMutation({
         onSuccess: () => {
-            void navigate(draftsEntryDetailPath(numericEntryId));
+            void navigate(draftsEntryDetailPath(entryId));
         },
         onError: () => {
             openErrorNotification({
@@ -68,22 +70,18 @@ export const DraftsEntryEditPage = () => {
     });
 
     const handleSubmit = useCallback(
-        (data: EntryFormOutput) => {
+        (data: CreateEntryData) => {
             updateMutation.mutate({
-                entryId: numericEntryId,
-                request: {
-                    entryText: data.entryText,
-                    definitions: data.definitions,
-                    translations: data.translations,
-                },
+                entryId,
+                data,
             });
         },
-        [updateMutation, numericEntryId]
+        [updateMutation, entryId]
     );
 
     const handleCancel = useCallback(() => {
-        void navigate(draftsEntryDetailPath(numericEntryId));
-    }, [navigate, numericEntryId]);
+        void navigate(draftsEntryDetailPath(entryId));
+    }, [navigate, entryId]);
 
     const isLoading = isEntryLoading;
     const isError = isEntryError;
@@ -132,7 +130,7 @@ export const DraftsEntryEditPage = () => {
                     { label: "Drafts", ...draftsPath() },
                     {
                         label: entry?.entryText ?? "...",
-                        ...draftsEntryDetailPath(numericEntryId),
+                        ...draftsEntryDetailPath(entryId),
                     },
                     { label: "Edit" },
                 ]}

@@ -1,18 +1,8 @@
-import { useAuthStore } from "../../../stores/authStore";
+import { useAuthStore } from "../../../shared/stores/authStore";
 
 export interface VocabularyResponse {
     readonly id: number;
     readonly collectionId: number;
-    readonly name: string;
-    readonly description: string | null;
-    readonly createdAt: string;
-    readonly updatedAt: string | null;
-}
-
-export interface VocabularyDetailResponse {
-    readonly id: number;
-    readonly collectionId: number;
-    readonly collectionName: string;
     readonly name: string;
     readonly description: string | null;
     readonly createdAt: string;
@@ -29,11 +19,34 @@ export interface UpdateVocabularyRequest {
     readonly description?: string | null;
 }
 
-export interface ApiError {
-    readonly type?: string;
-    readonly title?: string;
-    readonly status?: number;
-    readonly errors?: Record<string, string[]>;
+export interface CollectionResponse {
+    readonly id: number;
+    readonly name: string;
+}
+
+export interface ExampleResponse {
+    readonly id: number;
+    readonly exampleText: string;
+}
+
+export interface DefinitionResponse {
+    readonly id: number;
+    readonly definitionText: string;
+    readonly examples: ExampleResponse[];
+}
+
+export interface TranslationResponse {
+    readonly id: number;
+    readonly translationText: string;
+    readonly examples: ExampleResponse[];
+}
+
+export interface EntryResponse {
+    readonly id: number;
+    readonly entryText: string;
+    readonly createdAt: string;
+    readonly definitions: DefinitionResponse[];
+    readonly translations: TranslationResponse[];
 }
 
 const API_BASE_URL = "/api";
@@ -50,25 +63,6 @@ const getAuthHeaders = (): HeadersInit => {
 };
 
 export const vocabulariesApi = {
-    getVocabularies: async (
-        collectionId: number
-    ): Promise<VocabularyResponse[]> => {
-        const response = await fetch(
-            `${API_BASE_URL}/collections/${collectionId}/vocabularies`,
-            {
-                method: "GET",
-                headers: getAuthHeaders(),
-            }
-        );
-
-        if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
-        }
-
-        return response.json();
-    },
-
     createVocabulary: async (
         collectionId: number,
         request: CreateVocabularyRequest
@@ -83,19 +77,17 @@ export const vocabulariesApi = {
         );
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
         }
 
         return response.json();
     },
 
-    getVocabulary: async (
-        collectionId: number,
-        vocabularyId: number
-    ): Promise<VocabularyDetailResponse> => {
+    getCollection: async (
+        collectionId: number
+    ): Promise<CollectionResponse> => {
         const response = await fetch(
-            `${API_BASE_URL}/collections/${collectionId}/vocabularies/${vocabularyId}`,
+            `${API_BASE_URL}/collections/${collectionId}`,
             {
                 method: "GET",
                 headers: getAuthHeaders(),
@@ -103,8 +95,26 @@ export const vocabulariesApi = {
         );
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
+        }
+
+        return response.json();
+    },
+
+    getVocabularyEntries: async (
+        collectionId: number,
+        vocabularyId: number
+    ): Promise<EntryResponse[]> => {
+        const response = await fetch(
+            `${API_BASE_URL}/collections/${collectionId}/vocabularies/${vocabularyId}/entries`,
+            {
+                method: "GET",
+                headers: getAuthHeaders(),
+            }
+        );
+
+        if (!response.ok) {
+            throw await response.json();
         }
 
         return response.json();
@@ -125,8 +135,7 @@ export const vocabulariesApi = {
         );
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
         }
 
         return response.json();
@@ -145,8 +154,7 @@ export const vocabulariesApi = {
         );
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
         }
     },
 };

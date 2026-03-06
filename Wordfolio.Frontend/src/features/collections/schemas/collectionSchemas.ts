@@ -12,5 +12,9 @@ export const collectionSchema = z.object({
         .transform((val) => val?.trim() || null),
 });
 
+export const collectionIdRouteParamsSchema = z.object({
+    collectionId: z.coerce.number().int().positive(),
+});
+
 export type CollectionFormInput = z.input<typeof collectionSchema>;
 export type CollectionFormData = z.output<typeof collectionSchema>;

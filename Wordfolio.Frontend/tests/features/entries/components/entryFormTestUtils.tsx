@@ -1,6 +1,11 @@
 import { screen, within } from "@testing-library/react";
 
-import { EntryFormValues } from "../../../../src/features/entries/types";
+import {
+    DefinitionSource,
+    ExampleSource,
+    TranslationSource,
+} from "../../../../src/shared/types/entries";
+import type { EntryFormValues } from "../../../../src/shared/types/entries";
 
 export interface ExampleData {
     readonly text: string;
@@ -103,21 +108,21 @@ export const createFormValues = (
         definitions: (input.definitions ?? []).map((d, i) => ({
             id: `def-${i}`,
             definitionText: d.text,
-            source: "Manual" as const,
+            source: DefinitionSource.Manual,
             examples: (d.examples ?? []).map((ex, j) => ({
                 id: `ex-${i}-${j}`,
                 exampleText: ex.text,
-                source: "Custom" as const,
+                source: ExampleSource.Custom,
             })),
         })),
         translations: (input.translations ?? []).map((t, i) => ({
             id: `trans-${i}`,
             translationText: t.text,
-            source: "Manual" as const,
+            source: TranslationSource.Manual,
             examples: (t.examples ?? []).map((ex, j) => ({
                 id: `ex-${i}-${j}`,
                 exampleText: ex.text,
-                source: "Custom" as const,
+                source: ExampleSource.Custom,
             })),
         })),
     };

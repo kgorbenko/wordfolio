@@ -1,11 +1,8 @@
-import { mapEntry } from "../../../api/entryMappers";
-import { DraftsVocabularyResponse } from "./draftsApi";
-import { DraftsVocabulary } from "../types";
-
-export { mapEntry };
+import type { DraftsVocabulary } from "../types";
+import type { VocabularyResponse } from "./draftsApi";
 
 export const mapDraftsVocabulary = (
-    response: DraftsVocabularyResponse
+    response: VocabularyResponse
 ): DraftsVocabulary => ({
     id: response.id,
     name: response.name,

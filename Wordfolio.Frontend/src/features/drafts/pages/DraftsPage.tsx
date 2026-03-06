@@ -4,11 +4,11 @@ import { Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
 import { draftsEntryDetailPath, draftsCreatePath } from "../routes";
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
-import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
-import { RetryOnError } from "../../../components/common/RetryOnError";
-import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
+import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { RetryOnError } from "../../../shared/components/RetryOnError";
+import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 
 import { useDraftsQuery } from "../hooks/useDraftsQuery";
 import { DraftsContent } from "../components/DraftsContent";

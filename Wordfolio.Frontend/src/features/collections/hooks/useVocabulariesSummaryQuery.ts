@@ -1,21 +1,23 @@
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { collectionsApi } from "../api/collectionsApi";
 import {
-    collectionsApi,
-    GetVocabulariesSummaryQuery,
-} from "../api/collectionsApi";
-import { mapVocabularySummary } from "../api/mappers";
-import { Vocabulary } from "../types";
+    mapVocabularyWithEntryCount,
+    mapToGetCollectionVocabulariesQuery,
+} from "../api/mappers";
+import { Vocabulary, CollectionVocabulariesQuery } from "../types";
 
-export const useVocabulariesSummaryQuery = (
-    query: GetVocabulariesSummaryQuery,
+export const useCollectionVocabulariesQuery = (
+    query: CollectionVocabulariesQuery,
     options?: Partial<UseQueryOptions<Vocabulary[]>>
 ) =>
     useQuery({
         queryKey: ["vocabularies-summary", query.collectionId, query],
         queryFn: async () => {
-            const response = await collectionsApi.getVocabulariesSummary(query);
+            const response = await collectionsApi.getCollectionVocabularies(
+                mapToGetCollectionVocabulariesQuery(query)
+            );
             return response.map((v) =>
-                mapVocabularySummary(query.collectionId, v)
+                mapVocabularyWithEntryCount(query.collectionId, v)
             );
         },
         ...options,

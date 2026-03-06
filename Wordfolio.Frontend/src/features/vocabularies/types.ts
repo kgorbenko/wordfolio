@@ -7,12 +7,15 @@ export interface Vocabulary {
     readonly updatedAt: Date | null;
 }
 
-export interface VocabularyDetail {
+export interface VocabularyCollectionContext {
     readonly id: number;
-    readonly collectionId: number;
-    readonly collectionName: string;
     readonly name: string;
-    readonly description: string | null;
+}
+
+export interface VocabularyEntryPreview {
+    readonly id: number;
+    readonly entryText: string;
+    readonly firstDefinition: string | null;
+    readonly firstTranslation: string | null;
     readonly createdAt: Date;
-    readonly updatedAt: Date | null;
 }

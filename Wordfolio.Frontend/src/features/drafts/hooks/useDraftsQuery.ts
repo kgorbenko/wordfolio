@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { draftsApi } from "../api/draftsApi";
-import { mapDraftsVocabulary, mapEntry } from "../api/mappers";
-import { DraftsData } from "../types";
+import { mapEntry } from "../../../shared/api/entryMappers";
+import { mapDraftsVocabulary } from "../api/mappers";
+import type { DraftsData } from "../types";
 
 export const useDraftsQuery = () =>
     useQuery<DraftsData | null>({

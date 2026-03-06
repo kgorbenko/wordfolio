@@ -3,14 +3,14 @@ import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
-import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
-import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
-import { RetryOnError } from "../../../components/common/RetryOnError";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
+import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
+import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { CollectionsContent } from "../components/CollectionsContent";
 import { useCollectionsQuery } from "../hooks/useCollectionsQuery";
-import { CollectionSortBy, SortDirection } from "../api/collectionsApi";
+import { CollectionSortBy, SortDirection } from "../types";
 import { collectionDetailPath, collectionCreatePath } from "../routes";
 
 export const CollectionsPage = () => {

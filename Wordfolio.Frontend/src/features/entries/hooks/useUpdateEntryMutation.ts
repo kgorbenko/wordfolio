@@ -1,22 +1,19 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import {
-    entriesApi,
-    UpdateEntryRequest,
-    EntryResponse,
-    ApiError,
-} from "../api/entriesApi";
+import { mapEntry, mapUpdateEntryData } from "../../../shared/api/entryMappers";
+import { entriesApi } from "../api/entriesApi";
+import type { CreateEntryData, Entry } from "../../../shared/types/entries";
 
 interface UpdateEntryParams {
     readonly collectionId: number;
     readonly vocabularyId: number;
     readonly entryId: number;
-    readonly request: UpdateEntryRequest;
+    readonly data: CreateEntryData;
 }
 
 interface UseUpdateEntryMutationOptions {
-    readonly onSuccess?: (data: EntryResponse) => void;
-    readonly onError?: (error: ApiError) => void;
+    readonly onSuccess?: (data: Entry) => void;
+    readonly onError?: () => void;
 }
 
 export function useUpdateEntryMutation(
@@ -29,38 +26,17 @@ export function useUpdateEntryMutation(
             collectionId,
             vocabularyId,
             entryId,
-            request,
+            data,
         }: UpdateEntryParams) =>
             entriesApi.updateEntry(
                 collectionId,
                 vocabularyId,
                 entryId,
-                request
+                mapUpdateEntryData(data)
             ),
-        onSuccess: (data, variables) => {
-            void queryClient.invalidateQueries({
-                queryKey: [
-                    "entries",
-                    variables.collectionId,
-                    variables.vocabularyId,
-                ],
-            });
-            void queryClient.invalidateQueries({
-                queryKey: [
-                    "entries",
-                    "detail",
-                    variables.collectionId,
-                    variables.vocabularyId,
-                    variables.entryId,
-                ],
-            });
-            void queryClient.invalidateQueries({
-                queryKey: ["collections-hierarchy"],
-            });
-            void queryClient.invalidateQueries({
-                queryKey: ["drafts"],
-            });
-            options?.onSuccess?.(data);
+        onSuccess: (data) => {
+            void queryClient.invalidateQueries();
+            options?.onSuccess?.(mapEntry(data));
         },
         onError: options?.onError,
     });

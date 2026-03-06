@@ -1,4 +1,4 @@
-import { useAuthStore } from "../../../stores/authStore";
+import { useAuthStore } from "../../../shared/stores/authStore";
 
 const API_BASE_URL = "/api";
 
@@ -13,13 +13,6 @@ const getAuthHeaders = (): HeadersInit => {
     };
 };
 
-export interface ApiError {
-    readonly type?: string;
-    readonly title?: string;
-    readonly status?: number;
-    readonly errors?: Record<string, string[]>;
-}
-
 export interface VocabularyResponse {
     readonly id: number;
     readonly collectionId: number;
@@ -29,7 +22,7 @@ export interface VocabularyResponse {
     readonly updatedAt: string | null;
 }
 
-export interface VocabularySummaryResponse {
+export interface VocabularyWithEntryCountResponse {
     readonly id: number;
     readonly name: string;
     readonly description: string | null;
@@ -38,16 +31,7 @@ export interface VocabularySummaryResponse {
     readonly entryCount: number;
 }
 
-export interface CollectionSummaryResponse {
-    readonly id: number;
-    readonly name: string;
-    readonly description: string | null;
-    readonly createdAt: string;
-    readonly updatedAt: string | null;
-    readonly vocabularies: VocabularySummaryResponse[];
-}
-
-export interface CollectionOverviewResponse {
+export interface CollectionWithVocabularyCountResponse {
     readonly id: number;
     readonly name: string;
     readonly description: string | null;
@@ -63,7 +47,7 @@ export enum CollectionSortBy {
     VocabularyCount = 3,
 }
 
-export enum VocabularySummarySortBy {
+export enum VocabularySortBy {
     Name = 0,
     CreatedAt = 1,
     UpdatedAt = 2,
@@ -81,16 +65,11 @@ export interface SearchUserCollectionsQuery {
     readonly sortDirection: SortDirection;
 }
 
-export interface GetVocabulariesSummaryQuery {
+export interface GetCollectionVocabulariesQuery {
     readonly collectionId: number;
     readonly search?: string;
-    readonly sortBy: VocabularySummarySortBy;
+    readonly sortBy: VocabularySortBy;
     readonly sortDirection: SortDirection;
-}
-
-export interface CollectionsHierarchyResponse {
-    readonly collections: CollectionSummaryResponse[];
-    readonly defaultVocabulary: VocabularySummaryResponse | null;
 }
 
 export interface CollectionResponse {
@@ -112,24 +91,9 @@ export interface UpdateCollectionRequest {
 }
 
 export const collectionsApi = {
-    getAll: async (): Promise<CollectionSummaryResponse[]> => {
-        const response = await fetch(`${API_BASE_URL}/collections-hierarchy`, {
-            method: "GET",
-            headers: getAuthHeaders(),
-        });
-
-        if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
-        }
-
-        const data: CollectionsHierarchyResponse = await response.json();
-        return data.collections;
-    },
-
     getHierarchyCollections: async (
         query: SearchUserCollectionsQuery
-    ): Promise<CollectionOverviewResponse[]> => {
+    ): Promise<CollectionWithVocabularyCountResponse[]> => {
         const params = new URLSearchParams();
         if (query.search && query.search.trim().length > 0) {
             params.set("search", query.search.trim());
@@ -147,16 +111,15 @@ export const collectionsApi = {
         );
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
         }
 
         return response.json();
     },
 
-    getVocabulariesSummary: async (
-        query: GetVocabulariesSummaryQuery
-    ): Promise<VocabularySummaryResponse[]> => {
+    getCollectionVocabularies: async (
+        query: GetCollectionVocabulariesQuery
+    ): Promise<VocabularyWithEntryCountResponse[]> => {
         const params = new URLSearchParams();
         if (query.search && query.search.trim().length > 0) {
             params.set("search", query.search.trim());
@@ -174,8 +137,7 @@ export const collectionsApi = {
         );
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
         }
 
         return response.json();
@@ -188,8 +150,7 @@ export const collectionsApi = {
         });
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
         }
 
         return response.json();
@@ -205,8 +166,7 @@ export const collectionsApi = {
         });
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
         }
 
         return response.json();
@@ -223,8 +183,7 @@ export const collectionsApi = {
         });
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
         }
 
         return response.json();
@@ -237,27 +196,7 @@ export const collectionsApi = {
         });
 
         if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
+            throw await response.json();
         }
-    },
-
-    getVocabularies: async (
-        collectionId: number
-    ): Promise<VocabularyResponse[]> => {
-        const response = await fetch(
-            `${API_BASE_URL}/collections/${collectionId}/vocabularies`,
-            {
-                method: "GET",
-                headers: getAuthHeaders(),
-            }
-        );
-
-        if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw error;
-        }
-
-        return response.json();
     },
 };

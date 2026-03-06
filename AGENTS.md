@@ -104,11 +104,14 @@ wordfolio/
 │   │   │       ├── components/
 │   │   │       ├── hooks/
 │   │   │       ├── pages/
-│   │   │       ├── schemas/
-│   │   │       └── styles/
-│   │   ├── components/common/           # Shared UI components
-│   │   ├── stores/                      # Zustand global state
-│   │   └── config/                      # Global configuration & utilities
+│   │   │       └── schemas/
+│   │   └── shared/                      # Cross-feature shared modules
+│   │       ├── api/                     # Shared API clients and types
+│   │       ├── components/              # Shared UI components and layouts
+│   │       ├── contexts/                # React context providers
+│   │       ├── queries/                 # Shared TanStack Query hooks
+│   │       ├── stores/                  # Zustand global state
+│   │       └── utils/                   # Shared utilities
 │   └── tests/                           # Mirrors src/ structure
 │
 ├── Wordfolio.AppHost/                   # .NET Aspire orchestration
@@ -196,9 +199,9 @@ Always invalidate relevant queries in `onSuccess`. Use typed API clients.
 
 ### Feature-Based Architecture
 
-Organize by feature, not file type. Each feature lives in `src/features/<feature>/` with subdirectories: `api/`, `components/`, `hooks/`, `pages/`, `schemas/`, `styles/`.
+Organize by feature, not file type. Each feature lives in `src/features/<feature>/` with subdirectories: `api/`, `components/`, `hooks/`, `pages/`, `schemas/`.
 
-Shared UI components → `src/components/common/`. Global config → `src/config/`.
+Shared modules (components, stores, contexts, utils, queries, API clients) → `src/shared/`.
 
 Presentational components receive data via props and focus on rendering. Page/container components handle data fetching and state, then pass data down. Custom hooks encapsulate reusable logic and side effects.
 
@@ -241,3 +244,4 @@ Vitest + React Testing Library. Tests in `Wordfolio.Frontend/tests/`, mirroring 
 @Wordfolio.Api/Wordfolio.Api.DataAccess/AGENTS.md
 @Wordfolio.Api/Wordfolio.Api.DataAccess.Tests/AGENTS.md
 @Wordfolio.Api/Wordfolio.Api.Tests/AGENTS.md
+@Wordfolio.Frontend/AGENTS.md

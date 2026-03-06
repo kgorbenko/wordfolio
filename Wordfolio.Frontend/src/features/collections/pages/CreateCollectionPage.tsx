@@ -1,10 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
-import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
+import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
 import { CollectionForm } from "../components/CollectionForm";
 import { useCreateCollectionMutation } from "../hooks/useCreateCollectionMutation";
-import { useNotificationContext } from "../../../contexts/NotificationContext";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { CollectionFormData } from "../schemas/collectionSchemas";
 import { collectionsPath } from "../routes";
 

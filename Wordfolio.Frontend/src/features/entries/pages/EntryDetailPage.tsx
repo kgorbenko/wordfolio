@@ -5,29 +5,30 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 
-import { entryDetailRouteApi, entryEditPath, entryDetailPath } from "../routes";
 import {
+    entryDetailRouteApi,
+    entryEditPath,
+    entryDetailPath,
     collectionsPath,
     collectionDetailPath,
-} from "../../collections/routes";
-import { vocabularyDetailPath } from "../../vocabularies/routes";
-import { draftsEntryDetailPath } from "../../drafts/routes";
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
-import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
-import { RetryOnError } from "../../../components/common/RetryOnError";
-import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
-import { useNotificationContext } from "../../../contexts/NotificationContext";
-import { useConfirmDialog } from "../../../contexts/ConfirmDialogContext";
-import { assertNonNullable } from "../../../utils/misc";
+    vocabularyDetailPath,
+    draftsEntryDetailPath,
+} from "../routes";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
+import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { RetryOnError } from "../../../shared/components/RetryOnError";
+import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
+import { useConfirmDialog } from "../../../shared/contexts/ConfirmDialogContext";
+import { assertNonNullable } from "../../../shared/utils/misc";
 
-import { useCollectionQuery } from "../../collections/hooks/useCollectionQuery";
-import { useVocabularyQuery } from "../../vocabularies/hooks/useVocabularyQuery";
+import { useVocabularyDetailQuery } from "../../../shared/queries/useVocabularyDetailQuery";
 import { useEntryQuery } from "../hooks/useEntryQuery";
 import { useDeleteEntryMutation } from "../hooks/useDeleteEntryMutation";
 import { useMoveEntryMutation } from "../hooks/useMoveEntryMutation";
-import { useMoveEntryDialog } from "../hooks/useMoveEntryDialog";
-import { EntryDetailContent } from "../components/EntryDetailContent";
+import { useMoveEntryDialog } from "../../../shared/hooks/useMoveEntryDialog";
+import { EntryDetailContent } from "../../../shared/components/entries/EntryDetailContent";
 
 import styles from "./EntryDetailPage.module.scss";
 
@@ -39,36 +40,23 @@ export const EntryDetailPage = () => {
     const { raiseConfirmDialogAsync } = useConfirmDialog();
     const { raiseMoveEntryDialogAsync, dialogElement } = useMoveEntryDialog();
 
-    const numericCollectionId = Number(collectionId);
-    const numericVocabularyId = Number(vocabularyId);
-    const numericEntryId = Number(entryId);
-
-    const {
-        data: collection,
-        isLoading: isCollectionLoading,
-        isError: isCollectionError,
-        refetch: refetchCollection,
-    } = useCollectionQuery(numericCollectionId);
-
     const {
         data: vocabulary,
         isLoading: isVocabularyLoading,
         isError: isVocabularyError,
         refetch: refetchVocabulary,
-    } = useVocabularyQuery(numericCollectionId, numericVocabularyId);
+    } = useVocabularyDetailQuery(collectionId, vocabularyId);
 
     const {
         data: entry,
         isLoading: isEntryLoading,
         isError: isEntryError,
         refetch: refetchEntry,
-    } = useEntryQuery(numericCollectionId, numericVocabularyId, numericEntryId);
+    } = useEntryQuery(collectionId, vocabularyId, entryId);
 
     const deleteMutation = useDeleteEntryMutation({
         onSuccess: () => {
-            void navigate(
-                vocabularyDetailPath(numericCollectionId, numericVocabularyId)
-            );
+            void navigate(vocabularyDetailPath(collectionId, vocabularyId));
         },
         onError: () => {
             openErrorNotification({
@@ -86,14 +74,8 @@ export const EntryDetailPage = () => {
     });
 
     const handleEditClick = useCallback(() => {
-        void navigate(
-            entryEditPath(
-                numericCollectionId,
-                numericVocabularyId,
-                numericEntryId
-            )
-        );
-    }, [navigate, numericCollectionId, numericVocabularyId, numericEntryId]);
+        void navigate(entryEditPath(collectionId, vocabularyId, entryId));
+    }, [collectionId, entryId, navigate, vocabularyId]);
 
     const handleDeleteClick = useCallback(async () => {
         assertNonNullable(entry);
@@ -107,12 +89,12 @@ export const EntryDetailPage = () => {
 
         if (confirmed) {
             deleteMutation.mutate({
-                collectionId: numericCollectionId,
+                collectionId,
                 vocabularyId: entry.vocabularyId,
                 entryId: entry.id,
             });
         }
-    }, [entry, raiseConfirmDialogAsync, deleteMutation, numericCollectionId]);
+    }, [collectionId, deleteMutation, entry, raiseConfirmDialogAsync]);
 
     const handleMoveClick = useCallback(async () => {
         assertNonNullable(entry);
@@ -127,7 +109,7 @@ export const EntryDetailPage = () => {
 
         moveMutation.mutate(
             {
-                collectionId: numericCollectionId,
+                collectionId,
                 entryId: entry.id,
                 sourceVocabularyId: entry.vocabularyId,
                 targetVocabularyId: moveSelection.vocabularyId,
@@ -156,19 +138,17 @@ export const EntryDetailPage = () => {
         raiseMoveEntryDialogAsync,
         moveMutation,
         navigate,
-        numericCollectionId,
+        collectionId,
     ]);
 
-    const isLoading =
-        isCollectionLoading || isVocabularyLoading || isEntryLoading;
-    const isError = isCollectionError || isVocabularyError || isEntryError;
+    const isLoading = isVocabularyLoading || isEntryLoading;
+    const isError = isVocabularyError || isEntryError;
 
     const renderContent = useCallback(() => {
         if (isLoading) return <ContentSkeleton variant="detail" />;
 
-        if (isError || !collection || !vocabulary || !entry) {
+        if (isError || !vocabulary || !entry) {
             const handleRetry = () => {
-                if (isCollectionError) void refetchCollection();
                 if (isVocabularyError) void refetchVocabulary();
                 if (isEntryError) void refetchEntry();
             };
@@ -186,13 +166,10 @@ export const EntryDetailPage = () => {
     }, [
         isLoading,
         isError,
-        collection,
         vocabulary,
         entry,
-        isCollectionError,
         isVocabularyError,
         isEntryError,
-        refetchCollection,
         refetchVocabulary,
         refetchEntry,
     ]);
@@ -203,15 +180,12 @@ export const EntryDetailPage = () => {
                 items={[
                     { label: "Collections", ...collectionsPath() },
                     {
-                        label: collection?.name ?? "...",
-                        ...collectionDetailPath(numericCollectionId),
+                        label: vocabulary?.collectionName ?? "...",
+                        ...collectionDetailPath(collectionId),
                     },
                     {
                         label: vocabulary?.name ?? "...",
-                        ...vocabularyDetailPath(
-                            numericCollectionId,
-                            numericVocabularyId
-                        ),
+                        ...vocabularyDetailPath(collectionId, vocabularyId),
                     },
                     { label: entry?.entryText ?? "Entry" },
                 ]}

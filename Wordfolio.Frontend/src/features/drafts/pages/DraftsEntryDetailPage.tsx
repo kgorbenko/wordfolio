@@ -6,26 +6,26 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 
 import {
+    collectionVocabularyEntryDetailPath,
     draftsEntryDetailRouteApi,
-    draftsPath,
-    draftsEntryEditPath,
     draftsEntryDetailPath,
+    draftsEntryEditPath,
+    draftsPath,
 } from "../routes";
-import { entryDetailPath } from "../../entries/routes";
-import { PageContainer } from "../../../components/common/PageContainer";
-import { PageHeader } from "../../../components/common/PageHeader";
-import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
-import { RetryOnError } from "../../../components/common/RetryOnError";
-import { ContentSkeleton } from "../../../components/common/ContentSkeleton";
-import { useNotificationContext } from "../../../contexts/NotificationContext";
-import { useConfirmDialog } from "../../../contexts/ConfirmDialogContext";
-import { assertNonNullable } from "../../../utils/misc";
+import { PageContainer } from "../../../shared/components/PageContainer";
+import { PageHeader } from "../../../shared/components/PageHeader";
+import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { RetryOnError } from "../../../shared/components/RetryOnError";
+import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
+import { useConfirmDialog } from "../../../shared/contexts/ConfirmDialogContext";
+import { assertNonNullable } from "../../../shared/utils/misc";
 
 import { useDraftEntryQuery } from "../hooks/useDraftEntryQuery";
 import { useDeleteDraftEntryMutation } from "../hooks/useDeleteDraftEntryMutation";
 import { useMoveDraftEntryMutation } from "../hooks/useMoveDraftEntryMutation";
-import { useMoveEntryDialog } from "../../entries/hooks/useMoveEntryDialog";
-import { EntryDetailContent } from "../../entries/components/EntryDetailContent";
+import { useMoveEntryDialog } from "../../../shared/hooks/useMoveEntryDialog";
+import { EntryDetailContent } from "../../../shared/components/entries/EntryDetailContent";
 
 import styles from "./DraftsEntryDetailPage.module.scss";
 
@@ -36,14 +36,12 @@ export const DraftsEntryDetailPage = () => {
     const { raiseConfirmDialogAsync } = useConfirmDialog();
     const { raiseMoveEntryDialogAsync, dialogElement } = useMoveEntryDialog();
 
-    const numericEntryId = Number(entryId);
-
     const {
         data: entry,
         isLoading: isEntryLoading,
         isError: isEntryError,
         refetch: refetchEntry,
-    } = useDraftEntryQuery(numericEntryId);
+    } = useDraftEntryQuery(entryId);
 
     const deleteMutation = useDeleteDraftEntryMutation({
         onSuccess: () => {
@@ -65,8 +63,8 @@ export const DraftsEntryDetailPage = () => {
     });
 
     const handleEditClick = useCallback(() => {
-        void navigate(draftsEntryEditPath(numericEntryId));
-    }, [navigate, numericEntryId]);
+        void navigate(draftsEntryEditPath(entryId));
+    }, [navigate, entryId]);
 
     const handleDeleteClick = useCallback(async () => {
         assertNonNullable(entry);
@@ -81,7 +79,6 @@ export const DraftsEntryDetailPage = () => {
         if (confirmed) {
             deleteMutation.mutate({
                 entryId: entry.id,
-                vocabularyId: entry.vocabularyId,
             });
         }
     }, [entry, raiseConfirmDialogAsync, deleteMutation]);
@@ -100,7 +97,6 @@ export const DraftsEntryDetailPage = () => {
         moveMutation.mutate(
             {
                 entryId: entry.id,
-                sourceVocabularyId: entry.vocabularyId,
                 targetVocabularyId: moveSelection.vocabularyId,
             },
             {
@@ -113,7 +109,7 @@ export const DraftsEntryDetailPage = () => {
                     assertNonNullable(moveSelection.collectionId);
 
                     void navigate(
-                        entryDetailPath(
+                        collectionVocabularyEntryDetailPath(
                             moveSelection.collectionId,
                             moveSelection.vocabularyId,
                             movedEntry.id

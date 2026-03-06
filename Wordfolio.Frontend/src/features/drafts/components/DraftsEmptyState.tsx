@@ -1,6 +1,6 @@
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 
-import { EmptyState } from "../../../components/common/EmptyState";
+import { EmptyState } from "../../../shared/components/EmptyState";
 
 interface DraftsEmptyStateProps {
     readonly onAddDraftClick: () => void;

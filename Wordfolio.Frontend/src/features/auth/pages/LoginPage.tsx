@@ -12,11 +12,10 @@ import {
     Link as MuiLink,
 } from "@mui/material";
 
-import { ApiError } from "../../../api/authApi";
-import { useAuthStore } from "../../../stores/authStore";
-import { useLoginMutation } from "../../../mutations/useLoginMutation";
-import { createLoginSchema, LoginFormData } from "../../../schemas/authSchemas";
-import { useNotificationContext } from "../../../contexts/NotificationContext";
+import { useAuthStore } from "../../../shared/stores/authStore";
+import { useLoginMutation } from "../hooks/useLoginMutation";
+import { createLoginSchema, LoginFormData } from "../schemas/authSchemas";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { loginRouteApi, homePath, registerPath } from "../routes";
 
 import styles from "./LoginPage.module.scss";
@@ -41,7 +40,7 @@ export const LoginPage = () => {
             setTokens(data);
             navigate(homePath());
         },
-        onError: (error: ApiError) => {
+        onError: (error) => {
             const errorMessage =
                 error.status === 401
                     ? "Invalid email or password"
