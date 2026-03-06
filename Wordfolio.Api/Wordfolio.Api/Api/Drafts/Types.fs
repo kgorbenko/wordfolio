@@ -1,8 +1,8 @@
-namespace Wordfolio.Api.Api.Drafts
+module Wordfolio.Api.Api.Drafts.Types
 
 open System
 
-open Wordfolio.Api.Api
+open Wordfolio.Api.Api.Types
 
 type CreateDraftRequest =
     { EntryText: string
@@ -17,6 +17,6 @@ type VocabularyResponse =
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option }
 
-type DraftsResponse =
+type DraftsVocabularyDataResponse =
     { Vocabulary: VocabularyResponse
       Entries: EntryResponse list }

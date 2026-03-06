@@ -1,4 +1,4 @@
-namespace Wordfolio.Api.Api.Vocabularies
+module Wordfolio.Api.Api.Vocabularies.Types
 
 open System
 

@@ -7,8 +7,8 @@ open System.Threading.Tasks
 
 open Xunit
 
-open Wordfolio.Api.Api.Drafts
-open Wordfolio.Api.Api
+open Wordfolio.Api.Api.Drafts.Types
+open Wordfolio.Api.Api.Types
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -99,9 +99,9 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<DraftsResponse>()
+            let! actual = response.Content.ReadFromJsonAsync<DraftsVocabularyDataResponse>()
 
-            let expected: DraftsResponse =
+            let expected: DraftsVocabularyDataResponse =
                 { Vocabulary =
                     { Id = defaultVocab.Id
                       Name = "Drafts"
@@ -173,9 +173,9 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<DraftsResponse>()
+            let! actual = response.Content.ReadFromJsonAsync<DraftsVocabularyDataResponse>()
 
-            let expected: DraftsResponse =
+            let expected: DraftsVocabularyDataResponse =
                 { Vocabulary =
                     { Id = defaultVocab.Id
                       Name = "Drafts"
@@ -191,16 +191,16 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
                         Definitions =
                           [ { Id = definition.Id
                               DefinitionText = "lasting for a short time"
-                              Source = DefinitionSourceDto.Api
+                              Source = DefinitionSource.Api
                               DisplayOrder = 1
                               Examples =
                                 [ { Id = example.Id
                                     ExampleText = "ephemeral pleasures"
-                                    Source = ExampleSourceDto.Custom } ] } ]
+                                    Source = ExampleSource.Custom } ] } ]
                         Translations =
                           [ { Id = translation.Id
                               TranslationText = "эфемерный"
-                              Source = TranslationSourceDto.Manual
+                              Source = TranslationSource.Manual
                               DisplayOrder = 1
                               Examples = [] } ] } ] }
 
@@ -251,9 +251,9 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser1)
 
             let! response = client.GetAsync(Urls.Drafts.allDrafts())
-            let! actual = response.Content.ReadFromJsonAsync<DraftsResponse>()
+            let! actual = response.Content.ReadFromJsonAsync<DraftsVocabularyDataResponse>()
 
-            let expected: DraftsResponse =
+            let expected: DraftsVocabularyDataResponse =
                 { Vocabulary =
                     { Id = vocab1.Id
                       Name = "Drafts1"

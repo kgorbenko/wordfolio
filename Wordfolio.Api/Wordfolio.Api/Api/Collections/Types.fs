@@ -1,4 +1,4 @@
-namespace Wordfolio.Api.Api.Collections
+module Wordfolio.Api.Api.Collections.Types
 
 open System
 

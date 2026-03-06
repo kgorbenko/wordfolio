@@ -7,7 +7,7 @@ open System.Threading.Tasks
 
 open Xunit
 
-open Wordfolio.Api.Api.CollectionsHierarchy
+open Wordfolio.Api.Api.CollectionsHierarchy.Types
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -75,7 +75,7 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResponse>()
+            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResultResponse>()
 
             let actualCollection1 =
                 actual.Collections
@@ -85,7 +85,7 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
                 actual.Collections
                 |> List.find(fun c -> c.Id = collection2.Id)
 
-            let expected: CollectionsHierarchyResponse =
+            let expected: CollectionsHierarchyResultResponse =
                 { Collections =
                     [ { Id = collection1.Id
                         Name = "Collection 1"
@@ -186,7 +186,7 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResponse>()
+            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResultResponse>()
 
             let actualCollection =
                 Assert.Single(actual.Collections)
@@ -194,7 +194,7 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
             let actualVocabulary =
                 Assert.Single(actualCollection.Vocabularies)
 
-            let expected: CollectionsHierarchyResponse =
+            let expected: CollectionsHierarchyResultResponse =
                 { Collections =
                     [ { Id = requesterCollection.Id
                         Name = "Requester Collection"
@@ -242,12 +242,12 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResponse>()
+            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResultResponse>()
 
             let actualCollection =
                 Assert.Single(actual.Collections)
 
-            let expected: CollectionsHierarchyResponse =
+            let expected: CollectionsHierarchyResultResponse =
                 { Collections =
                     [ { Id = regularCollection.Id
                         Name = "Regular Collection"
@@ -293,12 +293,12 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResponse>()
+            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResultResponse>()
 
             let actualCollection =
                 Assert.Single(actual.Collections)
 
-            let expected: CollectionsHierarchyResponse =
+            let expected: CollectionsHierarchyResultResponse =
                 { Collections =
                     [ { Id = collection.Id
                         Name = "Test Collection"
@@ -339,9 +339,9 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResponse>()
+            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResultResponse>()
 
-            let expected: CollectionsHierarchyResponse =
+            let expected: CollectionsHierarchyResultResponse =
                 { Collections = []
                   DefaultVocabulary = None }
 
@@ -391,9 +391,9 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResponse>()
+            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResultResponse>()
 
-            let expected: CollectionsHierarchyResponse =
+            let expected: CollectionsHierarchyResultResponse =
                 { Collections = []
                   DefaultVocabulary =
                     Some
@@ -437,9 +437,9 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResponse>()
+            let! actual = response.Content.ReadFromJsonAsync<CollectionsHierarchyResultResponse>()
 
-            let expected: CollectionsHierarchyResponse =
+            let expected: CollectionsHierarchyResultResponse =
                 { Collections = []
                   DefaultVocabulary = None }
 

@@ -1,6 +1,6 @@
 module Wordfolio.Api.Api.Drafts.Mappers
 
-open Wordfolio.Api.Api.Drafts
+open Wordfolio.Api.Api.Drafts.Types
 open Wordfolio.Api.Api.Mappers
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
@@ -12,7 +12,7 @@ let private toVocabularyResponse(vocabulary: Vocabulary) : VocabularyResponse =
       CreatedAt = vocabulary.CreatedAt
       UpdatedAt = vocabulary.UpdatedAt }
 
-let toDraftsResponse(drafts: DraftsVocabularyData) : DraftsResponse =
+let toDraftsVocabularyDataResponse(drafts: DraftsVocabularyData) : DraftsVocabularyDataResponse =
     { Vocabulary = toVocabularyResponse drafts.Vocabulary
       Entries =
         drafts.Entries
