@@ -1,3 +1,3 @@
-module Wordfolio.Api.Api.Dictionary.Types
+namespace Wordfolio.Api.Api.Dictionary
 
 type LookupErrorResponse = { error: string }

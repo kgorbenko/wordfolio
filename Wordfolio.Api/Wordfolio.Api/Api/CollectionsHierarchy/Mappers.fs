@@ -2,7 +2,7 @@ module Wordfolio.Api.Api.CollectionsHierarchy.Mappers
 
 open System
 
-open Wordfolio.Api.Api.CollectionsHierarchy.Types
+open Wordfolio.Api.Api.CollectionsHierarchy
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.CollectionsHierarchy
 

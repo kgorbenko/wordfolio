@@ -13,7 +13,7 @@ open Npgsql
 open Wordfolio.Api
 open Wordfolio.Api.Api.Helpers
 open Wordfolio.Api.Api.Vocabularies.Mappers
-open Wordfolio.Api.Api.Vocabularies.Types
+open Wordfolio.Api.Api.Vocabularies
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Vocabularies
 open Wordfolio.Api.Domain.Vocabularies.Operations

@@ -1,6 +1,6 @@
 module Wordfolio.Api.Api.Vocabularies.Mappers
 
-open Wordfolio.Api.Api.Vocabularies.Types
+open Wordfolio.Api.Api.Vocabularies
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Vocabularies
 

@@ -1,6 +1,6 @@
 module Wordfolio.Api.Api.Collections.Mappers
 
-open Wordfolio.Api.Api.Collections.Types
+open Wordfolio.Api.Api.Collections
 open Wordfolio.Api.Domain
 
 let toCollectionResponse(collection: Collection) : CollectionResponse =
