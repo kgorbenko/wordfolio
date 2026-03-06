@@ -2,7 +2,7 @@ module Wordfolio.Api.Api.Auth.Mappers
 
 open Microsoft.AspNetCore.Identity
 
-open Wordfolio.Api.Api.Auth
+open Wordfolio.Api.Api.Auth.Types
 
 let toPasswordRequirementsResponse(passwordOptions: PasswordOptions) : PasswordRequirementsResponse =
     { RequiredLength = passwordOptions.RequiredLength

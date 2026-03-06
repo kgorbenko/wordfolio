@@ -1,41 +1,43 @@
 module Wordfolio.Api.Api.Mappers
 
-open Wordfolio.Api.Api
+open Wordfolio.Api.Api.Types
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 
-let private toDefinitionSourceDomain(source: DefinitionSourceDto) : DefinitionSource =
-    match source with
-    | DefinitionSourceDto.Api -> DefinitionSource.Api
-    | DefinitionSourceDto.Manual -> DefinitionSource.Manual
-    | x -> failwith $"Unknown {nameof DefinitionSourceDto} value: {x}"
+module ApiTypes = Wordfolio.Api.Api.Types
 
-let private toTranslationSourceDomain(source: TranslationSourceDto) : TranslationSource =
+let private toDefinitionSourceDomain(source: ApiTypes.DefinitionSource) : DefinitionSource =
     match source with
-    | TranslationSourceDto.Api -> TranslationSource.Api
-    | TranslationSourceDto.Manual -> TranslationSource.Manual
-    | x -> failwith $"Unknown {nameof TranslationSourceDto} value: {x}"
+    | ApiTypes.DefinitionSource.Api -> DefinitionSource.Api
+    | ApiTypes.DefinitionSource.Manual -> DefinitionSource.Manual
+    | x -> failwith $"Unknown {nameof ApiTypes.DefinitionSource} value: {x}"
 
-let private toExampleSourceDomain(source: ExampleSourceDto) : ExampleSource =
+let private toTranslationSourceDomain(source: ApiTypes.TranslationSource) : TranslationSource =
     match source with
-    | ExampleSourceDto.Api -> ExampleSource.Api
-    | ExampleSourceDto.Custom -> ExampleSource.Custom
-    | x -> failwith $"Unknown {nameof ExampleSourceDto} value: {x}"
+    | ApiTypes.TranslationSource.Api -> TranslationSource.Api
+    | ApiTypes.TranslationSource.Manual -> TranslationSource.Manual
+    | x -> failwith $"Unknown {nameof ApiTypes.TranslationSource} value: {x}"
 
-let private toExampleSourceDto(source: ExampleSource) : ExampleSourceDto =
+let private toExampleSourceDomain(source: ApiTypes.ExampleSource) : ExampleSource =
     match source with
-    | ExampleSource.Api -> ExampleSourceDto.Api
-    | ExampleSource.Custom -> ExampleSourceDto.Custom
+    | ApiTypes.ExampleSource.Api -> ExampleSource.Api
+    | ApiTypes.ExampleSource.Custom -> ExampleSource.Custom
+    | x -> failwith $"Unknown {nameof ApiTypes.ExampleSource} value: {x}"
 
-let private toDefinitionSourceDto(source: DefinitionSource) : DefinitionSourceDto =
+let private toExampleSourceDto(source: ExampleSource) : ApiTypes.ExampleSource =
     match source with
-    | DefinitionSource.Api -> DefinitionSourceDto.Api
-    | DefinitionSource.Manual -> DefinitionSourceDto.Manual
+    | ExampleSource.Api -> ApiTypes.ExampleSource.Api
+    | ExampleSource.Custom -> ApiTypes.ExampleSource.Custom
 
-let private toTranslationSourceDto(source: TranslationSource) : TranslationSourceDto =
+let private toDefinitionSourceDto(source: DefinitionSource) : ApiTypes.DefinitionSource =
     match source with
-    | TranslationSource.Api -> TranslationSourceDto.Api
-    | TranslationSource.Manual -> TranslationSourceDto.Manual
+    | DefinitionSource.Api -> ApiTypes.DefinitionSource.Api
+    | DefinitionSource.Manual -> ApiTypes.DefinitionSource.Manual
+
+let private toTranslationSourceDto(source: TranslationSource) : ApiTypes.TranslationSource =
+    match source with
+    | TranslationSource.Api -> ApiTypes.TranslationSource.Api
+    | TranslationSource.Manual -> ApiTypes.TranslationSource.Manual
 
 let toExampleInput(request: ExampleRequest) : ExampleInput =
     { ExampleText = request.ExampleText

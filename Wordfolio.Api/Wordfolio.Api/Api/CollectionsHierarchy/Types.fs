@@ -1,4 +1,4 @@
-namespace Wordfolio.Api.Api.CollectionsHierarchy
+module Wordfolio.Api.Api.CollectionsHierarchy.Types
 
 open System
 
@@ -8,7 +8,7 @@ type CollectionSortByRequest =
     | UpdatedAt = 2
     | VocabularyCount = 3
 
-type VocabularySummarySortByRequest =
+type VocabularySortByRequest =
     | Name = 0
     | CreatedAt = 1
     | UpdatedAt = 2
@@ -18,7 +18,7 @@ type SortDirectionRequest =
     | Asc = 0
     | Desc = 1
 
-type VocabularyWithEntryCountHierarchyResponse =
+type VocabularyWithEntryCountResponse =
     { Id: int
       Name: string
       Description: string option
@@ -26,15 +26,15 @@ type VocabularyWithEntryCountHierarchyResponse =
       UpdatedAt: DateTimeOffset option
       EntryCount: int }
 
-type CollectionWithVocabulariesHierarchyResponse =
+type CollectionWithVocabulariesResponse =
     { Id: int
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset option
-      Vocabularies: VocabularyWithEntryCountHierarchyResponse list }
+      Vocabularies: VocabularyWithEntryCountResponse list }
 
-type CollectionOverviewResponse =
+type CollectionWithVocabularyCountResponse =
     { Id: int
       Name: string
       Description: string option
@@ -42,6 +42,6 @@ type CollectionOverviewResponse =
       UpdatedAt: DateTimeOffset option
       VocabularyCount: int }
 
-type CollectionsHierarchyResponse =
-    { Collections: CollectionWithVocabulariesHierarchyResponse list
-      DefaultVocabulary: VocabularyWithEntryCountHierarchyResponse option }
+type CollectionsHierarchyResultResponse =
+    { Collections: CollectionWithVocabulariesResponse list
+      DefaultVocabulary: VocabularyWithEntryCountResponse option }

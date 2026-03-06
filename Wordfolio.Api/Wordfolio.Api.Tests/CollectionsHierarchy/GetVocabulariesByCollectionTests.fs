@@ -7,7 +7,7 @@ open System.Threading.Tasks
 
 open Xunit
 
-open Wordfolio.Api.Api.CollectionsHierarchy
+open Wordfolio.Api.Api.CollectionsHierarchy.Types
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -16,7 +16,7 @@ module Urls = Wordfolio.Api.Urls
 
 type private VocabulariesQueryOptions =
     { Search: string option
-      SortBy: VocabularySummarySortByRequest
+      SortBy: VocabularySortByRequest
       SortDirection: SortDirectionRequest }
 
 module private VocabulariesUrlHelpers =
@@ -74,7 +74,7 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 VocabulariesUrlHelpers.vocabulariesByCollection
                     collection.Id
                     { Search = None
-                      SortBy = VocabularySummarySortByRequest.Name
+                      SortBy = VocabularySortByRequest.Name
                       SortDirection = SortDirectionRequest.Asc }
 
             let! response = client.GetAsync(url)
@@ -83,9 +83,9 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<VocabularyWithEntryCountHierarchyResponse list>()
+            let! actual = response.Content.ReadFromJsonAsync<VocabularyWithEntryCountResponse list>()
 
-            let expected: VocabularyWithEntryCountHierarchyResponse list =
+            let expected: VocabularyWithEntryCountResponse list =
                 [ { Id = regularVocabulary.Id
                     Name = "Regular"
                     Description = None
@@ -93,7 +93,7 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
                     UpdatedAt = None
                     EntryCount = 1 } ]
 
-            Assert.Equal<VocabularyWithEntryCountHierarchyResponse list>(expected, actual)
+            Assert.Equal<VocabularyWithEntryCountResponse list>(expected, actual)
         }
 
     [<Fact>]
@@ -136,7 +136,7 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 VocabulariesUrlHelpers.vocabulariesByCollection
                     otherCollection.Id
                     { Search = None
-                      SortBy = VocabularySummarySortByRequest.Name
+                      SortBy = VocabularySortByRequest.Name
                       SortDirection = SortDirectionRequest.Asc }
 
             let! response = client.GetAsync(url)
@@ -145,9 +145,9 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<VocabularyWithEntryCountHierarchyResponse list>()
+            let! actual = response.Content.ReadFromJsonAsync<VocabularyWithEntryCountResponse list>()
 
-            Assert.Equal<VocabularyWithEntryCountHierarchyResponse list>([], actual)
+            Assert.Equal<VocabularyWithEntryCountResponse list>([], actual)
         }
 
     [<Fact>]
@@ -179,7 +179,7 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 VocabulariesUrlHelpers.vocabulariesByCollection
                     collection.Id
                     { Search = None
-                      SortBy = VocabularySummarySortByRequest.Name
+                      SortBy = VocabularySortByRequest.Name
                       SortDirection = SortDirectionRequest.Asc }
 
             let! response = client.GetAsync(url)
@@ -188,9 +188,9 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<VocabularyWithEntryCountHierarchyResponse list>()
+            let! actual = response.Content.ReadFromJsonAsync<VocabularyWithEntryCountResponse list>()
 
-            Assert.Equal<VocabularyWithEntryCountHierarchyResponse list>([], actual)
+            Assert.Equal<VocabularyWithEntryCountResponse list>([], actual)
         }
 
     [<Fact>]
@@ -207,7 +207,7 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 VocabulariesUrlHelpers.vocabulariesByCollection
                     1
                     { Search = None
-                      SortBy = VocabularySummarySortByRequest.Name
+                      SortBy = VocabularySortByRequest.Name
                       SortDirection = SortDirectionRequest.Asc }
 
             let! response = client.GetAsync(url)
@@ -250,7 +250,7 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 VocabulariesUrlHelpers.vocabulariesByCollection
                     collection.Id
                     { Search = Some "bio"
-                      SortBy = VocabularySummarySortByRequest.Name
+                      SortBy = VocabularySortByRequest.Name
                       SortDirection = SortDirectionRequest.Asc }
 
             let! response = client.GetAsync(url)
@@ -259,9 +259,9 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<VocabularyWithEntryCountHierarchyResponse list>()
+            let! actual = response.Content.ReadFromJsonAsync<VocabularyWithEntryCountResponse list>()
 
-            let expected: VocabularyWithEntryCountHierarchyResponse list =
+            let expected: VocabularyWithEntryCountResponse list =
                 [ { Id = vocabulary1.Id
                     Name = "Biology Terms"
                     Description = None
@@ -269,7 +269,7 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
                     UpdatedAt = None
                     EntryCount = 0 } ]
 
-            Assert.Equal<VocabularyWithEntryCountHierarchyResponse list>(expected, actual)
+            Assert.Equal<VocabularyWithEntryCountResponse list>(expected, actual)
         }
 
     [<Fact>]
@@ -310,7 +310,7 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 VocabulariesUrlHelpers.vocabulariesByCollection
                     collection.Id
                     { Search = None
-                      SortBy = VocabularySummarySortByRequest.Name
+                      SortBy = VocabularySortByRequest.Name
                       SortDirection = SortDirectionRequest.Asc }
 
             let! response = client.GetAsync(url)
@@ -319,9 +319,9 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<VocabularyWithEntryCountHierarchyResponse list>()
+            let! actual = response.Content.ReadFromJsonAsync<VocabularyWithEntryCountResponse list>()
 
-            let expected: VocabularyWithEntryCountHierarchyResponse list =
+            let expected: VocabularyWithEntryCountResponse list =
                 [ { Id = vocabulary2.Id
                     Name = "Apple"
                     Description = None
@@ -335,5 +335,5 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
                     UpdatedAt = None
                     EntryCount = 0 } ]
 
-            Assert.Equal<VocabularyWithEntryCountHierarchyResponse list>(expected, actual)
+            Assert.Equal<VocabularyWithEntryCountResponse list>(expected, actual)
         }

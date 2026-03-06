@@ -7,7 +7,7 @@ open System.Threading.Tasks
 
 open Xunit
 
-open Wordfolio.Api.Api
+open Wordfolio.Api.Api.Types
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -83,24 +83,24 @@ type GetDraftByIdTests(fixture: WordfolioIdentityTestFixture) =
             let expectedDefinitionExample: ExampleResponse =
                 { Id = actual.Definitions.[0].Examples.[0].Id
                   ExampleText = "Hello, world!"
-                  Source = ExampleSourceDto.Custom }
+                  Source = ExampleSource.Custom }
 
             let expectedDefinition: DefinitionResponse =
                 { Id = actual.Definitions.[0].Id
                   DefinitionText = "a greeting"
-                  Source = DefinitionSourceDto.Manual
+                  Source = DefinitionSource.Manual
                   DisplayOrder = 0
                   Examples = [ expectedDefinitionExample ] }
 
             let expectedTranslationExample: ExampleResponse =
                 { Id = actual.Translations.[0].Examples.[0].Id
                   ExampleText = "Hola, mundo!"
-                  Source = ExampleSourceDto.Custom }
+                  Source = ExampleSource.Custom }
 
             let expectedTranslation: TranslationResponse =
                 { Id = actual.Translations.[0].Id
                   TranslationText = "hola"
-                  Source = TranslationSourceDto.Manual
+                  Source = TranslationSource.Manual
                   DisplayOrder = 0
                   Examples = [ expectedTranslationExample ] }
 

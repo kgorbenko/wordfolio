@@ -11,10 +11,10 @@ open Microsoft.AspNetCore.Routing
 open Npgsql
 
 open Wordfolio.Api.Api.Drafts.Mappers
-open Wordfolio.Api.Api.Drafts
+open Wordfolio.Api.Api.Drafts.Types
 open Wordfolio.Api.Api.Helpers
 open Wordfolio.Api.Api.Mappers
-open Wordfolio.Api.Api
+open Wordfolio.Api.Api.Types
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations
@@ -85,11 +85,11 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                         return
                             match drafts with
                             | None -> Results.NotFound()
-                            | Some data -> Results.Ok(toDraftsResponse data)
+                            | Some data -> Results.Ok(toDraftsVocabularyDataResponse data)
                 })
         )
         .RequireAuthorization()
-        .Produces<DraftsResponse>(StatusCodes.Status200OK)
+        .Produces<DraftsVocabularyDataResponse>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status404NotFound)
     |> ignore

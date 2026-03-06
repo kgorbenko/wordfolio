@@ -2,13 +2,11 @@ module Wordfolio.Api.Api.CollectionsHierarchy.Mappers
 
 open System
 
-open Wordfolio.Api.Api.CollectionsHierarchy
+open Wordfolio.Api.Api.CollectionsHierarchy.Types
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.CollectionsHierarchy
 
-let toVocabularyWithEntryCountHierarchyResponse
-    (vocabulary: VocabularyWithEntryCount)
-    : VocabularyWithEntryCountHierarchyResponse =
+let toVocabularyWithEntryCountResponse(vocabulary: VocabularyWithEntryCount) : VocabularyWithEntryCountResponse =
     { Id = VocabularyId.value vocabulary.Id
       Name = vocabulary.Name
       Description = vocabulary.Description
@@ -16,9 +14,7 @@ let toVocabularyWithEntryCountHierarchyResponse
       UpdatedAt = vocabulary.UpdatedAt
       EntryCount = vocabulary.EntryCount }
 
-let toCollectionWithVocabulariesHierarchyResponse
-    (collection: CollectionWithVocabularies)
-    : CollectionWithVocabulariesHierarchyResponse =
+let toCollectionWithVocabulariesResponse(collection: CollectionWithVocabularies) : CollectionWithVocabulariesResponse =
     { Id = CollectionId.value collection.Id
       Name = collection.Name
       Description = collection.Description
@@ -26,9 +22,11 @@ let toCollectionWithVocabulariesHierarchyResponse
       UpdatedAt = collection.UpdatedAt
       Vocabularies =
         collection.Vocabularies
-        |> List.map toVocabularyWithEntryCountHierarchyResponse }
+        |> List.map toVocabularyWithEntryCountResponse }
 
-let toCollectionOverviewResponse(collection: CollectionWithVocabularyCount) : CollectionOverviewResponse =
+let toCollectionWithVocabularyCountResponse
+    (collection: CollectionWithVocabularyCount)
+    : CollectionWithVocabularyCountResponse =
     { Id = CollectionId.value collection.Id
       Name = collection.Name
       Description = collection.Description
@@ -36,13 +34,13 @@ let toCollectionOverviewResponse(collection: CollectionWithVocabularyCount) : Co
       UpdatedAt = collection.UpdatedAt
       VocabularyCount = collection.VocabularyCount }
 
-let toVocabularySortByDomain(sortBy: VocabularySummarySortByRequest) : VocabularySortBy =
+let toVocabularySortByDomain(sortBy: VocabularySortByRequest) : VocabularySortBy =
     match sortBy with
-    | VocabularySummarySortByRequest.Name -> VocabularySortBy.Name
-    | VocabularySummarySortByRequest.CreatedAt -> VocabularySortBy.CreatedAt
-    | VocabularySummarySortByRequest.UpdatedAt -> VocabularySortBy.UpdatedAt
-    | VocabularySummarySortByRequest.EntryCount -> VocabularySortBy.EntryCount
-    | x -> failwith $"Unknown {nameof VocabularySummarySortByRequest} value: {x}"
+    | VocabularySortByRequest.Name -> VocabularySortBy.Name
+    | VocabularySortByRequest.CreatedAt -> VocabularySortBy.CreatedAt
+    | VocabularySortByRequest.UpdatedAt -> VocabularySortBy.UpdatedAt
+    | VocabularySortByRequest.EntryCount -> VocabularySortBy.EntryCount
+    | x -> failwith $"Unknown {nameof VocabularySortByRequest} value: {x}"
 
 let toCollectionSortByDomain(sortBy: CollectionSortByRequest) : CollectionSortBy =
     match sortBy with
@@ -73,7 +71,7 @@ let toSearchQuery
 
 let toCollectionVocabulariesQuery
     (search: string)
-    (sortBy: VocabularySummarySortByRequest)
+    (sortBy: VocabularySortByRequest)
     (sortDirection: SortDirectionRequest)
     : SearchCollectionVocabulariesQuery =
     { Search =

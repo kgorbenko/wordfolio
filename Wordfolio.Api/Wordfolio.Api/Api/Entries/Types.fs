@@ -1,6 +1,6 @@
-namespace Wordfolio.Api.Api.Entries
+module Wordfolio.Api.Api.Entries.Types
 
-open Wordfolio.Api.Api
+open Wordfolio.Api.Api.Types
 
 type CreateEntryRequest =
     { EntryText: string

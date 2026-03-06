@@ -7,8 +7,8 @@ open System.Threading.Tasks
 
 open Xunit
 
-open Wordfolio.Api.Api.Drafts
-open Wordfolio.Api.Api
+open Wordfolio.Api.Api.Drafts.Types
+open Wordfolio.Api.Api.Types
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -39,7 +39,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = []
                   AllowDuplicate = None }
@@ -58,7 +58,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let expectedDefinition: DefinitionResponse =
                 { Id = actual.Definitions.[0].Id
                   DefinitionText = "a greeting"
-                  Source = DefinitionSourceDto.Manual
+                  Source = DefinitionSource.Manual
                   DisplayOrder = 0
                   Examples = [] }
 
@@ -123,7 +123,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = []
                   AllowDuplicate = None }
@@ -139,7 +139,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let expectedDefinition: DefinitionResponse =
                 { Id = actual.Definitions.[0].Id
                   DefinitionText = "a greeting"
-                  Source = DefinitionSourceDto.Manual
+                  Source = DefinitionSource.Manual
                   DisplayOrder = 0
                   Examples = [] }
 
@@ -198,16 +198,16 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples =
                           [ { ExampleText = "Hello, world!"
-                              Source = ExampleSourceDto.Custom } ] } ]
+                              Source = ExampleSource.Custom } ] } ]
                   Translations =
                     [ { TranslationText = "hola"
-                        Source = TranslationSourceDto.Manual
+                        Source = TranslationSource.Manual
                         Examples =
                           [ { ExampleText = "Hola, mundo!"
-                              Source = ExampleSourceDto.Custom } ] } ]
+                              Source = ExampleSource.Custom } ] } ]
                   AllowDuplicate = None }
 
             let! response = client.PostAsJsonAsync(Urls.Drafts.Path, request)
@@ -223,24 +223,24 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let expectedDefinitionExample: ExampleResponse =
                 { Id = actual.Definitions.[0].Examples.[0].Id
                   ExampleText = "Hello, world!"
-                  Source = ExampleSourceDto.Custom }
+                  Source = ExampleSource.Custom }
 
             let expectedDefinition: DefinitionResponse =
                 { Id = actual.Definitions.[0].Id
                   DefinitionText = "a greeting"
-                  Source = DefinitionSourceDto.Manual
+                  Source = DefinitionSource.Manual
                   DisplayOrder = 0
                   Examples = [ expectedDefinitionExample ] }
 
             let expectedTranslationExample: ExampleResponse =
                 { Id = actual.Translations.[0].Examples.[0].Id
                   ExampleText = "Hola, mundo!"
-                  Source = ExampleSourceDto.Custom }
+                  Source = ExampleSource.Custom }
 
             let expectedTranslation: TranslationResponse =
                 { Id = actual.Translations.[0].Id
                   TranslationText = "hola"
-                  Source = TranslationSourceDto.Manual
+                  Source = TranslationSource.Manual
                   DisplayOrder = 0
                   Examples = [ expectedTranslationExample ] }
 
@@ -315,7 +315,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = []
                   AllowDuplicate = None }
@@ -364,7 +364,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = ""
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = []
                   AllowDuplicate = None }
@@ -459,20 +459,20 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples =
                           [ { ExampleText = "Example 1"
-                              Source = ExampleSourceDto.Custom }
+                              Source = ExampleSource.Custom }
                             { ExampleText = "Example 2"
-                              Source = ExampleSourceDto.Custom }
+                              Source = ExampleSource.Custom }
                             { ExampleText = "Example 3"
-                              Source = ExampleSourceDto.Custom }
+                              Source = ExampleSource.Custom }
                             { ExampleText = "Example 4"
-                              Source = ExampleSourceDto.Custom }
+                              Source = ExampleSource.Custom }
                             { ExampleText = "Example 5"
-                              Source = ExampleSourceDto.Custom }
+                              Source = ExampleSource.Custom }
                             { ExampleText = "Example 6"
-                              Source = ExampleSourceDto.Custom } ] } ]
+                              Source = ExampleSource.Custom } ] } ]
                   Translations = []
                   AllowDuplicate = None }
 
@@ -532,7 +532,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = []
                   AllowDuplicate = None }
@@ -575,7 +575,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = []
                   AllowDuplicate = Some true }
@@ -591,7 +591,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let expectedDefinition: DefinitionResponse =
                 { Id = actual.Definitions.[0].Id
                   DefinitionText = "a greeting"
-                  Source = DefinitionSourceDto.Manual
+                  Source = DefinitionSource.Manual
                   DisplayOrder = 0
                   Examples = [] }
 

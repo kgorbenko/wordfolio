@@ -12,7 +12,7 @@ open Npgsql
 
 open Wordfolio.Api
 open Wordfolio.Api.Api.CollectionsHierarchy.Mappers
-open Wordfolio.Api.Api.CollectionsHierarchy
+open Wordfolio.Api.Api.CollectionsHierarchy.Types
 open Wordfolio.Api.Api.Helpers
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.CollectionsHierarchy
@@ -38,18 +38,18 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
 
                         let hierarchyResult = okOrFail result
 
-                        let response: CollectionsHierarchyResponse =
+                        let response: CollectionsHierarchyResultResponse =
                             { Collections =
                                 hierarchyResult.Collections
-                                |> List.map toCollectionWithVocabulariesHierarchyResponse
+                                |> List.map toCollectionWithVocabulariesResponse
                               DefaultVocabulary =
                                 hierarchyResult.DefaultVocabulary
-                                |> Option.map toVocabularyWithEntryCountHierarchyResponse }
+                                |> Option.map toVocabularyWithEntryCountResponse }
 
                         return Results.Ok(response)
                 })
         )
-        .Produces<CollectionsHierarchyResponse>(StatusCodes.Status200OK)
+        .Produces<CollectionsHierarchyResultResponse>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
     |> ignore
 
@@ -78,18 +78,18 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
 
                             return
                                 collections
-                                |> List.map toCollectionOverviewResponse
+                                |> List.map toCollectionWithVocabularyCountResponse
                                 |> Results.Ok
                     })
         )
-        .Produces<CollectionOverviewResponse list>(StatusCodes.Status200OK)
+        .Produces<CollectionWithVocabularyCountResponse list>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
     |> ignore
 
     group
         .MapGet(
             Urls.VocabulariesByCollectionPath,
-            Func<int, string, VocabularySummarySortByRequest, SortDirectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+            Func<int, string, VocabularySortByRequest, SortDirectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
                 (fun collectionId search sortBy sortDirection user dataSource cancellationToken ->
                     task {
                         match getUserId user with
@@ -112,10 +112,10 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
 
                             return
                                 vocabularies
-                                |> List.map toVocabularyWithEntryCountHierarchyResponse
+                                |> List.map toVocabularyWithEntryCountResponse
                                 |> Results.Ok
                     })
         )
-        .Produces<VocabularyWithEntryCountHierarchyResponse list>(StatusCodes.Status200OK)
+        .Produces<VocabularyWithEntryCountResponse list>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
     |> ignore

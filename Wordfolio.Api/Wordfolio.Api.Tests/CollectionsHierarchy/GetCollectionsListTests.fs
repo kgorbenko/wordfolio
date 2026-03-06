@@ -7,7 +7,7 @@ open System.Threading.Tasks
 
 open Xunit
 
-open Wordfolio.Api.Api.CollectionsHierarchy
+open Wordfolio.Api.Api.CollectionsHierarchy.Types
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -86,9 +86,9 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<CollectionOverviewResponse list>()
+            let! actual = response.Content.ReadFromJsonAsync<CollectionWithVocabularyCountResponse list>()
 
-            let expected: CollectionOverviewResponse list =
+            let expected: CollectionWithVocabularyCountResponse list =
                 [ { Id = collection2.Id
                     Name = "Travel"
                     Description = Some "Bio terms"
@@ -102,7 +102,7 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
                     UpdatedAt = Some updatedAt1
                     VocabularyCount = 0 } ]
 
-            Assert.Equal<CollectionOverviewResponse list>(expected, actual)
+            Assert.Equal<CollectionWithVocabularyCountResponse list>(expected, actual)
         }
 
     [<Fact>]
@@ -146,9 +146,9 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<CollectionOverviewResponse list>()
+            let! actual = response.Content.ReadFromJsonAsync<CollectionWithVocabularyCountResponse list>()
 
-            let expected: CollectionOverviewResponse list =
+            let expected: CollectionWithVocabularyCountResponse list =
                 [ { Id = ownedCollection.Id
                     Name = "Owned"
                     Description = None
@@ -156,7 +156,7 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
                     UpdatedAt = None
                     VocabularyCount = 0 } ]
 
-            Assert.Equal<CollectionOverviewResponse list>(expected, actual)
+            Assert.Equal<CollectionWithVocabularyCountResponse list>(expected, actual)
         }
 
     [<Fact>]
@@ -188,9 +188,9 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<CollectionOverviewResponse list>()
+            let! actual = response.Content.ReadFromJsonAsync<CollectionWithVocabularyCountResponse list>()
 
-            Assert.Equal<CollectionOverviewResponse list>([], actual)
+            Assert.Equal<CollectionWithVocabularyCountResponse list>([], actual)
         }
 
     [<Fact>]
@@ -250,9 +250,9 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
 
-            let! actual = response.Content.ReadFromJsonAsync<CollectionOverviewResponse list>()
+            let! actual = response.Content.ReadFromJsonAsync<CollectionWithVocabularyCountResponse list>()
 
-            let expected: CollectionOverviewResponse list =
+            let expected: CollectionWithVocabularyCountResponse list =
                 [ { Id = collection.Id
                     Name = "Regular"
                     Description = None
@@ -260,7 +260,7 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
                     UpdatedAt = None
                     VocabularyCount = 1 } ]
 
-            Assert.Equal<CollectionOverviewResponse list>(expected, actual)
+            Assert.Equal<CollectionWithVocabularyCountResponse list>(expected, actual)
         }
 
     [<Fact>]

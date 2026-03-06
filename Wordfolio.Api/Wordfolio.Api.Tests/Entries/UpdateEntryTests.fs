@@ -7,7 +7,7 @@ open System.Threading.Tasks
 
 open Xunit
 
-open Wordfolio.Api.Api
+open Wordfolio.Api.Api.Types
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -83,16 +83,16 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello updated"
                   Definitions =
                     [ { DefinitionText = "a new greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples =
                           [ { ExampleText = "Hello there!"
-                              Source = ExampleSourceDto.Custom } ] } ]
+                              Source = ExampleSource.Custom } ] } ]
                   Translations =
                     [ { TranslationText = "hola actualizado"
-                        Source = TranslationSourceDto.Manual
+                        Source = TranslationSource.Manual
                         Examples =
                           [ { ExampleText = "Hola ahi!"
-                              Source = ExampleSourceDto.Custom } ] } ] }
+                              Source = ExampleSource.Custom } ] } ] }
 
             let url =
                 Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
@@ -108,24 +108,24 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
             let expectedDefinitionExample: ExampleResponse =
                 { Id = actual.Definitions.[0].Examples.[0].Id
                   ExampleText = "Hello there!"
-                  Source = ExampleSourceDto.Custom }
+                  Source = ExampleSource.Custom }
 
             let expectedDefinition: DefinitionResponse =
                 { Id = actual.Definitions.[0].Id
                   DefinitionText = "a new greeting"
-                  Source = DefinitionSourceDto.Manual
+                  Source = DefinitionSource.Manual
                   DisplayOrder = 0
                   Examples = [ expectedDefinitionExample ] }
 
             let expectedTranslationExample: ExampleResponse =
                 { Id = actual.Translations.[0].Examples.[0].Id
                   ExampleText = "Hola ahi!"
-                  Source = ExampleSourceDto.Custom }
+                  Source = ExampleSource.Custom }
 
             let expectedTranslation: TranslationResponse =
                 { Id = actual.Translations.[0].Id
                   TranslationText = "hola actualizado"
-                  Source = TranslationSourceDto.Manual
+                  Source = TranslationSource.Manual
                   DisplayOrder = 0
                   Examples = [ expectedTranslationExample ] }
 
@@ -293,7 +293,7 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = [] }
 
@@ -388,7 +388,7 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = ""
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = [] }
 
@@ -531,7 +531,7 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = [] }
 
@@ -576,7 +576,7 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "updated definition"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = [] }
 
@@ -594,7 +594,7 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
             let expectedDefinition: DefinitionResponse =
                 { Id = actual.Definitions.[0].Id
                   DefinitionText = "updated definition"
-                  Source = DefinitionSourceDto.Manual
+                  Source = DefinitionSource.Manual
                   DisplayOrder = 0
                   Examples = [] }
 
@@ -709,7 +709,7 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello updated"
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = [] }
 
@@ -846,7 +846,7 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = [] }
 
@@ -891,7 +891,7 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = [] }
 
@@ -937,7 +937,7 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                 { EntryText = "hello"
                   Definitions =
                     [ { DefinitionText = "a greeting"
-                        Source = DefinitionSourceDto.Manual
+                        Source = DefinitionSource.Manual
                         Examples = [] } ]
                   Translations = [] }
 
