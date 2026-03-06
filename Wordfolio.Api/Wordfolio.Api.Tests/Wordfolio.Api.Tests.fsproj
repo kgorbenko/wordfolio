@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="AssemblyAttributes.fs" />
     <Compile Include="TestTokenGenerator.fs" />
     <Compile Include="WebApplicationFactory.fs" />
     <Compile Include="Infrastructure\DelimitedStreamProcessorTests.fs" />

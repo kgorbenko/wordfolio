@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="AssemblyAttributes.fs" />
     <Compile Include="SqlErrorCodes.fs" />
     <Compile Include="Users/CreateUserTests.fs" />
     <Compile Include="Collections/CreateCollectionTests.fs" />
