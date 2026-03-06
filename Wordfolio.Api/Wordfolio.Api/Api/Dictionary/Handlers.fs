@@ -11,7 +11,7 @@ open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Routing
 
 open Wordfolio.Api.Api.Dictionary.Mappers
-open Wordfolio.Api.Api.Dictionary.Types
+open Wordfolio.Api.Api.Dictionary
 open Wordfolio.Api.Infrastructure.ChatClient
 open Wordfolio.Api.Infrastructure.DelimitedStreamProcessor
 

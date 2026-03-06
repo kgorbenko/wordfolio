@@ -1,6 +1,6 @@
 module Wordfolio.Api.Api.Drafts.Mappers
 
-open Wordfolio.Api.Api.Drafts.Types
+open Wordfolio.Api.Api.Drafts
 open Wordfolio.Api.Api.Mappers
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries

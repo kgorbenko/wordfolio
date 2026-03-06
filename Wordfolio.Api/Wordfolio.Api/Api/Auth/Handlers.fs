@@ -9,7 +9,7 @@ open Microsoft.Extensions.Options
 
 open Wordfolio.Api
 open Wordfolio.Api.Api.Auth.Mappers
-open Wordfolio.Api.Api.Auth.Types
+open Wordfolio.Api.Api.Auth
 open Wordfolio.Api.Identity
 
 let mapAuthEndpoints(group: RouteGroupBuilder) =
