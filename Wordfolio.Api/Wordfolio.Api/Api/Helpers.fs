@@ -14,7 +14,7 @@ let getUserId(user: ClaimsPrincipal) : int option =
         | true, userId -> Some userId
         | false, _ -> None
 
-let failOnUnitError (operationName: string) (result: Result<'Value, unit>) : 'Value =
+let okOrFail(result: Result<'Value, unit>) : 'Value =
     match result with
     | Ok value -> value
-    | Error() -> failwith $"Unexpected unit error while executing {operationName}"
+    | Error() -> failwith "Expected value to be Ok, but got Error"
