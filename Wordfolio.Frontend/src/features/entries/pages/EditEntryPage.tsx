@@ -1,13 +1,12 @@
 import { useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
+import { entryEditRouteApi, entryDetailPath } from "../routes";
 import {
-    entryEditRouteApi,
-    entryDetailPath,
     collectionsPath,
     collectionDetailPath,
-    vocabularyDetailPath,
-} from "../routes";
+} from "../../collections/routes";
+import { vocabularyDetailPath } from "../../vocabularies/routes";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
