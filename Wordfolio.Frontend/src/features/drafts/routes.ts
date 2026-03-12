@@ -35,18 +35,3 @@ export function draftsEntryEditPath(entryId: number) {
         params: { entryId },
     };
 }
-
-export function collectionVocabularyEntryDetailPath(
-    collectionId: number,
-    vocabularyId: number,
-    entryId: number
-) {
-    return {
-        to: "/collections/$collectionId/vocabularies/$vocabularyId/entries/$entryId" as const,
-        params: {
-            collectionId,
-            vocabularyId,
-            entryId,
-        },
-    };
-}

@@ -1,12 +1,11 @@
 import { useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
+import { vocabularyCreateRouteApi, vocabularyDetailPath } from "../routes";
 import {
-    vocabularyCollectionDetailPath,
-    vocabularyCollectionsPath,
-    vocabularyCreateRouteApi,
-    vocabularyDetailPath,
-} from "../routes";
+    collectionsPath,
+    collectionDetailPath,
+} from "../../collections/routes";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
@@ -49,7 +48,7 @@ export const CreateVocabularyPage = () => {
     );
 
     const handleCancel = useCallback(() => {
-        void navigate(vocabularyCollectionDetailPath(collectionId));
+        void navigate(collectionDetailPath(collectionId));
     }, [navigate, collectionId]);
 
     const renderContent = useCallback(() => {
@@ -87,10 +86,10 @@ export const CreateVocabularyPage = () => {
         <PageContainer>
             <BreadcrumbNav
                 items={[
-                    { label: "Collections", ...vocabularyCollectionsPath() },
+                    { label: "Collections", ...collectionsPath() },
                     {
                         label: collection?.name ?? "...",
-                        ...vocabularyCollectionDetailPath(collectionId),
+                        ...collectionDetailPath(collectionId),
                     },
                     { label: "New Vocabulary" },
                 ]}

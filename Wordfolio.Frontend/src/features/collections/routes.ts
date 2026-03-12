@@ -33,23 +33,3 @@ export function collectionEditPath(collectionId: number) {
 export function collectionCreatePath() {
     return { to: "/collections/new" as const };
 }
-
-export function collectionVocabularyDetailPath(
-    collectionId: number,
-    vocabularyId: number
-) {
-    return {
-        to: "/collections/$collectionId/vocabularies/$vocabularyId" as const,
-        params: {
-            collectionId,
-            vocabularyId,
-        },
-    };
-}
-
-export function collectionVocabularyCreatePath(collectionId: number) {
-    return {
-        to: "/collections/$collectionId/vocabularies/new" as const,
-        params: { collectionId },
-    };
-}

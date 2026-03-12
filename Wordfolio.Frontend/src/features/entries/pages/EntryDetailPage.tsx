@@ -5,15 +5,13 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 
+import { entryDetailRouteApi, entryEditPath, entryDetailPath } from "../routes";
 import {
-    entryDetailRouteApi,
-    entryEditPath,
-    entryDetailPath,
     collectionsPath,
     collectionDetailPath,
-    vocabularyDetailPath,
-    draftsEntryDetailPath,
-} from "../routes";
+} from "../../collections/routes";
+import { vocabularyDetailPath } from "../../vocabularies/routes";
+import { draftsEntryDetailPath } from "../../drafts/routes";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";

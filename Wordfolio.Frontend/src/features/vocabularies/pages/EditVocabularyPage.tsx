@@ -1,12 +1,11 @@
 import { useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
+import { vocabularyEditRouteApi, vocabularyDetailPath } from "../routes";
 import {
-    vocabularyCollectionDetailPath,
-    vocabularyCollectionsPath,
-    vocabularyDetailPath,
-    vocabularyEditRouteApi,
-} from "../routes";
+    collectionsPath,
+    collectionDetailPath,
+} from "../../collections/routes";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
@@ -91,10 +90,10 @@ export const EditVocabularyPage = () => {
         <PageContainer>
             <BreadcrumbNav
                 items={[
-                    { label: "Collections", ...vocabularyCollectionsPath() },
+                    { label: "Collections", ...collectionsPath() },
                     {
                         label: vocabulary?.collectionName ?? "...",
-                        ...vocabularyCollectionDetailPath(collectionId),
+                        ...collectionDetailPath(collectionId),
                     },
                     {
                         label: vocabulary?.name ?? "...",

@@ -6,14 +6,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 
+import { vocabularyDetailRouteApi, vocabularyEditPath } from "../routes";
 import {
-    vocabularyCollectionDetailPath,
-    vocabularyCollectionsPath,
-    vocabularyDetailRouteApi,
-    vocabularyEditPath,
-    vocabularyEntryCreatePath,
-    vocabularyEntryDetailPath,
-} from "../routes";
+    collectionsPath,
+    collectionDetailPath,
+} from "../../collections/routes";
+import { entryDetailPath, entryCreatePath } from "../../entries/routes";
 
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
@@ -53,7 +51,7 @@ export const VocabularyDetailPage = () => {
 
     const deleteMutation = useDeleteVocabularyMutation({
         onSuccess: () => {
-            void navigate(vocabularyCollectionDetailPath(collectionId));
+            void navigate(collectionDetailPath(collectionId));
         },
         onError: () => {
             openErrorNotification({
@@ -92,15 +90,13 @@ export const VocabularyDetailPage = () => {
 
     const handleEntryClick = useCallback(
         (entryId: number) => {
-            void navigate(
-                vocabularyEntryDetailPath(collectionId, vocabularyId, entryId)
-            );
+            void navigate(entryDetailPath(collectionId, vocabularyId, entryId));
         },
         [navigate, collectionId, vocabularyId]
     );
 
     const handleAddWordClick = useCallback(() => {
-        void navigate(vocabularyEntryCreatePath(collectionId, vocabularyId));
+        void navigate(entryCreatePath(collectionId, vocabularyId));
     }, [navigate, collectionId, vocabularyId]);
 
     const isLoading = isVocabularyLoading || isEntriesLoading;
@@ -148,10 +144,10 @@ export const VocabularyDetailPage = () => {
         <PageContainer>
             <BreadcrumbNav
                 items={[
-                    { label: "Collections", ...vocabularyCollectionsPath() },
+                    { label: "Collections", ...collectionsPath() },
                     {
                         label: vocabulary?.collectionName ?? "...",
-                        ...vocabularyCollectionDetailPath(collectionId),
+                        ...collectionDetailPath(collectionId),
                     },
                     { label: vocabulary?.name ?? "Vocabulary" },
                 ]}

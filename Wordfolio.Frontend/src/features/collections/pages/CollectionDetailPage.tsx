@@ -9,9 +9,11 @@ import {
     collectionDetailRouteApi,
     collectionsPath,
     collectionEditPath,
-    collectionVocabularyDetailPath,
-    collectionVocabularyCreatePath,
 } from "../routes";
+import {
+    vocabularyDetailPath,
+    vocabularyCreatePath,
+} from "../../vocabularies/routes";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import {
@@ -83,15 +85,13 @@ export const CollectionDetailPage = () => {
 
     const handleVocabularyClick = useCallback(
         (vocabId: number) => {
-            void navigate(
-                collectionVocabularyDetailPath(collectionId, vocabId)
-            );
+            void navigate(vocabularyDetailPath(collectionId, vocabId));
         },
         [navigate, collectionId]
     );
 
     const handleCreateVocabulary = useCallback(() => {
-        void navigate(collectionVocabularyCreatePath(collectionId));
+        void navigate(vocabularyCreatePath(collectionId));
     }, [navigate, collectionId]);
 
     const breadcrumbs: BreadcrumbItem[] = [

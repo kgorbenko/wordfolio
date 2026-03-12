@@ -56,6 +56,8 @@ These rules govern frontend design and structure: feature boundaries, API contra
 ## Routing and Navigation Rules
 
 - Keep route path definitions and path-builder helpers centralized in feature `routes.ts`.
+- Each path builder must be defined exactly once, in the feature that owns that route. Never duplicate a path builder into another feature's `routes.ts`.
+- When a feature needs to navigate to another feature's route, import the path builder directly from the owning feature's `routes.ts`. Cross-feature imports are allowed for route path builders.
 - Use path builders for navigation; do not hardcode route strings in UI logic.
 - Validate route params/search at route boundaries before page-level usage.
 

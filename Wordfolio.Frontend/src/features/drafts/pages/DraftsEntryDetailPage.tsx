@@ -6,12 +6,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 
 import {
-    collectionVocabularyEntryDetailPath,
     draftsEntryDetailRouteApi,
-    draftsEntryDetailPath,
     draftsEntryEditPath,
+    draftsEntryDetailPath,
     draftsPath,
 } from "../routes";
+import { entryDetailPath } from "../../entries/routes";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
@@ -109,7 +109,7 @@ export const DraftsEntryDetailPage = () => {
                     assertNonNullable(moveSelection.collectionId);
 
                     void navigate(
-                        collectionVocabularyEntryDetailPath(
+                        entryDetailPath(
                             moveSelection.collectionId,
                             moveSelection.vocabularyId,
                             movedEntry.id
