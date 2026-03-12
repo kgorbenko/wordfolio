@@ -86,7 +86,7 @@ export const DraftsEntryEditPage = () => {
     const isLoading = isEntryLoading;
     const isError = isEntryError;
 
-    const renderContent = useCallback(() => {
+    const renderContent = () => {
         if (isLoading) return <ContentSkeleton variant="form" />;
 
         if (isError || !entry) {
@@ -112,16 +112,7 @@ export const DraftsEntryEditPage = () => {
                 isLoading={updateMutation.isPending}
             />
         );
-    }, [
-        isLoading,
-        isError,
-        entry,
-        isEntryError,
-        refetchEntry,
-        handleSubmit,
-        handleCancel,
-        updateMutation.isPending,
-    ]);
+    };
 
     return (
         <PageContainer>

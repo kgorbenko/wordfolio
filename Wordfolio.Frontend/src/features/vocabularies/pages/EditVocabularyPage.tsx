@@ -51,7 +51,7 @@ export const EditVocabularyPage = () => {
         void navigate(vocabularyDetailPath(collectionId, vocabularyId));
     }, [navigate, collectionId, vocabularyId]);
 
-    const renderContent = useCallback(() => {
+    const renderContent = () => {
         if (isVocabularyLoading) return <ContentSkeleton variant="form" />;
 
         if (isVocabularyError || !vocabulary) {
@@ -76,15 +76,7 @@ export const EditVocabularyPage = () => {
                 isLoading={updateMutation.isPending}
             />
         );
-    }, [
-        isVocabularyLoading,
-        isVocabularyError,
-        vocabulary,
-        refetchVocabulary,
-        handleSubmit,
-        handleCancel,
-        updateMutation.isPending,
-    ]);
+    };
 
     return (
         <PageContainer>

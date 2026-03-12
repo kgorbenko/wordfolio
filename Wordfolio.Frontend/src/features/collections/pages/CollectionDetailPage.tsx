@@ -101,7 +101,7 @@ export const CollectionDetailPage = () => {
             : { label: collection?.name ?? "Collection" },
     ];
 
-    const renderContent = useCallback(() => {
+    const renderContent = () => {
         if (isLoading) {
             return <ContentSkeleton variant="detail" />;
         }
@@ -126,18 +126,7 @@ export const CollectionDetailPage = () => {
                 onCreateVocabularyClick={handleCreateVocabulary}
             />
         );
-    }, [
-        isLoading,
-        isError,
-        isCollectionError,
-        isVocabulariesError,
-        collection,
-        vocabularies,
-        refetchCollection,
-        refetchVocabularies,
-        handleVocabularyClick,
-        handleCreateVocabulary,
-    ]);
+    };
 
     return (
         <PageContainer>

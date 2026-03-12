@@ -102,7 +102,7 @@ export const VocabularyDetailPage = () => {
     const isLoading = isVocabularyLoading || isEntriesLoading;
     const isError = isVocabularyError || isEntriesError;
 
-    const renderContent = useCallback(() => {
+    const renderContent = () => {
         if (isLoading) return <ContentSkeleton variant="list" />;
 
         if (isError || !vocabulary || !entries) {
@@ -127,18 +127,7 @@ export const VocabularyDetailPage = () => {
                 onAddWordClick={handleAddWordClick}
             />
         );
-    }, [
-        isLoading,
-        isError,
-        vocabulary,
-        entries,
-        isVocabularyError,
-        isEntriesError,
-        refetchVocabulary,
-        refetchEntries,
-        handleEntryClick,
-        handleAddWordClick,
-    ]);
+    };
 
     return (
         <PageContainer>

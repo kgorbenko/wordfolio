@@ -51,7 +51,7 @@ export const CreateVocabularyPage = () => {
         void navigate(collectionDetailPath(collectionId));
     }, [navigate, collectionId]);
 
-    const renderContent = useCallback(() => {
+    const renderContent = () => {
         if (isLoading) return <ContentSkeleton variant="form" />;
 
         if (isError || !collection) {
@@ -72,15 +72,7 @@ export const CreateVocabularyPage = () => {
                 isLoading={createMutation.isPending}
             />
         );
-    }, [
-        isLoading,
-        isError,
-        collection,
-        refetch,
-        handleSubmit,
-        handleCancel,
-        createMutation.isPending,
-    ]);
+    };
 
     return (
         <PageContainer>

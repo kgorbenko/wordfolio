@@ -32,7 +32,7 @@ export const DraftsPage = () => {
         void navigate(draftsCreatePath());
     }, [navigate]);
 
-    const renderContent = useCallback(() => {
+    const renderContent = () => {
         if (isLoading) return <ContentSkeleton variant="list" />;
 
         if (isError) {
@@ -56,14 +56,7 @@ export const DraftsPage = () => {
                 onAddDraftClick={handleAddDraftClick}
             />
         );
-    }, [
-        isLoading,
-        isError,
-        data,
-        refetch,
-        handleEntryClick,
-        handleAddDraftClick,
-    ]);
+    };
 
     return (
         <PageContainer>

@@ -40,7 +40,7 @@ export const CollectionsPage = () => {
         void navigate(collectionCreatePath());
     }, [navigate]);
 
-    const renderContent = useCallback(() => {
+    const renderContent = () => {
         if (isLoading) {
             return <ContentSkeleton variant="cards" />;
         }
@@ -62,14 +62,7 @@ export const CollectionsPage = () => {
                 onCreateClick={handleCreateClick}
             />
         );
-    }, [
-        isLoading,
-        isError,
-        collections,
-        refetch,
-        handleCollectionClick,
-        handleCreateClick,
-    ]);
+    };
 
     return (
         <PageContainer>
