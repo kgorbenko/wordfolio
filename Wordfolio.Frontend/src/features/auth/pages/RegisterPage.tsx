@@ -71,7 +71,7 @@ export const RegisterPage = () => {
         [registerMutation]
     );
 
-    const renderContent = useCallback(() => {
+    const renderContent = () => {
         if (isLoadingRequirements) return <ContentSkeleton variant="form" />;
 
         if (isRequirementsError || !passwordRequirements) {
@@ -155,20 +155,7 @@ export const RegisterPage = () => {
                 </Box>
             </Box>
         );
-    }, [
-        isLoadingRequirements,
-        isRequirementsError,
-        passwordRequirements,
-        refetchPasswordRequirements,
-        handleSubmit,
-        onSubmit,
-        errors.root,
-        errors.email,
-        errors.password,
-        errors.confirmPassword,
-        register,
-        registerMutation.isPending,
-    ]);
+    };
 
     return (
         <div className="centered-page-container">

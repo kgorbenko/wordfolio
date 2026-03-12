@@ -86,7 +86,7 @@ export const CreateEntryPage = () => {
         [openErrorNotification]
     );
 
-    const renderContent = useCallback(() => {
+    const renderContent = () => {
         if (isVocabularyLoading) return <ContentSkeleton variant="form" />;
 
         if (isVocabularyError || !vocabulary) {
@@ -111,17 +111,7 @@ export const CreateEntryPage = () => {
                 variant="page"
             />
         );
-    }, [
-        isVocabularyLoading,
-        isVocabularyError,
-        vocabulary,
-        refetchVocabulary,
-        vocabularyId,
-        createMutation.isPending,
-        handleSave,
-        handleCancel,
-        handleLookupError,
-    ]);
+    };
 
     return (
         <PageContainer>

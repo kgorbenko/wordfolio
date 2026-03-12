@@ -142,7 +142,7 @@ export const EntryDetailPage = () => {
     const isLoading = isVocabularyLoading || isEntryLoading;
     const isError = isVocabularyError || isEntryError;
 
-    const renderContent = useCallback(() => {
+    const renderContent = () => {
         if (isLoading) return <ContentSkeleton variant="detail" />;
 
         if (isError || !vocabulary || !entry) {
@@ -161,16 +161,7 @@ export const EntryDetailPage = () => {
         }
 
         return <EntryDetailContent entry={entry} />;
-    }, [
-        isLoading,
-        isError,
-        vocabulary,
-        entry,
-        isVocabularyError,
-        isEntryError,
-        refetchVocabulary,
-        refetchEntry,
-    ]);
+    };
 
     return (
         <PageContainer>

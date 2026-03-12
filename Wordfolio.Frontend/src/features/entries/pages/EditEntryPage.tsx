@@ -98,7 +98,7 @@ export const EditEntryPage = () => {
     const isLoading = isVocabularyLoading || isEntryLoading;
     const isError = isVocabularyError || isEntryError;
 
-    const renderContent = useCallback(() => {
+    const renderContent = () => {
         if (isLoading) return <ContentSkeleton variant="form" />;
 
         if (isError || !vocabulary || !entry) {
@@ -125,19 +125,7 @@ export const EditEntryPage = () => {
                 isLoading={updateMutation.isPending}
             />
         );
-    }, [
-        isLoading,
-        isError,
-        vocabulary,
-        entry,
-        isVocabularyError,
-        isEntryError,
-        refetchVocabulary,
-        refetchEntry,
-        handleSubmit,
-        handleCancel,
-        updateMutation.isPending,
-    ]);
+    };
 
     return (
         <PageContainer>

@@ -123,7 +123,7 @@ export const DraftsEntryDetailPage = () => {
     const isLoading = isEntryLoading;
     const isError = isEntryError;
 
-    const renderContent = useCallback(() => {
+    const renderContent = () => {
         if (isLoading) return <ContentSkeleton variant="detail" />;
 
         if (isError || !entry) {
@@ -141,7 +141,7 @@ export const DraftsEntryDetailPage = () => {
         }
 
         return <EntryDetailContent entry={entry} />;
-    }, [isLoading, isError, entry, isEntryError, refetchEntry]);
+    };
 
     return (
         <PageContainer>
