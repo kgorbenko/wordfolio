@@ -14,6 +14,13 @@ var databaseOptions =
         .GetRequiredSection(Configuration.DatabaseOptionsSection)
         .Get<DatabaseOptions>()!;
 
+var useFixedPorts = builder.Configuration.GetValue<bool>("WORDFOLIO_FIXED_PORTS");
+
+var fixedPortOptions =
+    builder.Configuration
+        .GetRequiredSection(Configuration.FixedPortOptionsSection)
+        .Get<FixedPortOptions>()!;
+
 var postgres =
     builder.AddPostgres("postgres", postgresUsername, postgresPassword)
         .WithEndpoint(name: "postgresendpoint", scheme: "tcp", port: databaseOptions.Port, targetPort: 5432, isProxied: false)
@@ -25,13 +32,6 @@ var postgresDatabase = postgres.AddDatabase(databaseName);
 var migrationService = builder.AddProject<Projects.Wordfolio_MigrationRunner>("migrationservice")
     .WithReference(postgresDatabase)
     .WaitFor(postgresDatabase);
-
-var useFixedPorts = builder.Configuration.GetValue<bool>("WORDFOLIO_FIXED_PORTS");
-
-var fixedPortOptions =
-    builder.Configuration
-        .GetRequiredSection(Configuration.FixedPortOptionsSection)
-        .Get<FixedPortOptions>()!;
 
 var api = builder.AddProject<Projects.Wordfolio_Api>("apiservice")
     .WithHttpEndpoint(port: useFixedPorts ? fixedPortOptions.ApiPort : null)
