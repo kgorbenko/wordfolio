@@ -42,32 +42,11 @@ let toVocabularySortByDomain(sortBy: VocabularySortByRequest) : VocabularySortBy
     | VocabularySortByRequest.EntryCount -> VocabularySortBy.EntryCount
     | x -> failwith $"Unknown {nameof VocabularySortByRequest} value: {x}"
 
-let toCollectionSortByDomain(sortBy: CollectionSortByRequest) : CollectionSortBy =
-    match sortBy with
-    | CollectionSortByRequest.Name -> CollectionSortBy.Name
-    | CollectionSortByRequest.CreatedAt -> CollectionSortBy.CreatedAt
-    | CollectionSortByRequest.UpdatedAt -> CollectionSortBy.UpdatedAt
-    | CollectionSortByRequest.VocabularyCount -> CollectionSortBy.VocabularyCount
-    | x -> failwith $"Unknown {nameof CollectionSortByRequest} value: {x}"
-
 let toSortDirectionDomain(sortDirection: SortDirectionRequest) : SortDirection =
     match sortDirection with
     | SortDirectionRequest.Asc -> SortDirection.Asc
     | SortDirectionRequest.Desc -> SortDirection.Desc
     | x -> failwith $"Unknown {nameof SortDirectionRequest} value: {x}"
-
-let toSearchQuery
-    (search: string)
-    (sortBy: CollectionSortByRequest)
-    (sortDirection: SortDirectionRequest)
-    : SearchUserCollectionsQuery =
-    { Search =
-        if String.IsNullOrWhiteSpace search then
-            None
-        else
-            Some search
-      SortBy = sortBy |> toCollectionSortByDomain
-      SortDirection = sortDirection |> toSortDirectionDomain }
 
 let toCollectionVocabulariesQuery
     (search: string)

@@ -56,31 +56,23 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
     group
         .MapGet(
             Urls.CollectionsPath,
-            Func<string, CollectionSortByRequest, SortDirectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun search sortBy sortDirection user dataSource cancellationToken ->
-                    task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
-                            let env =
-                                TransactionalEnv(dataSource, cancellationToken)
+            Func<ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun user dataSource cancellationToken ->
+                task {
+                    match getUserId user with
+                    | None -> return Results.Unauthorized()
+                    | Some userId ->
+                        let env =
+                            TransactionalEnv(dataSource, cancellationToken)
 
-                            let query =
-                                toSearchQuery search sortBy sortDirection
+                        let! result = getCollectionsWithVocabularyCount env (UserId userId)
 
-                            let! result =
-                                searchUserCollections
-                                    env
-                                    { UserId = UserId userId
-                                      Query = query }
+                        let collections = okOrFail result
 
-                            let collections = okOrFail result
-
-                            return
-                                collections
-                                |> List.map toCollectionWithVocabularyCountResponse
-                                |> Results.Ok
-                    })
+                        return
+                            collections
+                            |> List.map toCollectionWithVocabularyCountResponse
+                            |> Results.Ok
+                })
         )
         .Produces<CollectionWithVocabularyCountResponse list>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)

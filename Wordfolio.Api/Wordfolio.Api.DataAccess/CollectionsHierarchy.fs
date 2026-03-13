@@ -33,20 +33,9 @@ type CollectionWithVocabularyCount =
       UpdatedAt: DateTimeOffset option
       VocabularyCount: int }
 
-type CollectionSortBy =
-    | Name
-    | CreatedAt
-    | UpdatedAt
-    | VocabularyCount
-
 type SortDirection =
     | Asc
     | Desc
-
-type SearchUserCollectionsQuery =
-    { Search: string option
-      SortBy: CollectionSortBy
-      SortDirection: SortDirection }
 
 [<CLIMutable>]
 type internal CollectionWithVocabularyCountRecord =
@@ -149,63 +138,33 @@ let getCollectionsByUserIdAsync
         return toCollectionWithVocabularies results
     }
 
-let private escapeLikeWildcards(input: string) : string =
-    input.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_")
-
-let searchUserCollectionsAsync
+let getCollectionsWithVocabularyCountByUserIdAsync
     (userId: int)
-    (query: SearchUserCollectionsQuery)
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
     : Task<CollectionWithVocabularyCount list> =
     task {
-        let sortDirection =
-            match query.SortDirection with
-            | Asc -> "ASC"
-            | Desc -> "DESC"
-
-        let orderByColumn =
-            match query.SortBy with
-            | CollectionSortBy.Name -> "LOWER(c.\"Name\")"
-            | CollectionSortBy.CreatedAt -> "c.\"CreatedAt\""
-            | CollectionSortBy.UpdatedAt -> "c.\"UpdatedAt\""
-            | CollectionSortBy.VocabularyCount -> "\"VocabularyCount\""
-
-        let searchText = "CAST(@Search AS text)"
-
         let sql =
-            $"""
+            """
             SELECT
                 c."Id", c."UserId", c."Name", c."Description", c."CreatedAt", c."UpdatedAt",
                 COALESCE(v_counts."VocabularyCount", 0) AS "VocabularyCount"
             FROM wordfolio."Collections" c
             LEFT JOIN (
-                SELECT
-                    v."CollectionId",
-                    COUNT(*) AS "VocabularyCount"
+                SELECT v."CollectionId", COUNT(*) AS "VocabularyCount"
                 FROM wordfolio."Vocabularies" v
                 WHERE v."IsDefault" = false
                 GROUP BY v."CollectionId"
             ) v_counts ON v_counts."CollectionId" = c."Id"
-            WHERE c."UserId" = @UserId
-              AND c."IsSystem" = false
-              AND (
-                    {searchText} IS NULL
-                    OR c."Name" ILIKE '%%' || {searchText} || '%%'
-                    OR COALESCE(c."Description", '') ILIKE '%%' || {searchText} || '%%'
-              )
-            ORDER BY {orderByColumn} {sortDirection}
+            WHERE c."UserId" = @UserId AND c."IsSystem" = false
+            ORDER BY c."UpdatedAt" DESC NULLS LAST, c."Id"
             """
 
         let commandDefinition =
             CommandDefinition(
                 commandText = sql,
-                parameters =
-                    {| UserId = userId
-                       Search =
-                        query.Search
-                        |> Option.map escapeLikeWildcards |},
+                parameters = {| UserId = userId |},
                 transaction = transaction,
                 cancellationToken = cancellationToken
             )
@@ -225,6 +184,9 @@ let searchUserCollectionsAsync
                 : CollectionWithVocabularyCount)
             |> Seq.toList
     }
+
+let private escapeLikeWildcards(input: string) : string =
+    input.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_")
 
 type VocabularySortBy =
     | Name

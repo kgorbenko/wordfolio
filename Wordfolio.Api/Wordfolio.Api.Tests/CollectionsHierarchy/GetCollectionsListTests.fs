@@ -12,31 +12,13 @@ open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
 
-module Urls = Wordfolio.Api.Urls
-
-type private CollectionsQueryOptions =
-    { Search: string option
-      SortBy: CollectionSortByRequest
-      SortDirection: SortDirectionRequest }
-
-module private CollectionsUrlHelpers =
-    let private toQueryString (search: string option) (sortBy: int) (sortDirection: int) =
-        let searchParam =
-            search
-            |> Option.map(fun search -> $"search={Uri.EscapeDataString search}")
-
-        [ searchParam; Some $"sortBy={sortBy}"; Some $"sortDirection={sortDirection}" ]
-        |> List.choose id
-        |> String.concat "&"
-
-    let collections(query: CollectionsQueryOptions) =
-        $"{Urls.CollectionsHierarchy.collections()}?{toQueryString query.Search (int query.SortBy) (int query.SortDirection)}"
+module Urls = Wordfolio.Api.Urls.CollectionsHierarchy
 
 type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
     interface IClassFixture<WordfolioIdentityTestFixture>
 
     [<Fact>]
-    member _.``GET collections list endpoint supports filtering and sorting``() : Task =
+    member _.``GET collections list endpoint returns all user collections``() : Task =
         task {
             do! fixture.ResetDatabaseAsync()
 
@@ -45,11 +27,8 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(306, "user@example.com", "P@ssw0rd!")
 
-            let createdAt1 =
+            let createdAt =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-
-            let createdAt2 =
-                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
 
             let updatedAt1 =
                 DateTimeOffset(2025, 1, 3, 0, 0, 0, TimeSpan.Zero)
@@ -58,13 +37,13 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
                 DateTimeOffset(2025, 1, 4, 0, 0, 0, TimeSpan.Zero)
 
             let collection1 =
-                Entities.makeCollection wordfolioUser "Biology" (Some "School words") createdAt1 (Some updatedAt1) false
+                Entities.makeCollection wordfolioUser "Biology" (Some "School words") createdAt (Some updatedAt1) false
 
             let collection2 =
-                Entities.makeCollection wordfolioUser "Travel" (Some "Bio terms") createdAt2 (Some updatedAt2) false
+                Entities.makeCollection wordfolioUser "Travel" (Some "Bio terms") createdAt (Some updatedAt2) false
 
             let collection3 =
-                Entities.makeCollection wordfolioUser "Sports" None createdAt2 None false
+                Entities.makeCollection wordfolioUser "Sports" None createdAt None false
 
             do!
                 fixture.WordfolioSeeder
@@ -74,13 +53,7 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url =
-                CollectionsUrlHelpers.collections
-                    { Search = Some "bio"
-                      SortBy = CollectionSortByRequest.UpdatedAt
-                      SortDirection = SortDirectionRequest.Desc }
-
-            let! response = client.GetAsync(url)
+            let! response = client.GetAsync(Urls.collections())
 
             let! body = response.Content.ReadAsStringAsync()
 
@@ -92,14 +65,20 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
                 [ { Id = collection2.Id
                     Name = "Travel"
                     Description = Some "Bio terms"
-                    CreatedAt = createdAt2
+                    CreatedAt = createdAt
                     UpdatedAt = Some updatedAt2
                     VocabularyCount = 0 }
                   { Id = collection1.Id
                     Name = "Biology"
                     Description = Some "School words"
-                    CreatedAt = createdAt1
+                    CreatedAt = createdAt
                     UpdatedAt = Some updatedAt1
+                    VocabularyCount = 0 }
+                  { Id = collection3.Id
+                    Name = "Sports"
+                    Description = None
+                    CreatedAt = createdAt
+                    UpdatedAt = None
                     VocabularyCount = 0 } ]
 
             Assert.Equal<CollectionWithVocabularyCountResponse list>(expected, actual)
@@ -134,13 +113,7 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url =
-                CollectionsUrlHelpers.collections
-                    { Search = None
-                      SortBy = CollectionSortByRequest.Name
-                      SortDirection = SortDirectionRequest.Asc }
-
-            let! response = client.GetAsync(url)
+            let! response = client.GetAsync(Urls.collections())
 
             let! body = response.Content.ReadAsStringAsync()
 
@@ -176,13 +149,7 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url =
-                CollectionsUrlHelpers.collections
-                    { Search = None
-                      SortBy = CollectionSortByRequest.Name
-                      SortDirection = SortDirectionRequest.Asc }
-
-            let! response = client.GetAsync(url)
+            let! response = client.GetAsync(Urls.collections())
 
             let! body = response.Content.ReadAsStringAsync()
 
@@ -239,13 +206,7 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url =
-                CollectionsUrlHelpers.collections
-                    { Search = None
-                      SortBy = CollectionSortByRequest.Name
-                      SortDirection = SortDirectionRequest.Asc }
-
-            let! response = client.GetAsync(url)
+            let! response = client.GetAsync(Urls.collections())
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
@@ -273,13 +234,7 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let url =
-                CollectionsUrlHelpers.collections
-                    { Search = None
-                      SortBy = CollectionSortByRequest.Name
-                      SortDirection = SortDirectionRequest.Asc }
-
-            let! response = client.GetAsync(url)
+            let! response = client.GetAsync(Urls.collections())
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
         }

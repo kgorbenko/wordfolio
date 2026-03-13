@@ -2,12 +2,6 @@ module Wordfolio.Api.Api.CollectionsHierarchy.Types
 
 open System
 
-type CollectionSortByRequest =
-    | Name = 0
-    | CreatedAt = 1
-    | UpdatedAt = 2
-    | VocabularyCount = 3
-
 type VocabularySortByRequest =
     | Name = 0
     | CreatedAt = 1
