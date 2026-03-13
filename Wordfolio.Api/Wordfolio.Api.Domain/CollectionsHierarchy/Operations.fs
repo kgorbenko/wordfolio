@@ -8,10 +8,6 @@ open Wordfolio.Api.Domain.CollectionsHierarchy.Capabilities
 
 type GetByUserIdParameters = { UserId: UserId }
 
-type SearchUserCollectionsParameters =
-    { UserId: UserId
-      Query: SearchUserCollectionsQuery }
-
 type SearchCollectionVocabulariesParameters =
     { UserId: UserId
       CollectionId: CollectionId
@@ -33,18 +29,10 @@ let getByUserId env (parameters: GetByUserIdParameters) : Task<Result<Collection
                       DefaultVocabulary = filteredDefaultVocabulary }
         })
 
-let searchUserCollections
-    env
-    (parameters: SearchUserCollectionsParameters)
-    : Task<Result<CollectionWithVocabularyCount list, unit>> =
+let getCollectionsWithVocabularyCount env (userId: UserId) : Task<Result<CollectionWithVocabularyCount list, unit>> =
     runInTransaction env (fun appEnv ->
         task {
-            let! collections =
-                searchUserCollections
-                    appEnv
-                    { UserId = parameters.UserId
-                      Query = parameters.Query }
-
+            let! collections = getCollectionsWithVocabularyCount appEnv userId
             return (Ok collections: Result<CollectionWithVocabularyCount list, unit>)
         })
 

@@ -4,10 +4,6 @@ open System.Threading.Tasks
 
 open Wordfolio.Api.Domain
 
-type SearchUserCollectionsData =
-    { UserId: UserId
-      Query: SearchUserCollectionsQuery }
-
 type SearchCollectionVocabulariesData =
     { UserId: UserId
       CollectionId: CollectionId
@@ -16,8 +12,8 @@ type SearchCollectionVocabulariesData =
 type IGetCollectionsWithVocabularies =
     abstract GetCollectionsWithVocabularies: UserId -> Task<CollectionWithVocabularies list>
 
-type ISearchUserCollections =
-    abstract SearchUserCollections: SearchUserCollectionsData -> Task<CollectionWithVocabularyCount list>
+type IGetCollectionsWithVocabularyCount =
+    abstract GetCollectionsWithVocabularyCount: UserId -> Task<CollectionWithVocabularyCount list>
 
 type ISearchCollectionVocabularies =
     abstract SearchCollectionVocabularies: SearchCollectionVocabulariesData -> Task<VocabularyWithEntryCount list>
@@ -29,7 +25,8 @@ module Capabilities =
     let getCollectionsWithVocabularies (env: #IGetCollectionsWithVocabularies) userId =
         env.GetCollectionsWithVocabularies(userId)
 
-    let searchUserCollections (env: #ISearchUserCollections) data = env.SearchUserCollections(data)
+    let getCollectionsWithVocabularyCount (env: #IGetCollectionsWithVocabularyCount) userId =
+        env.GetCollectionsWithVocabularyCount(userId)
 
     let searchCollectionVocabularies (env: #ISearchCollectionVocabularies) data = env.SearchCollectionVocabularies(data)
 
