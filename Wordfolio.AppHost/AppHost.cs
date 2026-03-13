@@ -26,8 +26,10 @@ var migrationService = builder.AddProject<Projects.Wordfolio_MigrationRunner>("m
     .WithReference(postgresDatabase)
     .WaitFor(postgresDatabase);
 
+var useFixedPorts = builder.Configuration.GetValue<bool>("WORDFOLIO_FIXED_PORTS");
+
 var api = builder.AddProject<Projects.Wordfolio_Api>("apiservice")
-    .WithHttpEndpoint(port: 5470)
+    .WithHttpEndpoint(port: useFixedPorts ? 5470 : null)
     .WithReference(postgresDatabase)
     .WaitForCompletion(migrationService)
     .WithHttpHealthCheck("/health")
@@ -35,11 +37,13 @@ var api = builder.AddProject<Projects.Wordfolio_Api>("apiservice")
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
     .WithEnvironment("GroqApi__ApiKey", groqApiKey);
 
-builder.AddViteApp("frontend", "../Wordfolio.Frontend")
-    .WithEndpoint("http", endpoint => endpoint.Port = 5173)
+var frontend = builder.AddViteApp("frontend", "../Wordfolio.Frontend")
     .WithReference(api)
     .WithEnvironment("BROWSER", "none")
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
+
+if (useFixedPorts)
+    frontend.WithEndpoint("http", endpoint => endpoint.Port = 5173);
 
 builder.Build().Run();
