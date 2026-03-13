@@ -28,8 +28,13 @@ var migrationService = builder.AddProject<Projects.Wordfolio_MigrationRunner>("m
 
 var useFixedPorts = builder.Configuration.GetValue<bool>("WORDFOLIO_FIXED_PORTS");
 
+var fixedPortOptions =
+    builder.Configuration
+        .GetRequiredSection(Configuration.FixedPortOptionsSection)
+        .Get<FixedPortOptions>()!;
+
 var api = builder.AddProject<Projects.Wordfolio_Api>("apiservice")
-    .WithHttpEndpoint(port: useFixedPorts ? 5470 : null)
+    .WithHttpEndpoint(port: useFixedPorts ? fixedPortOptions.ApiPort : null)
     .WithReference(postgresDatabase)
     .WaitForCompletion(migrationService)
     .WithHttpHealthCheck("/health")
@@ -44,6 +49,6 @@ var frontend = builder.AddViteApp("frontend", "../Wordfolio.Frontend")
     .PublishAsDockerFile();
 
 if (useFixedPorts)
-    frontend.WithEndpoint("http", endpoint => endpoint.Port = 5173);
+    frontend.WithEndpoint("http", endpoint => endpoint.Port = fixedPortOptions.FrontendPort);
 
 builder.Build().Run();
