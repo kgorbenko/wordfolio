@@ -11,7 +11,7 @@
         "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22272"
       }
     },
-    "https-fixed": {
+    "https-fixed-frontend": {
       "commandName": "Project",
       "applicationUrl": "https://localhost:17083;http://localhost:15173",
       "environmentVariables": {
@@ -19,7 +19,7 @@
         "DOTNET_ENVIRONMENT": "Development",
         "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21030",
         "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22272",
-        "WORDFOLIO_FIXED_PORTS": "true"
+        "WORDFOLIO_FIXED_FRONTEND_PORT": "true"
       }
     }
   }

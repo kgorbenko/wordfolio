@@ -14,12 +14,12 @@ var databaseOptions =
         .GetRequiredSection(Configuration.DatabaseOptionsSection)
         .Get<DatabaseOptions>()!;
 
-var useFixedPorts = builder.Configuration.GetValue<bool>("WORDFOLIO_FIXED_PORTS");
+var useFixedFrontendPort = builder.Configuration.GetValue<bool>("WORDFOLIO_FIXED_FRONTEND_PORT");
 
-var fixedPortOptions =
+var fixedFrontendPortOptions =
     builder.Configuration
-        .GetRequiredSection(Configuration.FixedPortOptionsSection)
-        .Get<FixedPortOptions>()!;
+        .GetRequiredSection(Configuration.FixedFrontendPortOptionsSection)
+        .Get<FixedFrontendPortOptions>()!;
 
 var postgres =
     builder.AddPostgres("postgres", postgresUsername, postgresPassword)
@@ -34,21 +34,22 @@ var migrationService = builder.AddProject<Projects.Wordfolio_MigrationRunner>("m
     .WaitFor(postgresDatabase);
 
 var api = builder.AddProject<Projects.Wordfolio_Api>("apiservice")
-    .WithHttpEndpoint(port: useFixedPorts ? fixedPortOptions.ApiPort : null)
     .WithReference(postgresDatabase)
     .WaitForCompletion(migrationService)
     .WithHttpHealthCheck("/health")
-    .WithExternalHttpEndpoints()
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
     .WithEnvironment("GroqApi__ApiKey", groqApiKey);
 
 var frontend = builder.AddViteApp("frontend", "../Wordfolio.Frontend")
     .WithReference(api)
     .WithEnvironment("BROWSER", "none")
-    .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 
-if (useFixedPorts)
-    frontend.WithEndpoint("http", endpoint => endpoint.Port = fixedPortOptions.FrontendPort);
+if (useFixedFrontendPort)
+    frontend.WithEndpoint("http", endpoint =>
+    {
+        endpoint.Port = fixedFrontendPortOptions.FrontendPort;
+        endpoint.TargetHost = "0.0.0.0";
+    });
 
 builder.Build().Run();
