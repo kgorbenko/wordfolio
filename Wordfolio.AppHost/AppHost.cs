@@ -27,12 +27,16 @@ var migrationService = builder.AddProject<Projects.Wordfolio_MigrationRunner>("m
     .WaitFor(postgresDatabase);
 
 var api = builder.AddProject<Projects.Wordfolio_Api>("apiservice")
+    .WithHttpEndpoint(port: 5470)
     .WithReference(postgresDatabase)
     .WaitForCompletion(migrationService)
     .WithHttpHealthCheck("/health")
+    .WithExternalHttpEndpoints()
+    .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
     .WithEnvironment("GroqApi__ApiKey", groqApiKey);
 
 builder.AddViteApp("frontend", "../Wordfolio.Frontend")
+    .WithEndpoint("http", endpoint => endpoint.Port = 5173)
     .WithReference(api)
     .WithEnvironment("BROWSER", "none")
     .WithExternalHttpEndpoints()
