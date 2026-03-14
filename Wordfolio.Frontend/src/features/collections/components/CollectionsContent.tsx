@@ -1,9 +1,9 @@
 import FolderIcon from "@mui/icons-material/Folder";
-import { CardGrid } from "../../../shared/components/CardGrid";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { GridColDef } from "@mui/x-data-grid";
+import { DataGridWithFilter } from "../../../shared/components/DataGridWithFilter";
 import { EmptyState } from "../../../shared/components/EmptyState";
-import { CollectionCard } from "./CollectionCard";
 import { Collection } from "../types";
-import styles from "./CollectionsContent.module.scss";
 
 interface CollectionsContentProps {
     readonly collections: Collection[];
@@ -11,15 +11,53 @@ interface CollectionsContentProps {
     readonly onCreateClick: () => void;
 }
 
+const columns: GridColDef<Collection>[] = [
+    { field: "name", headerName: "Name", flex: 2 },
+    {
+        field: "description",
+        headerName: "Description",
+        flex: 3,
+        renderCell: (params) => params.value,
+    },
+    {
+        field: "createdAt",
+        headerName: "Created At",
+        type: "date",
+        width: 120,
+        valueFormatter: (value: Date) => value.toLocaleDateString(),
+    },
+    {
+        field: "updatedAt",
+        headerName: "Updated At",
+        type: "date",
+        width: 120,
+        valueFormatter: (value: Date | null) => value?.toLocaleDateString(),
+    },
+    {
+        field: "vocabularyCount",
+        headerName: "Vocabularies",
+        type: "number",
+        width: 140,
+    },
+];
+
+const mobileColumnVisibility = {
+    description: false,
+    createdAt: false,
+    updatedAt: false,
+};
+
 export const CollectionsContent = ({
     collections,
     onCollectionClick,
     onCreateClick,
 }: CollectionsContentProps) => {
+    const isMobile = useMediaQuery("(max-width:600px)");
+
     if (collections.length === 0) {
         return (
             <EmptyState
-                icon={<FolderIcon className={styles.emptyIcon} />}
+                icon={<FolderIcon />}
                 title="No Collections Yet"
                 description="Create your first collection to organize words."
                 actionLabel="Create Collection"
@@ -29,14 +67,18 @@ export const CollectionsContent = ({
     }
 
     return (
-        <CardGrid>
-            {collections.map((collection) => (
-                <CollectionCard
-                    key={collection.id}
-                    collection={collection}
-                    onClick={() => onCollectionClick(collection.id)}
-                />
-            ))}
-        </CardGrid>
+        <DataGridWithFilter
+            rows={collections}
+            columns={columns}
+            columnVisibilityModel={
+                isMobile ? mobileColumnVisibility : undefined
+            }
+            onRowClick={(params) => onCollectionClick(params.row.id)}
+            initialState={{
+                sorting: {
+                    sortModel: [{ field: "updatedAt", sort: "desc" }],
+                },
+            }}
+        />
     );
 };

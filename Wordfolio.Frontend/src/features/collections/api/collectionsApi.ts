@@ -40,13 +40,6 @@ export interface CollectionWithVocabularyCountResponse {
     readonly vocabularyCount: number;
 }
 
-export enum CollectionSortBy {
-    Name = 0,
-    CreatedAt = 1,
-    UpdatedAt = 2,
-    VocabularyCount = 3,
-}
-
 export enum VocabularySortBy {
     Name = 0,
     CreatedAt = 1,
@@ -57,12 +50,6 @@ export enum VocabularySortBy {
 export enum SortDirection {
     Asc = 0,
     Desc = 1,
-}
-
-export interface SearchUserCollectionsQuery {
-    readonly search?: string;
-    readonly sortBy: CollectionSortBy;
-    readonly sortDirection: SortDirection;
 }
 
 export interface GetCollectionVocabulariesQuery {
@@ -91,19 +78,11 @@ export interface UpdateCollectionRequest {
 }
 
 export const collectionsApi = {
-    getHierarchyCollections: async (
-        query: SearchUserCollectionsQuery
-    ): Promise<CollectionWithVocabularyCountResponse[]> => {
-        const params = new URLSearchParams();
-        if (query.search && query.search.trim().length > 0) {
-            params.set("search", query.search.trim());
-        }
-
-        params.set("sortBy", String(query.sortBy));
-        params.set("sortDirection", String(query.sortDirection));
-
+    getHierarchyCollections: async (): Promise<
+        CollectionWithVocabularyCountResponse[]
+    > => {
         const response = await fetch(
-            `${API_BASE_URL}/collections-hierarchy/collections?${params.toString()}`,
+            `${API_BASE_URL}/collections-hierarchy/collections`,
             {
                 method: "GET",
                 headers: getAuthHeaders(),

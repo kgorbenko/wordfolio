@@ -142,10 +142,6 @@ wordfolio/
 
 **Data Access function signatures:** business parameters first, then infrastructure parameters last (`connection`, `transaction`, `cancellationToken`). Async functions suffixed with `Async`, returning `Task<'T>` via `task { }`.
 
-### TypeScript/React Conventions
-
-Components → PascalCase arrow functions. Hooks → camelCase prefixed with `use`. Constants → UPPER_SNAKE_CASE. Run `npm run format` before committing.
-
 ### Database Conventions
 
 Schema: `wordfolio` (lowercase). Tables/columns: PascalCase. Timestamps: `DateTimeOffset` — never `DateTime`.
