@@ -28,21 +28,6 @@ type CollectionWithVocabularyCount =
       UpdatedAt: DateTimeOffset option
       VocabularyCount: int }
 
-type SortDirection =
-    | Asc
-    | Desc
-
 type CollectionsHierarchyResult =
     { Collections: CollectionWithVocabularies list
       DefaultVocabulary: VocabularyWithEntryCount option }
-
-type VocabularySortBy =
-    | Name
-    | CreatedAt
-    | UpdatedAt
-    | EntryCount
-
-type SearchCollectionVocabulariesQuery =
-    { Search: string option
-      SortBy: VocabularySortBy
-      SortDirection: SortDirection }

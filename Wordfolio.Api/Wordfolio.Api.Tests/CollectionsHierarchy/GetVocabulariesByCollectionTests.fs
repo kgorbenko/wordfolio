@@ -14,24 +14,6 @@ open Wordfolio.Api.Tests.Utils.Wordfolio
 
 module Urls = Wordfolio.Api.Urls
 
-type private VocabulariesQueryOptions =
-    { Search: string option
-      SortBy: VocabularySortByRequest
-      SortDirection: SortDirectionRequest }
-
-module private VocabulariesUrlHelpers =
-    let private toQueryString (search: string option) (sortBy: int) (sortDirection: int) =
-        let searchParam =
-            search
-            |> Option.map(fun search -> $"search={Uri.EscapeDataString search}")
-
-        [ searchParam; Some $"sortBy={sortBy}"; Some $"sortDirection={sortDirection}" ]
-        |> List.choose id
-        |> String.concat "&"
-
-    let vocabulariesByCollection (collectionId: int) (query: VocabulariesQueryOptions) =
-        $"{Urls.CollectionsHierarchy.vocabulariesByCollection collectionId}?{toQueryString query.Search (int query.SortBy) (int query.SortDirection)}"
-
 type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
     interface IClassFixture<WordfolioIdentityTestFixture>
 
@@ -71,11 +53,7 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                VocabulariesUrlHelpers.vocabulariesByCollection
-                    collection.Id
-                    { Search = None
-                      SortBy = VocabularySortByRequest.Name
-                      SortDirection = SortDirectionRequest.Asc }
+                Urls.CollectionsHierarchy.vocabulariesByCollection collection.Id
 
             let! response = client.GetAsync(url)
 
@@ -133,11 +111,7 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                VocabulariesUrlHelpers.vocabulariesByCollection
-                    otherCollection.Id
-                    { Search = None
-                      SortBy = VocabularySortByRequest.Name
-                      SortDirection = SortDirectionRequest.Asc }
+                Urls.CollectionsHierarchy.vocabulariesByCollection otherCollection.Id
 
             let! response = client.GetAsync(url)
 
@@ -176,11 +150,7 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                VocabulariesUrlHelpers.vocabulariesByCollection
-                    collection.Id
-                    { Search = None
-                      SortBy = VocabularySortByRequest.Name
-                      SortDirection = SortDirectionRequest.Asc }
+                Urls.CollectionsHierarchy.vocabulariesByCollection collection.Id
 
             let! response = client.GetAsync(url)
 
@@ -204,136 +174,9 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
             use client = factory.CreateClient()
 
             let url =
-                VocabulariesUrlHelpers.vocabulariesByCollection
-                    1
-                    { Search = None
-                      SortBy = VocabularySortByRequest.Name
-                      SortDirection = SortDirectionRequest.Asc }
+                Urls.CollectionsHierarchy.vocabulariesByCollection 1
 
             let! response = client.GetAsync(url)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
-        }
-
-    [<Fact>]
-    member _.``GET vocabularies by collection endpoint supports search filtering``() : Task =
-        task {
-            do! fixture.ResetDatabaseAsync()
-
-            use factory =
-                new WebApplicationFactory(fixture)
-
-            let! identityUser, wordfolioUser = factory.CreateUserAsync(315, "user@example.com", "P@ssw0rd!")
-
-            let createdAt =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-
-            let collection =
-                Entities.makeCollection wordfolioUser "Collection" None createdAt None false
-
-            let vocabulary1 =
-                Entities.makeVocabulary collection "Biology Terms" None createdAt None false
-
-            let vocabulary2 =
-                Entities.makeVocabulary collection "Travel Words" None createdAt None false
-
-            do!
-                fixture.WordfolioSeeder
-                |> Seeder.addUsers [ wordfolioUser ]
-                |> Seeder.addCollections [ collection ]
-                |> Seeder.addVocabularies [ vocabulary1; vocabulary2 ]
-                |> Seeder.saveChangesAsync
-
-            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
-
-            let url =
-                VocabulariesUrlHelpers.vocabulariesByCollection
-                    collection.Id
-                    { Search = Some "bio"
-                      SortBy = VocabularySortByRequest.Name
-                      SortDirection = SortDirectionRequest.Asc }
-
-            let! response = client.GetAsync(url)
-
-            let! body = response.Content.ReadAsStringAsync()
-
-            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
-
-            let! actual = response.Content.ReadFromJsonAsync<VocabularyWithEntryCountResponse list>()
-
-            let expected: VocabularyWithEntryCountResponse list =
-                [ { Id = vocabulary1.Id
-                    Name = "Biology Terms"
-                    Description = None
-                    CreatedAt = createdAt
-                    UpdatedAt = None
-                    EntryCount = 0 } ]
-
-            Assert.Equal<VocabularyWithEntryCountResponse list>(expected, actual)
-        }
-
-    [<Fact>]
-    member _.``GET vocabularies by collection endpoint supports sorting``() : Task =
-        task {
-            do! fixture.ResetDatabaseAsync()
-
-            use factory =
-                new WebApplicationFactory(fixture)
-
-            let! identityUser, wordfolioUser = factory.CreateUserAsync(316, "user@example.com", "P@ssw0rd!")
-
-            let createdAt1 =
-                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-
-            let createdAt2 =
-                DateTimeOffset(2025, 1, 2, 0, 0, 0, TimeSpan.Zero)
-
-            let collection =
-                Entities.makeCollection wordfolioUser "Collection" None createdAt1 None false
-
-            let vocabulary1 =
-                Entities.makeVocabulary collection "Zebra" None createdAt1 None false
-
-            let vocabulary2 =
-                Entities.makeVocabulary collection "Apple" None createdAt2 None false
-
-            do!
-                fixture.WordfolioSeeder
-                |> Seeder.addUsers [ wordfolioUser ]
-                |> Seeder.addCollections [ collection ]
-                |> Seeder.addVocabularies [ vocabulary1; vocabulary2 ]
-                |> Seeder.saveChangesAsync
-
-            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
-
-            let url =
-                VocabulariesUrlHelpers.vocabulariesByCollection
-                    collection.Id
-                    { Search = None
-                      SortBy = VocabularySortByRequest.Name
-                      SortDirection = SortDirectionRequest.Asc }
-
-            let! response = client.GetAsync(url)
-
-            let! body = response.Content.ReadAsStringAsync()
-
-            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
-
-            let! actual = response.Content.ReadFromJsonAsync<VocabularyWithEntryCountResponse list>()
-
-            let expected: VocabularyWithEntryCountResponse list =
-                [ { Id = vocabulary2.Id
-                    Name = "Apple"
-                    Description = None
-                    CreatedAt = createdAt2
-                    UpdatedAt = None
-                    EntryCount = 0 }
-                  { Id = vocabulary1.Id
-                    Name = "Zebra"
-                    Description = None
-                    CreatedAt = createdAt1
-                    UpdatedAt = None
-                    EntryCount = 0 } ]
-
-            Assert.Equal<VocabularyWithEntryCountResponse list>(expected, actual)
         }

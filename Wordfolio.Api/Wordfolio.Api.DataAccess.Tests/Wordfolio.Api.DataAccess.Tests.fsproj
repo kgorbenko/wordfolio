@@ -32,7 +32,7 @@
     <Compile Include="Collections/CreateDefaultCollectionTests.fs" />
     <Compile Include="CollectionsHierarchy/GetCollectionsByUserIdTests.fs" />
     <Compile Include="CollectionsHierarchy/GetCollectionsWithVocabularyCountByUserIdTests.fs" />
-    <Compile Include="CollectionsHierarchy/SearchCollectionVocabulariesTests.fs" />
+    <Compile Include="CollectionsHierarchy/GetVocabulariesWithEntryCountByCollectionIdTests.fs" />
     <Compile Include="CollectionsHierarchy/GetDefaultVocabularySummaryByUserIdTests.fs" />
     <Compile Include="Vocabularies/CreateVocabularyTests.fs" />
     <Compile Include="Vocabularies/GetVocabularyByIdTests.fs" />

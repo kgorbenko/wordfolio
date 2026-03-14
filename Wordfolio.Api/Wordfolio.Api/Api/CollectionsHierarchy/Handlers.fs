@@ -81,8 +81,8 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
     group
         .MapGet(
             Urls.VocabulariesByCollectionPath,
-            Func<int, string, VocabularySortByRequest, SortDirectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun collectionId search sortBy sortDirection user dataSource cancellationToken ->
+            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId user dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized()
@@ -90,15 +90,11 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
-                            let query =
-                                toCollectionVocabulariesQuery search sortBy sortDirection
-
                             let! result =
-                                searchCollectionVocabularies
+                                getVocabulariesWithEntryCountByCollectionId
                                     env
                                     { UserId = UserId userId
-                                      CollectionId = CollectionId collectionId
-                                      Query = query }
+                                      CollectionId = CollectionId collectionId }
 
                             let vocabularies = okOrFail result
 

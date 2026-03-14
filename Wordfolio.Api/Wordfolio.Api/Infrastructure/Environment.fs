@@ -145,25 +145,6 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
           UpdatedAt = c.UpdatedAt
           VocabularyCount = c.VocabularyCount }
 
-    let toSortDirectionDataAccess(sortDirection: SortDirection) =
-        match sortDirection with
-        | SortDirection.Asc -> Wordfolio.Api.DataAccess.CollectionsHierarchy.SortDirection.Asc
-        | SortDirection.Desc -> Wordfolio.Api.DataAccess.CollectionsHierarchy.SortDirection.Desc
-
-    let toVocabularySortByDataAccess(sortBy: VocabularySortBy) =
-        match sortBy with
-        | VocabularySortBy.Name -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySortBy.Name
-        | VocabularySortBy.CreatedAt -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySortBy.CreatedAt
-        | VocabularySortBy.UpdatedAt -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySortBy.UpdatedAt
-        | VocabularySortBy.EntryCount -> Wordfolio.Api.DataAccess.CollectionsHierarchy.VocabularySortBy.EntryCount
-
-    let toSearchCollectionVocabulariesQueryDataAccess
-        (query: SearchCollectionVocabulariesQuery)
-        : Wordfolio.Api.DataAccess.CollectionsHierarchy.SearchCollectionVocabulariesQuery =
-        { Search = query.Search
-          SortBy = toVocabularySortByDataAccess query.SortBy
-          SortDirection = toSortDirectionDataAccess query.SortDirection }
-
     interface IGetCollectionById with
         member _.GetCollectionById(CollectionId id) =
             task {
@@ -633,15 +614,13 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                     |> List.map toCollectionWithVocabularyCountDomain
             }
 
-    interface ISearchCollectionVocabularies with
-        member _.SearchCollectionVocabularies(data: SearchCollectionVocabulariesData) =
+    interface IGetVocabulariesWithEntryCountByCollectionId with
+        member _.GetVocabulariesWithEntryCountByCollectionId (UserId userId) (CollectionId collectionId) =
             task {
                 let! results =
-                    Wordfolio.Api.DataAccess.CollectionsHierarchy.searchCollectionVocabulariesAsync
-                        (UserId.value data.UserId)
-                        (CollectionId.value data.CollectionId)
-                        (data.Query
-                         |> toSearchCollectionVocabulariesQueryDataAccess)
+                    Wordfolio.Api.DataAccess.CollectionsHierarchy.getVocabulariesWithEntryCountByCollectionIdAsync
+                        userId
+                        collectionId
                         connection
                         transaction
                         cancellationToken

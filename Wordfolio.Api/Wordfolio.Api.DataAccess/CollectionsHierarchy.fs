@@ -33,10 +33,6 @@ type CollectionWithVocabularyCount =
       UpdatedAt: DateTimeOffset option
       VocabularyCount: int }
 
-type SortDirection =
-    | Asc
-    | Desc
-
 [<CLIMutable>]
 type internal CollectionWithVocabularyCountRecord =
     { Id: int
@@ -185,45 +181,16 @@ let getCollectionsWithVocabularyCountByUserIdAsync
             |> Seq.toList
     }
 
-let private escapeLikeWildcards(input: string) : string =
-    input.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_")
-
-type VocabularySortBy =
-    | Name
-    | CreatedAt
-    | UpdatedAt
-    | EntryCount
-
-type SearchCollectionVocabulariesQuery =
-    { Search: string option
-      SortBy: VocabularySortBy
-      SortDirection: SortDirection }
-
-let searchCollectionVocabulariesAsync
+let getVocabulariesWithEntryCountByCollectionIdAsync
     (userId: int)
     (collectionId: int)
-    (query: SearchCollectionVocabulariesQuery)
     (connection: IDbConnection)
     (transaction: IDbTransaction)
     (cancellationToken: CancellationToken)
     : Task<VocabularyWithEntryCount list> =
     task {
-        let sortDirection =
-            match query.SortDirection with
-            | SortDirection.Asc -> "ASC"
-            | SortDirection.Desc -> "DESC"
-
-        let orderByColumn =
-            match query.SortBy with
-            | VocabularySortBy.Name -> "LOWER(v.\"Name\")"
-            | VocabularySortBy.CreatedAt -> "v.\"CreatedAt\""
-            | VocabularySortBy.UpdatedAt -> "v.\"UpdatedAt\""
-            | VocabularySortBy.EntryCount -> "\"EntryCount\""
-
-        let searchText = "CAST(@Search AS text)"
-
         let sql =
-            $"""
+            """
             SELECT
                 v."Id", v."Name", v."Description", v."CreatedAt", v."UpdatedAt", v."IsDefault",
                 COALESCE(e."EntryCount", 0) as "EntryCount"
@@ -236,12 +203,7 @@ let searchCollectionVocabulariesAsync
             ) e ON e."VocabularyId" = v."Id"
             WHERE c."UserId" = @UserId AND c."Id" = @CollectionId
               AND c."IsSystem" = false AND v."IsDefault" = false
-              AND (
-                    {searchText} IS NULL
-                    OR v."Name" ILIKE '%%' || {searchText} || '%%'
-                    OR COALESCE(v."Description", '') ILIKE '%%' || {searchText} || '%%'
-              )
-            ORDER BY {orderByColumn} {sortDirection}
+            ORDER BY v."UpdatedAt" DESC NULLS LAST, v."Id"
             """
 
         let commandDefinition =
@@ -249,10 +211,7 @@ let searchCollectionVocabulariesAsync
                 commandText = sql,
                 parameters =
                     {| UserId = userId
-                       CollectionId = collectionId
-                       Search =
-                        query.Search
-                        |> Option.map escapeLikeWildcards |},
+                       CollectionId = collectionId |},
                 transaction = transaction,
                 cancellationToken = cancellationToken
             )
