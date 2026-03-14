@@ -1,10 +1,8 @@
 import {
     CollectionWithVocabularyCountResponse,
     CollectionResponse,
-    CollectionSortBy as ApiCollectionSortBy,
     CreateCollectionRequest,
     GetCollectionVocabulariesQuery,
-    SearchUserCollectionsQuery,
     SortDirection as ApiSortDirection,
     UpdateCollectionRequest,
     VocabularySortBy as ApiVocabularySortBy,
@@ -12,8 +10,6 @@ import {
 } from "./collectionsApi";
 import {
     Collection,
-    CollectionSearchQuery,
-    CollectionSortBy,
     SortDirection,
     Vocabulary,
     CollectionVocabulariesQuery,
@@ -71,21 +67,6 @@ export const mapToUpdateCollectionRequest = (
     description: data.description,
 });
 
-const mapCollectionSortBy = (sortBy: CollectionSortBy): ApiCollectionSortBy => {
-    switch (sortBy) {
-        case CollectionSortBy.Name:
-            return ApiCollectionSortBy.Name;
-        case CollectionSortBy.CreatedAt:
-            return ApiCollectionSortBy.CreatedAt;
-        case CollectionSortBy.UpdatedAt:
-            return ApiCollectionSortBy.UpdatedAt;
-        case CollectionSortBy.VocabularyCount:
-            return ApiCollectionSortBy.VocabularyCount;
-        default:
-            return assertNever(sortBy);
-    }
-};
-
 const mapVocabularySortBy = (sortBy: VocabularySortBy): ApiVocabularySortBy => {
     switch (sortBy) {
         case VocabularySortBy.Name:
@@ -111,14 +92,6 @@ const mapSortDirection = (sortDirection: SortDirection): ApiSortDirection => {
             return assertNever(sortDirection);
     }
 };
-
-export const mapToSearchUserCollectionsQuery = (
-    query: CollectionSearchQuery
-): SearchUserCollectionsQuery => ({
-    search: query.search,
-    sortBy: mapCollectionSortBy(query.sortBy),
-    sortDirection: mapSortDirection(query.sortDirection),
-});
 
 export const mapToGetCollectionVocabulariesQuery = (
     query: CollectionVocabulariesQuery

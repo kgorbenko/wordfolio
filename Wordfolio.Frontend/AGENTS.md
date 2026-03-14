@@ -49,6 +49,7 @@ These rules govern frontend design and structure: feature boundaries, API contra
 
 ## Import and Naming Rules
 
+- Components → PascalCase arrow functions. Hooks → camelCase prefixed with `use`. Constants → camelCase.
 - Import aliasing is allowed to resolve naming conflicts between libraries (e.g., `import { Link as MuiLink } from "@mui/material"`).
 - Do not re-export symbols from one module through another as a passthrough wrapper.
 - Do not create local type aliases that rename existing types without semantic change.

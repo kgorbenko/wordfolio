@@ -10,24 +10,17 @@ import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { CollectionsContent } from "../components/CollectionsContent";
 import { useCollectionsQuery } from "../hooks/useCollectionsQuery";
-import { CollectionSortBy, SortDirection } from "../types";
 import { collectionDetailPath, collectionCreatePath } from "../routes";
 
 export const CollectionsPage = () => {
     const navigate = useNavigate();
-
-    const collectionsQuery = {
-        search: "",
-        sortBy: CollectionSortBy.UpdatedAt,
-        sortDirection: SortDirection.Desc,
-    };
 
     const {
         data: collections,
         isLoading,
         isError,
         refetch,
-    } = useCollectionsQuery(collectionsQuery);
+    } = useCollectionsQuery();
 
     const handleCollectionClick = useCallback(
         (id: number) => {
@@ -42,7 +35,7 @@ export const CollectionsPage = () => {
 
     const renderContent = () => {
         if (isLoading) {
-            return <ContentSkeleton variant="cards" />;
+            return <ContentSkeleton variant="list" />;
         }
 
         if (isError || !collections) {
