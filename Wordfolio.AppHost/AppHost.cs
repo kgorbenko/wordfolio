@@ -34,6 +34,7 @@ var migrationService = builder.AddProject<Projects.Wordfolio_MigrationRunner>("m
     .WaitFor(postgresDatabase);
 
 var api = builder.AddProject<Projects.Wordfolio_Api>("apiservice")
+    .WithHttpEndpoint()
     .WithReference(postgresDatabase)
     .WaitForCompletion(migrationService)
     .WithHttpHealthCheck("/health")
