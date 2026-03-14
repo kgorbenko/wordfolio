@@ -223,21 +223,6 @@ type EntriesHierarchyGetEntriesHierarchyByVocabularyIdTests(fixture: WordfolioTe
 
             let expected: EntriesHierarchy.EntryHierarchy list =
                 [ { Entry =
-                      { Id = newerEntry.Id
-                        VocabularyId = vocabulary.Id
-                        EntryText = "newer"
-                        CreatedAt = laterCreatedAt
-                        UpdatedAt = None }
-                    Definitions = []
-                    Translations =
-                      [ { Translation =
-                            { Id = newerTranslation.Id
-                              EntryId = newerEntry.Id
-                              TranslationText = "новее"
-                              Source = Translations.TranslationSource.Api
-                              DisplayOrder = 0 }
-                          Examples = [] } ] }
-                  { Entry =
                       { Id = olderEntry.Id
                         VocabularyId = vocabulary.Id
                         EntryText = "older"
@@ -256,9 +241,86 @@ type EntriesHierarchyGetEntriesHierarchyByVocabularyIdTests(fixture: WordfolioTe
                                 TranslationId = None
                                 ExampleText = "older example"
                                 Source = Examples.ExampleSource.Api } ] } ]
-                    Translations = [] } ]
+                    Translations = [] }
+                  { Entry =
+                      { Id = newerEntry.Id
+                        VocabularyId = vocabulary.Id
+                        EntryText = "newer"
+                        CreatedAt = laterCreatedAt
+                        UpdatedAt = None }
+                    Definitions = []
+                    Translations =
+                      [ { Translation =
+                            { Id = newerTranslation.Id
+                              EntryId = newerEntry.Id
+                              TranslationText = "новее"
+                              Source = Translations.TranslationSource.Api
+                              DisplayOrder = 0 }
+                          Examples = [] } ] } ]
 
             Assert.Equal<EntriesHierarchy.EntryHierarchy list>(expected, actual)
+        }
+
+    [<Fact>]
+    member _.``getEntriesHierarchyByVocabularyIdAsync returns entries ordered by UpdatedAt desc nulls last then by Id``
+        ()
+        =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let earlierUpdatedAt =
+                DateTimeOffset(2025, 2, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let laterUpdatedAt =
+                DateTimeOffset(2025, 3, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 100
+
+            let collection =
+                Entities.makeCollection user "Col" None createdAt None false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Vocab" None createdAt None false
+
+            let entryNullUpdatedFirst =
+                Entities.makeEntry vocabulary "never-updated-1" createdAt None
+
+            let entryNullUpdatedSecond =
+                Entities.makeEntry vocabulary "never-updated-2" createdAt None
+
+            let entryEarlierUpdated =
+                Entities.makeEntry vocabulary "earlier-updated" createdAt (Some earlierUpdatedAt)
+
+            let entryLaterUpdated =
+                Entities.makeEntry vocabulary "later-updated" createdAt (Some laterUpdatedAt)
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ collection ]
+                |> Seeder.addVocabularies [ vocabulary ]
+                |> Seeder.addEntries
+                    [ entryNullUpdatedFirst
+                      entryNullUpdatedSecond
+                      entryEarlierUpdated
+                      entryLaterUpdated ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                EntriesHierarchy.getEntriesHierarchyByVocabularyIdAsync vocabulary.Id
+                |> fixture.WithConnectionAsync
+
+            let actualEntryTexts =
+                actual
+                |> List.map(fun h -> h.Entry.EntryText)
+
+            let expectedEntryTexts =
+                [ "later-updated"; "earlier-updated"; "never-updated-1"; "never-updated-2" ]
+
+            Assert.Equal<string list>(expectedEntryTexts, actualEntryTexts)
         }
 
     [<Fact>]
