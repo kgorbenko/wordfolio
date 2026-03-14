@@ -2,16 +2,6 @@ module Wordfolio.Api.Api.CollectionsHierarchy.Types
 
 open System
 
-type VocabularySortByRequest =
-    | Name = 0
-    | CreatedAt = 1
-    | UpdatedAt = 2
-    | EntryCount = 3
-
-type SortDirectionRequest =
-    | Asc = 0
-    | Desc = 1
-
 type VocabularyWithEntryCountResponse =
     { Id: int
       Name: string

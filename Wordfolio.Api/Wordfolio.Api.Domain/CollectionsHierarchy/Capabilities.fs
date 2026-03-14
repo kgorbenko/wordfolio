@@ -4,19 +4,14 @@ open System.Threading.Tasks
 
 open Wordfolio.Api.Domain
 
-type SearchCollectionVocabulariesData =
-    { UserId: UserId
-      CollectionId: CollectionId
-      Query: SearchCollectionVocabulariesQuery }
-
 type IGetCollectionsWithVocabularies =
     abstract GetCollectionsWithVocabularies: UserId -> Task<CollectionWithVocabularies list>
 
 type IGetCollectionsWithVocabularyCount =
     abstract GetCollectionsWithVocabularyCount: UserId -> Task<CollectionWithVocabularyCount list>
 
-type ISearchCollectionVocabularies =
-    abstract SearchCollectionVocabularies: SearchCollectionVocabulariesData -> Task<VocabularyWithEntryCount list>
+type IGetVocabulariesWithEntryCountByCollectionId =
+    abstract GetVocabulariesWithEntryCountByCollectionId: UserId -> CollectionId -> Task<VocabularyWithEntryCount list>
 
 type IGetDefaultVocabularyWithEntryCount =
     abstract GetDefaultVocabularyWithEntryCount: UserId -> Task<VocabularyWithEntryCount option>
@@ -28,7 +23,12 @@ module Capabilities =
     let getCollectionsWithVocabularyCount (env: #IGetCollectionsWithVocabularyCount) userId =
         env.GetCollectionsWithVocabularyCount(userId)
 
-    let searchCollectionVocabularies (env: #ISearchCollectionVocabularies) data = env.SearchCollectionVocabularies(data)
+    let getVocabulariesWithEntryCountByCollectionId
+        (env: #IGetVocabulariesWithEntryCountByCollectionId)
+        userId
+        collectionId
+        =
+        env.GetVocabulariesWithEntryCountByCollectionId userId collectionId
 
     let getDefaultVocabularyWithEntryCount (env: #IGetDefaultVocabularyWithEntryCount) userId =
         env.GetDefaultVocabularyWithEntryCount(userId)

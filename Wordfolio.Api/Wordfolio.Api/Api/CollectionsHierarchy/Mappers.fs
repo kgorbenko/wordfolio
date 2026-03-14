@@ -1,7 +1,5 @@
 module Wordfolio.Api.Api.CollectionsHierarchy.Mappers
 
-open System
-
 open Wordfolio.Api.Api.CollectionsHierarchy.Types
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.CollectionsHierarchy
@@ -33,30 +31,3 @@ let toCollectionWithVocabularyCountResponse
       CreatedAt = collection.CreatedAt
       UpdatedAt = collection.UpdatedAt
       VocabularyCount = collection.VocabularyCount }
-
-let toVocabularySortByDomain(sortBy: VocabularySortByRequest) : VocabularySortBy =
-    match sortBy with
-    | VocabularySortByRequest.Name -> VocabularySortBy.Name
-    | VocabularySortByRequest.CreatedAt -> VocabularySortBy.CreatedAt
-    | VocabularySortByRequest.UpdatedAt -> VocabularySortBy.UpdatedAt
-    | VocabularySortByRequest.EntryCount -> VocabularySortBy.EntryCount
-    | x -> failwith $"Unknown {nameof VocabularySortByRequest} value: {x}"
-
-let toSortDirectionDomain(sortDirection: SortDirectionRequest) : SortDirection =
-    match sortDirection with
-    | SortDirectionRequest.Asc -> SortDirection.Asc
-    | SortDirectionRequest.Desc -> SortDirection.Desc
-    | x -> failwith $"Unknown {nameof SortDirectionRequest} value: {x}"
-
-let toCollectionVocabulariesQuery
-    (search: string)
-    (sortBy: VocabularySortByRequest)
-    (sortDirection: SortDirectionRequest)
-    : SearchCollectionVocabulariesQuery =
-    { Search =
-        if String.IsNullOrWhiteSpace search then
-            None
-        else
-            Some search
-      SortBy = sortBy |> toVocabularySortByDomain
-      SortDirection = sortDirection |> toSortDirectionDomain }
