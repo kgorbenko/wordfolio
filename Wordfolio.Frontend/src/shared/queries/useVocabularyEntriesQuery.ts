@@ -1,22 +1,22 @@
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 
-import { mapVocabularyEntryPreviews } from "../api/mappers";
-import { vocabulariesApi } from "../api/vocabulariesApi";
-import { VocabularyEntryPreview } from "../types";
+import { mapEntry } from "../api/entryMappers";
+import { vocabularyApi } from "../api/vocabularies";
+import { Entry } from "../types/entries";
 
 export const useVocabularyEntriesQuery = (
     collectionId: number,
     vocabularyId: number,
-    options?: Partial<UseQueryOptions<VocabularyEntryPreview[]>>
+    options?: Partial<UseQueryOptions<Entry[]>>
 ) =>
     useQuery({
         queryKey: ["entries", collectionId, vocabularyId],
         queryFn: async () => {
-            const response = await vocabulariesApi.getVocabularyEntries(
+            const response = await vocabularyApi.getVocabularyEntries(
                 collectionId,
                 vocabularyId
             );
-            return mapVocabularyEntryPreviews(response);
+            return response.map(mapEntry);
         },
         ...options,
     });

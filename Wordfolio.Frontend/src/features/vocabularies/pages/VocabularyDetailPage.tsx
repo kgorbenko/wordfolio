@@ -25,7 +25,7 @@ import { assertNonNullable } from "../../../shared/utils/misc";
 import { useVocabularyDetailQuery } from "../../../shared/queries/useVocabularyDetailQuery";
 import { useDeleteVocabularyMutation } from "../hooks/useDeleteVocabularyMutation";
 import { VocabularyDetailContent } from "../components/VocabularyDetailContent";
-import { useVocabularyEntriesQuery } from "../hooks/useVocabularyEntriesQuery";
+import { useVocabularyEntriesQuery } from "../../../shared/queries/useVocabularyEntriesQuery";
 
 import styles from "./VocabularyDetailPage.module.scss";
 

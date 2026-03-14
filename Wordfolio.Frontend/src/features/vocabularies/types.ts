@@ -11,11 +11,3 @@ export interface VocabularyCollectionContext {
     readonly id: number;
     readonly name: string;
 }
-
-export interface VocabularyEntryPreview {
-    readonly id: number;
-    readonly entryText: string;
-    readonly firstDefinition: string | null;
-    readonly firstTranslation: string | null;
-    readonly createdAt: Date;
-}
