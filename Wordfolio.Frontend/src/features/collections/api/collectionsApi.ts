@@ -40,25 +40,6 @@ export interface CollectionWithVocabularyCountResponse {
     readonly vocabularyCount: number;
 }
 
-export enum VocabularySortBy {
-    Name = 0,
-    CreatedAt = 1,
-    UpdatedAt = 2,
-    EntryCount = 3,
-}
-
-export enum SortDirection {
-    Asc = 0,
-    Desc = 1,
-}
-
-export interface GetCollectionVocabulariesQuery {
-    readonly collectionId: number;
-    readonly search?: string;
-    readonly sortBy: VocabularySortBy;
-    readonly sortDirection: SortDirection;
-}
-
 export interface CollectionResponse {
     readonly id: number;
     readonly name: string;
@@ -97,18 +78,10 @@ export const collectionsApi = {
     },
 
     getCollectionVocabularies: async (
-        query: GetCollectionVocabulariesQuery
+        collectionId: number
     ): Promise<VocabularyWithEntryCountResponse[]> => {
-        const params = new URLSearchParams();
-        if (query.search && query.search.trim().length > 0) {
-            params.set("search", query.search.trim());
-        }
-
-        params.set("sortBy", String(query.sortBy));
-        params.set("sortDirection", String(query.sortDirection));
-
         const response = await fetch(
-            `${API_BASE_URL}/collections-hierarchy/collections/${query.collectionId}/vocabularies?${params.toString()}`,
+            `${API_BASE_URL}/collections-hierarchy/collections/${collectionId}/vocabularies`,
             {
                 method: "GET",
                 headers: getAuthHeaders(),

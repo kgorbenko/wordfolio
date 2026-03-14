@@ -2,21 +2,11 @@ import {
     CollectionWithVocabularyCountResponse,
     CollectionResponse,
     CreateCollectionRequest,
-    GetCollectionVocabulariesQuery,
-    SortDirection as ApiSortDirection,
     UpdateCollectionRequest,
-    VocabularySortBy as ApiVocabularySortBy,
     VocabularyWithEntryCountResponse,
 } from "./collectionsApi";
-import {
-    Collection,
-    SortDirection,
-    Vocabulary,
-    CollectionVocabulariesQuery,
-    VocabularySortBy,
-} from "../types";
+import { Collection, Vocabulary } from "../types";
 import { CollectionFormData } from "../schemas/collectionSchemas";
-import { assertNever } from "../../../shared/utils/misc";
 
 export const mapCollectionDetail = (
     response: CollectionResponse
@@ -65,39 +55,4 @@ export const mapToUpdateCollectionRequest = (
 ): UpdateCollectionRequest => ({
     name: data.name,
     description: data.description,
-});
-
-const mapVocabularySortBy = (sortBy: VocabularySortBy): ApiVocabularySortBy => {
-    switch (sortBy) {
-        case VocabularySortBy.Name:
-            return ApiVocabularySortBy.Name;
-        case VocabularySortBy.CreatedAt:
-            return ApiVocabularySortBy.CreatedAt;
-        case VocabularySortBy.UpdatedAt:
-            return ApiVocabularySortBy.UpdatedAt;
-        case VocabularySortBy.EntryCount:
-            return ApiVocabularySortBy.EntryCount;
-        default:
-            return assertNever(sortBy);
-    }
-};
-
-const mapSortDirection = (sortDirection: SortDirection): ApiSortDirection => {
-    switch (sortDirection) {
-        case SortDirection.Asc:
-            return ApiSortDirection.Asc;
-        case SortDirection.Desc:
-            return ApiSortDirection.Desc;
-        default:
-            return assertNever(sortDirection);
-    }
-};
-
-export const mapToGetCollectionVocabulariesQuery = (
-    query: CollectionVocabulariesQuery
-): GetCollectionVocabulariesQuery => ({
-    collectionId: query.collectionId,
-    search: query.search,
-    sortBy: mapVocabularySortBy(query.sortBy),
-    sortDirection: mapSortDirection(query.sortDirection),
 });
