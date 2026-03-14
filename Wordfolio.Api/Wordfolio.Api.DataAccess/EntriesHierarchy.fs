@@ -189,17 +189,25 @@ let private getEntryRecordsByVocabularyIdAsync
     (cancellationToken: CancellationToken)
     : Task<EntryRecord list> =
     task {
-        let entriesTable =
-            table'<EntryRecord> Schema.EntriesTable.Name
-            |> inSchema Schema.Name
+        let sql =
+            """
+            SELECT "Id", "VocabularyId", "EntryText", "CreatedAt", "UpdatedAt"
+            FROM wordfolio."Entries"
+            WHERE "VocabularyId" = @vocabularyId
+            ORDER BY "UpdatedAt" DESC NULLS LAST, "Id";
+            """
 
-        return!
-            select {
-                for e in entriesTable do
-                    where(e.VocabularyId = vocabularyId)
-                    orderByDescending e.CreatedAt
-            }
-            |> selectAsync connection transaction cancellationToken
+        let commandDefinition =
+            CommandDefinition(
+                commandText = sql,
+                parameters = {| vocabularyId = vocabularyId |},
+                transaction = transaction,
+                cancellationToken = cancellationToken
+            )
+
+        let! entries = connection.QueryAsync<EntryRecord>(commandDefinition)
+
+        return entries |> Seq.toList
     }
 
 let private getDefinitionRecordsByEntryIdsAsync
