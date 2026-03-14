@@ -1,3 +1,4 @@
+import type { EntryResponse } from "./entries";
 import { useAuthStore } from "../stores/authStore";
 
 export interface VocabularyDetailResponse {
@@ -30,6 +31,25 @@ export const vocabularyApi = {
     ): Promise<VocabularyDetailResponse> => {
         const response = await fetch(
             `${API_BASE_URL}/collections/${collectionId}/vocabularies/${vocabularyId}`,
+            {
+                method: "GET",
+                headers: getAuthHeaders(),
+            }
+        );
+
+        if (!response.ok) {
+            throw await response.json();
+        }
+
+        return response.json();
+    },
+
+    getVocabularyEntries: async (
+        collectionId: number,
+        vocabularyId: number
+    ): Promise<EntryResponse[]> => {
+        const response = await fetch(
+            `${API_BASE_URL}/collections/${collectionId}/vocabularies/${vocabularyId}/entries`,
             {
                 method: "GET",
                 headers: getAuthHeaders(),

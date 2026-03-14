@@ -24,31 +24,6 @@ export interface CollectionResponse {
     readonly name: string;
 }
 
-export interface ExampleResponse {
-    readonly id: number;
-    readonly exampleText: string;
-}
-
-export interface DefinitionResponse {
-    readonly id: number;
-    readonly definitionText: string;
-    readonly examples: ExampleResponse[];
-}
-
-export interface TranslationResponse {
-    readonly id: number;
-    readonly translationText: string;
-    readonly examples: ExampleResponse[];
-}
-
-export interface EntryResponse {
-    readonly id: number;
-    readonly entryText: string;
-    readonly createdAt: string;
-    readonly definitions: DefinitionResponse[];
-    readonly translations: TranslationResponse[];
-}
-
 const API_BASE_URL = "/api";
 
 const getAuthHeaders = (): HeadersInit => {
@@ -88,25 +63,6 @@ export const vocabulariesApi = {
     ): Promise<CollectionResponse> => {
         const response = await fetch(
             `${API_BASE_URL}/collections/${collectionId}`,
-            {
-                method: "GET",
-                headers: getAuthHeaders(),
-            }
-        );
-
-        if (!response.ok) {
-            throw await response.json();
-        }
-
-        return response.json();
-    },
-
-    getVocabularyEntries: async (
-        collectionId: number,
-        vocabularyId: number
-    ): Promise<EntryResponse[]> => {
-        const response = await fetch(
-            `${API_BASE_URL}/collections/${collectionId}/vocabularies/${vocabularyId}/entries`,
             {
                 method: "GET",
                 headers: getAuthHeaders(),

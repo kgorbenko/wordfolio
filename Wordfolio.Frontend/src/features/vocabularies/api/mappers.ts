@@ -1,15 +1,10 @@
 import {
     CollectionResponse,
     CreateVocabularyRequest,
-    EntryResponse,
     UpdateVocabularyRequest,
     VocabularyResponse,
 } from "./vocabulariesApi";
-import {
-    Vocabulary,
-    VocabularyCollectionContext,
-    VocabularyEntryPreview,
-} from "../types";
+import { Vocabulary, VocabularyCollectionContext } from "../types";
 import { VocabularyFormData } from "../schemas/vocabularySchemas";
 
 export const mapVocabulary = (response: VocabularyResponse): Vocabulary => ({
@@ -27,20 +22,6 @@ export const mapVocabularyCollectionContext = (
     id: response.id,
     name: response.name,
 });
-
-const mapVocabularyEntryPreview = (
-    response: EntryResponse
-): VocabularyEntryPreview => ({
-    id: response.id,
-    entryText: response.entryText,
-    firstDefinition: response.definitions[0]?.definitionText ?? null,
-    firstTranslation: response.translations[0]?.translationText ?? null,
-    createdAt: new Date(response.createdAt),
-});
-
-export const mapVocabularyEntryPreviews = (
-    responses: EntryResponse[]
-): VocabularyEntryPreview[] => responses.map(mapVocabularyEntryPreview);
 
 export const mapToCreateVocabularyRequest = (
     data: VocabularyFormData
