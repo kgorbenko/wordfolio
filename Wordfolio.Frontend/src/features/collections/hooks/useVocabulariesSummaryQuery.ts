@@ -1,11 +1,11 @@
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { collectionsApi } from "../api/collectionsApi";
 import { mapVocabularyWithEntryCount } from "../api/mappers";
-import { Vocabulary } from "../types";
+import { VocabularyWithEntryCount } from "../types";
 
 export const useCollectionVocabulariesQuery = (
     collectionId: number,
-    options?: Partial<UseQueryOptions<Vocabulary[]>>
+    options?: Partial<UseQueryOptions<VocabularyWithEntryCount[]>>
 ) =>
     useQuery({
         queryKey: ["vocabularies-summary", collectionId],

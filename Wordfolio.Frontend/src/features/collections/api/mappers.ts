@@ -5,7 +5,11 @@ import {
     UpdateCollectionRequest,
     VocabularyWithEntryCountResponse,
 } from "./collectionsApi";
-import { Collection, Vocabulary } from "../types";
+import {
+    Collection,
+    CollectionWithVocabularyCount,
+    VocabularyWithEntryCount,
+} from "../types";
 import { CollectionFormData } from "../schemas/collectionSchemas";
 
 export const mapCollectionDetail = (
@@ -14,7 +18,6 @@ export const mapCollectionDetail = (
     id: response.id,
     name: response.name,
     description: response.description,
-    vocabularyCount: 0,
     createdAt: new Date(response.createdAt),
     updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
 });
@@ -22,7 +25,7 @@ export const mapCollectionDetail = (
 export const mapVocabularyWithEntryCount = (
     collectionId: number,
     response: VocabularyWithEntryCountResponse
-): Vocabulary => ({
+): VocabularyWithEntryCount => ({
     id: response.id,
     collectionId,
     name: response.name,
@@ -34,7 +37,7 @@ export const mapVocabularyWithEntryCount = (
 
 export const mapCollectionWithVocabularyCount = (
     response: CollectionWithVocabularyCountResponse
-): Collection => ({
+): CollectionWithVocabularyCount => ({
     id: response.id,
     name: response.name,
     description: response.description,

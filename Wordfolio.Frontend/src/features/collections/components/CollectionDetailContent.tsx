@@ -3,15 +3,15 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { GridColDef } from "@mui/x-data-grid";
 import { DataGridWithFilter } from "../../../shared/components/DataGridWithFilter";
 import { EmptyState } from "../../../shared/components/EmptyState";
-import { Vocabulary } from "../types";
+import { VocabularyWithEntryCount } from "../types";
 
 interface CollectionDetailContentProps {
-    readonly vocabularies: Vocabulary[];
+    readonly vocabularies: VocabularyWithEntryCount[];
     readonly onVocabularyClick: (id: number) => void;
     readonly onCreateVocabularyClick: () => void;
 }
 
-const columns: GridColDef<Vocabulary>[] = [
+const columns: GridColDef<VocabularyWithEntryCount>[] = [
     { field: "name", headerName: "Name", flex: 2 },
     {
         field: "description",
