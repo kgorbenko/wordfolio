@@ -1,10 +1,10 @@
-import { Box } from "@mui/material";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { GridColDef } from "@mui/x-data-grid";
 
+import { DataGridWithFilter } from "../../../shared/components/DataGridWithFilter";
 import { EmptyState } from "../../../shared/components/EmptyState";
-import { EntryListItem } from "../../../shared/components/entries/EntryListItem";
-import type { Entry } from "../../../shared/types/entries";
-import styles from "./DraftsContent.module.scss";
+import { Entry } from "../../../shared/types/entries";
 
 interface DraftsContentProps {
     readonly entries: Entry[];
@@ -12,11 +12,50 @@ interface DraftsContentProps {
     readonly onAddDraftClick: () => void;
 }
 
+const columns: GridColDef<Entry>[] = [
+    { field: "entryText", headerName: "Entry", flex: 2 },
+    {
+        field: "createdAt",
+        headerName: "Created At",
+        type: "date",
+        width: 120,
+        valueFormatter: (value: Date) => value.toLocaleDateString(),
+    },
+    {
+        field: "updatedAt",
+        headerName: "Updated At",
+        type: "date",
+        width: 120,
+        valueFormatter: (value: Date | null) => value?.toLocaleDateString(),
+    },
+    {
+        field: "translationCount",
+        headerName: "Translations",
+        type: "number",
+        width: 130,
+        valueGetter: (_, row) => row.translations.length,
+    },
+    {
+        field: "definitionCount",
+        headerName: "Definitions",
+        type: "number",
+        width: 120,
+        valueGetter: (_, row) => row.definitions.length,
+    },
+];
+
+const mobileColumnVisibility = {
+    createdAt: false,
+    updatedAt: false,
+};
+
 export const DraftsContent = ({
     entries,
     onEntryClick,
     onAddDraftClick,
 }: DraftsContentProps) => {
+    const isMobile = useMediaQuery("(max-width:600px)");
+
     if (entries.length === 0) {
         return (
             <EmptyState
@@ -34,17 +73,18 @@ export const DraftsContent = ({
     }
 
     return (
-        <Box className={styles.entriesList}>
-            {entries.map((entry) => (
-                <EntryListItem
-                    key={entry.id}
-                    entryText={entry.entryText}
-                    firstDefinition={entry.definitions[0]?.definitionText}
-                    firstTranslation={entry.translations[0]?.translationText}
-                    createdAt={entry.createdAt}
-                    onClick={() => onEntryClick(entry.id)}
-                />
-            ))}
-        </Box>
+        <DataGridWithFilter
+            rows={entries}
+            columns={columns}
+            columnVisibilityModel={
+                isMobile ? mobileColumnVisibility : undefined
+            }
+            onRowClick={(params) => onEntryClick(params.row.id)}
+            initialState={{
+                sorting: {
+                    sortModel: [{ field: "updatedAt", sort: "desc" }],
+                },
+            }}
+        />
     );
 };
