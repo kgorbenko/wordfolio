@@ -1,9 +1,9 @@
 import MenuBookIcon from "@mui/icons-material/MenuBook";
-import { CardGrid } from "../../../shared/components/CardGrid";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { GridColDef } from "@mui/x-data-grid";
+import { DataGridWithFilter } from "../../../shared/components/DataGridWithFilter";
 import { EmptyState } from "../../../shared/components/EmptyState";
-import { VocabularyCard } from "./VocabularyCard";
 import { Vocabulary } from "../types";
-import styles from "./CollectionDetailContent.module.scss";
 
 interface CollectionDetailContentProps {
     readonly vocabularies: Vocabulary[];
@@ -11,35 +11,74 @@ interface CollectionDetailContentProps {
     readonly onCreateVocabularyClick: () => void;
 }
 
+const columns: GridColDef<Vocabulary>[] = [
+    { field: "name", headerName: "Name", flex: 2 },
+    {
+        field: "description",
+        headerName: "Description",
+        flex: 3,
+        renderCell: (params) => params.value,
+    },
+    {
+        field: "createdAt",
+        headerName: "Created At",
+        type: "date",
+        width: 120,
+        valueFormatter: (value: Date) => value.toLocaleDateString(),
+    },
+    {
+        field: "updatedAt",
+        headerName: "Updated At",
+        type: "date",
+        width: 120,
+        valueFormatter: (value: Date | null) => value?.toLocaleDateString(),
+    },
+    {
+        field: "entryCount",
+        headerName: "Entries",
+        type: "number",
+        width: 100,
+    },
+];
+
+const mobileColumnVisibility = {
+    description: false,
+    createdAt: false,
+    updatedAt: false,
+};
+
 export const CollectionDetailContent = ({
     vocabularies,
     onVocabularyClick,
     onCreateVocabularyClick,
 }: CollectionDetailContentProps) => {
+    const isMobile = useMediaQuery("(max-width:600px)");
+
+    if (vocabularies.length === 0) {
+        return (
+            <EmptyState
+                icon={<MenuBookIcon />}
+                title="No Vocabularies Yet"
+                description="Add your first vocabulary - a book, movie, or any source of new words."
+                actionLabel="Add Vocabulary"
+                onAction={onCreateVocabularyClick}
+            />
+        );
+    }
+
     return (
-        <>
-            {vocabularies.length === 0 ? (
-                <EmptyState
-                    icon={<MenuBookIcon className={styles.emptyIcon} />}
-                    title="No Vocabularies Yet"
-                    description="Add your first vocabulary - a book, movie, or any source of new words."
-                    actionLabel="Add Vocabulary"
-                    onAction={onCreateVocabularyClick}
-                />
-            ) : (
-                <CardGrid>
-                    {vocabularies.map((vocab) => (
-                        <VocabularyCard
-                            key={vocab.id}
-                            id={vocab.id}
-                            name={vocab.name}
-                            description={vocab.description ?? undefined}
-                            entryCount={vocab.entryCount}
-                            onClick={() => onVocabularyClick(vocab.id)}
-                        />
-                    ))}
-                </CardGrid>
-            )}
-        </>
+        <DataGridWithFilter
+            rows={vocabularies}
+            columns={columns}
+            columnVisibilityModel={
+                isMobile ? mobileColumnVisibility : undefined
+            }
+            onRowClick={(params) => onVocabularyClick(params.row.id)}
+            initialState={{
+                sorting: {
+                    sortModel: [{ field: "updatedAt", sort: "desc" }],
+                },
+            }}
+        />
     );
 };

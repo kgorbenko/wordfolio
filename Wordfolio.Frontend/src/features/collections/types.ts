@@ -16,22 +16,3 @@ export interface Vocabulary {
     readonly createdAt: Date;
     readonly updatedAt: Date | null;
 }
-
-export enum VocabularySortBy {
-    Name = 0,
-    CreatedAt = 1,
-    UpdatedAt = 2,
-    EntryCount = 3,
-}
-
-export enum SortDirection {
-    Asc = 0,
-    Desc = 1,
-}
-
-export interface CollectionVocabulariesQuery {
-    readonly collectionId: number;
-    readonly search?: string;
-    readonly sortBy: VocabularySortBy;
-    readonly sortDirection: SortDirection;
-}

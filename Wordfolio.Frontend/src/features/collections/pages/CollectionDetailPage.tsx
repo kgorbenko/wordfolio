@@ -29,7 +29,6 @@ import { useDeleteCollectionMutation } from "../hooks/useDeleteCollectionMutatio
 import { useConfirmDialog } from "../../../shared/contexts/ConfirmDialogContext";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { assertNonNullable } from "../../../shared/utils/misc";
-import { SortDirection, VocabularySortBy } from "../types";
 
 import styles from "./CollectionDetailPage.module.scss";
 
@@ -51,11 +50,7 @@ export const CollectionDetailPage = () => {
         isLoading: isVocabulariesLoading,
         isError: isVocabulariesError,
         refetch: refetchVocabularies,
-    } = useCollectionVocabulariesQuery({
-        collectionId,
-        sortBy: VocabularySortBy.UpdatedAt,
-        sortDirection: SortDirection.Desc,
-    });
+    } = useCollectionVocabulariesQuery(collectionId);
 
     const isLoading = isCollectionLoading || isVocabulariesLoading;
     const isError = isCollectionError || isVocabulariesError;
@@ -103,7 +98,7 @@ export const CollectionDetailPage = () => {
 
     const renderContent = () => {
         if (isLoading) {
-            return <ContentSkeleton variant="detail" />;
+            return <ContentSkeleton variant="list" />;
         }
 
         if (isError || !collection) {
