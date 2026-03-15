@@ -57,8 +57,8 @@ export const VocabularyDetailPage = () => {
     } = useVocabularyEntriesQuery(collectionId, vocabularyId);
 
     const deleteMutation = useDeleteVocabularyMutation({
-        onSuccess: () => {
-            void navigate(collectionDetailPath(collectionId));
+        onSuccess: async () => {
+            await navigate(collectionDetailPath(collectionId));
         },
         onError: () => {
             openErrorNotification({

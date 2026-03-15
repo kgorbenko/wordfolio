@@ -10,7 +10,7 @@ interface UpdateEntryParams {
 }
 
 interface UseUpdateDraftEntryMutationOptions {
-    readonly onSuccess?: (data: Entry) => void;
+    readonly onSuccess?: (data: Entry) => Promise<void>;
     readonly onError?: () => void;
 }
 
@@ -22,9 +22,9 @@ export function useUpdateDraftEntryMutation(
     return useMutation({
         mutationFn: ({ entryId, data }: UpdateEntryParams) =>
             draftsApi.updateDraftEntry(entryId, mapUpdateEntryData(data)),
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
+            await options?.onSuccess?.(mapEntry(data));
             void queryClient.invalidateQueries();
-            options?.onSuccess?.(mapEntry(data));
         },
         onError: options?.onError,
     });

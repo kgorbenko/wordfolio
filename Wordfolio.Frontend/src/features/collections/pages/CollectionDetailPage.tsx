@@ -56,7 +56,9 @@ export const CollectionDetailPage = () => {
     const isError = isCollectionError || isVocabulariesError;
 
     const deleteMutation = useDeleteCollectionMutation({
-        onSuccess: () => void navigate(collectionsPath()),
+        onSuccess: async () => {
+            await navigate(collectionsPath());
+        },
         onError: () =>
             openErrorNotification({ message: "Failed to delete collection" }),
     });

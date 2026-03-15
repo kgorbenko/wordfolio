@@ -10,7 +10,7 @@ interface CreateVocabularyMutationVariables {
 }
 
 interface UseCreateVocabularyMutationOptions {
-    onSuccess?: (data: Vocabulary) => void;
+    onSuccess?: (data: Vocabulary) => Promise<void>;
     onError?: () => void;
 }
 
@@ -28,12 +28,9 @@ export const useCreateVocabularyMutation = (
                 collectionId,
                 mapToCreateVocabularyRequest(data)
             ),
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
+            await options?.onSuccess?.(mapVocabulary(data));
             void queryClient.invalidateQueries();
-
-            if (options?.onSuccess) {
-                options.onSuccess(mapVocabulary(data));
-            }
         },
         onError: options?.onError,
     });

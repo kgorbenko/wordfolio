@@ -9,7 +9,7 @@ interface DeleteEntryParams {
 }
 
 interface UseDeleteEntryMutationOptions {
-    readonly onSuccess?: () => void;
+    readonly onSuccess?: () => Promise<void>;
     readonly onError?: () => void;
 }
 
@@ -25,9 +25,9 @@ export function useDeleteEntryMutation(
             entryId,
         }: DeleteEntryParams) =>
             entriesApi.deleteEntry(collectionId, vocabularyId, entryId),
-        onSuccess: () => {
+        onSuccess: async () => {
+            await options?.onSuccess?.();
             void queryClient.invalidateQueries();
-            options?.onSuccess?.();
         },
         onError: options?.onError,
     });

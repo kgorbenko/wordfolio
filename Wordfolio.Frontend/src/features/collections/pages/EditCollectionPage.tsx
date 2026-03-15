@@ -28,11 +28,11 @@ export const EditCollectionPage = () => {
     } = useCollectionQuery(collectionId);
 
     const mutation = useUpdateCollectionMutation(collectionId, {
-        onSuccess: () => {
+        onSuccess: async () => {
             openSuccessNotification({
                 message: "Collection updated successfully",
             });
-            void navigate(collectionDetailPath(collectionId));
+            await navigate(collectionDetailPath(collectionId));
         },
         onError: () => {
             openErrorNotification({ message: "Failed to update collection" });

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { collectionsApi } from "../api/collectionsApi";
 
 interface UseDeleteCollectionMutationOptions {
-    onSuccess?: () => void;
+    onSuccess?: () => Promise<void>;
     onError?: () => void;
 }
 
@@ -13,9 +13,9 @@ export function useDeleteCollectionMutation(
 
     return useMutation({
         mutationFn: (id: number) => collectionsApi.delete(id),
-        onSuccess: () => {
+        onSuccess: async () => {
+            await options?.onSuccess?.();
             void queryClient.invalidateQueries();
-            options?.onSuccess?.();
         },
         onError: options?.onError,
     });

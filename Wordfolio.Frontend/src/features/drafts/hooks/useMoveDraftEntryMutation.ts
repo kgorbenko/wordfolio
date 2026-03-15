@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 import { mapEntry } from "../../../shared/api/entryMappers";
 import { draftsApi } from "../api/draftsApi";
@@ -10,23 +10,20 @@ interface MoveEntryParams {
 }
 
 interface UseMoveDraftEntryMutationOptions {
-    readonly onSuccess?: (data: Entry) => void;
+    readonly onSuccess?: (data: Entry) => Promise<void>;
     readonly onError?: () => void;
 }
 
 export function useMoveDraftEntryMutation(
     options?: UseMoveDraftEntryMutationOptions
 ) {
-    const queryClient = useQueryClient();
-
     return useMutation({
         mutationFn: ({ entryId, targetVocabularyId }: MoveEntryParams) =>
             draftsApi.moveDraftEntry(entryId, {
                 vocabularyId: targetVocabularyId,
             }),
-        onSuccess: (data) => {
-            void queryClient.invalidateQueries();
-            options?.onSuccess?.(mapEntry(data));
+        onSuccess: async (data) => {
+            await options?.onSuccess?.(mapEntry(data));
         },
         onError: options?.onError,
     });

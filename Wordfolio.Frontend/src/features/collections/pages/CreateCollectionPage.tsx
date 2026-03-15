@@ -14,11 +14,11 @@ export const CreateCollectionPage = () => {
         useNotificationContext();
 
     const mutation = useCreateCollectionMutation({
-        onSuccess: () => {
+        onSuccess: async () => {
             openSuccessNotification({
                 message: "Collection created successfully",
             });
-            void navigate(collectionsPath());
+            await navigate(collectionsPath());
         },
         onError: () => {
             openErrorNotification({ message: "Failed to create collection" });

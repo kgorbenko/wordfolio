@@ -11,7 +11,7 @@ interface UpdateVocabularyMutationVariables {
 }
 
 interface UseUpdateVocabularyMutationOptions {
-    onSuccess?: (data: Vocabulary) => void;
+    onSuccess?: (data: Vocabulary) => Promise<void>;
     onError?: () => void;
 }
 
@@ -31,12 +31,9 @@ export const useUpdateVocabularyMutation = (
                 vocabularyId,
                 mapToUpdateVocabularyRequest(data)
             ),
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
+            await options?.onSuccess?.(mapVocabulary(data));
             void queryClient.invalidateQueries();
-
-            if (options?.onSuccess) {
-                options.onSuccess(mapVocabulary(data));
-            }
         },
         onError: options?.onError,
     });

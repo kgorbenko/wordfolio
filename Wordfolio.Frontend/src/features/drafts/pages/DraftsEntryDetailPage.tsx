@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -32,6 +33,7 @@ import styles from "./DraftsEntryDetailPage.module.scss";
 export const DraftsEntryDetailPage = () => {
     const { entryId } = draftsEntryDetailRouteApi.useParams();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const { openErrorNotification } = useNotificationContext();
     const { raiseConfirmDialogAsync } = useConfirmDialog();
     const { raiseMoveEntryDialogAsync, dialogElement } = useMoveEntryDialog();
@@ -44,8 +46,8 @@ export const DraftsEntryDetailPage = () => {
     } = useDraftEntryQuery(entryId);
 
     const deleteMutation = useDeleteDraftEntryMutation({
-        onSuccess: () => {
-            void navigate(draftsPath());
+        onSuccess: async () => {
+            await navigate(draftsPath());
         },
         onError: () => {
             openErrorNotification({
@@ -100,25 +102,26 @@ export const DraftsEntryDetailPage = () => {
                 targetVocabularyId: moveSelection.vocabularyId,
             },
             {
-                onSuccess: (movedEntry) => {
+                onSuccess: async (movedEntry) => {
                     if (moveSelection.isDefault) {
-                        void navigate(draftsEntryDetailPath(movedEntry.id));
-                        return;
+                        await navigate(draftsEntryDetailPath(movedEntry.id));
+                    } else {
+                        assertNonNullable(moveSelection.collectionId);
+
+                        await navigate(
+                            entryDetailPath(
+                                moveSelection.collectionId,
+                                moveSelection.vocabularyId,
+                                movedEntry.id
+                            )
+                        );
                     }
 
-                    assertNonNullable(moveSelection.collectionId);
-
-                    void navigate(
-                        entryDetailPath(
-                            moveSelection.collectionId,
-                            moveSelection.vocabularyId,
-                            movedEntry.id
-                        )
-                    );
+                    void queryClient.invalidateQueries();
                 },
             }
         );
-    }, [entry, raiseMoveEntryDialogAsync, moveMutation, navigate]);
+    }, [entry, raiseMoveEntryDialogAsync, moveMutation, navigate, queryClient]);
 
     const isLoading = isEntryLoading;
     const isError = isEntryError;

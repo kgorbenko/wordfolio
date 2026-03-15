@@ -12,7 +12,7 @@ interface MoveEntryParams {
 }
 
 interface UseMoveEntryMutationOptions {
-    readonly onSuccess?: (data: Entry) => void;
+    readonly onSuccess?: (data: Entry) => Promise<void>;
     readonly onError?: () => void;
 }
 
@@ -27,8 +27,8 @@ export function useMoveEntryMutation(options?: UseMoveEntryMutationOptions) {
             entriesApi.moveEntry(collectionId, sourceVocabularyId, entryId, {
                 vocabularyId: targetVocabularyId,
             }),
-        onSuccess: (data) => {
-            options?.onSuccess?.(mapEntry(data));
+        onSuccess: async (data) => {
+            await options?.onSuccess?.(mapEntry(data));
         },
         onError: options?.onError,
     });

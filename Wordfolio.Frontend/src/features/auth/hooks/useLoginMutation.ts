@@ -6,7 +6,7 @@ import { mapAuthTokens, mapLoginRequest } from "../api/mappers";
 import type { AuthTokens, LoginCredentials } from "../types";
 
 interface UseLoginMutationOptions {
-    onSuccess?: (data: AuthTokens) => void;
+    onSuccess?: (data: AuthTokens) => Promise<void>;
     onError?: (error: ApiError) => void;
 }
 
@@ -18,9 +18,9 @@ export function useLoginMutation(options?: UseLoginMutationOptions) {
             const response = await authApi.login(mapLoginRequest(credentials));
             return mapAuthTokens(response);
         },
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
+            await options?.onSuccess?.(data);
             void queryClient.invalidateQueries();
-            options?.onSuccess?.(data);
         },
         onError: options?.onError,
     });

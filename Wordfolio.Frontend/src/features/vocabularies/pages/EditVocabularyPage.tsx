@@ -30,8 +30,8 @@ export const EditVocabularyPage = () => {
     } = useVocabularyDetailQuery(collectionId, vocabularyId);
 
     const updateMutation = useUpdateVocabularyMutation({
-        onSuccess: () => {
-            void navigate(vocabularyDetailPath(collectionId, vocabularyId));
+        onSuccess: async () => {
+            await navigate(vocabularyDetailPath(collectionId, vocabularyId));
         },
         onError: () => {
             openErrorNotification({

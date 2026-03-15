@@ -36,9 +36,9 @@ export const LoginPage = () => {
     });
 
     const loginMutation = useLoginMutation({
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
             setTokens(data);
-            navigate(homePath());
+            await navigate(homePath());
         },
         onError: (error) => {
             const errorMessage =

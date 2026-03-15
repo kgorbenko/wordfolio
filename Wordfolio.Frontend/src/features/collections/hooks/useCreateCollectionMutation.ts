@@ -8,7 +8,7 @@ import { CollectionFormData } from "../schemas/collectionSchemas";
 import { Collection } from "../types";
 
 interface UseCreateCollectionMutationOptions {
-    onSuccess?: (data: Collection) => void;
+    onSuccess?: (data: Collection) => Promise<void>;
     onError?: () => void;
 }
 
@@ -20,9 +20,9 @@ export function useCreateCollectionMutation(
     return useMutation({
         mutationFn: (data: CollectionFormData) =>
             collectionsApi.create(mapToCreateCollectionRequest(data)),
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
+            await options?.onSuccess?.(mapCollectionDetail(data));
             void queryClient.invalidateQueries();
-            options?.onSuccess?.(mapCollectionDetail(data));
         },
         onError: options?.onError,
     });

@@ -14,7 +14,7 @@ interface CreateEntryParams {
 }
 
 interface UseCreateEntryMutationOptions {
-    readonly onSuccess?: (data: Entry) => void;
+    readonly onSuccess?: (data: Entry) => Promise<void>;
     readonly onError?: (error: ApiError) => void;
     readonly onDuplicateEntry?: (existingEntry: Entry) => void;
 }
@@ -36,9 +36,9 @@ export function useCreateEntryMutation(
                 vocabularyId,
                 mapCreateEntryData(input, allowDuplicate)
             ),
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
+            await options?.onSuccess?.(mapEntry(data));
             void queryClient.invalidateQueries();
-            options?.onSuccess?.(mapEntry(data));
         },
         onError: (error: ApiError) => {
             if (isDuplicateEntryError(error) && options?.onDuplicateEntry) {
