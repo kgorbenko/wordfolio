@@ -94,6 +94,7 @@ export const LoginPage = () => {
                         label="Email"
                         type="email"
                         autoComplete="email"
+                        disabled={loginMutation.isPending}
                         error={!!errors.email}
                         helperText={errors.email?.message}
                         {...register("email")}
@@ -106,6 +107,7 @@ export const LoginPage = () => {
                         label="Password"
                         type="password"
                         autoComplete="current-password"
+                        disabled={loginMutation.isPending}
                         error={!!errors.password}
                         helperText={errors.password?.message}
                         {...register("password")}

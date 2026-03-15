@@ -102,6 +102,7 @@ export const RegisterPage = () => {
                     label="Email"
                     type="email"
                     autoComplete="email"
+                    disabled={registerMutation.isPending}
                     error={!!errors.email}
                     helperText={errors.email?.message}
                     {...register("email")}
@@ -114,6 +115,7 @@ export const RegisterPage = () => {
                     label="Password"
                     type="password"
                     autoComplete="new-password"
+                    disabled={registerMutation.isPending}
                     error={!!errors.password}
                     helperText={errors.password?.message}
                     {...register("password")}
@@ -126,6 +128,7 @@ export const RegisterPage = () => {
                     label="Confirm Password"
                     type="password"
                     autoComplete="new-password"
+                    disabled={registerMutation.isPending}
                     error={!!errors.confirmPassword}
                     helperText={errors.confirmPassword?.message}
                     {...register("confirmPassword")}
