@@ -86,7 +86,7 @@ export const QuickAccessSection = ({
                         }}
                     />
                     <Typography
-                        variant="caption"
+                        variant="body2"
                         sx={{ color: "text.disabled" }}
                     >
                         {draftsVocabulary.entryCount}

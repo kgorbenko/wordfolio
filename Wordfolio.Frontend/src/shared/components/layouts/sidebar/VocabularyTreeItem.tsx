@@ -59,7 +59,7 @@ export const VocabularyTreeItem = ({
                 }}
             />
             <Typography
-                variant="caption"
+                variant="body2"
                 sx={{ color: "text.disabled", ml: 1 }}
             >
                 {vocabulary.entryCount}

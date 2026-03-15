@@ -102,7 +102,7 @@ export const CollectionTreeItem = ({
                         },
                     }}
                 />
-                <Typography variant="caption" sx={{ color: "text.disabled" }}>
+                <Typography variant="body2" sx={{ color: "text.disabled" }}>
                     {collection.vocabularies.length}
                 </Typography>
             </ListItemButton>

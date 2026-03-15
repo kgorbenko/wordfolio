@@ -1,5 +1,6 @@
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 import { GridColDef } from "@mui/x-data-grid";
 import { DataGridWithFilter } from "../../../shared/components/DataGridWithFilter";
 import { EmptyState } from "../../../shared/components/EmptyState";
@@ -52,7 +53,8 @@ export const CollectionDetailContent = ({
     onVocabularyClick,
     onCreateVocabularyClick,
 }: CollectionDetailContentProps) => {
-    const isMobile = useMediaQuery("(max-width:600px)");
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
     if (vocabularies.length === 0) {
         return (

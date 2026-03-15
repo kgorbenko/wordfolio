@@ -11,7 +11,7 @@ export const EntryFooter = ({ createdAt, updatedAt }: EntryFooterProps) => (
     <>
         <Divider className={styles.divider} />
         <Box className={styles.footer}>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="body2" color="text.secondary">
                 Added {createdAt.toLocaleDateString()}
                 {updatedAt && ` · Updated ${updatedAt.toLocaleDateString()}`}
             </Typography>

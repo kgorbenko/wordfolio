@@ -1,0 +1,17 @@
+.container {
+    min-width: 0;
+}
+
+.text:global(.MuiTypography-root) {
+    @media (min-width: 900px) {
+        font-size: 14px;
+    }
+}
+
+.subtext:global(.MuiTypography-root) {
+    display: block;
+
+    @media (min-width: 900px) {
+        font-size: 12px;
+    }
+}
