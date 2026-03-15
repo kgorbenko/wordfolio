@@ -39,6 +39,13 @@ type DeleteVocabularyParameters =
       CollectionId: CollectionId
       VocabularyId: VocabularyId }
 
+type MoveVocabularyParameters =
+    { UserId: UserId
+      CollectionId: CollectionId
+      VocabularyId: VocabularyId
+      TargetCollectionId: CollectionId
+      UpdatedAt: DateTimeOffset }
+
 let private validateName(name: string) : Result<string, VocabularyNameValidationResult> =
     if String.IsNullOrWhiteSpace(name) then
         Error VocabularyNameValidationResult.NameRequired
@@ -214,4 +221,44 @@ let delete env (parameters: DeleteVocabularyParameters) : Task<Result<unit, Dele
                         return Ok()
                     else
                         return Error(DeleteVocabularyError.VocabularyNotFound parameters.VocabularyId)
+        })
+
+let move env (parameters: MoveVocabularyParameters) : Task<Result<Vocabulary, MoveVocabularyError>> =
+    runInTransaction env (fun appEnv ->
+        task {
+            let! sourceOwnershipResult = checkCollectionOwnership appEnv parameters.UserId parameters.CollectionId
+
+            match sourceOwnershipResult with
+            | Error() -> return Error(MoveVocabularyError.CollectionNotFoundOrAccessDenied parameters.CollectionId)
+            | Ok _ ->
+                let! maybeVocabulary = getVocabularyInCollection appEnv parameters.CollectionId parameters.VocabularyId
+
+                match maybeVocabulary with
+                | None -> return Error(MoveVocabularyError.VocabularyNotFound parameters.VocabularyId)
+                | Some _ ->
+                    let! targetOwnershipResult =
+                        checkCollectionOwnership appEnv parameters.UserId parameters.TargetCollectionId
+
+                    match targetOwnershipResult with
+                    | Error() ->
+                        return
+                            Error(MoveVocabularyError.CollectionNotFoundOrAccessDenied parameters.TargetCollectionId)
+                    | Ok _ ->
+                        let! moveResult =
+                            moveVocabulary
+                                appEnv
+                                { VocabularyId = parameters.VocabularyId
+                                  OldCollectionId = parameters.CollectionId
+                                  NewCollectionId = parameters.TargetCollectionId
+                                  UpdatedAt = parameters.UpdatedAt }
+
+                        match moveResult with
+                        | Error() -> return Error(MoveVocabularyError.VocabularyNotFound parameters.VocabularyId)
+                        | Ok _ ->
+                            let! maybeUpdated = getVocabularyById appEnv parameters.VocabularyId
+
+                            return
+                                match maybeUpdated with
+                                | Some vocabulary -> Ok vocabulary
+                                | None -> failwith $"Vocabulary {parameters.VocabularyId} not found after move"
         })

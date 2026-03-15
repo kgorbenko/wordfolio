@@ -5,8 +5,13 @@ import { IconButton, Button } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 
-import { vocabularyDetailRouteApi, vocabularyEditPath } from "../routes";
+import {
+    vocabularyDetailPath,
+    vocabularyDetailRouteApi,
+    vocabularyEditPath,
+} from "../routes";
 import {
     collectionsPath,
     collectionDetailPath,
@@ -24,6 +29,8 @@ import { assertNonNullable } from "../../../shared/utils/misc";
 
 import { useVocabularyDetailQuery } from "../../../shared/queries/useVocabularyDetailQuery";
 import { useDeleteVocabularyMutation } from "../hooks/useDeleteVocabularyMutation";
+import { useMoveVocabularyMutation } from "../hooks/useMoveVocabularyMutation";
+import { useMoveVocabularyDialog } from "../hooks/useMoveVocabularyDialog";
 import { VocabularyDetailContent } from "../components/VocabularyDetailContent";
 import { useVocabularyEntriesQuery } from "../../../shared/queries/useVocabularyEntriesQuery";
 
@@ -60,9 +67,46 @@ export const VocabularyDetailPage = () => {
         },
     });
 
+    const moveMutation = useMoveVocabularyMutation({
+        onSuccess: (movedVocabulary) =>
+            navigate(
+                vocabularyDetailPath(
+                    movedVocabulary.collectionId,
+                    movedVocabulary.id
+                )
+            ),
+        onError: () => {
+            openErrorNotification({
+                message: "Failed to move vocabulary. Please try again.",
+            });
+        },
+    });
+
+    const { raiseMoveVocabularyDialogAsync, dialogElement: moveDialogElement } =
+        useMoveVocabularyDialog();
+
     const handleEditClick = useCallback(() => {
         void navigate(vocabularyEditPath(collectionId, vocabularyId));
     }, [navigate, collectionId, vocabularyId]);
+
+    const handleMoveClick = useCallback(async () => {
+        const selection = await raiseMoveVocabularyDialogAsync({
+            currentCollectionId: collectionId,
+        });
+
+        if (selection) {
+            moveMutation.mutate({
+                sourceCollectionId: collectionId,
+                vocabularyId,
+                targetCollectionId: selection.collectionId,
+            });
+        }
+    }, [
+        raiseMoveVocabularyDialogAsync,
+        moveMutation,
+        collectionId,
+        vocabularyId,
+    ]);
 
     const handleDeleteClick = useCallback(async () => {
         assertNonNullable(vocabulary);
@@ -160,6 +204,14 @@ export const VocabularyDetailPage = () => {
                         </Button>
                         <IconButton
                             color="primary"
+                            onClick={() => void handleMoveClick()}
+                            disabled={isLoading || moveMutation.isPending}
+                            aria-label="Move vocabulary"
+                        >
+                            <DriveFileMoveIcon />
+                        </IconButton>
+                        <IconButton
+                            color="primary"
                             onClick={handleEditClick}
                             disabled={isLoading}
                             aria-label="Edit vocabulary"
@@ -178,6 +230,7 @@ export const VocabularyDetailPage = () => {
                 }
             />
             {renderContent()}
+            {moveDialogElement}
         </PageContainer>
     );
 };

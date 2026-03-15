@@ -26,3 +26,5 @@ type CreateVocabularyRequest =
 type UpdateVocabularyRequest =
     { Name: string
       Description: string option }
+
+type MoveVocabularyRequest = { CollectionId: int }

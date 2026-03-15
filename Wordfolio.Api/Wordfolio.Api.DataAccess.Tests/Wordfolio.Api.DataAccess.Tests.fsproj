@@ -39,6 +39,7 @@
     <Compile Include="Vocabularies/GetVocabulariesByCollectionIdTests.fs" />
     <Compile Include="Vocabularies/UpdateVocabularyTests.fs" />
     <Compile Include="Vocabularies/DeleteVocabularyTests.fs" />
+    <Compile Include="Vocabularies/MoveVocabularyTests.fs" />
     <Compile Include="Vocabularies/GetDefaultVocabularyByUserIdTests.fs" />
     <Compile Include="Vocabularies/CreateDefaultVocabularyTests.fs" />
     <Compile Include="Entries/CreateEntryTests.fs" />

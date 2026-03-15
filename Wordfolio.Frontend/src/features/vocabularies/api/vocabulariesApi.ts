@@ -19,6 +19,10 @@ export interface UpdateVocabularyRequest {
     readonly description?: string | null;
 }
 
+export interface MoveVocabularyRequest {
+    readonly collectionId: number;
+}
+
 export interface CollectionResponse {
     readonly id: number;
     readonly name: string;
@@ -112,5 +116,26 @@ export const vocabulariesApi = {
         if (!response.ok) {
             throw await response.json();
         }
+    },
+
+    moveVocabulary: async (
+        collectionId: number,
+        vocabularyId: number,
+        request: MoveVocabularyRequest
+    ): Promise<VocabularyResponse> => {
+        const response = await fetch(
+            `${API_BASE_URL}/collections/${collectionId}/vocabularies/${vocabularyId}/move`,
+            {
+                method: "POST",
+                headers: getAuthHeaders(),
+                body: JSON.stringify(request),
+            }
+        );
+
+        if (!response.ok) {
+            throw await response.json();
+        }
+
+        return response.json();
     },
 };

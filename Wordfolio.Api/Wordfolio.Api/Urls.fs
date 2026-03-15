@@ -39,6 +39,9 @@ module Vocabularies =
     let vocabularyById(collectionId: int, vocabularyId: int) =
         $"{vocabulariesByCollection collectionId}/{vocabularyId}"
 
+    let moveVocabularyById(collectionId: int, vocabularyId: int) =
+        $"{vocabularyById(collectionId, vocabularyId)}/move"
+
 module Entries =
     [<Literal>]
     let Path = "/{vocabularyId:int}/entries"

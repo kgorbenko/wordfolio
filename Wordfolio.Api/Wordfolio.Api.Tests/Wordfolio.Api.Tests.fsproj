@@ -42,6 +42,7 @@
     <Compile Include="Vocabularies/GetVocabularyByIdTests.fs" />
     <Compile Include="Vocabularies/UpdateVocabularyTests.fs" />
     <Compile Include="Vocabularies/DeleteVocabularyTests.fs" />
+    <Compile Include="Vocabularies/MoveVocabularyTests.fs" />
     <Compile Include="Entries/CreateEntryTests.fs" />
     <Compile Include="Entries/GetEntriesByVocabularyTests.fs" />
     <Compile Include="Entries/GetEntryByIdTests.fs" />
