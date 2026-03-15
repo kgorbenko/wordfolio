@@ -17,6 +17,12 @@ type UpdateVocabularyData =
       Description: string option
       UpdatedAt: DateTimeOffset }
 
+type MoveVocabularyData =
+    { VocabularyId: VocabularyId
+      OldCollectionId: CollectionId
+      NewCollectionId: CollectionId
+      UpdatedAt: DateTimeOffset }
+
 type IGetVocabularyById =
     abstract GetVocabularyById: VocabularyId -> Task<Vocabulary option>
 
@@ -32,6 +38,9 @@ type IUpdateVocabulary =
 type IDeleteVocabulary =
     abstract DeleteVocabulary: VocabularyId -> Task<int>
 
+type IMoveVocabulary =
+    abstract MoveVocabulary: MoveVocabularyData -> Task<Result<unit, unit>>
+
 module Capabilities =
     let getVocabularyById (env: #IGetVocabularyById) vocabularyId = env.GetVocabularyById(vocabularyId)
 
@@ -43,3 +52,5 @@ module Capabilities =
     let updateVocabulary (env: #IUpdateVocabulary) data = env.UpdateVocabulary(data)
 
     let deleteVocabulary (env: #IDeleteVocabulary) vocabularyId = env.DeleteVocabulary(vocabularyId)
+
+    let moveVocabulary (env: #IMoveVocabulary) data = env.MoveVocabulary(data)

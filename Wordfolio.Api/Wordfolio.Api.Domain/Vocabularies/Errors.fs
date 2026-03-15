@@ -28,3 +28,9 @@ type UpdateVocabularyError =
 type DeleteVocabularyError =
     | VocabularyNotFound of VocabularyId
     | VocabularyAccessDenied of VocabularyId
+
+[<RequireQualifiedAccess>]
+type MoveVocabularyError =
+    | VocabularyNotFound of VocabularyId
+    | VocabularyAccessDenied of VocabularyId
+    | CollectionNotFoundOrAccessDenied of CollectionId

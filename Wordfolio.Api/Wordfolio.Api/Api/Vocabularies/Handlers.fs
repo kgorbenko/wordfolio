@@ -53,6 +53,12 @@ let private toDeleteErrorResponse(error: DeleteVocabularyError) : IResult =
     | DeleteVocabularyError.VocabularyNotFound _ -> Results.NotFound()
     | DeleteVocabularyError.VocabularyAccessDenied _ -> Results.Forbid()
 
+let private toMoveErrorResponse(error: MoveVocabularyError) : IResult =
+    match error with
+    | MoveVocabularyError.VocabularyNotFound _ -> Results.NotFound()
+    | MoveVocabularyError.VocabularyAccessDenied _ -> Results.NotFound()
+    | MoveVocabularyError.CollectionNotFoundOrAccessDenied _ -> Results.NotFound()
+
 let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
     group
         .MapGet(
@@ -219,5 +225,37 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+    |> ignore
+
+    group
+        .MapPost(
+            UrlTokens.ById + "/move",
+            Func<int, int, MoveVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId id request user dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
+
+                            let! result =
+                                move
+                                    env
+                                    { UserId = UserId userId
+                                      CollectionId = CollectionId collectionId
+                                      VocabularyId = VocabularyId id
+                                      TargetCollectionId = CollectionId request.CollectionId
+                                      UpdatedAt = DateTimeOffset.UtcNow }
+
+                            return
+                                match result with
+                                | Ok vocabulary -> Results.Ok(toVocabularyResponse vocabulary)
+                                | Error error -> toMoveErrorResponse error
+                    })
+        )
+        .Produces<VocabularyResponse>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status404NotFound)
     |> ignore

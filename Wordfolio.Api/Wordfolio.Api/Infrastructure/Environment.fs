@@ -23,6 +23,7 @@ module DataAccess =
     type Vocabulary = Wordfolio.Api.DataAccess.Vocabularies.Vocabulary
     type CreateVocabularyParameters = Wordfolio.Api.DataAccess.Vocabularies.CreateVocabularyParameters
     type UpdateVocabularyParameters = Wordfolio.Api.DataAccess.Vocabularies.UpdateVocabularyParameters
+    type MoveVocabularyParameters = Wordfolio.Api.DataAccess.Vocabularies.MoveVocabularyParameters
     type Entry = Wordfolio.Api.DataAccess.Entries.Entry
     type CreateEntryParameters = Wordfolio.Api.DataAccess.Entries.CreateEntryParameters
     type UpdateEntryParameters = Wordfolio.Api.DataAccess.Entries.UpdateEntryParameters
@@ -286,6 +287,23 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                 return!
                     Wordfolio.Api.DataAccess.Vocabularies.deleteVocabularyAsync
                         id
+                        connection
+                        transaction
+                        cancellationToken
+            }
+
+    interface IMoveVocabulary with
+        member _.MoveVocabulary(data: MoveVocabularyData) =
+            task {
+                let parameters: DataAccess.MoveVocabularyParameters =
+                    { Id = VocabularyId.value data.VocabularyId
+                      OldCollectionId = CollectionId.value data.OldCollectionId
+                      NewCollectionId = CollectionId.value data.NewCollectionId
+                      UpdatedAt = data.UpdatedAt }
+
+                return!
+                    Wordfolio.Api.DataAccess.Vocabularies.moveVocabularyAsync
+                        parameters
                         connection
                         transaction
                         cancellationToken

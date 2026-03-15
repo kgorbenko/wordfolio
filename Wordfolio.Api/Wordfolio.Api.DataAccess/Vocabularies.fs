@@ -38,6 +38,12 @@ type UpdateVocabularyParameters =
       Description: string option
       UpdatedAt: DateTimeOffset }
 
+type MoveVocabularyParameters =
+    { Id: int
+      OldCollectionId: int
+      NewCollectionId: int
+      UpdatedAt: DateTimeOffset }
+
 let private fromRecord(record: VocabularyRecord) : Vocabulary =
     { Id = record.Id
       CollectionId = record.CollectionId
@@ -220,6 +226,51 @@ let deleteVocabularyAsync
             )
 
         return! connection.ExecuteAsync(commandDefinition)
+    }
+
+let moveVocabularyAsync
+    (parameters: MoveVocabularyParameters)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<Result<unit, unit>> =
+    task {
+        let sql =
+            """
+            UPDATE wordfolio."Vocabularies" v
+            SET "CollectionId" = @NewCollectionId, "UpdatedAt" = @UpdatedAt
+            WHERE v."Id" = @Id
+              AND v."CollectionId" = @OldCollectionId
+              AND v."IsDefault" = false
+              AND NOT EXISTS (
+                  SELECT 1 FROM wordfolio."Collections" c
+                  WHERE c."Id" = v."CollectionId" AND c."IsSystem" = true
+              )
+              AND NOT EXISTS (
+                  SELECT 1 FROM wordfolio."Collections" c
+                  WHERE c."Id" = @NewCollectionId AND c."IsSystem" = true
+              )
+            """
+
+        let commandDefinition =
+            CommandDefinition(
+                commandText = sql,
+                parameters =
+                    {| Id = parameters.Id
+                       OldCollectionId = parameters.OldCollectionId
+                       NewCollectionId = parameters.NewCollectionId
+                       UpdatedAt = parameters.UpdatedAt |},
+                transaction = transaction,
+                cancellationToken = cancellationToken
+            )
+
+        let! affectedRows = connection.ExecuteAsync(commandDefinition)
+
+        return
+            if affectedRows = 1 then
+                Ok()
+            else
+                Error()
     }
 
 let getDefaultVocabularyByUserIdAsync
