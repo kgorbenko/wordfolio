@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 import { mapEntry } from "../../../shared/api/entryMappers";
 import { entriesApi } from "../api/entriesApi";
@@ -17,8 +17,6 @@ interface UseMoveEntryMutationOptions {
 }
 
 export function useMoveEntryMutation(options?: UseMoveEntryMutationOptions) {
-    const queryClient = useQueryClient();
-
     return useMutation({
         mutationFn: ({
             collectionId,
@@ -30,7 +28,6 @@ export function useMoveEntryMutation(options?: UseMoveEntryMutationOptions) {
                 vocabularyId: targetVocabularyId,
             }),
         onSuccess: (data) => {
-            void queryClient.invalidateQueries();
             options?.onSuccess?.(mapEntry(data));
         },
         onError: options?.onError,
