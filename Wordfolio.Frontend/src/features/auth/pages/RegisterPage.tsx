@@ -43,8 +43,8 @@ export const RegisterPage = () => {
     });
 
     const registerMutation = useRegisterMutation({
-        onSuccess: () => {
-            navigate(loginPath());
+        onSuccess: async () => {
+            await navigate(loginPath());
         },
         onError: (error) => {
             const errorMessages = parseApiError(error);

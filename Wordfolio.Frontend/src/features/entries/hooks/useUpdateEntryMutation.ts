@@ -12,7 +12,7 @@ interface UpdateEntryParams {
 }
 
 interface UseUpdateEntryMutationOptions {
-    readonly onSuccess?: (data: Entry) => void;
+    readonly onSuccess?: (data: Entry) => Promise<void> | void;
     readonly onError?: () => void;
 }
 
@@ -34,9 +34,9 @@ export function useUpdateEntryMutation(
                 entryId,
                 mapUpdateEntryData(data)
             ),
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
+            await options?.onSuccess?.(mapEntry(data));
             void queryClient.invalidateQueries();
-            options?.onSuccess?.(mapEntry(data));
         },
         onError: options?.onError,
     });

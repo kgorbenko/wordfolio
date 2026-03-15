@@ -7,7 +7,7 @@ interface DeleteEntryParams {
 }
 
 interface UseDeleteDraftEntryMutationOptions {
-    readonly onSuccess?: () => void;
+    readonly onSuccess?: () => Promise<void> | void;
     readonly onError?: () => void;
 }
 
@@ -19,9 +19,9 @@ export function useDeleteDraftEntryMutation(
     return useMutation({
         mutationFn: ({ entryId }: DeleteEntryParams) =>
             draftsApi.deleteDraftEntry(entryId),
-        onSuccess: () => {
+        onSuccess: async () => {
+            await options?.onSuccess?.();
             void queryClient.invalidateQueries();
-            options?.onSuccess?.();
         },
         onError: options?.onError,
     });

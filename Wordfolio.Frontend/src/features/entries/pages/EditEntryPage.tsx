@@ -69,8 +69,8 @@ export const EditEntryPage = () => {
     } = useEntryQuery(collectionId, vocabularyId, entryId);
 
     const updateMutation = useUpdateEntryMutation({
-        onSuccess: () => {
-            void navigate(entryDetailPath(collectionId, vocabularyId, entryId));
+        onSuccess: async () => {
+            await navigate(entryDetailPath(collectionId, vocabularyId, entryId));
         },
         onError: () => {
             openErrorNotification({

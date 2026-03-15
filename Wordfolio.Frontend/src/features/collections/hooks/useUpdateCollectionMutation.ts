@@ -8,7 +8,7 @@ import { CollectionFormData } from "../schemas/collectionSchemas";
 import { Collection } from "../types";
 
 interface UseUpdateCollectionMutationOptions {
-    onSuccess?: (data: Collection) => void;
+    onSuccess?: (data: Collection) => Promise<void> | void;
     onError?: () => void;
 }
 
@@ -21,9 +21,9 @@ export function useUpdateCollectionMutation(
     return useMutation({
         mutationFn: (data: CollectionFormData) =>
             collectionsApi.update(id, mapToUpdateCollectionRequest(data)),
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
+            await options?.onSuccess?.(mapCollectionDetail(data));
             void queryClient.invalidateQueries();
-            options?.onSuccess?.(mapCollectionDetail(data));
         },
         onError: options?.onError,
     });

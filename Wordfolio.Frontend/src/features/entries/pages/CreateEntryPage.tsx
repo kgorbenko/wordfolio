@@ -40,9 +40,9 @@ export const CreateEntryPage = () => {
     } = useVocabularyDetailQuery(collectionId, vocabularyId);
 
     const createMutation = useCreateEntryMutation({
-        onSuccess: () => {
+        onSuccess: async () => {
             openSuccessNotification({ message: "Entry created successfully" });
-            void navigate(vocabularyDetailPath(collectionId, vocabularyId));
+            await navigate(vocabularyDetailPath(collectionId, vocabularyId));
         },
         onError: () => {
             openErrorNotification({

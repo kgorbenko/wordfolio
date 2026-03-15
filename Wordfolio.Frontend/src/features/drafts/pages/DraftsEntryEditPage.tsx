@@ -59,8 +59,8 @@ export const DraftsEntryEditPage = () => {
     } = useDraftEntryQuery(entryId);
 
     const updateMutation = useUpdateDraftEntryMutation({
-        onSuccess: () => {
-            void navigate(draftsEntryDetailPath(entryId));
+        onSuccess: async () => {
+            await navigate(draftsEntryDetailPath(entryId));
         },
         onError: () => {
             openErrorNotification({

@@ -5,7 +5,7 @@ import { mapAuthTokens, mapRefreshRequest } from "../api/mappers";
 import type { AuthTokens, RefreshCredentials } from "../types";
 
 interface UseRefreshMutationOptions {
-    onSuccess?: (data: AuthTokens) => void;
+    onSuccess?: (data: AuthTokens) => Promise<void> | void;
     onError?: () => void;
 }
 

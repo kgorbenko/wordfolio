@@ -7,7 +7,7 @@ interface DeleteVocabularyMutationVariables {
 }
 
 interface UseDeleteVocabularyMutationOptions {
-    onSuccess?: () => void;
+    onSuccess?: () => Promise<void> | void;
     onError?: () => void;
 }
 
@@ -22,12 +22,9 @@ export const useDeleteVocabularyMutation = (
             vocabularyId,
         }: DeleteVocabularyMutationVariables) =>
             vocabulariesApi.deleteVocabulary(collectionId, vocabularyId),
-        onSuccess: () => {
+        onSuccess: async () => {
+            await options?.onSuccess?.();
             void queryClient.invalidateQueries();
-
-            if (options?.onSuccess) {
-                options.onSuccess();
-            }
         },
         onError: options?.onError,
     });
