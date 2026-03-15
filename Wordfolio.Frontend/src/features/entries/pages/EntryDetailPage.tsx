@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -34,6 +35,7 @@ export const EntryDetailPage = () => {
     const { collectionId, vocabularyId, entryId } =
         entryDetailRouteApi.useParams();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const { openErrorNotification } = useNotificationContext();
     const { raiseConfirmDialogAsync } = useConfirmDialog();
     const { raiseMoveEntryDialogAsync, dialogElement } = useMoveEntryDialog();
@@ -113,21 +115,22 @@ export const EntryDetailPage = () => {
                 targetVocabularyId: moveSelection.vocabularyId,
             },
             {
-                onSuccess: (movedEntry) => {
+                onSuccess: async (movedEntry) => {
                     if (moveSelection.isDefault) {
-                        void navigate(draftsEntryDetailPath(movedEntry.id));
-                        return;
+                        await navigate(draftsEntryDetailPath(movedEntry.id));
+                    } else {
+                        assertNonNullable(moveSelection.collectionId);
+
+                        await navigate(
+                            entryDetailPath(
+                                moveSelection.collectionId,
+                                moveSelection.vocabularyId,
+                                movedEntry.id
+                            )
+                        );
                     }
 
-                    assertNonNullable(moveSelection.collectionId);
-
-                    void navigate(
-                        entryDetailPath(
-                            moveSelection.collectionId,
-                            moveSelection.vocabularyId,
-                            movedEntry.id
-                        )
-                    );
+                    void queryClient.invalidateQueries();
                 },
             }
         );
@@ -136,6 +139,7 @@ export const EntryDetailPage = () => {
         raiseMoveEntryDialogAsync,
         moveMutation,
         navigate,
+        queryClient,
         collectionId,
     ]);
 
