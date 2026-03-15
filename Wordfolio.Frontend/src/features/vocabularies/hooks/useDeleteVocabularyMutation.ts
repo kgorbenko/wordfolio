@@ -7,7 +7,7 @@ interface DeleteVocabularyMutationVariables {
 }
 
 interface UseDeleteVocabularyMutationOptions {
-    onSuccess?: () => Promise<void> | void;
+    onSuccess?: () => Promise<void>;
     onError?: () => void;
 }
 

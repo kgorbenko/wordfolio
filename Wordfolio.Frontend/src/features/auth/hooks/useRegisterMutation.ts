@@ -6,7 +6,7 @@ import { mapRegisterRequest } from "../api/mappers";
 import type { RegisterCredentials } from "../types";
 
 interface UseRegisterMutationOptions {
-    readonly onSuccess?: () => Promise<void> | void;
+    readonly onSuccess?: () => Promise<void>;
     readonly onError?: (error: ApiError) => void;
 }
 

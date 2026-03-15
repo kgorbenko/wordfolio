@@ -38,7 +38,7 @@ export const AuthenticatedLayout = () => {
     const pendingRequestRef = useRef<PendingEntry | null>(null);
 
     const createEntryMutation = useCreateEntryMutation({
-        onSuccess: () => {
+        onSuccess: async () => {
             openSuccessNotification({ message: "Added to vocabulary" });
             closeWordEntry();
         },
@@ -62,7 +62,7 @@ export const AuthenticatedLayout = () => {
     });
 
     const createDraftMutation = useCreateDraftMutation({
-        onSuccess: () => {
+        onSuccess: async () => {
             openSuccessNotification({ message: "Added to drafts" });
             closeWordEntry();
         },

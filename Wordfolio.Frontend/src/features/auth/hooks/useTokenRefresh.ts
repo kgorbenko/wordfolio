@@ -15,7 +15,7 @@ export const useTokenRefresh = () => {
     const hasInitializedRef = useRef(false);
 
     const refreshMutation = useRefreshMutation({
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
             setTokens(data);
             setIsInitializing(false);
         },

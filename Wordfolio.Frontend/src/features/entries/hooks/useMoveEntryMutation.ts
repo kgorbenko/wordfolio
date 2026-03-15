@@ -12,7 +12,7 @@ interface MoveEntryParams {
 }
 
 interface UseMoveEntryMutationOptions {
-    readonly onSuccess?: (data: Entry) => Promise<void> | void;
+    readonly onSuccess?: (data: Entry) => Promise<void>;
     readonly onError?: () => void;
 }
 

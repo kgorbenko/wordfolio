@@ -10,7 +10,7 @@ interface MoveVocabularyParams {
 }
 
 interface UseMoveVocabularyMutationOptions {
-    readonly onSuccess?: (data: VocabularyResponse) => Promise<void> | void;
+    readonly onSuccess?: (data: VocabularyResponse) => Promise<void>;
     readonly onError?: () => void;
 }
 

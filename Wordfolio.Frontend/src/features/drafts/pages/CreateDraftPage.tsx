@@ -23,9 +23,9 @@ export const CreateDraftPage = () => {
     const pendingRequestRef = useRef<CreateEntryData | null>(null);
 
     const createMutation = useCreateDraftMutation({
-        onSuccess: () => {
+        onSuccess: async () => {
             openSuccessNotification({ message: "Draft created successfully" });
-            void navigate(draftsPath());
+            await navigate(draftsPath());
         },
         onError: () => {
             openErrorNotification({

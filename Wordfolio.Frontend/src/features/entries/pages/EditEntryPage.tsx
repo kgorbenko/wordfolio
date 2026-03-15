@@ -70,7 +70,9 @@ export const EditEntryPage = () => {
 
     const updateMutation = useUpdateEntryMutation({
         onSuccess: async () => {
-            await navigate(entryDetailPath(collectionId, vocabularyId, entryId));
+            await navigate(
+                entryDetailPath(collectionId, vocabularyId, entryId)
+            );
         },
         onError: () => {
             openErrorNotification({

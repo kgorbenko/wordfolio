@@ -8,7 +8,7 @@ import { CollectionFormData } from "../schemas/collectionSchemas";
 import { Collection } from "../types";
 
 interface UseUpdateCollectionMutationOptions {
-    onSuccess?: (data: Collection) => Promise<void> | void;
+    onSuccess?: (data: Collection) => Promise<void>;
     onError?: () => void;
 }
 

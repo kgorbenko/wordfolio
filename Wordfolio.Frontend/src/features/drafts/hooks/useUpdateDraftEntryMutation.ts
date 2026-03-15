@@ -10,7 +10,7 @@ interface UpdateEntryParams {
 }
 
 interface UseUpdateDraftEntryMutationOptions {
-    readonly onSuccess?: (data: Entry) => Promise<void> | void;
+    readonly onSuccess?: (data: Entry) => Promise<void>;
     readonly onError?: () => void;
 }
 

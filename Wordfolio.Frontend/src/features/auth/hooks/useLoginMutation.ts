@@ -6,7 +6,7 @@ import { mapAuthTokens, mapLoginRequest } from "../api/mappers";
 import type { AuthTokens, LoginCredentials } from "../types";
 
 interface UseLoginMutationOptions {
-    onSuccess?: (data: AuthTokens) => Promise<void> | void;
+    onSuccess?: (data: AuthTokens) => Promise<void>;
     onError?: (error: ApiError) => void;
 }
 

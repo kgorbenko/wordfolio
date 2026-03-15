@@ -7,7 +7,7 @@ interface DeleteEntryParams {
 }
 
 interface UseDeleteDraftEntryMutationOptions {
-    readonly onSuccess?: () => Promise<void> | void;
+    readonly onSuccess?: () => Promise<void>;
     readonly onError?: () => void;
 }
 

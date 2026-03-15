@@ -11,7 +11,7 @@ interface UpdateVocabularyMutationVariables {
 }
 
 interface UseUpdateVocabularyMutationOptions {
-    onSuccess?: (data: Vocabulary) => Promise<void> | void;
+    onSuccess?: (data: Vocabulary) => Promise<void>;
     onError?: () => void;
 }
 

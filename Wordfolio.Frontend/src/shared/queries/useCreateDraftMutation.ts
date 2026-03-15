@@ -12,7 +12,7 @@ interface CreateDraftParams {
 }
 
 interface UseCreateDraftMutationOptions {
-    readonly onSuccess?: (data: Entry) => Promise<void> | void;
+    readonly onSuccess?: (data: Entry) => Promise<void>;
     readonly onError?: (error: ApiError) => void;
     readonly onDuplicateEntry?: (existingEntry: Entry) => void;
 }

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { collectionsApi } from "../api/collectionsApi";
 
 interface UseDeleteCollectionMutationOptions {
-    onSuccess?: () => Promise<void> | void;
+    onSuccess?: () => Promise<void>;
     onError?: () => void;
 }
 
