@@ -39,59 +39,57 @@ export const SearchActionToolbar = ({
     return (
         <Box className={styles.toolbar}>
             <QuickFilter className={styles.filter}>
-                    <QuickFilterControl
-                        render={({ ref, ...controlProps }, state) => (
-                            <TextField
-                                {...controlProps}
-                                inputRef={ref}
-                                placeholder={placeholder}
-                                fullWidth
-                                slotProps={{
-                                    input: {
-                                        startAdornment: (
-                                            <Box
-                                                component="span"
-                                                className={styles.searchIcon}
-                                                sx={{
-                                                    color: "text.placeholder",
-                                                }}
+                <QuickFilterControl
+                    render={({ ref, ...controlProps }, state) => (
+                        <TextField
+                            {...controlProps}
+                            inputRef={ref}
+                            placeholder={placeholder}
+                            fullWidth
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <Box
+                                            component="span"
+                                            className={styles.searchIcon}
+                                            sx={{
+                                                color: "text.placeholder",
+                                            }}
+                                        >
+                                            <SearchIcon />
+                                        </Box>
+                                    ),
+                                    endAdornment: state.value ? (
+                                        <Box
+                                            component="span"
+                                            className={styles.clearIcon}
+                                            sx={{
+                                                color: "text.placeholder",
+                                            }}
+                                        >
+                                            <QuickFilterClear
+                                                size="small"
+                                                aria-label="Clear search"
                                             >
-                                                <SearchIcon />
-                                            </Box>
-                                        ),
-                                        endAdornment: state.value ? (
-                                            <Box
-                                                component="span"
-                                                className={styles.clearIcon}
-                                                sx={{
-                                                    color: "text.placeholder",
-                                                }}
-                                            >
-                                                <QuickFilterClear
-                                                    size="small"
-                                                    aria-label="Clear search"
-                                                >
-                                                    <ClearIcon />
-                                                </QuickFilterClear>
-                                            </Box>
-                                        ) : null,
-                                        ...controlProps.slotProps?.input,
-                                    },
-                                    ...controlProps.slotProps,
-                                }}
-                            />
-                        )}
-                    />
-                </QuickFilter>
-                <Button
-                    variant="contained"
-                    onClick={onAction}
-                    className={styles.actionButton}
-                >
-                    {isMobile
-                        ? (mobileActionLabel ?? actionLabel)
-                        : actionLabel}
-                </Button>
+                                                <ClearIcon />
+                                            </QuickFilterClear>
+                                        </Box>
+                                    ) : null,
+                                    ...controlProps.slotProps?.input,
+                                },
+                                ...controlProps.slotProps,
+                            }}
+                        />
+                    )}
+                />
+            </QuickFilter>
+            <Button
+                variant="contained"
+                onClick={onAction}
+                className={styles.actionButton}
+            >
+                {isMobile ? (mobileActionLabel ?? actionLabel) : actionLabel}
+            </Button>
         </Box>
     );
 };

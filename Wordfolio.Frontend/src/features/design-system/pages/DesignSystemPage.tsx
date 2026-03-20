@@ -310,7 +310,12 @@ export const DesignSystemPage = () => {
                     </Typography>
 
                     <Box className={styles.section}>
-                        <Typography variant="h2" className={styles.sectionTitle}>Typography Scale</Typography>
+                        <Typography
+                            variant="h2"
+                            className={styles.sectionTitle}
+                        >
+                            Typography Scale
+                        </Typography>
                         <Divider className={styles.sectionDivider} />
                         <Box className={styles.typographyStack}>
                             <Typography variant="h1">
@@ -338,7 +343,12 @@ export const DesignSystemPage = () => {
                     </Box>
 
                     <Box className={styles.section}>
-                        <Typography variant="h2" className={styles.sectionTitle}>Color Palette</Typography>
+                        <Typography
+                            variant="h2"
+                            className={styles.sectionTitle}
+                        >
+                            Color Palette
+                        </Typography>
                         <Divider className={styles.sectionDivider} />
                         {paletteGroups.map((group) => (
                             <Box key={group.label}>
@@ -362,7 +372,12 @@ export const DesignSystemPage = () => {
                     </Box>
 
                     <Box className={styles.section}>
-                        <Typography variant="h2" className={styles.sectionTitle}>Buttons</Typography>
+                        <Typography
+                            variant="h2"
+                            className={styles.sectionTitle}
+                        >
+                            Buttons
+                        </Typography>
                         <Divider className={styles.sectionDivider} />
                         <Box className={styles.typographyStack}>
                             <Box className={styles.buttonsRow}>
@@ -384,7 +399,12 @@ export const DesignSystemPage = () => {
                     </Box>
 
                     <Box className={styles.section}>
-                        <Typography variant="h2" className={styles.sectionTitle}>Form Inputs</Typography>
+                        <Typography
+                            variant="h2"
+                            className={styles.sectionTitle}
+                        >
+                            Form Inputs
+                        </Typography>
                         <Divider className={styles.sectionDivider} />
                         <Box className={styles.formInputs}>
                             <TextField
@@ -425,7 +445,12 @@ export const DesignSystemPage = () => {
                     </Box>
 
                     <Box className={styles.section}>
-                        <Typography variant="h2" className={styles.sectionTitle}>Search Toolbar</Typography>
+                        <Typography
+                            variant="h2"
+                            className={styles.sectionTitle}
+                        >
+                            Search Toolbar
+                        </Typography>
                         <Divider className={styles.sectionDivider} />
                         <Box className={styles.searchToolbar}>
                             <TextField
@@ -468,7 +493,12 @@ export const DesignSystemPage = () => {
                     </Box>
 
                     <Box className={styles.section}>
-                        <Typography variant="h2" className={styles.sectionTitle}>Grid</Typography>
+                        <Typography
+                            variant="h2"
+                            className={styles.sectionTitle}
+                        >
+                            Grid
+                        </Typography>
                         <Divider className={styles.sectionDivider} />
                         <Box className={styles.gridWrapper}>
                             <DataGrid
@@ -497,7 +527,12 @@ export const DesignSystemPage = () => {
                     </Box>
 
                     <Box className={styles.section}>
-                        <Typography variant="h2" className={styles.sectionTitle}>Empty &amp; Error States</Typography>
+                        <Typography
+                            variant="h2"
+                            className={styles.sectionTitle}
+                        >
+                            Empty &amp; Error States
+                        </Typography>
                         <Divider className={styles.sectionDivider} />
                         <Box className={styles.statesRow}>
                             <Box className={styles.stateItem}>
@@ -522,7 +557,12 @@ export const DesignSystemPage = () => {
                     </Box>
 
                     <Box className={styles.section}>
-                        <Typography variant="h2" className={styles.sectionTitle}>Chips</Typography>
+                        <Typography
+                            variant="h2"
+                            className={styles.sectionTitle}
+                        >
+                            Chips
+                        </Typography>
                         <Divider className={styles.sectionDivider} />
                         <Box className={styles.chipsRow}>
                             <Chip label="Custom" size="small" />
