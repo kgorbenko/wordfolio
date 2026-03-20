@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { Outlet, useNavigate } from "@tanstack/react-router";
-import { Box, useMediaQuery, useTheme, Toolbar } from "@mui/material";
+import { Outlet, useNavigate, useParams } from "@tanstack/react-router";
 
 import { useAuthStore } from "../../stores/authStore";
 import { useUiStore } from "../../stores/uiStore";
@@ -8,15 +7,17 @@ import { useNotificationContext } from "../../contexts/NotificationContext";
 import { useDuplicateEntryDialog } from "../../hooks/useDuplicateEntryDialog";
 import { useCreateEntryMutation } from "../../queries/useCreateEntryMutation";
 import { useCreateDraftMutation } from "../../queries/useCreateDraftMutation";
+import { useCollectionsHierarchyQuery } from "../../queries/useCollectionsHierarchyQuery";
 import type { CreateEntryData } from "../../types/entries";
 import { VocabularyContext } from "../entries/EntryLookupForm";
 import { WordEntrySheet } from "../entries/WordEntrySheet";
 import { loginPath } from "../../../features/auth/routes";
-import { Sidebar } from "./Sidebar";
-import { TopBar } from "./TopBar";
-import { assertNonNullable } from "../../utils/misc.ts";
-
-import styles from "./AuthenticatedLayout.module.scss";
+import { collectionDetailPath } from "../../../features/collections/routes";
+import { vocabularyDetailPath } from "../../../features/vocabularies/routes";
+import { draftsPath } from "../../../features/drafts/routes";
+import { AppLayout } from "./AppLayout";
+import type { NavCollection, NavUser } from "./AppSidebar";
+import { assertNonNullable } from "../../utils/misc";
 
 interface PendingEntry {
     readonly context: VocabularyContext | null;
@@ -24,18 +25,36 @@ interface PendingEntry {
 }
 
 export const AuthenticatedLayout = () => {
-    const theme = useTheme();
     const navigate = useNavigate();
-    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+    const params = useParams({ strict: false });
     const { openWordEntry, isWordEntryOpen, closeWordEntry } = useUiStore();
     const { clearAuth } = useAuthStore();
     const { openSuccessNotification, openErrorNotification } =
         useNotificationContext();
     const { raiseDuplicateEntryDialogAsync, dialogElement } =
         useDuplicateEntryDialog();
+    const { data } = useCollectionsHierarchyQuery();
 
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const activeCollectionId = params.collectionId
+        ? Number(params.collectionId)
+        : undefined;
+    const activeVocabularyId = params.vocabularyId
+        ? Number(params.vocabularyId)
+        : undefined;
+
+    const [expandedCollections, setExpandedCollections] = useState<Set<number>>(
+        () => new Set(activeCollectionId ? [activeCollectionId] : [])
+    );
     const pendingRequestRef = useRef<PendingEntry | null>(null);
+
+    const toggleCollection = (id: number) => {
+        setExpandedCollections((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
 
     const createEntryMutation = useCreateEntryMutation({
         onSuccess: async () => {
@@ -109,35 +128,41 @@ export const AuthenticatedLayout = () => {
         [openErrorNotification]
     );
 
+    const collections: NavCollection[] = (data?.collections ?? []).map((c) => ({
+        id: c.id,
+        name: c.name,
+        entryCount: c.vocabularies.reduce((sum, v) => sum + v.entryCount, 0),
+        active: c.id === activeCollectionId && activeVocabularyId === undefined,
+        expanded: expandedCollections.has(c.id),
+        activeChildId: activeVocabularyId,
+        children: c.vocabularies.map((v) => ({
+            id: v.id,
+            name: v.name,
+            entryCount: v.entryCount,
+        })),
+        onClick: () => void navigate(collectionDetailPath(c.id)),
+        onExpand: () => toggleCollection(c.id),
+        onChildClick: (vocabId) =>
+            void navigate(vocabularyDetailPath(c.id, vocabId)),
+    }));
+
+    const user: NavUser = {
+        initials: "U",
+        email: "user@wordfolio.app",
+        onLogout: handleLogout,
+    };
+
+    const draftCount = data?.defaultVocabulary?.entryCount ?? 0;
+
     return (
-        <Box className={styles.root}>
-            <TopBar
-                onMenuClick={() => setSidebarOpen(true)}
-                onLogout={handleLogout}
-                showMenuButton={isMobile}
-            />
-
-            <Box className={styles.contentWrapper}>
-                {isMobile ? (
-                    <Sidebar
-                        variant="temporary"
-                        open={sidebarOpen}
-                        onClose={() => setSidebarOpen(false)}
-                        onAddEntry={() => openWordEntry()}
-                    />
-                ) : (
-                    <Sidebar
-                        variant="permanent"
-                        onAddEntry={() => openWordEntry()}
-                    />
-                )}
-
-                <Box component="main" className={styles.main}>
-                    <Toolbar />
-                    <Outlet />
-                </Box>
-            </Box>
-
+        <AppLayout
+            draftCount={draftCount}
+            collections={collections}
+            user={user}
+            onAddEntry={() => openWordEntry()}
+            onDraftsClick={() => void navigate(draftsPath())}
+        >
+            <Outlet />
             <WordEntrySheet
                 open={isWordEntryOpen}
                 onClose={closeWordEntry}
@@ -149,6 +174,6 @@ export const AuthenticatedLayout = () => {
                 onLookupError={handleLookupError}
             />
             {dialogElement}
-        </Box>
+        </AppLayout>
     );
 };

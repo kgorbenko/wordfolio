@@ -1,48 +1,50 @@
-import { Box, Typography, Button, alpha, useTheme } from "@mui/material";
 import { ReactNode } from "react";
+import { Box, Typography } from "@mui/material";
 
-import "./EmptyState.scss";
+import styles from "./EmptyState.module.scss";
 
 interface EmptyStateProps {
-    readonly icon: ReactNode;
-    readonly title: string;
-    readonly description: string;
-    readonly actionLabel?: string;
-    readonly onAction?: () => void;
+    readonly icon?: ReactNode;
+    readonly title?: string;
+    readonly description?: string;
 }
 
-export const EmptyState = ({
-    icon,
-    title,
-    description,
-    actionLabel,
-    onAction,
-}: EmptyStateProps) => {
-    const theme = useTheme();
+const DefaultIcon = () => (
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+        <rect
+            x="6"
+            y="8"
+            width="20"
+            height="16"
+            rx="2"
+            stroke="currentColor"
+            strokeWidth="1.5"
+        />
+        <path d="M6 14h20" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="16" cy="21" r="1.5" fill="currentColor" />
+    </svg>
+);
 
-    return (
-        <Box className="empty-state">
-            <Box
-                className="icon-wrapper"
-                sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1) }}
-            >
-                {icon}
-            </Box>
-            <Typography variant="h5" gutterBottom fontWeight={600}>
-                {title}
-            </Typography>
-            <Typography
-                className="description"
-                variant="body1"
-                color="text.secondary"
-            >
-                {description}
-            </Typography>
-            {actionLabel && onAction && (
-                <Button variant="contained" size="large" onClick={onAction}>
-                    {actionLabel}
-                </Button>
-            )}
-        </Box>
-    );
-};
+export const EmptyState = ({
+    icon = <DefaultIcon />,
+    title = "Nothing here yet",
+    description = "Add your first item to get started",
+}: EmptyStateProps) => (
+    <Box className={styles.emptyState} sx={{ color: "divider" }}>
+        {icon}
+        <Typography
+            variant="body1"
+            color="text.primary"
+            className={styles.title}
+        >
+            {title}
+        </Typography>
+        <Typography
+            variant="body2"
+            color="text.secondary"
+            className={styles.description}
+        >
+            {description}
+        </Typography>
+    </Box>
+);

@@ -1,3 +1,15 @@
+.section {
+    margin-bottom: 48px;
+
+    .sectionTitle:global(.MuiTypography-root) {
+        margin-bottom: 8px;
+    }
+
+    .sectionDivider:global(.MuiDivider-root) {
+        margin-bottom: 24px;
+    }
+}
+
 .pageWrapper {
     min-height: 100%;
 }

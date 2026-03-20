@@ -1,20 +1,16 @@
 import { useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Button } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 
 import { draftsEntryDetailPath, draftsCreatePath } from "../routes";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
-import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBreadcrumbs";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 
 import { useDraftsQuery } from "../hooks/useDraftsQuery";
 import { DraftsContent } from "../components/DraftsContent";
 import { DraftsEmptyState } from "../components/DraftsEmptyState";
-
-import styles from "./DraftsPage.module.scss";
 
 export const DraftsPage = () => {
     const navigate = useNavigate();
@@ -46,7 +42,7 @@ export const DraftsPage = () => {
         }
 
         if (!data) {
-            return <DraftsEmptyState onAddDraftClick={handleAddDraftClick} />;
+            return <DraftsEmptyState />;
         }
 
         return (
@@ -60,22 +56,10 @@ export const DraftsPage = () => {
 
     return (
         <PageContainer>
-            <BreadcrumbNav items={[{ label: "Drafts" }]} />
+            <TopBarBreadcrumbs items={[{ label: "Drafts" }]} />
             <PageHeader
                 title="Drafts"
                 description="Words saved to your default vocabulary"
-                actions={
-                    <div className={styles.actions}>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={handleAddDraftClick}
-                            disabled={isLoading}
-                        >
-                            Add Draft
-                        </Button>
-                    </div>
-                }
             />
             {renderContent()}
         </PageContainer>

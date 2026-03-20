@@ -1,0 +1,43 @@
+$mobileFontSize: 14px;
+$desktopFontSize: 16px;
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+
+    .breadcrumbItem {
+        display: flex;
+        align-items: center;
+
+        .breadcrumbLabel {
+            font-size: $mobileFontSize;
+
+            @media (min-width: 900px) {
+                font-size: $desktopFontSize;
+            }
+        }
+
+        .linkWrapper {
+            text-decoration: none;
+        }
+
+        .backButton {
+            text-decoration: none;
+        }
+
+        .backButtonInner {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .separator {
+            font-size: $mobileFontSize;
+            padding: 0 8px;
+
+            @media (min-width: 900px) {
+                font-size: $desktopFontSize;
+            }
+        }
+    }
+}

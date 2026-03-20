@@ -9,10 +9,20 @@ interface TextWithSubtextProps {
 
 export const TextWithSubtext = ({ text, subtext }: TextWithSubtextProps) => (
     <Box className={styles.container}>
-        <Typography variant="body1" color="text.primary" noWrap className={styles.text}>
+        <Typography
+            variant="body1"
+            color="text.primary"
+            noWrap
+            className={styles.text}
+        >
             {text}
         </Typography>
-        <Typography variant="body2" color="text.accent" noWrap className={styles.subtext}>
+        <Typography
+            variant="body2"
+            color="text.accent"
+            noWrap
+            className={styles.subtext}
+        >
             {subtext}
         </Typography>
     </Box>

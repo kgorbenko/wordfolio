@@ -1,9 +1,5 @@
 import { useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { IconButton, Button } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
 
 import {
     collectionDetailRouteApi,
@@ -16,10 +12,9 @@ import {
 } from "../../vocabularies/routes";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
-import {
-    BreadcrumbNav,
-    BreadcrumbItem,
-} from "../../../shared/components/BreadcrumbNav";
+import { PageHeaderActions } from "../../../shared/components/PageHeaderActions";
+import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBreadcrumbs";
+import type { BreadcrumbItem } from "../../../shared/components/layouts/BreadcrumbNav";
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { CollectionDetailContent } from "../components/CollectionDetailContent";
@@ -29,8 +24,6 @@ import { useDeleteCollectionMutation } from "../hooks/useDeleteCollectionMutatio
 import { useConfirmDialog } from "../../../shared/contexts/ConfirmDialogContext";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { assertNonNullable } from "../../../shared/utils/misc";
-
-import styles from "./CollectionDetailPage.module.scss";
 
 export const CollectionDetailPage = () => {
     const { collectionId } = collectionDetailRouteApi.useParams();
@@ -127,7 +120,7 @@ export const CollectionDetailPage = () => {
 
     return (
         <PageContainer>
-            <BreadcrumbNav items={breadcrumbs} />
+            <TopBarBreadcrumbs items={breadcrumbs} />
             <PageHeader
                 title={
                     isCollectionLoading
@@ -136,33 +129,23 @@ export const CollectionDetailPage = () => {
                 }
                 description={collection?.description ?? undefined}
                 actions={
-                    <div className={styles.actions}>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={handleCreateVocabulary}
-                            disabled={isLoading}
-                        >
-                            Create Vocabulary
-                        </Button>
-                        <IconButton
-                            onClick={handleEditClick}
-                            disabled={isLoading}
-                            color="primary"
-                        >
-                            <EditIcon />
-                        </IconButton>
-                        <IconButton
-                            onClick={handleDelete}
-                            disabled={isLoading || deleteMutation.isPending}
-                            color="error"
-                        >
-                            <DeleteIcon />
-                        </IconButton>
-                    </div>
+                    <PageHeaderActions
+                        actions={[
+                            {
+                                label: "Edit",
+                                onClick: handleEditClick,
+                                disabled: isLoading,
+                            },
+                            {
+                                label: "Delete",
+                                onClick: handleDelete,
+                                color: "error",
+                                disabled: isLoading || deleteMutation.isPending,
+                            },
+                        ]}
+                    />
                 }
             />
-
             {renderContent()}
         </PageContainer>
     );

@@ -14,7 +14,7 @@ export const PageHeader = ({
 }: PageHeaderProps) => (
     <Box className={styles.container}>
         <Box className={styles.topRow}>
-            <Typography variant="h4" fontWeight={600} className={styles.title}>
+            <Typography variant="h1" className={styles.title}>
                 {title}
             </Typography>
             {actions}

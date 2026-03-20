@@ -18,7 +18,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import FolderIcon from "@mui/icons-material/Folder";
 import LogoutIcon from "@mui/icons-material/Logout";
 
-import classnames from 'classnames';
+import classnames from "classnames";
 
 import styles from "./AppSidebar.module.scss";
 
@@ -29,7 +29,11 @@ export interface NavCollection {
     readonly active?: boolean;
     readonly expanded?: boolean;
     readonly activeChildId?: number;
-    readonly children?: { readonly id: number; readonly name: string; readonly entryCount: number }[];
+    readonly children?: {
+        readonly id: number;
+        readonly name: string;
+        readonly entryCount: number;
+    }[];
     readonly onClick?: () => void;
     readonly onExpand?: () => void;
     readonly onChildClick?: (id: number) => void;
@@ -58,7 +62,13 @@ const ChildItem = ({
         sx={active ? { color: "secondary.main" } : undefined}
     >
         <ListItemText primary={name} />
-        <Box component="span" className={styles.childItemCount} sx={{ color: "text.primary" }}>{entryCount}</Box>
+        <Box
+            component="span"
+            className={styles.childItemCount}
+            sx={{ color: "text.primary" }}
+        >
+            {entryCount}
+        </Box>
     </ListItemButton>
 );
 
@@ -90,19 +100,21 @@ const SidebarListItem = ({
     expandable?: boolean;
     expanded?: boolean;
     className?: string;
-}) =>
+}) => (
     <ListItemButton
         onClick={onClick}
         className={classnames(styles.sidebarListItem, className)}
-        sx={active ? {
-            color: "secondary.main",
-            "& .MuiListItemIcon-root": { color: "secondary.main" },
-            "& .MuiListItemText-primary": { color: "secondary.main" },
-        } : undefined}
+        sx={
+            active
+                ? {
+                      color: "secondary.main",
+                      "& .MuiListItemIcon-root": { color: "secondary.main" },
+                      "& .MuiListItemText-primary": { color: "secondary.main" },
+                  }
+                : undefined
+        }
     >
-        <ListItemIcon>
-            {icon}
-        </ListItemIcon>
+        <ListItemIcon>{icon}</ListItemIcon>
         <ListItemText primary={title} />
         <Box
             component="span"
@@ -116,8 +128,8 @@ const SidebarListItem = ({
                 className={styles.expandIcon}
                 sx={{
                     color: "text.secondary",
-                    transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                    transition: 'transform 250ms ease',
+                    transform: expanded ? "rotate(90deg)" : "rotate(0deg)",
+                    transition: "transform 250ms ease",
                 }}
                 onClick={(e) => {
                     e.stopPropagation();
@@ -126,6 +138,7 @@ const SidebarListItem = ({
             />
         )}
     </ListItemButton>
+);
 
 const SidebarContent = ({
     draftCount,
@@ -143,7 +156,11 @@ const SidebarContent = ({
         >
             <Box
                 className={styles.logo}
-                sx={{ bgcolor: "background.surfaceAccent", border: "1px solid", borderColor: "divider" }}
+                sx={{
+                    bgcolor: "background.surfaceAccent",
+                    border: "1px solid",
+                    borderColor: "divider",
+                }}
             />
             <span className={styles.logoText}>Wordfolio</span>
         </Toolbar>
@@ -159,7 +176,9 @@ const SidebarContent = ({
                 <SidebarListItem
                     title="Drafts"
                     onClick={onDraftsClick}
-                    icon={<DescriptionOutlinedIcon className={styles.navIcon} />}
+                    icon={
+                        <DescriptionOutlinedIcon className={styles.navIcon} />
+                    }
                     count={draftCount}
                     className={styles.drafts}
                 />
@@ -169,17 +188,24 @@ const SidebarContent = ({
 
             <List
                 disablePadding
-                subheader={<ListSubheader disableSticky>Collections</ListSubheader>}
+                subheader={
+                    <ListSubheader disableSticky>Collections</ListSubheader>
+                }
             >
                 {collections.map((collection) => {
-                    const hasChildren = collection.children && collection.children.length > 0;
+                    const hasChildren =
+                        collection.children && collection.children.length > 0;
                     return (
                         <Box
                             key={collection.id}
                             className={classnames({
                                 [styles.collectionGroup]: hasChildren,
                             })}
-                            sx={collection.expanded ? { bgcolor: "action.listSelected" } : undefined}
+                            sx={
+                                collection.expanded
+                                    ? { bgcolor: "action.listSelected" }
+                                    : undefined
+                            }
                         >
                             <SidebarListItem
                                 title={collection.name}
@@ -193,14 +219,24 @@ const SidebarContent = ({
 
                             {hasChildren && (
                                 <Collapse in={collection.expanded}>
-                                    <Box className={styles.childrenTree} sx={{ borderColor: "divider" }}>
+                                    <Box
+                                        className={styles.childrenTree}
+                                        sx={{ borderColor: "divider" }}
+                                    >
                                         {collection.children!.map((child) => (
                                             <ChildItem
                                                 key={child.id}
                                                 name={child.name}
                                                 entryCount={child.entryCount}
-                                                active={child.id === collection.activeChildId}
-                                                onClick={() => collection.onChildClick?.(child.id)}
+                                                active={
+                                                    child.id ===
+                                                    collection.activeChildId
+                                                }
+                                                onClick={() =>
+                                                    collection.onChildClick?.(
+                                                        child.id
+                                                    )
+                                                }
                                             />
                                         ))}
                                     </Box>
@@ -217,12 +253,33 @@ const SidebarContent = ({
         <Box className={styles.userSection}>
             <Box
                 className={styles.avatar}
-                sx={{ bgcolor: "background.surfaceAccent", border: "1px solid", borderColor: "divider" }}
+                sx={{
+                    bgcolor: "background.surfaceAccent",
+                    border: "1px solid",
+                    borderColor: "divider",
+                }}
             >
-                <Box component="span" className={styles.avatarText} sx={{ color: "text.neutral" }}>{user.initials}</Box>
+                <Box
+                    component="span"
+                    className={styles.avatarText}
+                    sx={{ color: "text.neutral" }}
+                >
+                    {user.initials}
+                </Box>
             </Box>
-            <Typography variant="body2" color="text.primary" noWrap className={styles.userEmail}>{user.email}</Typography>
-            <IconButton size="small" sx={{ color: "text.secondary" }} onClick={user.onLogout}>
+            <Typography
+                variant="body2"
+                color="text.primary"
+                noWrap
+                className={styles.userEmail}
+            >
+                {user.email}
+            </Typography>
+            <IconButton
+                size="small"
+                sx={{ color: "text.secondary" }}
+                onClick={user.onLogout}
+            >
                 <LogoutIcon className={styles.logoutIcon} />
             </IconButton>
         </Box>
@@ -250,7 +307,13 @@ export const AppSidebar = ({
     onAddEntry,
     onDraftsClick,
 }: AppSidebarProps) => {
-    const contentProps = { draftCount, collections, user, onAddEntry, onDraftsClick };
+    const contentProps = {
+        draftCount,
+        collections,
+        user,
+        onAddEntry,
+        onDraftsClick,
+    };
 
     if (variant === "temporary") {
         return (

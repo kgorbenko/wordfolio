@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
-import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBreadcrumbs";
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { CollectionForm } from "../components/CollectionForm";
@@ -69,7 +69,7 @@ export const EditCollectionPage = () => {
 
     return (
         <PageContainer>
-            <BreadcrumbNav
+            <TopBarBreadcrumbs
                 items={[
                     { label: "Collections", ...collectionsPath() },
                     {

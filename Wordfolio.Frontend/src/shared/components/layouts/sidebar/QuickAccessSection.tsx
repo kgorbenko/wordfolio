@@ -85,10 +85,7 @@ export const QuickAccessSection = ({
                                 : "text.secondary",
                         }}
                     />
-                    <Typography
-                        variant="body2"
-                        sx={{ color: "text.disabled" }}
-                    >
+                    <Typography variant="body2" sx={{ color: "text.disabled" }}>
                         {draftsVocabulary.entryCount}
                     </Typography>
                 </ListItemButton>

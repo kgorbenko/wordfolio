@@ -2,6 +2,12 @@ import { createTheme } from "@mui/material/styles";
 
 import type {} from "@mui/x-data-grid/themeAugmentation";
 
+declare module "@mui/material/IconButton" {
+    interface IconButtonOwnProps {
+        variant?: string;
+    }
+}
+
 declare module "@mui/material/styles" {
     interface TypeBackground {
         fill: string;
@@ -165,7 +171,7 @@ export const theme = createTheme({
                     borderColor: border,
                     color: textNeutral,
                     "&:hover": {
-                        borderColor: borderHover
+                        borderColor: borderHover,
                     },
                 },
                 outlinedError: {
@@ -178,6 +184,25 @@ export const theme = createTheme({
                     },
                 },
             },
+        },
+        MuiIconButton: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 8,
+                },
+            },
+            variants: [
+                {
+                    props: { variant: "outlined" },
+                    style: {
+                        border: defaultBorder,
+                        color: textNeutral,
+                        "&:hover": {
+                            borderColor: borderHover,
+                        },
+                    },
+                },
+            ],
         },
         MuiOutlinedInput: {
             styleOverrides: {
@@ -378,14 +403,14 @@ export const theme = createTheme({
             },
             styleOverrides: {
                 root: {
-                    backgroundColor: surfaceToolbar
+                    backgroundColor: surfaceToolbar,
                 },
             },
         },
         MuiToolbar: {
             styleOverrides: {
                 root: {
-                    minHeight: "48px"
+                    minHeight: "48px",
                 },
             },
         },
@@ -401,7 +426,7 @@ export const theme = createTheme({
                     marginRight: 8,
                     gap: 8,
                     minHeight: "unset",
-                    color: textPrimary
+                    color: textPrimary,
                 },
             },
         },
@@ -534,6 +559,9 @@ export const theme = createTheme({
                     "&:focus, &:focus-within": {
                         outline: "none",
                     },
+                },
+                toolbarContainer: {
+                    padding: 0,
                 },
                 filler: {
                     display: "none",

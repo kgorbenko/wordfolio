@@ -3,6 +3,7 @@ import {
     Box,
     Button,
     Chip,
+    Divider,
     Link,
     MenuItem,
     TextField,
@@ -16,12 +17,15 @@ import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef } from "@mui/x-data-grid";
 
 import { AppLayout } from "../../../shared/components/layouts/AppLayout";
-import { EmptyState } from "../components/EmptyState";
-import { ErrorState } from "../components/ErrorState";
-import { Section } from "../components/Section";
-import { TextWithSubtext } from "../components/TextWithSubtext";
-import type { NavCollection, NavUser } from "../../../shared/components/layouts/AppSidebar";
-import type { BreadcrumbItem } from "../../../shared/components/layouts/AppTopBar";
+import { EmptyState } from "../../../shared/components/EmptyState";
+import { ErrorState } from "../../../shared/components/ErrorState";
+import { TextWithSubtext } from "../../../shared/components/TextWithSubtext";
+import type {
+    NavCollection,
+    NavUser,
+} from "../../../shared/components/layouts/AppSidebar";
+import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBreadcrumbs";
+import type { BreadcrumbItem } from "../../../shared/components/layouts/BreadcrumbNav";
 
 import styles from "./DesignSystemPage.module.scss";
 
@@ -97,9 +101,7 @@ const stubCollectionData = [
         id: 5,
         name: "French Literature",
         entryCount: 1,
-        children: [
-            { id: 14, name: "Romantic Era", entryCount: 28 },
-        ],
+        children: [{ id: 14, name: "Romantic Era", entryCount: 28 }],
     },
 ];
 
@@ -108,20 +110,29 @@ const stubUser: NavUser = {
     email: "test1@test.com",
 };
 
-const stubBreadcrumbs: BreadcrumbItem[] = [
-    { label: "Home", to: "#" },
-    { label: "English Vocabulary" },
-    { label: "Common Words", to: "#" },
-    { label: "Word Details" },
-];
-
 const mobileColumnVisibility = {
     created: false,
     updated: false,
 };
 
-const SortDescIcon = () => <Box component="span" className={styles.sortIcon} sx={{ color: "text.accent" }}>↓</Box>;
-const SortAscIcon = () => <Box component="span" className={styles.sortIcon} sx={{ color: "text.accent" }}>↑</Box>;
+const SortDescIcon = () => (
+    <Box
+        component="span"
+        className={styles.sortIcon}
+        sx={{ color: "text.accent" }}
+    >
+        ↓
+    </Box>
+);
+const SortAscIcon = () => (
+    <Box
+        component="span"
+        className={styles.sortIcon}
+        sx={{ color: "text.accent" }}
+    >
+        ↑
+    </Box>
+);
 
 const columns: GridColDef[] = [
     {
@@ -211,10 +222,20 @@ const ColorSwatch = ({ hex, role }: { hex: string; role: string }) => (
             className={styles.swatchBox}
             sx={{ bgcolor: hex, border: "1px solid rgba(255,255,255,0.08)" }}
         />
-        <Typography variant="body2" component="span" className={styles.swatchHex} color="text.neutral">
+        <Typography
+            variant="body2"
+            component="span"
+            className={styles.swatchHex}
+            color="text.neutral"
+        >
             {hex}
         </Typography>
-        <Typography variant="body2" component="span" className={styles.swatchRole} color="text.secondary">
+        <Typography
+            variant="body2"
+            component="span"
+            className={styles.swatchRole}
+            color="text.secondary"
+        >
             {role}
         </Typography>
     </Box>
@@ -224,8 +245,12 @@ export const DesignSystemPage = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set([1]));
-    const [selectedCollectionId, setSelectedCollectionId] = useState<number | null>(null);
-    const [selectedVocabularyId, setSelectedVocabularyId] = useState<number | null>(6);
+    const [selectedCollectionId, setSelectedCollectionId] = useState<
+        number | null
+    >(null);
+    const [selectedVocabularyId, setSelectedVocabularyId] = useState<
+        number | null
+    >(6);
 
     const toggleCollection = (id: number) => {
         setExpandedIds((prev) => {
@@ -246,6 +271,13 @@ export const DesignSystemPage = () => {
         setSelectedCollectionId(null);
     };
 
+    const stubBreadcrumbs: BreadcrumbItem[] = [
+        { label: "Home", to: "#" },
+        { label: "English Vocabulary" },
+        { label: "Common Words", to: "#" },
+        { label: "Word Details" },
+    ];
+
     const stubCollections: NavCollection[] = stubCollectionData.map((c) => ({
         ...c,
         active: c.id === selectedCollectionId,
@@ -258,210 +290,253 @@ export const DesignSystemPage = () => {
 
     return (
         <AppLayout
-                draftCount={stubDraftCount}
-                collections={stubCollections}
-                user={stubUser}
-                breadcrumbs={stubBreadcrumbs}
-                onAddEntry={() => {}}
-                onDraftsClick={() => {}}
+            draftCount={stubDraftCount}
+            collections={stubCollections}
+            user={stubUser}
+            onAddEntry={() => {}}
+            onDraftsClick={() => {}}
+        >
+            <TopBarBreadcrumbs items={stubBreadcrumbs} />
+            <Box
+                className={styles.pageWrapper}
+                sx={{
+                    bgcolor: "background.default",
+                    p: { xs: "20px 16px", md: "40px 48px" },
+                }}
             >
-                <Box
-                    className={styles.pageWrapper}
-                    sx={{
-                        bgcolor: "background.default",
-                        p: { xs: "20px 16px", md: "40px 48px" },
-                    }}
-                >
-                    <Box className={styles.content}>
-                        <Typography variant="h1" className={styles.pageTitle}>
-                            Design System
-                        </Typography>
+                <Box className={styles.content}>
+                    <Typography variant="h1" className={styles.pageTitle}>
+                        Design System
+                    </Typography>
 
-                        <Section title="Typography Scale">
-                            <Box className={styles.typographyStack}>
-                                <Typography variant="h1">
-                                    Page Title — 26 / 32px
-                                </Typography>
-                                <Typography variant="h2">
-                                    Section Heading — 18 / 22px
-                                </Typography>
-                                <Typography variant="body1">
-                                    Body text — 14 / 18px. A feeling of great
-                                    pleasure and happiness brought about by something
-                                    good.
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Description text — 13 / 16px secondary. Inactive
-                                    navigation item or description text.
-                                </Typography>
-                                <Typography variant="overline">
-                                    Column Header — 10 / 12px uppercase
-                                </Typography>
-                                <Link href="/design-system" variant="body1">
-                                    Link — 14 / 18px accent underline
-                                </Link>
-                            </Box>
-                        </Section>
+                    <Box className={styles.section}>
+                        <Typography variant="h2" className={styles.sectionTitle}>Typography Scale</Typography>
+                        <Divider className={styles.sectionDivider} />
+                        <Box className={styles.typographyStack}>
+                            <Typography variant="h1">
+                                Page Title — 26 / 32px
+                            </Typography>
+                            <Typography variant="h2">
+                                Section Heading — 18 / 22px
+                            </Typography>
+                            <Typography variant="body1">
+                                Body text — 14 / 18px. A feeling of great
+                                pleasure and happiness brought about by
+                                something good.
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                Description text — 13 / 16px secondary. Inactive
+                                navigation item or description text.
+                            </Typography>
+                            <Typography variant="overline">
+                                Column Header — 10 / 12px uppercase
+                            </Typography>
+                            <Link href="/design-system" variant="body1">
+                                Link — 14 / 18px accent underline
+                            </Link>
+                        </Box>
+                    </Box>
 
-                        <Section title="Color Palette">
-                            {paletteGroups.map((group) => (
-                                <Box key={group.label}>
-                                    <Typography variant="overline" display="block" mb={1}>
-                                        {group.label}
-                                    </Typography>
-                                    <Box className={styles.paletteGroup}>
-                                        {group.swatches.map((swatch) => (
-                                            <ColorSwatch key={swatch.hex} {...swatch} />
-                                        ))}
-                                    </Box>
-                                </Box>
-                            ))}
-                        </Section>
-
-                        <Section title="Buttons">
-                            <Box className={styles.typographyStack}>
-                                <Box className={styles.buttonsRow}>
-                                    <Button variant="contained">Add Entry</Button>
-                                    <Button variant="outlined">Cancel</Button>
-                                    <Button variant="outlined" color="error">
-                                        Delete
-                                    </Button>
-                                </Box>
-                                <Box className={styles.buttonsRow}>
-                                    <Button variant="contained" disabled>
-                                        Add Entry
-                                    </Button>
-                                    <Button variant="outlined" disabled>
-                                        Cancel
-                                    </Button>
-                                </Box>
-                            </Box>
-                        </Section>
-
-                        <Section title="Form Inputs">
-                            <Box className={styles.formInputs}>
-                                <TextField
-                                    label="Text Input"
-                                    placeholder="Enter a name..."
-                                    fullWidth
-                                />
-                                <TextField
-                                    label="Textarea"
-                                    placeholder="A feeling of great pleasure and happiness brought about by something good."
-                                    multiline
-                                    rows={3}
-                                    fullWidth
-                                />
-                                <Box className={styles.formRow}>
-                                    <TextField
-                                        select
-                                        label="Select"
-                                        defaultValue="custom"
-                                        className={styles.demoSelect}
-                                    >
-                                        <MenuItem value="custom">Custom</MenuItem>
-                                        <MenuItem value="api">API</MenuItem>
-                                    </TextField>
-                                    <TextField
-                                        select
-                                        label="Status"
-                                        defaultValue="active"
-                                        className={styles.demoSelect}
-                                    >
-                                        <MenuItem value="active">Active</MenuItem>
-                                        <MenuItem value="archived">Archived</MenuItem>
-                                    </TextField>
-                                </Box>
-                            </Box>
-                        </Section>
-
-                        <Section title="Search Toolbar">
-                            <Box className={styles.searchToolbar}>
-                                <TextField
-                                    placeholder="Search vocabularies..."
-                                    fullWidth
-                                    slotProps={{
-                                        input: {
-                                            startAdornment: (
-                                                <Box component="span" className={styles.searchIcon} sx={{ color: "text.placeholder" }}>
-                                                    <SearchIcon />
-                                                </Box>
-                                            ),
-                                            endAdornment: (
-                                                <Box component="span" className={styles.clearIcon} sx={{ color: "text.placeholder" }}>
-                                                    <ClearIcon />
-                                                </Box>
-                                            ),
-                                        },
-                                    }}
-                                />
-                                <Button
-                                    variant="contained"
-                                    className={styles.searchAddButton}
+                    <Box className={styles.section}>
+                        <Typography variant="h2" className={styles.sectionTitle}>Color Palette</Typography>
+                        <Divider className={styles.sectionDivider} />
+                        {paletteGroups.map((group) => (
+                            <Box key={group.label}>
+                                <Typography
+                                    variant="overline"
+                                    display="block"
+                                    mb={1}
                                 >
-                                    + Add Vocabulary
+                                    {group.label}
+                                </Typography>
+                                <Box className={styles.paletteGroup}>
+                                    {group.swatches.map((swatch) => (
+                                        <ColorSwatch
+                                            key={swatch.hex}
+                                            {...swatch}
+                                        />
+                                    ))}
+                                </Box>
+                            </Box>
+                        ))}
+                    </Box>
+
+                    <Box className={styles.section}>
+                        <Typography variant="h2" className={styles.sectionTitle}>Buttons</Typography>
+                        <Divider className={styles.sectionDivider} />
+                        <Box className={styles.typographyStack}>
+                            <Box className={styles.buttonsRow}>
+                                <Button variant="contained">Add Entry</Button>
+                                <Button variant="outlined">Cancel</Button>
+                                <Button variant="outlined" color="error">
+                                    Delete
                                 </Button>
                             </Box>
-                        </Section>
-
-                        <Section title="Grid">
-                            <Box className={styles.gridWrapper}>
-                                <DataGrid
-                                    rows={sampleRows}
-                                    columns={columns}
-                                    rowHeight={isMobile ? 48 : 52}
-                                    hideFooter
-                                    columnVisibilityModel={
-                                        isMobile ? mobileColumnVisibility : undefined
-                                    }
-                                    initialState={{
-                                        sorting: {
-                                            sortModel: [
-                                                { field: "updated", sort: "desc" },
-                                            ],
-                                        },
-                                    }}
-                                    slots={{
-                                        columnSortedDescendingIcon: SortDescIcon,
-                                        columnSortedAscendingIcon: SortAscIcon,
-                                    }}
-                                />
+                            <Box className={styles.buttonsRow}>
+                                <Button variant="contained" disabled>
+                                    Add Entry
+                                </Button>
+                                <Button variant="outlined" disabled>
+                                    Cancel
+                                </Button>
                             </Box>
-                        </Section>
+                        </Box>
+                    </Box>
 
-                        <Section title="Empty & Error States">
-                            <Box className={styles.statesRow}>
-                                <Box className={styles.stateItem}>
-                                    <Typography variant="overline" display="block">
-                                        Empty State
-                                    </Typography>
-                                    <EmptyState />
-                                </Box>
-                                <Box className={styles.stateItem}>
-                                    <Typography variant="overline" display="block">
-                                        Error State
-                                    </Typography>
-                                    <ErrorState />
-                                </Box>
-                                <Box className={styles.stateItem}>
-                                    <Typography variant="overline" display="block">
-                                        Error State with Retry
-                                    </Typography>
-                                    <ErrorState onRetry={() => {}} />
-                                </Box>
+                    <Box className={styles.section}>
+                        <Typography variant="h2" className={styles.sectionTitle}>Form Inputs</Typography>
+                        <Divider className={styles.sectionDivider} />
+                        <Box className={styles.formInputs}>
+                            <TextField
+                                label="Text Input"
+                                placeholder="Enter a name..."
+                                fullWidth
+                            />
+                            <TextField
+                                label="Textarea"
+                                placeholder="A feeling of great pleasure and happiness brought about by something good."
+                                multiline
+                                rows={3}
+                                fullWidth
+                            />
+                            <Box className={styles.formRow}>
+                                <TextField
+                                    select
+                                    label="Select"
+                                    defaultValue="custom"
+                                    className={styles.demoSelect}
+                                >
+                                    <MenuItem value="custom">Custom</MenuItem>
+                                    <MenuItem value="api">API</MenuItem>
+                                </TextField>
+                                <TextField
+                                    select
+                                    label="Status"
+                                    defaultValue="active"
+                                    className={styles.demoSelect}
+                                >
+                                    <MenuItem value="active">Active</MenuItem>
+                                    <MenuItem value="archived">
+                                        Archived
+                                    </MenuItem>
+                                </TextField>
                             </Box>
-                        </Section>
+                        </Box>
+                    </Box>
 
-                        <Section title="Chips">
-                            <Box className={styles.chipsRow}>
-                                <Chip label="Custom" size="small" />
-                                <Chip label="API" size="small" color="primary" />
-                                <Chip label="Active" size="small" color="secondary" />
-                                <Chip label="Error" size="small" color="error" />
+                    <Box className={styles.section}>
+                        <Typography variant="h2" className={styles.sectionTitle}>Search Toolbar</Typography>
+                        <Divider className={styles.sectionDivider} />
+                        <Box className={styles.searchToolbar}>
+                            <TextField
+                                placeholder="Search vocabularies..."
+                                fullWidth
+                                slotProps={{
+                                    input: {
+                                        startAdornment: (
+                                            <Box
+                                                component="span"
+                                                className={styles.searchIcon}
+                                                sx={{
+                                                    color: "text.placeholder",
+                                                }}
+                                            >
+                                                <SearchIcon />
+                                            </Box>
+                                        ),
+                                        endAdornment: (
+                                            <Box
+                                                component="span"
+                                                className={styles.clearIcon}
+                                                sx={{
+                                                    color: "text.placeholder",
+                                                }}
+                                            >
+                                                <ClearIcon />
+                                            </Box>
+                                        ),
+                                    },
+                                }}
+                            />
+                            <Button
+                                variant="contained"
+                                className={styles.searchAddButton}
+                            >
+                                + Add Vocabulary
+                            </Button>
+                        </Box>
+                    </Box>
+
+                    <Box className={styles.section}>
+                        <Typography variant="h2" className={styles.sectionTitle}>Grid</Typography>
+                        <Divider className={styles.sectionDivider} />
+                        <Box className={styles.gridWrapper}>
+                            <DataGrid
+                                rows={sampleRows}
+                                columns={columns}
+                                rowHeight={isMobile ? 48 : 52}
+                                hideFooter
+                                columnVisibilityModel={
+                                    isMobile
+                                        ? mobileColumnVisibility
+                                        : undefined
+                                }
+                                initialState={{
+                                    sorting: {
+                                        sortModel: [
+                                            { field: "updated", sort: "desc" },
+                                        ],
+                                    },
+                                }}
+                                slots={{
+                                    columnSortedDescendingIcon: SortDescIcon,
+                                    columnSortedAscendingIcon: SortAscIcon,
+                                }}
+                            />
+                        </Box>
+                    </Box>
+
+                    <Box className={styles.section}>
+                        <Typography variant="h2" className={styles.sectionTitle}>Empty &amp; Error States</Typography>
+                        <Divider className={styles.sectionDivider} />
+                        <Box className={styles.statesRow}>
+                            <Box className={styles.stateItem}>
+                                <Typography variant="overline" display="block">
+                                    Empty State
+                                </Typography>
+                                <EmptyState />
                             </Box>
-                        </Section>
+                            <Box className={styles.stateItem}>
+                                <Typography variant="overline" display="block">
+                                    Error State
+                                </Typography>
+                                <ErrorState />
+                            </Box>
+                            <Box className={styles.stateItem}>
+                                <Typography variant="overline" display="block">
+                                    Error State with Retry
+                                </Typography>
+                                <ErrorState onRetry={() => {}} />
+                            </Box>
+                        </Box>
+                    </Box>
+
+                    <Box className={styles.section}>
+                        <Typography variant="h2" className={styles.sectionTitle}>Chips</Typography>
+                        <Divider className={styles.sectionDivider} />
+                        <Box className={styles.chipsRow}>
+                            <Chip label="Custom" size="small" />
+                            <Chip label="API" size="small" color="primary" />
+                            <Chip
+                                label="Active"
+                                size="small"
+                                color="secondary"
+                            />
+                            <Chip label="Error" size="small" color="error" />
+                        </Box>
                     </Box>
                 </Box>
+            </Box>
         </AppLayout>
     );
 };
