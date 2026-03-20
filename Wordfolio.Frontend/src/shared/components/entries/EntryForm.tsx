@@ -286,7 +286,11 @@ export const EntryForm = forwardRef<EntryFormHandle, EntryFormProps>(
                         )}
 
                         <Box className={styles.actions}>
-                            <Button onClick={onCancel} disabled={isLoading}>
+                            <Button
+                                variant="outlined"
+                                onClick={onCancel}
+                                disabled={isLoading}
+                            >
                                 Cancel
                             </Button>
                             <Button

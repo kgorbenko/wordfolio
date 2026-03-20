@@ -59,7 +59,7 @@ const ChildItem = ({
     <ListItemButton
         onClick={onClick}
         className={styles.sidebarListItem}
-        sx={active ? { color: "secondary.main" } : undefined}
+        sx={active ? { color: "primary.main" } : undefined}
     >
         <ListItemText primary={name} />
         <Box
@@ -107,9 +107,9 @@ const SidebarListItem = ({
         sx={
             active
                 ? {
-                      color: "secondary.main",
-                      "& .MuiListItemIcon-root": { color: "secondary.main" },
-                      "& .MuiListItemText-primary": { color: "secondary.main" },
+                      color: "primary.main",
+                      "& .MuiListItemIcon-root": { color: "primary.main" },
+                      "& .MuiListItemText-primary": { color: "primary.main" },
                   }
                 : undefined
         }

@@ -9,8 +9,8 @@ import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 
 import { useDraftsQuery } from "../hooks/useDraftsQuery";
+import { EmptyState } from "../../../shared/components/EmptyState";
 import { DraftsContent } from "../components/DraftsContent";
-import { DraftsEmptyState } from "../components/DraftsEmptyState";
 
 export const DraftsPage = () => {
     const navigate = useNavigate();
@@ -42,7 +42,7 @@ export const DraftsPage = () => {
         }
 
         if (!data) {
-            return <DraftsEmptyState />;
+            return <EmptyState />;
         }
 
         return (

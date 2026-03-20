@@ -76,10 +76,10 @@ export const theme = createTheme({
             accent: textAccent,
         },
         primary: {
-            main: accentPrimary,
+            main: accentSecondary,
         },
         secondary: {
-            main: accentSecondary,
+            main: accentPrimary,
         },
         error: {
             main: error,
@@ -189,6 +189,8 @@ export const theme = createTheme({
             styleOverrides: {
                 root: {
                     borderRadius: 8,
+                    height: 32,
+                    width: 32,
                 },
             },
             variants: [
@@ -334,9 +336,30 @@ export const theme = createTheme({
             styleOverrides: {
                 paper: {
                     backgroundColor: surface,
-                    borderRadius: 12,
-                    border: `1px solid ${surfaceAccent}`,
+                    borderRadius: 8,
+                    border: defaultBorder,
                     backgroundImage: "none",
+                },
+            },
+        },
+        MuiDialogTitle: {
+            styleOverrides: {
+                root: {
+                    padding: "24px",
+                },
+            },
+        },
+        MuiDialogContent: {
+            styleOverrides: {
+                root: {
+                    padding: "16px 24px",
+                },
+            },
+        },
+        MuiDialogActions: {
+            styleOverrides: {
+                root: {
+                    padding: "8px 24px 24px 24px",
                 },
             },
         },
@@ -387,10 +410,12 @@ export const theme = createTheme({
                     },
                 },
                 paper: {
-                    backgroundColor: surfaceSidebar,
-                    borderRight: `1px solid ${surfaceToolbar}`,
-                    borderRadius: 0,
-                    width: 278,
+                    "&:not(.MuiDrawer-paperAnchorBottom)": {
+                        backgroundColor: surfaceSidebar,
+                        borderRight: `1px solid ${surfaceToolbar}`,
+                        borderRadius: 0,
+                        width: 278,
+                    },
                     ".MuiDrawer-docked &": {
                         position: "relative",
                     },

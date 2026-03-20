@@ -136,7 +136,9 @@ export const MoveVocabularyDialog = ({
             <DialogTitle>Move Vocabulary</DialogTitle>
             <DialogContent>{renderContent()}</DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>Cancel</Button>
+                <Button variant="outlined" onClick={onCancel}>
+                    Cancel
+                </Button>
                 <Button
                     variant="contained"
                     onClick={handleConfirm}

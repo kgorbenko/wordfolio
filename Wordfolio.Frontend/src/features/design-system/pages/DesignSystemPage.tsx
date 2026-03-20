@@ -140,7 +140,6 @@ const columns: GridColDef[] = [
         headerName: "Vocabulary",
         flex: 1,
         minWidth: 200,
-        sortable: false,
         renderCell: (params) => (
             <TextWithSubtext text={params.row.name} subtext={params.row.desc} />
         ),
@@ -151,7 +150,6 @@ const columns: GridColDef[] = [
         width: 120,
         align: "right",
         headerAlign: "right",
-        sortable: false,
     },
     {
         field: "updated",
@@ -166,7 +164,6 @@ const columns: GridColDef[] = [
         width: 90,
         align: "right",
         headerAlign: "right",
-        sortable: false,
     },
 ];
 

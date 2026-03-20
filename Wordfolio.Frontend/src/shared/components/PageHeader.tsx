@@ -19,14 +19,13 @@ export const PageHeader = ({
             </Typography>
             {actions}
         </Box>
-        {description && (
-            <Typography
-                variant="body1"
-                color="text.secondary"
-                className={styles.description}
-            >
-                {description}
-            </Typography>
-        )}
+        <Typography
+            variant="body1"
+            color="text.secondary"
+            className={styles.description}
+            sx={{ visibility: description ? "visible" : "hidden" }}
+        >
+            {description ?? "\u00a0"}
+        </Typography>
     </Box>
 );

@@ -78,7 +78,7 @@ export const ConfirmDialogProvider = ({
                         <Typography>{dialogState.message}</Typography>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={handleReject}>
+                        <Button variant="outlined" onClick={handleReject}>
                             {dialogState.cancelLabel ?? "Cancel"}
                         </Button>
                         <Button
