@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { Outlet, useNavigate, useParams } from "@tanstack/react-router";
+import { CircularProgress } from "@mui/material";
 
 import { useAuthStore } from "../../stores/authStore";
 import { useUiStore } from "../../stores/uiStore";
@@ -15,6 +16,7 @@ import { loginPath } from "../../../features/auth/routes";
 import { collectionDetailPath } from "../../../features/collections/routes";
 import { vocabularyDetailPath } from "../../../features/vocabularies/routes";
 import { draftsPath } from "../../../features/drafts/routes";
+import { RetryOnError } from "../RetryOnError";
 import { AppLayout } from "./AppLayout";
 import type { NavCollection, NavUser } from "./AppSidebar";
 import { assertNonNullable } from "../../utils/misc";
@@ -33,7 +35,8 @@ export const AuthenticatedLayout = () => {
         useNotificationContext();
     const { raiseDuplicateEntryDialogAsync, dialogElement } =
         useDuplicateEntryDialog();
-    const { data } = useCollectionsHierarchyQuery();
+    const { data, isLoading, isError, refetch } =
+        useCollectionsHierarchyQuery();
 
     const activeCollectionId = params.collectionId
         ? Number(params.collectionId)
@@ -128,7 +131,27 @@ export const AuthenticatedLayout = () => {
         [openErrorNotification]
     );
 
-    const collections: NavCollection[] = (data?.collections ?? []).map((c) => ({
+    if (isLoading) {
+        return (
+            <div className="centered-page-container">
+                <CircularProgress />
+            </div>
+        );
+    }
+
+    if (isError || !data) {
+        return (
+            <div className="centered-page-container">
+                <RetryOnError
+                    title="Failed to Load Application"
+                    description="Something went wrong while loading Wordfolio. Please try again."
+                    onRetry={() => void refetch()}
+                />
+            </div>
+        );
+    }
+
+    const collections: NavCollection[] = data.collections.map((c) => ({
         id: c.id,
         name: c.name,
         entryCount: c.vocabularies.reduce((sum, v) => sum + v.entryCount, 0),
@@ -152,7 +175,7 @@ export const AuthenticatedLayout = () => {
         onLogout: handleLogout,
     };
 
-    const draftCount = data?.defaultVocabulary?.entryCount ?? 0;
+    const draftCount = data.defaultVocabulary?.entryCount ?? 0;
 
     return (
         <AppLayout
