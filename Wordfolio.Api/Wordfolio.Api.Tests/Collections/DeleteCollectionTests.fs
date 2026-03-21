@@ -70,6 +70,109 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
         }
 
     [<Fact>]
+    member _.``DELETE deletes collection with vocabularies and entries``() : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(112, "user@example.com", "P@ssw0rd!")
+
+            let collection =
+                Entities.makeCollection wordfolioUser "Collection with content" None DateTimeOffset.UtcNow None false
+
+            let untouchedCollection =
+                Entities.makeCollection
+                    wordfolioUser
+                    "Untouched Collection"
+                    (Some "Untouched Description")
+                    DateTimeOffset.UtcNow
+                    None
+                    false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let untouchedVocabulary =
+                Entities.makeVocabulary untouchedCollection "Untouched Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry vocabulary "word" DateTimeOffset.UtcNow None
+
+            let untouchedEntry =
+                Entities.makeEntry untouchedVocabulary "untouched word" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ collection; untouchedCollection ]
+                |> Seeder.addVocabularies [ vocabulary; untouchedVocabulary ]
+                |> Seeder.addEntries [ entry; untouchedEntry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let! response = client.DeleteAsync(Urls.Collections.collectionById collection.Id)
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode)
+
+            let! actualCollections =
+                fixture.WordfolioSeeder
+                |> Seeder.getAllCollectionsAsync
+
+            let actualCollection =
+                Assert.Single(actualCollections)
+
+            let expectedCollection: Wordfolio.Collection =
+                { Id = untouchedCollection.Id
+                  UserId = 112
+                  Name = "Untouched Collection"
+                  Description = Some "Untouched Description"
+                  CreatedAt = actualCollection.CreatedAt
+                  UpdatedAt = actualCollection.UpdatedAt
+                  IsSystem = false }
+
+            Assert.Equal(expectedCollection, actualCollection)
+
+            let! actualVocabularies =
+                fixture.WordfolioSeeder
+                |> Seeder.getAllVocabulariesAsync
+
+            let actualVocabulary =
+                Assert.Single(actualVocabularies)
+
+            let expectedVocabulary: Wordfolio.Vocabulary =
+                { Id = untouchedVocabulary.Id
+                  CollectionId = untouchedCollection.Id
+                  Name = "Untouched Vocabulary"
+                  Description = None
+                  CreatedAt = actualVocabulary.CreatedAt
+                  UpdatedAt = actualVocabulary.UpdatedAt
+                  IsDefault = false }
+
+            Assert.Equal(expectedVocabulary, actualVocabulary)
+
+            let! actualEntries =
+                fixture.WordfolioSeeder
+                |> Seeder.getAllEntriesAsync
+
+            let actualEntry =
+                Assert.Single(actualEntries)
+
+            let expectedEntry: Wordfolio.Entry =
+                { Id = untouchedEntry.Id
+                  VocabularyId = untouchedVocabulary.Id
+                  EntryText = "untouched word"
+                  CreatedAt = actualEntry.CreatedAt
+                  UpdatedAt = actualEntry.UpdatedAt }
+
+            Assert.Equal(expectedEntry, actualEntry)
+        }
+
+    [<Fact>]
     member _.``DELETE returns 404 when collection does not exist``() : Task =
         task {
             do! fixture.ResetDatabaseAsync()

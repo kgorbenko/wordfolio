@@ -60,7 +60,7 @@ export const CollectionDetailPage = () => {
         assertNonNullable(collection?.id);
         const confirmed = await raiseConfirmDialogAsync({
             title: "Delete Collection",
-            message: `Are you sure you want to delete "${collection.name}"?`,
+            message: `Are you sure you want to delete "${collection.name}"? This will also delete all vocabularies and entries within it.`,
             confirmLabel: "Delete",
             confirmColor: "error",
         });
