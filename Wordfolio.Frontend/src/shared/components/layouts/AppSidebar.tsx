@@ -172,24 +172,32 @@ const SidebarContent = ({
                 </Button>
             </Box>
 
-            <List disablePadding>
-                <SidebarListItem
-                    title="Drafts"
-                    onClick={onDraftsClick}
-                    icon={
-                        <DescriptionOutlinedIcon className={styles.navIcon} />
-                    }
-                    count={draftCount}
-                    className={styles.drafts}
-                />
-            </List>
+            {draftCount > 0 && (
+                <>
+                    <List disablePadding>
+                        <SidebarListItem
+                            title="Drafts"
+                            onClick={onDraftsClick}
+                            icon={
+                                <DescriptionOutlinedIcon
+                                    className={styles.navIcon}
+                                />
+                            }
+                            count={draftCount}
+                            className={styles.drafts}
+                        />
+                    </List>
 
-            <Divider className={styles.navDivider} />
+                    <Divider className={styles.navDivider} />
+                </>
+            )}
 
             <List
                 disablePadding
                 subheader={
-                    <ListSubheader disableSticky>Collections</ListSubheader>
+                    collections.length > 0 ? (
+                        <ListSubheader disableSticky>Collections</ListSubheader>
+                    ) : undefined
                 }
             >
                 {collections.map((collection) => {
