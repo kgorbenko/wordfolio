@@ -43,6 +43,101 @@ type DeleteCollectionTests(fixture: WordfolioTestFixture) =
         }
 
     [<Fact>]
+    member _.``deleteCollectionAsync cascades to vocabularies and entries``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 103
+
+            let collectionToDelete =
+                Entities.makeCollection user "Collection to delete" None createdAt None false
+
+            let untouchedCollection =
+                Entities.makeCollection user "Untouched Collection" None createdAt None false
+
+            let vocabulary =
+                Entities.makeVocabulary collectionToDelete "Vocabulary to delete" None createdAt None false
+
+            let untouchedVocabulary =
+                Entities.makeVocabulary untouchedCollection "Untouched Vocabulary" None createdAt None false
+
+            let entry =
+                Entities.makeEntry vocabulary "word" createdAt None
+
+            let untouchedEntry =
+                Entities.makeEntry untouchedVocabulary "untouched word" createdAt None
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.addCollections [ collectionToDelete; untouchedCollection ]
+                |> Seeder.addVocabularies [ vocabulary; untouchedVocabulary ]
+                |> Seeder.addEntries [ entry; untouchedEntry ]
+                |> Seeder.saveChangesAsync
+
+            let! affectedRows =
+                Collections.deleteCollectionAsync collectionToDelete.Id
+                |> fixture.WithConnectionAsync
+
+            Assert.Equal(1, affectedRows)
+
+            let! actualCollections =
+                fixture.Seeder
+                |> Seeder.getAllCollectionsAsync
+
+            let actualCollection =
+                Assert.Single(actualCollections)
+
+            let expectedCollection: Collection =
+                { Id = untouchedCollection.Id
+                  UserId = 103
+                  Name = "Untouched Collection"
+                  Description = None
+                  CreatedAt = createdAt
+                  UpdatedAt = None
+                  IsSystem = false }
+
+            Assert.Equal(expectedCollection, actualCollection)
+
+            let! actualVocabularies =
+                fixture.Seeder
+                |> Seeder.getAllVocabulariesAsync
+
+            let actualVocabulary =
+                Assert.Single(actualVocabularies)
+
+            let expectedVocabulary: Vocabulary =
+                { Id = untouchedVocabulary.Id
+                  CollectionId = untouchedCollection.Id
+                  Name = "Untouched Vocabulary"
+                  Description = None
+                  CreatedAt = createdAt
+                  UpdatedAt = None
+                  IsDefault = false }
+
+            Assert.Equal(expectedVocabulary, actualVocabulary)
+
+            let! actualEntries =
+                fixture.Seeder
+                |> Seeder.getAllEntriesAsync
+
+            let actualEntry =
+                Assert.Single(actualEntries)
+
+            let expectedEntry: Entry =
+                { Id = untouchedEntry.Id
+                  VocabularyId = untouchedVocabulary.Id
+                  EntryText = "untouched word"
+                  CreatedAt = createdAt
+                  UpdatedAt = None }
+
+            Assert.Equal(expectedEntry, actualEntry)
+        }
+
+    [<Fact>]
     member _.``deleteCollectionAsync returns 0 when collection does not exist``() =
         task {
             do! fixture.ResetDatabaseAsync()
