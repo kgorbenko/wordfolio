@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
+import { PasswordField } from "../../../shared/components/PasswordField";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { useRegisterMutation } from "../hooks/useRegisterMutation";
 import { usePasswordRequirementsQuery } from "../hooks/usePasswordRequirementsQuery";
@@ -107,11 +108,10 @@ export const RegisterPage = () => {
                     {...register("email")}
                 />
 
-                <TextField
+                <PasswordField
                     fullWidth
                     id="password"
                     label="Password"
-                    type="password"
                     autoComplete="new-password"
                     disabled={registerMutation.isPending}
                     error={!!errors.password}
@@ -119,11 +119,10 @@ export const RegisterPage = () => {
                     {...register("password")}
                 />
 
-                <TextField
+                <PasswordField
                     fullWidth
                     id="confirmPassword"
                     label="Confirm Password"
-                    type="password"
                     autoComplete="new-password"
                     disabled={registerMutation.isPending}
                     error={!!errors.confirmPassword}

@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 
 import { useAuthStore } from "../../../shared/stores/authStore";
+import { PasswordField } from "../../../shared/components/PasswordField";
 import { useLoginMutation } from "../hooks/useLoginMutation";
 import { createLoginSchema, LoginFormData } from "../schemas/authSchemas";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
@@ -30,6 +31,7 @@ export const LoginPage = () => {
         register,
         handleSubmit,
         setError,
+        setValue,
         formState: { errors },
     } = useForm<LoginFormData>({
         resolver: zodResolver(createLoginSchema()),
@@ -50,6 +52,8 @@ export const LoginPage = () => {
                 type: "server",
                 message: errorMessage,
             });
+
+            setValue("password", "");
         },
     });
 
@@ -98,11 +102,10 @@ export const LoginPage = () => {
                         {...register("email")}
                     />
 
-                    <TextField
+                    <PasswordField
                         fullWidth
                         id="password"
                         label="Password"
-                        type="password"
                         autoComplete="current-password"
                         disabled={loginMutation.isPending}
                         error={!!errors.password}
