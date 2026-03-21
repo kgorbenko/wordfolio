@@ -1,0 +1,156 @@
+.section {
+    margin-bottom: 48px;
+
+    .sectionTitle:global(.MuiTypography-root) {
+        margin-bottom: 8px;
+    }
+
+    .sectionDivider:global(.MuiDivider-root) {
+        margin-bottom: 24px;
+    }
+}
+
+.pageWrapper {
+    min-height: 100%;
+}
+
+.content {
+    max-width: 800px;
+    margin: 0 auto;
+
+    .pageTitle:global(.MuiTypography-root) {
+        margin-bottom: 48px;
+    }
+}
+
+.swatchContainer {
+    text-align: center;
+    min-width: 56px;
+}
+
+.swatchBox {
+    height: 40px;
+    border-radius: 4px;
+}
+
+.swatchHex {
+    margin-top: 4px;
+    font-size: 9px;
+    display: block;
+
+    @media (min-width: 900px) {
+        font-size: 11px;
+    }
+}
+
+.swatchRole {
+    font-size: 9px;
+    display: block;
+
+    @media (min-width: 900px) {
+        font-size: 11px;
+    }
+}
+
+.paletteGroup {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.paletteAccents {
+    display: flex;
+    gap: 12px;
+}
+
+.typographyStack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.buttonsRow {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.formInputs {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.formRow {
+    display: flex;
+    gap: 16px;
+}
+
+.searchToolbar {
+    display: flex;
+    gap: 8px;
+    padding: 6px 0;
+}
+
+.searchAddButton {
+    flex-shrink: 0;
+}
+
+.searchIcon {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    margin-right: 8px;
+
+    > svg {
+        font-size: inherit;
+        color: inherit;
+    }
+}
+
+.clearIcon {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
+
+    > svg {
+        font-size: inherit;
+        color: inherit;
+    }
+}
+
+.sortIcon {
+    font-size: 11px;
+    line-height: 1;
+}
+
+.gridWrapper {
+    width: 100%;
+}
+
+.statesRow {
+    display: flex;
+    gap: 16px;
+
+    @media (max-width: 600px) {
+        flex-direction: column;
+    }
+}
+
+.stateItem {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chipsRow {
+    display: flex;
+    gap: 8px;
+}
+
+.demoSelect {
+    min-width: 160px;
+}

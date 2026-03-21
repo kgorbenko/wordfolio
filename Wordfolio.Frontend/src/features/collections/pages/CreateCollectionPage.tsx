@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
-import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBreadcrumbs";
 import { CollectionForm } from "../components/CollectionForm";
 import { useCreateCollectionMutation } from "../hooks/useCreateCollectionMutation";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
@@ -35,7 +35,7 @@ export const CreateCollectionPage = () => {
 
     return (
         <PageContainer>
-            <BreadcrumbNav
+            <TopBarBreadcrumbs
                 items={[
                     { label: "Collections", ...collectionsPath() },
                     { label: "New Collection" },

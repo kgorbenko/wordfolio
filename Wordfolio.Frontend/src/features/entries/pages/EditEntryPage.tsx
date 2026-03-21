@@ -9,7 +9,7 @@ import {
 import { vocabularyDetailPath } from "../../vocabularies/routes";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
-import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBreadcrumbs";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
@@ -131,7 +131,7 @@ export const EditEntryPage = () => {
 
     return (
         <PageContainer>
-            <BreadcrumbNav
+            <TopBarBreadcrumbs
                 items={[
                     { label: "Collections", ...collectionsPath() },
                     {

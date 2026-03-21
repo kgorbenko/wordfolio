@@ -1,0 +1,157 @@
+.sidebarContent {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .sidebarListItem:global(.MuiListItemButton-root) {
+        height: 32px;
+        border-radius: 8px;
+
+        :global(.MuiListItemText-primary) {
+            font-size: 15px;
+
+            @media (min-width: 900px) {
+                font-size: 16px;
+            }
+        }
+
+        &:hover {
+            background-color: transparent;
+
+            :global(.MuiListItemText-primary) {
+                text-decoration: underline;
+                text-decoration-thickness: 1px;
+            }
+        }
+
+        &:global(.Mui-selected) {
+            background-color: transparent;
+
+            &:hover {
+                background-color: transparent;
+            }
+        }
+
+        .expandIcon {
+            font-size: 22px;
+            flex-shrink: 0;
+            margin-left: 4px;
+        }
+    }
+
+    .childrenTree .sidebarListItem:global(.MuiListItemButton-root) {
+        :global(.MuiListItemText-primary) {
+            font-size: 13px;
+
+            @media (min-width: 900px) {
+                font-size: 14px;
+            }
+        }
+    }
+}
+
+.collectionGroup {
+    border-radius: 8px;
+    margin-left: 8px;
+    margin-right: 8px;
+    transition: background-color 250ms ease;
+
+    .sidebarListItem:global(.MuiListItemButton-root) {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
+.header:global(.MuiToolbar-root) {
+    padding: 0 10px;
+    gap: 10px;
+}
+
+.logo {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.logoText {
+    font-size: 18px;
+    letter-spacing: 0.1em;
+}
+
+.nav {
+    flex: 1;
+    overflow: auto;
+
+    .navDivider:global(.MuiDivider-root) {
+        margin: 5px 16px;
+    }
+}
+
+.addEntryWrapper {
+    padding: 10px 10px 5px;
+}
+
+.drafts {
+}
+
+.count {
+    margin-left: auto;
+    flex-shrink: 0;
+    font-size: 15px;
+
+    @media (min-width: 900px) {
+        font-size: 16px;
+    }
+}
+
+.childrenTree {
+    position: relative;
+    margin-left: 17px;
+    padding-left: 8px;
+    border-left-width: 1px;
+    border-left-style: solid;
+}
+
+.childItemCount {
+    font-size: 13px;
+    margin-left: auto;
+    flex-shrink: 0;
+
+    @media (min-width: 900px) {
+        font-size: 14px;
+    }
+}
+
+.navIcon {
+    font-size: 14px !important;
+}
+
+.userSection {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+}
+
+.avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.avatarText {
+    font-size: 11px;
+}
+
+.userEmail {
+    flex: 1;
+}
+
+.logoutIcon {
+    font-size: 16px !important;
+}

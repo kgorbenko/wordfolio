@@ -53,7 +53,9 @@ export const DuplicateEntryDialog = ({
                 </Accordion>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>Cancel</Button>
+                <Button variant="outlined" onClick={onCancel}>
+                    Cancel
+                </Button>
                 <Button variant="contained" color="primary" onClick={onConfirm}>
                     Add Anyway
                 </Button>

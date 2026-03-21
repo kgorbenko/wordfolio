@@ -1,0 +1,10 @@
+.actions {
+    display: flex;
+    gap: 8px;
+
+    .menuButton {
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+    }
+}

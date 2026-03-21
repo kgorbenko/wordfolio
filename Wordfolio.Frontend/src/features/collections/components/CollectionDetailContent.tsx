@@ -1,8 +1,7 @@
-import MenuBookIcon from "@mui/icons-material/MenuBook";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { GridColDef } from "@mui/x-data-grid";
-import { DataGridWithFilter } from "../../../shared/components/DataGridWithFilter";
-import { EmptyState } from "../../../shared/components/EmptyState";
+import type { GridColDef } from "@mui/x-data-grid";
+
+import { ContentDataGrid } from "../../../shared/components/ContentDataGrid";
+import { TextWithSubtext } from "../../../shared/components/TextWithSubtext";
 import { VocabularyWithEntryCount } from "../types";
 
 interface CollectionDetailContentProps {
@@ -11,26 +10,34 @@ interface CollectionDetailContentProps {
     readonly onCreateVocabularyClick: () => void;
 }
 
-const columns: GridColDef<VocabularyWithEntryCount>[] = [
-    { field: "name", headerName: "Name", flex: 2 },
+const desktopColumns: GridColDef<VocabularyWithEntryCount>[] = [
     {
-        field: "description",
-        headerName: "Description",
-        flex: 3,
-        renderCell: (params) => params.value,
+        field: "name",
+        headerName: "Vocabulary",
+        flex: 1,
+        renderCell: (params) => (
+            <TextWithSubtext
+                text={params.row.name}
+                subtext={params.row.description ?? ""}
+            />
+        ),
     },
     {
         field: "createdAt",
         headerName: "Created At",
         type: "date",
-        width: 120,
+        width: 135,
+        align: "right",
+        headerAlign: "right",
         valueFormatter: (value: Date) => value.toLocaleDateString(),
     },
     {
         field: "updatedAt",
         headerName: "Updated At",
         type: "date",
-        width: 120,
+        width: 135,
+        align: "right",
+        headerAlign: "right",
         valueFormatter: (value: Date | null) => value?.toLocaleDateString(),
     },
     {
@@ -38,47 +45,45 @@ const columns: GridColDef<VocabularyWithEntryCount>[] = [
         headerName: "Entries",
         type: "number",
         width: 100,
+        align: "right",
+        headerAlign: "right",
     },
 ];
 
-const mobileColumnVisibility = {
-    description: false,
-    createdAt: false,
-    updatedAt: false,
-};
+const mobileColumns: GridColDef<VocabularyWithEntryCount>[] = [
+    {
+        field: "name",
+        headerName: "Vocabulary",
+        flex: 1,
+        renderCell: (params) => (
+            <TextWithSubtext
+                text={params.row.name}
+                subtext={params.row.description ?? ""}
+            />
+        ),
+    },
+    {
+        field: "entryCount",
+        headerName: "Entries",
+        type: "number",
+        width: 100,
+        align: "right",
+        headerAlign: "right",
+    },
+];
 
 export const CollectionDetailContent = ({
     vocabularies,
     onVocabularyClick,
     onCreateVocabularyClick,
-}: CollectionDetailContentProps) => {
-    const isMobile = useMediaQuery("(max-width:600px)");
-
-    if (vocabularies.length === 0) {
-        return (
-            <EmptyState
-                icon={<MenuBookIcon />}
-                title="No Vocabularies Yet"
-                description="Add your first vocabulary - a book, movie, or any source of new words."
-                actionLabel="Add Vocabulary"
-                onAction={onCreateVocabularyClick}
-            />
-        );
-    }
-
-    return (
-        <DataGridWithFilter
-            rows={vocabularies}
-            columns={columns}
-            columnVisibilityModel={
-                isMobile ? mobileColumnVisibility : undefined
-            }
-            onRowClick={(params) => onVocabularyClick(params.row.id)}
-            initialState={{
-                sorting: {
-                    sortModel: [{ field: "updatedAt", sort: "desc" }],
-                },
-            }}
-        />
-    );
-};
+}: CollectionDetailContentProps) => (
+    <ContentDataGrid
+        rows={vocabularies}
+        desktopColumns={desktopColumns}
+        mobileColumns={mobileColumns}
+        onRowClick={onVocabularyClick}
+        actionLabel="+ Add Vocabulary"
+        onAction={onCreateVocabularyClick}
+        initialSortModel={[{ field: "updatedAt", sort: "desc" }]}
+    />
+);

@@ -1,11 +1,9 @@
 import { useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Button } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
-import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBreadcrumbs";
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { CollectionsContent } from "../components/CollectionsContent";
@@ -59,20 +57,8 @@ export const CollectionsPage = () => {
 
     return (
         <PageContainer>
-            <BreadcrumbNav items={[{ label: "Collections" }]} />
-            <PageHeader
-                title="Collections"
-                actions={
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={handleCreateClick}
-                    >
-                        Create Collection
-                    </Button>
-                }
-            />
-
+            <TopBarBreadcrumbs items={[{ label: "Collections" }]} />
+            <PageHeader title="Collections" />
             {renderContent()}
         </PageContainer>
     );

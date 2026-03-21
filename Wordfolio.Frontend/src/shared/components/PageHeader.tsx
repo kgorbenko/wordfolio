@@ -14,19 +14,18 @@ export const PageHeader = ({
 }: PageHeaderProps) => (
     <Box className={styles.container}>
         <Box className={styles.topRow}>
-            <Typography variant="h4" fontWeight={600} className={styles.title}>
+            <Typography variant="h1" className={styles.title}>
                 {title}
             </Typography>
             {actions}
         </Box>
-        {description && (
-            <Typography
-                variant="body1"
-                color="text.secondary"
-                className={styles.description}
-            >
-                {description}
-            </Typography>
-        )}
+        <Typography
+            variant="body1"
+            color="text.secondary"
+            className={styles.description}
+            sx={{ visibility: description ? "visible" : "hidden" }}
+        >
+            {description ?? "\u00a0"}
+        </Typography>
     </Box>
 );

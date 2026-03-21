@@ -70,7 +70,11 @@ export const VocabularyForm = ({
             />
 
             <Box className={styles.actions}>
-                <Button onClick={onCancel} disabled={isLoading}>
+                <Button
+                    variant="outlined"
+                    onClick={onCancel}
+                    disabled={isLoading}
+                >
                     Cancel
                 </Button>
                 <Button type="submit" variant="contained" disabled={isLoading}>

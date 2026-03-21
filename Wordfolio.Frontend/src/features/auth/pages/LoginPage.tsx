@@ -70,7 +70,6 @@ export const LoginPage = () => {
                     className={styles.header}
                     variant="h5"
                     component="h1"
-                    gutterBottom
                     align="center"
                 >
                     Login to Wordfolio
@@ -89,7 +88,6 @@ export const LoginPage = () => {
 
                     <TextField
                         fullWidth
-                        margin="normal"
                         id="email"
                         label="Email"
                         type="email"
@@ -102,7 +100,6 @@ export const LoginPage = () => {
 
                     <TextField
                         fullWidth
-                        margin="normal"
                         id="password"
                         label="Password"
                         type="password"

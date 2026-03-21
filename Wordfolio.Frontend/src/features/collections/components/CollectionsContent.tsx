@@ -1,8 +1,7 @@
-import FolderIcon from "@mui/icons-material/Folder";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { GridColDef } from "@mui/x-data-grid";
-import { DataGridWithFilter } from "../../../shared/components/DataGridWithFilter";
-import { EmptyState } from "../../../shared/components/EmptyState";
+import type { GridColDef } from "@mui/x-data-grid";
+
+import { ContentDataGrid } from "../../../shared/components/ContentDataGrid";
+import { TextWithSubtext } from "../../../shared/components/TextWithSubtext";
 import { CollectionWithVocabularyCount } from "../types";
 
 interface CollectionsContentProps {
@@ -11,74 +10,81 @@ interface CollectionsContentProps {
     readonly onCreateClick: () => void;
 }
 
-const columns: GridColDef<CollectionWithVocabularyCount>[] = [
-    { field: "name", headerName: "Name", flex: 2 },
+const desktopColumns: GridColDef<CollectionWithVocabularyCount>[] = [
     {
-        field: "description",
-        headerName: "Description",
-        flex: 3,
-        renderCell: (params) => params.value,
+        field: "name",
+        headerName: "Collection",
+        flex: 1,
+        minWidth: 200,
+        renderCell: (params) => (
+            <TextWithSubtext
+                text={params.row.name}
+                subtext={params.row.description ?? ""}
+            />
+        ),
     },
     {
         field: "createdAt",
         headerName: "Created At",
         type: "date",
-        width: 120,
+        width: 135,
+        align: "right",
+        headerAlign: "right",
         valueFormatter: (value: Date) => value.toLocaleDateString(),
     },
     {
         field: "updatedAt",
         headerName: "Updated At",
         type: "date",
-        width: 120,
+        width: 135,
+        align: "right",
+        headerAlign: "right",
         valueFormatter: (value: Date | null) => value?.toLocaleDateString(),
     },
     {
         field: "vocabularyCount",
-        headerName: "Vocabularies",
+        headerName: "Vocabs",
         type: "number",
-        width: 140,
+        width: 110,
+        align: "right",
+        headerAlign: "right",
     },
 ];
 
-const mobileColumnVisibility = {
-    description: false,
-    createdAt: false,
-    updatedAt: false,
-};
+const mobileColumns: GridColDef<CollectionWithVocabularyCount>[] = [
+    {
+        field: "name",
+        headerName: "Collection",
+        flex: 1,
+        renderCell: (params) => (
+            <TextWithSubtext
+                text={params.row.name}
+                subtext={params.row.description ?? ""}
+            />
+        ),
+    },
+    {
+        field: "vocabularyCount",
+        headerName: "Vocabs",
+        type: "number",
+        width: 110,
+        align: "right",
+        headerAlign: "right",
+    },
+];
 
 export const CollectionsContent = ({
     collections,
     onCollectionClick,
     onCreateClick,
-}: CollectionsContentProps) => {
-    const isMobile = useMediaQuery("(max-width:600px)");
-
-    if (collections.length === 0) {
-        return (
-            <EmptyState
-                icon={<FolderIcon />}
-                title="No Collections Yet"
-                description="Create your first collection to organize words."
-                actionLabel="Create Collection"
-                onAction={onCreateClick}
-            />
-        );
-    }
-
-    return (
-        <DataGridWithFilter
-            rows={collections}
-            columns={columns}
-            columnVisibilityModel={
-                isMobile ? mobileColumnVisibility : undefined
-            }
-            onRowClick={(params) => onCollectionClick(params.row.id)}
-            initialState={{
-                sorting: {
-                    sortModel: [{ field: "updatedAt", sort: "desc" }],
-                },
-            }}
-        />
-    );
-};
+}: CollectionsContentProps) => (
+    <ContentDataGrid
+        rows={collections}
+        desktopColumns={desktopColumns}
+        mobileColumns={mobileColumns}
+        onRowClick={onCollectionClick}
+        actionLabel="+ Add Collection"
+        onAction={onCreateClick}
+        initialSortModel={[{ field: "updatedAt", sort: "desc" }]}
+    />
+);

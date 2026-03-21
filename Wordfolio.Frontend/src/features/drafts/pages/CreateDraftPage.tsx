@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { draftsPath } from "../routes";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
-import { BreadcrumbNav } from "../../../shared/components/BreadcrumbNav";
+import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBreadcrumbs";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { useDuplicateEntryDialog } from "../../../shared/hooks/useDuplicateEntryDialog";
 import { useCreateDraftMutation } from "../../../shared/queries/useCreateDraftMutation";
@@ -65,7 +65,7 @@ export const CreateDraftPage = () => {
 
     return (
         <PageContainer>
-            <BreadcrumbNav
+            <TopBarBreadcrumbs
                 items={[
                     { label: "Drafts", ...draftsPath() },
                     { label: "New Draft" },

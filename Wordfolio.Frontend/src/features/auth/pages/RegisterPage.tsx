@@ -97,7 +97,6 @@ export const RegisterPage = () => {
 
                 <TextField
                     fullWidth
-                    margin="normal"
                     id="email"
                     label="Email"
                     type="email"
@@ -110,7 +109,6 @@ export const RegisterPage = () => {
 
                 <TextField
                     fullWidth
-                    margin="normal"
                     id="password"
                     label="Password"
                     type="password"
@@ -123,7 +121,6 @@ export const RegisterPage = () => {
 
                 <TextField
                     fullWidth
-                    margin="normal"
                     id="confirmPassword"
                     label="Confirm Password"
                     type="password"
@@ -167,7 +164,6 @@ export const RegisterPage = () => {
                     className={styles.header}
                     variant="h5"
                     component="h1"
-                    gutterBottom
                     align="center"
                 >
                     Sign Up for Wordfolio

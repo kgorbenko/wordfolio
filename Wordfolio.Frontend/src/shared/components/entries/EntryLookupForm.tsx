@@ -155,7 +155,11 @@ export const EntryLookupForm = ({
             <Box className={isPageVariant ? styles.actionsPage : styles.footer}>
                 {isPageVariant ? (
                     <>
-                        <Button onClick={onCancel} disabled={isSaving}>
+                        <Button
+                            variant="outlined"
+                            onClick={onCancel}
+                            disabled={isSaving}
+                        >
                             Cancel
                         </Button>
                         <Button
