@@ -45,7 +45,7 @@ type GetManageInfoTests(fixture: WordfolioIdentityTestFixture) =
         }
 
     [<Fact>]
-    member _.``GET /auth/manage/info without authentication fails``() : Task =
+    member _.``GET /auth/manage/info without authentication returns not found``() : Task =
         task {
             do! fixture.ResetDatabaseAsync()
 
@@ -56,5 +56,5 @@ type GetManageInfoTests(fixture: WordfolioIdentityTestFixture) =
 
             let! response = client.GetAsync(Urls.Auth.manageInfo())
 
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
