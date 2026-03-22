@@ -540,6 +540,17 @@ export const theme = createTheme({
                         },
                     "& .MuiDataGrid-columnHeader .MuiDataGrid-sortButton": {
                         backgroundColor: "transparent",
+                        color: textPlaceholder,
+                        padding: "4px",
+                        height: "auto",
+                        width: "auto",
+                        borderRadius: "50%",
+                        "& .sort-icon": {
+                            fontSize: "12px",
+                            "@media (min-width: 900px)": {
+                                fontSize: "15px",
+                            },
+                        },
                         "&:hover": {
                             backgroundColor: overlayHover,
                         },
