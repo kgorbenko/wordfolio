@@ -29,6 +29,7 @@
     <Compile Include="Auth/LoginTests.fs" />
     <Compile Include="Auth/RefreshTests.fs" />
     <Compile Include="Auth/GetPasswordRequirementsTests.fs" />
+    <Compile Include="Auth/GetManageInfoTests.fs" />
     <Compile Include="Collections/CreateCollectionTests.fs" />
     <Compile Include="Collections/GetCollectionsTests.fs" />
     <Compile Include="Collections/GetCollectionByIdTests.fs" />

@@ -27,3 +27,8 @@ export interface AuthTokens {
     readonly expiresIn: number;
     readonly refreshToken: string;
 }
+
+export interface UserInfo {
+    readonly email: string;
+    readonly isEmailConfirmed: boolean;
+}
