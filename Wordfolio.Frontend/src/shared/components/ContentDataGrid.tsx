@@ -14,7 +14,8 @@ import { EmptyState } from "./EmptyState";
 const SortDescIcon = () => (
     <Box
         component="span"
-        sx={{ fontSize: 11, lineHeight: 1, color: "text.accent" }}
+        className="sort-icon"
+        sx={{ lineHeight: 1, color: "text.accent" }}
     >
         ↓
     </Box>
@@ -23,7 +24,8 @@ const SortDescIcon = () => (
 const SortAscIcon = () => (
     <Box
         component="span"
-        sx={{ fontSize: 11, lineHeight: 1, color: "text.accent" }}
+        className="sort-icon"
+        sx={{ lineHeight: 1, color: "text.accent" }}
     >
         ↑
     </Box>
