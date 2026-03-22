@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Outlet, useNavigate, useParams } from "@tanstack/react-router";
 import { CircularProgress } from "@mui/material";
 
@@ -32,6 +33,7 @@ export const AuthenticatedLayout = () => {
     const params = useParams({ strict: false });
     const { openWordEntry, isWordEntryOpen, closeWordEntry } = useUiStore();
     const { clearAuth } = useAuthStore();
+    const queryClient = useQueryClient();
     const { openSuccessNotification, openErrorNotification } =
         useNotificationContext();
     const { raiseDuplicateEntryDialogAsync, dialogElement } =
@@ -116,6 +118,7 @@ export const AuthenticatedLayout = () => {
 
     const handleLogout = () => {
         clearAuth();
+        queryClient.clear();
         void navigate(loginPath());
     };
 
