@@ -22,19 +22,11 @@ export const PasswordField = (props: PasswordFieldProps) => {
                                 onClick={() => setShowPassword((prev) => !prev)}
                                 onMouseDown={(e) => e.preventDefault()}
                                 edge="end"
-                                size="small"
-                                sx={{
-                                    color: "text.placeholder",
-                                    padding: "4px",
-                                    height: "auto",
-                                    width: "auto",
-                                    borderRadius: "50%",
-                                }}
                             >
                                 {showPassword ? (
-                                    <VisibilityOff sx={{ fontSize: "14px" }} />
+                                    <VisibilityOff />
                                 ) : (
-                                    <Visibility sx={{ fontSize: "14px" }} />
+                                    <Visibility />
                                 )}
                             </IconButton>
                         </InputAdornment>
