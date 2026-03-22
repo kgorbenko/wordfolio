@@ -4,6 +4,8 @@ import {
     Button,
     Chip,
     Divider,
+    IconButton,
+    InputAdornment,
     Link,
     MenuItem,
     TextField,
@@ -13,6 +15,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
+import Visibility from "@mui/icons-material/Visibility";
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef } from "@mui/x-data-grid";
 
@@ -408,6 +411,29 @@ export const DesignSystemPage = () => {
                                 label="Text Input"
                                 placeholder="Enter a name..."
                                 fullWidth
+                            />
+                            <TextField
+                                label="Input with Icon"
+                                placeholder="Enter a value..."
+                                fullWidth
+                                slotProps={{
+                                    input: {
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton edge="end">
+                                                    <Visibility />
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    },
+                                }}
+                            />
+                            <TextField
+                                label="Text Input"
+                                placeholder="Enter a name..."
+                                fullWidth
+                                error
+                                helperText="This field is required"
                             />
                             <TextField
                                 label="Textarea"

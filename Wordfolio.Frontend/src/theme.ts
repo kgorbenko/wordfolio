@@ -186,6 +186,9 @@ export const theme = createTheme({
             },
         },
         MuiIconButton: {
+            defaultProps: {
+                size: "small",
+            },
             styleOverrides: {
                 root: {
                     borderRadius: 8,
@@ -488,6 +491,22 @@ export const theme = createTheme({
                     },
                     lineHeight: "12px",
                     padding: "5px 20px",
+                },
+            },
+        },
+        MuiInputAdornment: {
+            styleOverrides: {
+                root: {
+                    "& .MuiIconButton-root": {
+                        color: textPlaceholder,
+                        padding: "4px",
+                        height: "auto",
+                        width: "auto",
+                        borderRadius: "50%",
+                        "& .MuiSvgIcon-root": {
+                            fontSize: "14px",
+                        },
+                    },
                 },
             },
         },
