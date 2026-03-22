@@ -9,6 +9,7 @@ import { useDuplicateEntryDialog } from "../../hooks/useDuplicateEntryDialog";
 import { useCreateEntryMutation } from "../../queries/useCreateEntryMutation";
 import { useCreateDraftMutation } from "../../queries/useCreateDraftMutation";
 import { useCollectionsHierarchyQuery } from "../../queries/useCollectionsHierarchyQuery";
+import { useUserInfoQuery } from "../../../features/auth/hooks/useUserInfoQuery";
 import type { CreateEntryData } from "../../types/entries";
 import { VocabularyContext } from "../entries/EntryLookupForm";
 import { WordEntrySheet } from "../entries/WordEntrySheet";
@@ -35,8 +36,18 @@ export const AuthenticatedLayout = () => {
         useNotificationContext();
     const { raiseDuplicateEntryDialogAsync, dialogElement } =
         useDuplicateEntryDialog();
-    const { data, isLoading, isError, refetch } =
-        useCollectionsHierarchyQuery();
+    const {
+        data: hierarchyData,
+        isLoading: isHierarchyLoading,
+        isError: isHierarchyError,
+        refetch: refetchHierarchy,
+    } = useCollectionsHierarchyQuery();
+    const {
+        data: userInfoData,
+        isLoading: isUserInfoLoading,
+        isError: isUserInfoError,
+        refetch: refetchUserInfo,
+    } = useUserInfoQuery();
 
     const activeCollectionId = params.collectionId
         ? Number(params.collectionId)
@@ -131,7 +142,7 @@ export const AuthenticatedLayout = () => {
         [openErrorNotification]
     );
 
-    if (isLoading) {
+    if (isHierarchyLoading || isUserInfoLoading) {
         return (
             <div className="centered-page-container">
                 <CircularProgress />
@@ -139,19 +150,27 @@ export const AuthenticatedLayout = () => {
         );
     }
 
-    if (isError || !data) {
+    if (
+        isHierarchyError ||
+        isUserInfoError ||
+        !hierarchyData ||
+        !userInfoData
+    ) {
         return (
             <div className="centered-page-container">
                 <RetryOnError
                     title="Failed to Load Application"
                     description="Something went wrong while loading Wordfolio. Please try again."
-                    onRetry={() => void refetch()}
+                    onRetry={() => {
+                        void refetchHierarchy();
+                        void refetchUserInfo();
+                    }}
                 />
             </div>
         );
     }
 
-    const collections: NavCollection[] = data.collections.map((c) => ({
+    const collections: NavCollection[] = hierarchyData.collections.map((c) => ({
         id: c.id,
         name: c.name,
         entryCount: c.vocabularies.reduce((sum, v) => sum + v.entryCount, 0),
@@ -169,13 +188,15 @@ export const AuthenticatedLayout = () => {
             void navigate(vocabularyDetailPath(c.id, vocabId)),
     }));
 
+    const userEmail = userInfoData.email;
+
     const user: NavUser = {
-        initials: "U",
-        email: "user@wordfolio.app",
+        initials: userEmail[0].toUpperCase(),
+        email: userEmail,
         onLogout: handleLogout,
     };
 
-    const draftCount = data.defaultVocabulary?.entryCount ?? 0;
+    const draftCount = hierarchyData.defaultVocabulary?.entryCount ?? 0;
 
     return (
         <AppLayout

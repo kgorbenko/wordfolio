@@ -77,7 +77,11 @@ module Auth =
     let PasswordRequirements =
         "/password-requirements"
 
+    [<Literal>]
+    let ManageInfo = "/manage/info"
+
     let passwordRequirements() = $"{Path}{PasswordRequirements}"
+    let manageInfo() = $"{Path}{ManageInfo}"
 
 module Dictionary =
     [<Literal>]

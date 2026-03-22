@@ -1,3 +1,5 @@
+import { useAuthStore } from "../../../shared/stores/authStore";
+
 export interface RegisterRequest {
     readonly email: string;
     readonly password: string;
@@ -28,7 +30,22 @@ export interface PasswordRequirements {
     readonly requiredUniqueChars: number;
 }
 
+export interface UserInfoResponse {
+    readonly email: string;
+    readonly isEmailConfirmed: boolean;
+}
+
 const API_BASE_URL = "/api";
+
+const getAuthHeaders = (): HeadersInit => {
+    const authTokens = useAuthStore.getState().authTokens;
+    if (!authTokens) {
+        throw new Error("Not authenticated");
+    }
+    return {
+        Authorization: `${authTokens.tokenType} ${authTokens.accessToken}`,
+    };
+};
 
 export const authApi = {
     register: async (request: RegisterRequest): Promise<void> => {
@@ -83,6 +100,19 @@ export const authApi = {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(request),
+        });
+
+        if (!response.ok) {
+            throw await response.json();
+        }
+
+        return response.json();
+    },
+
+    getUserInfo: async (): Promise<UserInfoResponse> => {
+        const response = await fetch(`${API_BASE_URL}/auth/manage/info`, {
+            method: "GET",
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {

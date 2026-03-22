@@ -4,6 +4,7 @@ import type {
     PasswordRequirements as PasswordRequirementsResponse,
     RefreshRequest,
     RegisterRequest,
+    UserInfoResponse,
 } from "./authApi";
 import type {
     AuthTokens,
@@ -11,6 +12,7 @@ import type {
     PasswordRequirements,
     RefreshCredentials,
     RegisterCredentials,
+    UserInfo,
 } from "../types";
 
 export function mapPasswordRequirements(
@@ -48,5 +50,12 @@ export function mapAuthTokens(response: LoginResponse): AuthTokens {
         accessToken: response.accessToken,
         expiresIn: response.expiresIn,
         refreshToken: response.refreshToken,
+    };
+}
+
+export function mapUserInfo(response: UserInfoResponse): UserInfo {
+    return {
+        email: response.email,
+        isEmailConfirmed: response.isEmailConfirmed,
     };
 }
