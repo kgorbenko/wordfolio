@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { Box } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
@@ -11,6 +12,14 @@ import type {
 
 import { SearchActionToolbar } from "./SearchActionToolbar";
 import { EmptyState } from "./EmptyState";
+
+declare module "@mui/x-data-grid" {
+    interface NoResultsOverlayPropsOverrides {
+        icon?: ReactNode;
+        title?: string;
+        description?: string;
+    }
+}
 
 const SortDescIcon = () => (
     <Box
