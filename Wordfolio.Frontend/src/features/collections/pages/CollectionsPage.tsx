@@ -1,5 +1,4 @@
 import { useMemo, useCallback } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import type { GridSortModel } from "@mui/x-data-grid";
 
 import { PageContainer } from "../../../shared/components/PageContainer";
@@ -14,9 +13,10 @@ import {
     collectionDetailPath,
     collectionCreatePath,
 } from "../routes";
+import type { CollectionSortField } from "../schemas/collectionSchemas";
 
 export const CollectionsPage = () => {
-    const navigate = useNavigate();
+    const navigate = collectionListRouteApi.useNavigate();
     const { sortField, sortDirection, filter } =
         collectionListRouteApi.useSearch();
 
@@ -33,40 +33,34 @@ export const CollectionsPage = () => {
             const isDefault =
                 first?.field === "updatedAt" && first?.sort === "desc";
             void navigate({
-                to: "/collections",
-                search: {
+                to: ".",
+                search: (prev) => ({
+                    ...prev,
                     sortField: isDefault
                         ? undefined
-                        : (first?.field as
-                              | "name"
-                              | "createdAt"
-                              | "updatedAt"
-                              | "vocabularyCount"
-                              | undefined),
+                        : (first?.field as CollectionSortField | undefined),
                     sortDirection: isDefault
                         ? undefined
                         : (first?.sort ?? undefined),
-                    filter: filter || undefined,
-                },
+                }),
                 replace: true,
             });
         },
-        [navigate, filter]
+        [navigate]
     );
 
     const handleFilterValueChange = useCallback(
         (value: string) => {
             void navigate({
-                to: "/collections",
-                search: {
-                    sortField,
-                    sortDirection,
+                to: ".",
+                search: (prev) => ({
+                    ...prev,
                     filter: value || undefined,
-                },
+                }),
                 replace: true,
             });
         },
-        [navigate, sortField, sortDirection]
+        [navigate]
     );
 
     const {
