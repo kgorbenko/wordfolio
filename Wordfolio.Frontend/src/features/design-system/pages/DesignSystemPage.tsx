@@ -12,7 +12,7 @@ import {
     Typography,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
-import type { GridColDef } from "@mui/x-data-grid";
+import type { GridColDef, GridSortModel } from "@mui/x-data-grid";
 
 import { AppLayout } from "../../../shared/components/layouts/AppLayout";
 import { ContentDataGrid } from "../../../shared/components/ContentDataGrid";
@@ -225,6 +225,10 @@ export const DesignSystemPage = () => {
     const [selectedVocabularyId, setSelectedVocabularyId] = useState<
         number | null
     >(6);
+    const [gridSortModel, setGridSortModel] = useState<GridSortModel>([
+        { field: "updated", sort: "desc" },
+    ]);
+    const [gridFilter, setGridFilter] = useState("");
 
     const toggleCollection = (id: number) => {
         setExpandedIds((prev) => {
@@ -457,9 +461,10 @@ export const DesignSystemPage = () => {
                             actionLabel="+ Add Vocabulary"
                             onAction={() => {}}
                             searchPlaceholder="Search vocabularies..."
-                            initialSortModel={[
-                                { field: "updated", sort: "desc" },
-                            ]}
+                            sortModel={gridSortModel}
+                            onSortModelChange={setGridSortModel}
+                            filterValue={gridFilter}
+                            onFilterValueChange={setGridFilter}
                         />
                     </Box>
 

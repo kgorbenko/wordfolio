@@ -1,11 +1,12 @@
-import { useCallback } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useMemo, useCallback } from "react";
+import type { GridSortModel } from "@mui/x-data-grid";
 
 import {
     collectionDetailRouteApi,
     collectionsPath,
     collectionEditPath,
 } from "../routes";
+import type { VocabularySortField } from "../schemas/collectionSchemas";
 import {
     vocabularyDetailPath,
     vocabularyCreatePath,
@@ -27,9 +28,54 @@ import { assertNonNullable } from "../../../shared/utils/misc";
 
 export const CollectionDetailPage = () => {
     const { collectionId } = collectionDetailRouteApi.useParams();
-    const navigate = useNavigate();
+    const { sortField, sortDirection, filter } =
+        collectionDetailRouteApi.useSearch();
+    const navigate = collectionDetailRouteApi.useNavigate();
     const { raiseConfirmDialogAsync } = useConfirmDialog();
     const { openErrorNotification } = useNotificationContext();
+
+    const sortModel = useMemo<GridSortModel>(() => {
+        if (sortField && sortDirection) {
+            return [{ field: sortField, sort: sortDirection }];
+        }
+        return [{ field: "updatedAt", sort: "desc" }];
+    }, [sortField, sortDirection]);
+
+    const handleSortModelChange = useCallback(
+        (model: GridSortModel) => {
+            const first = model[0];
+            const isDefault =
+                first?.field === "updatedAt" && first?.sort === "desc";
+            void navigate({
+                to: ".",
+                search: (prev) => ({
+                    ...prev,
+                    sortField: isDefault
+                        ? undefined
+                        : (first?.field as VocabularySortField | undefined),
+                    sortDirection: isDefault
+                        ? undefined
+                        : (first?.sort ?? undefined),
+                }),
+                replace: true,
+            });
+        },
+        [navigate]
+    );
+
+    const handleFilterValueChange = useCallback(
+        (value: string) => {
+            void navigate({
+                to: ".",
+                search: (prev) => ({
+                    ...prev,
+                    filter: value || undefined,
+                }),
+                replace: true,
+            });
+        },
+        [navigate]
+    );
 
     const {
         data: collection,
@@ -114,6 +160,10 @@ export const CollectionDetailPage = () => {
                 vocabularies={vocabularies ?? []}
                 onVocabularyClick={handleVocabularyClick}
                 onCreateVocabularyClick={handleCreateVocabulary}
+                sortModel={sortModel}
+                onSortModelChange={handleSortModelChange}
+                filterValue={filter ?? ""}
+                onFilterValueChange={handleFilterValueChange}
             />
         );
     };

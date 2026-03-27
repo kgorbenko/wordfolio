@@ -1,5 +1,5 @@
-import { useCallback } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useMemo, useCallback } from "react";
+import type { GridSortModel } from "@mui/x-data-grid";
 
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
@@ -8,10 +8,60 @@ import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { CollectionsContent } from "../components/CollectionsContent";
 import { useCollectionsQuery } from "../hooks/useCollectionsQuery";
-import { collectionDetailPath, collectionCreatePath } from "../routes";
+import {
+    collectionListRouteApi,
+    collectionDetailPath,
+    collectionCreatePath,
+} from "../routes";
+import type { CollectionSortField } from "../schemas/collectionSchemas";
 
 export const CollectionsPage = () => {
-    const navigate = useNavigate();
+    const navigate = collectionListRouteApi.useNavigate();
+    const { sortField, sortDirection, filter } =
+        collectionListRouteApi.useSearch();
+
+    const sortModel = useMemo<GridSortModel>(() => {
+        if (sortField && sortDirection) {
+            return [{ field: sortField, sort: sortDirection }];
+        }
+        return [{ field: "updatedAt", sort: "desc" }];
+    }, [sortField, sortDirection]);
+
+    const handleSortModelChange = useCallback(
+        (model: GridSortModel) => {
+            const first = model[0];
+            const isDefault =
+                first?.field === "updatedAt" && first?.sort === "desc";
+            void navigate({
+                to: ".",
+                search: (prev) => ({
+                    ...prev,
+                    sortField: isDefault
+                        ? undefined
+                        : (first?.field as CollectionSortField | undefined),
+                    sortDirection: isDefault
+                        ? undefined
+                        : (first?.sort ?? undefined),
+                }),
+                replace: true,
+            });
+        },
+        [navigate]
+    );
+
+    const handleFilterValueChange = useCallback(
+        (value: string) => {
+            void navigate({
+                to: ".",
+                search: (prev) => ({
+                    ...prev,
+                    filter: value || undefined,
+                }),
+                replace: true,
+            });
+        },
+        [navigate]
+    );
 
     const {
         data: collections,
@@ -51,6 +101,10 @@ export const CollectionsPage = () => {
                 collections={collections}
                 onCollectionClick={handleCollectionClick}
                 onCreateClick={handleCreateClick}
+                sortModel={sortModel}
+                onSortModelChange={handleSortModelChange}
+                filterValue={filter ?? ""}
+                onFilterValueChange={handleFilterValueChange}
             />
         );
     };

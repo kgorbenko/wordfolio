@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import { Box } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
@@ -6,6 +6,7 @@ import SearchOffIcon from "@mui/icons-material/SearchOff";
 import { DataGrid } from "@mui/x-data-grid";
 import type {
     GridColDef,
+    GridFilterModel,
     GridSortModel,
     GridValidRowModel,
 } from "@mui/x-data-grid";
@@ -50,7 +51,10 @@ interface ContentDataGridProps<R extends GridValidRowModel> {
     readonly onAction: () => void;
     readonly searchPlaceholder?: string;
     readonly mobileActionLabel?: string;
-    readonly initialSortModel: GridSortModel;
+    readonly sortModel: GridSortModel;
+    readonly onSortModelChange: (model: GridSortModel) => void;
+    readonly filterValue: string;
+    readonly onFilterValueChange: (value: string) => void;
 }
 
 export const ContentDataGrid = <R extends GridValidRowModel>({
@@ -62,15 +66,38 @@ export const ContentDataGrid = <R extends GridValidRowModel>({
     onAction,
     searchPlaceholder = "Search...",
     mobileActionLabel = "+ New",
-    initialSortModel,
+    sortModel,
+    onSortModelChange,
+    filterValue,
+    onFilterValueChange,
 }: ContentDataGridProps<R>) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
+    const activeColumns = isMobile ? mobileColumns : desktopColumns;
+
+    const validSortModel = useMemo<GridSortModel>(
+        () =>
+            sortModel.filter((item) =>
+                activeColumns.some((col) => col.field === item.field)
+            ),
+        [sortModel, activeColumns]
+    );
+
+    const filterModel = useMemo<GridFilterModel>(
+        () => ({
+            items: [],
+            quickFilterValues: filterValue
+                ? filterValue.trim().split(/\s+/)
+                : [],
+        }),
+        [filterValue]
+    );
+
     return (
         <DataGrid
             rows={rows}
-            columns={isMobile ? mobileColumns : desktopColumns}
+            columns={activeColumns}
             rowHeight={isMobile ? 48 : 52}
             onRowClick={(params) => onRowClick(params.row.id)}
             showToolbar
@@ -98,10 +125,15 @@ export const ContentDataGrid = <R extends GridValidRowModel>({
                     description: "Try adjusting your search",
                 },
             }}
-            initialState={{
-                sorting: {
-                    sortModel: initialSortModel,
-                },
+            sortModel={validSortModel}
+            onSortModelChange={onSortModelChange}
+            sortingOrder={["asc", "desc"]}
+            filterModel={filterModel}
+            onFilterModelChange={(m) => {
+                const newValue = m.quickFilterValues?.join(" ") ?? "";
+                if (newValue !== filterValue) {
+                    onFilterValueChange(newValue);
+                }
             }}
             hideFooter
             sx={{ cursor: "pointer", "--DataGrid-overlayHeight": "300px" }}

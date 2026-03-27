@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { VocabularyDetailPage } from "../../../../../../features/vocabularies/pages/VocabularyDetailPage";
-import { vocabularyRouteParamsSchema } from "../../../../../../features/vocabularies/schemas/vocabularySchemas";
+import {
+    vocabularyRouteParamsSchema,
+    entriesListSearchParamsSchema,
+} from "../../../../../../features/vocabularies/schemas/vocabularySchemas";
 
 export const Route = createFileRoute(
     "/_authenticated/collections/$collectionId/vocabularies/$vocabularyId/"
@@ -10,4 +13,5 @@ export const Route = createFileRoute(
     params: {
         parse: (params) => vocabularyRouteParamsSchema.parse(params),
     },
+    validateSearch: entriesListSearchParamsSchema,
 });

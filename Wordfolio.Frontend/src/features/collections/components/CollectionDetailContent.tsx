@@ -1,4 +1,4 @@
-import type { GridColDef } from "@mui/x-data-grid";
+import type { GridColDef, GridSortModel } from "@mui/x-data-grid";
 
 import { ContentDataGrid } from "../../../shared/components/ContentDataGrid";
 import { TextWithSubtext } from "../../../shared/components/TextWithSubtext";
@@ -8,6 +8,10 @@ interface CollectionDetailContentProps {
     readonly vocabularies: VocabularyWithEntryCount[];
     readonly onVocabularyClick: (id: number) => void;
     readonly onCreateVocabularyClick: () => void;
+    readonly sortModel: GridSortModel;
+    readonly onSortModelChange: (model: GridSortModel) => void;
+    readonly filterValue: string;
+    readonly onFilterValueChange: (value: string) => void;
 }
 
 const desktopColumns: GridColDef<VocabularyWithEntryCount>[] = [
@@ -76,6 +80,10 @@ export const CollectionDetailContent = ({
     vocabularies,
     onVocabularyClick,
     onCreateVocabularyClick,
+    sortModel,
+    onSortModelChange,
+    filterValue,
+    onFilterValueChange,
 }: CollectionDetailContentProps) => (
     <ContentDataGrid
         rows={vocabularies}
@@ -84,6 +92,9 @@ export const CollectionDetailContent = ({
         onRowClick={onVocabularyClick}
         actionLabel="+ Add Vocabulary"
         onAction={onCreateVocabularyClick}
-        initialSortModel={[{ field: "updatedAt", sort: "desc" }]}
+        sortModel={sortModel}
+        onSortModelChange={onSortModelChange}
+        filterValue={filterValue}
+        onFilterValueChange={onFilterValueChange}
     />
 );

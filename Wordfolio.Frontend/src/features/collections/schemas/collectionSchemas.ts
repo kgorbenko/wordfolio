@@ -18,3 +18,27 @@ export const collectionIdRouteParamsSchema = z.object({
 
 export type CollectionFormInput = z.input<typeof collectionSchema>;
 export type CollectionFormData = z.output<typeof collectionSchema>;
+
+export const collectionsListSearchParamsSchema = z.object({
+    sortField: z
+        .enum(["name", "createdAt", "updatedAt", "vocabularyCount"])
+        .optional(),
+    sortDirection: z.enum(["asc", "desc"]).optional(),
+    filter: z.string().optional(),
+});
+
+export type CollectionSortField = NonNullable<
+    z.infer<typeof collectionsListSearchParamsSchema>["sortField"]
+>;
+
+export const vocabulariesListSearchParamsSchema = z.object({
+    sortField: z
+        .enum(["name", "createdAt", "updatedAt", "entryCount"])
+        .optional(),
+    sortDirection: z.enum(["asc", "desc"]).optional(),
+    filter: z.string().optional(),
+});
+
+export type VocabularySortField = NonNullable<
+    z.infer<typeof vocabulariesListSearchParamsSchema>["sortField"]
+>;

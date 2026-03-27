@@ -1,11 +1,12 @@
-import { useCallback } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useMemo, useCallback } from "react";
+import type { GridSortModel } from "@mui/x-data-grid";
 
 import {
     vocabularyDetailPath,
     vocabularyDetailRouteApi,
     vocabularyEditPath,
 } from "../routes";
+import type { EntrySortField } from "../schemas/vocabularySchemas";
 import {
     collectionsPath,
     collectionDetailPath,
@@ -31,9 +32,54 @@ import { useVocabularyEntriesQuery } from "../../../shared/queries/useVocabulary
 
 export const VocabularyDetailPage = () => {
     const { collectionId, vocabularyId } = vocabularyDetailRouteApi.useParams();
-    const navigate = useNavigate();
+    const { sortField, sortDirection, filter } =
+        vocabularyDetailRouteApi.useSearch();
+    const navigate = vocabularyDetailRouteApi.useNavigate();
     const { openErrorNotification } = useNotificationContext();
     const { raiseConfirmDialogAsync } = useConfirmDialog();
+
+    const sortModel = useMemo<GridSortModel>(() => {
+        if (sortField && sortDirection) {
+            return [{ field: sortField, sort: sortDirection }];
+        }
+        return [{ field: "updatedAt", sort: "desc" }];
+    }, [sortField, sortDirection]);
+
+    const handleSortModelChange = useCallback(
+        (model: GridSortModel) => {
+            const first = model[0];
+            const isDefault =
+                first?.field === "updatedAt" && first?.sort === "desc";
+            void navigate({
+                to: ".",
+                search: (prev) => ({
+                    ...prev,
+                    sortField: isDefault
+                        ? undefined
+                        : (first?.field as EntrySortField | undefined),
+                    sortDirection: isDefault
+                        ? undefined
+                        : (first?.sort ?? undefined),
+                }),
+                replace: true,
+            });
+        },
+        [navigate]
+    );
+
+    const handleFilterValueChange = useCallback(
+        (value: string) => {
+            void navigate({
+                to: ".",
+                search: (prev) => ({
+                    ...prev,
+                    filter: value || undefined,
+                }),
+                replace: true,
+            });
+        },
+        [navigate]
+    );
 
     const {
         data: vocabulary,
@@ -162,6 +208,10 @@ export const VocabularyDetailPage = () => {
                 entries={entries}
                 onEntryClick={handleEntryClick}
                 onAddWordClick={handleAddWordClick}
+                sortModel={sortModel}
+                onSortModelChange={handleSortModelChange}
+                filterValue={filter ?? ""}
+                onFilterValueChange={handleFilterValueChange}
             />
         );
     };

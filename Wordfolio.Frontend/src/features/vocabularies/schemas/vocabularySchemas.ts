@@ -23,3 +23,21 @@ export const vocabularyRouteParamsSchema = z.object({
 
 export type VocabularyFormInput = z.input<typeof vocabularySchema>;
 export type VocabularyFormData = z.output<typeof vocabularySchema>;
+
+export const entriesListSearchParamsSchema = z.object({
+    sortField: z
+        .enum([
+            "entryText",
+            "createdAt",
+            "updatedAt",
+            "translationCount",
+            "definitionCount",
+        ])
+        .optional(),
+    sortDirection: z.enum(["asc", "desc"]).optional(),
+    filter: z.string().optional(),
+});
+
+export type EntrySortField = NonNullable<
+    z.infer<typeof entriesListSearchParamsSchema>["sortField"]
+>;
