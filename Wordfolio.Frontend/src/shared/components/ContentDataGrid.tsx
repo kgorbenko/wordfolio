@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import SearchOffIcon from "@mui/icons-material/SearchOff";
 import { DataGrid } from "@mui/x-data-grid";
 import type {
     GridColDef,
@@ -69,6 +70,7 @@ export const ContentDataGrid = <R extends GridValidRowModel>({
                 columnSortedDescendingIcon: SortDescIcon,
                 columnSortedAscendingIcon: SortAscIcon,
                 noRowsOverlay: EmptyState,
+                noResultsOverlay: EmptyState,
             }}
             slotProps={{
                 toolbar: {
@@ -76,6 +78,15 @@ export const ContentDataGrid = <R extends GridValidRowModel>({
                     actionLabel,
                     mobileActionLabel,
                     onAction,
+                },
+                noResultsOverlay: {
+                    icon: (
+                        <SearchOffIcon
+                            sx={{ fontSize: 32, color: "secondary.main" }}
+                        />
+                    ),
+                    title: "No matches found",
+                    description: "Try adjusting your search",
                 },
             }}
             initialState={{
