@@ -91,6 +91,28 @@ describe("BreadcrumbNav", () => {
                 screen.queryByRole("link", { name: "Entry Name" })
             ).not.toBeInTheDocument();
         });
+
+        it("renders a non-active item without a route as plain text", () => {
+            const items: BreadcrumbItem[] = [
+                { label: "Collections", to: "/collections" },
+                { label: "No Route" },
+                { label: "Current Page" },
+            ];
+            render(<BreadcrumbNav items={items} />);
+
+            expect(
+                screen.queryByRole("link", { name: "No Route" })
+            ).not.toBeInTheDocument();
+            expect(screen.getByText("No Route")).toBeInTheDocument();
+        });
+
+        it("renders a single item as plain text with no separator", () => {
+            render(<BreadcrumbNav items={[{ label: "Collections" }]} />);
+
+            expect(screen.getByText("Collections")).toBeInTheDocument();
+            expect(screen.queryByRole("link")).not.toBeInTheDocument();
+            expect(screen.queryByText("/")).not.toBeInTheDocument();
+        });
     });
 
     describe("truncated mode", () => {
@@ -137,6 +159,18 @@ describe("BreadcrumbNav", () => {
                 params: { vocabularyId: "1" },
             });
             expect(mockHistoryBack).not.toHaveBeenCalled();
+        });
+
+        it("does nothing when back is clicked with no history and no parent route", async () => {
+            const items: BreadcrumbItem[] = [
+                { label: "Unlinked Parent" },
+                { label: "Current Page" },
+            ];
+            render(<BreadcrumbNav items={items} truncate />);
+            await userEvent.click(screen.getByRole("button"));
+
+            expect(mockHistoryBack).not.toHaveBeenCalled();
+            expect(mockNavigate).not.toHaveBeenCalled();
         });
     });
 });
