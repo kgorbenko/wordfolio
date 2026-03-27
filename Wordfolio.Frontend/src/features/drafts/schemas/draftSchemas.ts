@@ -17,3 +17,7 @@ export const draftsListSearchParamsSchema = z.object({
     sortDirection: z.enum(["asc", "desc"]).optional(),
     filter: z.string().optional(),
 });
+
+export type DraftSortField = NonNullable<
+    z.infer<typeof draftsListSearchParamsSchema>["sortField"]
+>;

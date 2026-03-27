@@ -1,5 +1,4 @@
 import { useMemo, useCallback } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import type { GridSortModel } from "@mui/x-data-grid";
 
 import {
@@ -7,6 +6,7 @@ import {
     draftsCreatePath,
     draftsListRouteApi,
 } from "../routes";
+import type { DraftSortField } from "../schemas/draftSchemas";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBreadcrumbs";
@@ -18,7 +18,7 @@ import { EmptyState } from "../../../shared/components/EmptyState";
 import { DraftsContent } from "../components/DraftsContent";
 
 export const DraftsPage = () => {
-    const navigate = useNavigate();
+    const navigate = draftsListRouteApi.useNavigate();
     const { sortField, sortDirection, filter } = draftsListRouteApi.useSearch();
 
     const sortModel = useMemo<GridSortModel>(() => {
@@ -34,41 +34,34 @@ export const DraftsPage = () => {
             const isDefault =
                 first?.field === "updatedAt" && first?.sort === "desc";
             void navigate({
-                to: "/drafts",
-                search: {
+                to: ".",
+                search: (prev) => ({
+                    ...prev,
                     sortField: isDefault
                         ? undefined
-                        : (first?.field as
-                              | "entryText"
-                              | "createdAt"
-                              | "updatedAt"
-                              | "translationCount"
-                              | "definitionCount"
-                              | undefined),
+                        : (first?.field as DraftSortField | undefined),
                     sortDirection: isDefault
                         ? undefined
                         : (first?.sort ?? undefined),
-                    filter: filter || undefined,
-                },
+                }),
                 replace: true,
             });
         },
-        [navigate, filter]
+        [navigate]
     );
 
     const handleFilterValueChange = useCallback(
         (value: string) => {
             void navigate({
-                to: "/drafts",
-                search: {
-                    sortField,
-                    sortDirection,
+                to: ".",
+                search: (prev) => ({
+                    ...prev,
                     filter: value || undefined,
-                },
+                }),
                 replace: true,
             });
         },
-        [navigate, sortField, sortDirection]
+        [navigate]
     );
 
     const { data, isLoading, isError, refetch } = useDraftsQuery();

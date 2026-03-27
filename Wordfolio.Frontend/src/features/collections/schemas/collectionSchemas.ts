@@ -27,6 +27,10 @@ export const collectionsListSearchParamsSchema = z.object({
     filter: z.string().optional(),
 });
 
+export type CollectionSortField = NonNullable<
+    z.infer<typeof collectionsListSearchParamsSchema>["sortField"]
+>;
+
 export const vocabulariesListSearchParamsSchema = z.object({
     sortField: z
         .enum(["name", "createdAt", "updatedAt", "entryCount"])
@@ -34,3 +38,7 @@ export const vocabulariesListSearchParamsSchema = z.object({
     sortDirection: z.enum(["asc", "desc"]).optional(),
     filter: z.string().optional(),
 });
+
+export type VocabularySortField = NonNullable<
+    z.infer<typeof vocabulariesListSearchParamsSchema>["sortField"]
+>;

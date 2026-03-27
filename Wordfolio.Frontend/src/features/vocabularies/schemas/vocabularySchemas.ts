@@ -37,3 +37,7 @@ export const entriesListSearchParamsSchema = z.object({
     sortDirection: z.enum(["asc", "desc"]).optional(),
     filter: z.string().optional(),
 });
+
+export type EntrySortField = NonNullable<
+    z.infer<typeof entriesListSearchParamsSchema>["sortField"]
+>;
