@@ -48,18 +48,24 @@ export const VocabularyDetailPage = () => {
     const handleSortModelChange = useCallback(
         (model: GridSortModel) => {
             const first = model[0];
+            const isDefault =
+                first?.field === "updatedAt" && first?.sort === "desc";
             void navigate({
                 to: "/collections/$collectionId/vocabularies/$vocabularyId",
                 params: { collectionId, vocabularyId },
                 search: {
-                    sortField: first?.field as
-                        | "entryText"
-                        | "createdAt"
-                        | "updatedAt"
-                        | "translationCount"
-                        | "definitionCount"
-                        | undefined,
-                    sortDirection: first?.sort ?? undefined,
+                    sortField: isDefault
+                        ? undefined
+                        : (first?.field as
+                              | "entryText"
+                              | "createdAt"
+                              | "updatedAt"
+                              | "translationCount"
+                              | "definitionCount"
+                              | undefined),
+                    sortDirection: isDefault
+                        ? undefined
+                        : (first?.sort ?? undefined),
                     filter: filter || undefined,
                 },
                 replace: true,

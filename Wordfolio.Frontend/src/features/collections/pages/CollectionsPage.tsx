@@ -30,16 +30,22 @@ export const CollectionsPage = () => {
     const handleSortModelChange = useCallback(
         (model: GridSortModel) => {
             const first = model[0];
+            const isDefault =
+                first?.field === "updatedAt" && first?.sort === "desc";
             void navigate({
                 to: "/collections",
                 search: {
-                    sortField: first?.field as
-                        | "name"
-                        | "createdAt"
-                        | "updatedAt"
-                        | "vocabularyCount"
-                        | undefined,
-                    sortDirection: first?.sort ?? undefined,
+                    sortField: isDefault
+                        ? undefined
+                        : (first?.field as
+                              | "name"
+                              | "createdAt"
+                              | "updatedAt"
+                              | "vocabularyCount"
+                              | undefined),
+                    sortDirection: isDefault
+                        ? undefined
+                        : (first?.sort ?? undefined),
                     filter: filter || undefined,
                 },
                 replace: true,
