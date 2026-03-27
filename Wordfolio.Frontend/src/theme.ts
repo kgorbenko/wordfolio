@@ -497,6 +497,10 @@ export const theme = createTheme({
         MuiInputAdornment: {
             styleOverrides: {
                 root: {
+                    "& > .MuiSvgIcon-root": {
+                        color: textPlaceholder,
+                        fontSize: "14px",
+                    },
                     "& .MuiIconButton-root": {
                         color: textPlaceholder,
                         padding: "4px",

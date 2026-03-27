@@ -11,15 +11,11 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
-import SearchIcon from "@mui/icons-material/Search";
-import ClearIcon from "@mui/icons-material/Clear";
 import Visibility from "@mui/icons-material/Visibility";
-import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef } from "@mui/x-data-grid";
 
 import { AppLayout } from "../../../shared/components/layouts/AppLayout";
+import { ContentDataGrid } from "../../../shared/components/ContentDataGrid";
 import { EmptyState } from "../../../shared/components/EmptyState";
 import { ErrorState } from "../../../shared/components/ErrorState";
 import { TextWithSubtext } from "../../../shared/components/TextWithSubtext";
@@ -113,30 +109,6 @@ const stubUser: NavUser = {
     email: "test1@test.com",
 };
 
-const mobileColumnVisibility = {
-    created: false,
-    updated: false,
-};
-
-const SortDescIcon = () => (
-    <Box
-        component="span"
-        className={styles.sortIcon}
-        sx={{ color: "text.accent" }}
-    >
-        ↓
-    </Box>
-);
-const SortAscIcon = () => (
-    <Box
-        component="span"
-        className={styles.sortIcon}
-        sx={{ color: "text.accent" }}
-    >
-        ↑
-    </Box>
-);
-
 const columns: GridColDef[] = [
     {
         field: "name",
@@ -169,6 +141,10 @@ const columns: GridColDef[] = [
         headerAlign: "right",
     },
 ];
+
+const mobileColumns: GridColDef[] = columns.filter(
+    (c) => c.field !== "created" && c.field !== "updated"
+);
 
 const paletteGroups = [
     {
@@ -242,8 +218,6 @@ const ColorSwatch = ({ hex, role }: { hex: string; role: string }) => (
 );
 
 export const DesignSystemPage = () => {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set([1]));
     const [selectedCollectionId, setSelectedCollectionId] = useState<
         number | null
@@ -472,81 +446,21 @@ export const DesignSystemPage = () => {
                             variant="h2"
                             className={styles.sectionTitle}
                         >
-                            Search Toolbar
+                            Data Grid
                         </Typography>
                         <Divider className={styles.sectionDivider} />
-                        <Box className={styles.searchToolbar}>
-                            <TextField
-                                placeholder="Search vocabularies..."
-                                fullWidth
-                                slotProps={{
-                                    input: {
-                                        startAdornment: (
-                                            <Box
-                                                component="span"
-                                                className={styles.searchIcon}
-                                                sx={{
-                                                    color: "text.placeholder",
-                                                }}
-                                            >
-                                                <SearchIcon />
-                                            </Box>
-                                        ),
-                                        endAdornment: (
-                                            <Box
-                                                component="span"
-                                                className={styles.clearIcon}
-                                                sx={{
-                                                    color: "text.placeholder",
-                                                }}
-                                            >
-                                                <ClearIcon />
-                                            </Box>
-                                        ),
-                                    },
-                                }}
-                            />
-                            <Button
-                                variant="contained"
-                                className={styles.searchAddButton}
-                            >
-                                + Add Vocabulary
-                            </Button>
-                        </Box>
-                    </Box>
-
-                    <Box className={styles.section}>
-                        <Typography
-                            variant="h2"
-                            className={styles.sectionTitle}
-                        >
-                            Grid
-                        </Typography>
-                        <Divider className={styles.sectionDivider} />
-                        <Box className={styles.gridWrapper}>
-                            <DataGrid
-                                rows={sampleRows}
-                                columns={columns}
-                                rowHeight={isMobile ? 48 : 52}
-                                hideFooter
-                                columnVisibilityModel={
-                                    isMobile
-                                        ? mobileColumnVisibility
-                                        : undefined
-                                }
-                                initialState={{
-                                    sorting: {
-                                        sortModel: [
-                                            { field: "updated", sort: "desc" },
-                                        ],
-                                    },
-                                }}
-                                slots={{
-                                    columnSortedDescendingIcon: SortDescIcon,
-                                    columnSortedAscendingIcon: SortAscIcon,
-                                }}
-                            />
-                        </Box>
+                        <ContentDataGrid
+                            rows={sampleRows}
+                            desktopColumns={columns}
+                            mobileColumns={mobileColumns}
+                            onRowClick={() => {}}
+                            actionLabel="+ Add Vocabulary"
+                            onAction={() => {}}
+                            searchPlaceholder="Search vocabularies..."
+                            initialSortModel={[
+                                { field: "updated", sort: "desc" },
+                            ]}
+                        />
                     </Box>
 
                     <Box className={styles.section}>

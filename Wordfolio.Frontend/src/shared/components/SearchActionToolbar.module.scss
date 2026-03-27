@@ -9,29 +9,6 @@
         flex-grow: 1;
     }
 
-    .searchIcon {
-        display: flex;
-        align-items: center;
-        font-size: 16px;
-        margin-right: 8px;
-
-        > svg {
-            font-size: inherit;
-            color: inherit;
-        }
-    }
-
-    .clearIcon {
-        display: flex;
-        align-items: center;
-        font-size: 14px;
-
-        > svg {
-            font-size: inherit;
-            color: inherit;
-        }
-    }
-
     .actionButton {
         flex-shrink: 0;
     }
