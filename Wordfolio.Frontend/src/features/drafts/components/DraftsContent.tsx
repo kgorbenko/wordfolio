@@ -1,4 +1,4 @@
-import type { GridColDef } from "@mui/x-data-grid";
+import type { GridColDef, GridSortModel } from "@mui/x-data-grid";
 
 import { ContentDataGrid } from "../../../shared/components/ContentDataGrid";
 import { TextWithSubtext } from "../../../shared/components/TextWithSubtext";
@@ -8,6 +8,10 @@ interface DraftsContentProps {
     readonly entries: Entry[];
     readonly onEntryClick: (id: number) => void;
     readonly onAddDraftClick: () => void;
+    readonly sortModel: GridSortModel;
+    readonly onSortModelChange: (model: GridSortModel) => void;
+    readonly filterValue: string;
+    readonly onFilterValueChange: (value: string) => void;
 }
 
 const desktopColumns: GridColDef<Entry>[] = [
@@ -105,6 +109,10 @@ export const DraftsContent = ({
     entries,
     onEntryClick,
     onAddDraftClick,
+    sortModel,
+    onSortModelChange,
+    filterValue,
+    onFilterValueChange,
 }: DraftsContentProps) => (
     <ContentDataGrid
         rows={entries}
@@ -113,6 +121,9 @@ export const DraftsContent = ({
         onRowClick={onEntryClick}
         actionLabel="+ Add Draft"
         onAction={onAddDraftClick}
-        initialSortModel={[{ field: "updatedAt", sort: "desc" }]}
+        sortModel={sortModel}
+        onSortModelChange={onSortModelChange}
+        filterValue={filterValue}
+        onFilterValueChange={onFilterValueChange}
     />
 );

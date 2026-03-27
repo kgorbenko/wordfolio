@@ -1,5 +1,6 @@
-import { useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import type { GridSortModel } from "@mui/x-data-grid";
 
 import {
     collectionDetailRouteApi,
@@ -27,9 +28,56 @@ import { assertNonNullable } from "../../../shared/utils/misc";
 
 export const CollectionDetailPage = () => {
     const { collectionId } = collectionDetailRouteApi.useParams();
+    const { sortField, sortDirection, filter } =
+        collectionDetailRouteApi.useSearch();
     const navigate = useNavigate();
     const { raiseConfirmDialogAsync } = useConfirmDialog();
     const { openErrorNotification } = useNotificationContext();
+
+    const sortModel = useMemo<GridSortModel>(() => {
+        if (sortField && sortDirection) {
+            return [{ field: sortField, sort: sortDirection }];
+        }
+        return [{ field: "updatedAt", sort: "desc" }];
+    }, [sortField, sortDirection]);
+
+    const handleSortModelChange = useCallback(
+        (model: GridSortModel) => {
+            const first = model[0];
+            void navigate({
+                to: "/collections/$collectionId",
+                params: { collectionId },
+                search: {
+                    sortField: first?.field as
+                        | "name"
+                        | "createdAt"
+                        | "updatedAt"
+                        | "entryCount"
+                        | undefined,
+                    sortDirection: first?.sort ?? undefined,
+                    filter: filter || undefined,
+                },
+                replace: true,
+            });
+        },
+        [navigate, collectionId, filter]
+    );
+
+    const handleFilterValueChange = useCallback(
+        (value: string) => {
+            void navigate({
+                to: "/collections/$collectionId",
+                params: { collectionId },
+                search: {
+                    sortField,
+                    sortDirection,
+                    filter: value || undefined,
+                },
+                replace: true,
+            });
+        },
+        [navigate, collectionId, sortField, sortDirection]
+    );
 
     const {
         data: collection,
@@ -114,6 +162,10 @@ export const CollectionDetailPage = () => {
                 vocabularies={vocabularies ?? []}
                 onVocabularyClick={handleVocabularyClick}
                 onCreateVocabularyClick={handleCreateVocabulary}
+                sortModel={sortModel}
+                onSortModelChange={handleSortModelChange}
+                filterValue={filter ?? ""}
+                onFilterValueChange={handleFilterValueChange}
             />
         );
     };

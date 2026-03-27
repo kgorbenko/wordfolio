@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CollectionDetailPage } from "../../../../features/collections/pages/CollectionDetailPage";
-import { collectionIdRouteParamsSchema } from "../../../../features/collections/schemas/collectionSchemas";
+import {
+    collectionIdRouteParamsSchema,
+    vocabulariesListSearchParamsSchema,
+} from "../../../../features/collections/schemas/collectionSchemas";
 
 export const Route = createFileRoute(
     "/_authenticated/collections/$collectionId/"
@@ -9,4 +12,5 @@ export const Route = createFileRoute(
     params: {
         parse: (params) => collectionIdRouteParamsSchema.parse(params),
     },
+    validateSearch: vocabulariesListSearchParamsSchema,
 });

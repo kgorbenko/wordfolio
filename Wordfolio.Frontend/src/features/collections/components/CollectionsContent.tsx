@@ -1,4 +1,4 @@
-import type { GridColDef } from "@mui/x-data-grid";
+import type { GridColDef, GridSortModel } from "@mui/x-data-grid";
 
 import { ContentDataGrid } from "../../../shared/components/ContentDataGrid";
 import { TextWithSubtext } from "../../../shared/components/TextWithSubtext";
@@ -8,6 +8,10 @@ interface CollectionsContentProps {
     readonly collections: CollectionWithVocabularyCount[];
     readonly onCollectionClick: (id: number) => void;
     readonly onCreateClick: () => void;
+    readonly sortModel: GridSortModel;
+    readonly onSortModelChange: (model: GridSortModel) => void;
+    readonly filterValue: string;
+    readonly onFilterValueChange: (value: string) => void;
 }
 
 const desktopColumns: GridColDef<CollectionWithVocabularyCount>[] = [
@@ -77,6 +81,10 @@ export const CollectionsContent = ({
     collections,
     onCollectionClick,
     onCreateClick,
+    sortModel,
+    onSortModelChange,
+    filterValue,
+    onFilterValueChange,
 }: CollectionsContentProps) => (
     <ContentDataGrid
         rows={collections}
@@ -85,6 +93,9 @@ export const CollectionsContent = ({
         onRowClick={onCollectionClick}
         actionLabel="+ Add Collection"
         onAction={onCreateClick}
-        initialSortModel={[{ field: "updatedAt", sort: "desc" }]}
+        sortModel={sortModel}
+        onSortModelChange={onSortModelChange}
+        filterValue={filterValue}
+        onFilterValueChange={onFilterValueChange}
     />
 );

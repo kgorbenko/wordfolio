@@ -1,7 +1,12 @@
-import { useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import type { GridSortModel } from "@mui/x-data-grid";
 
-import { draftsEntryDetailPath, draftsCreatePath } from "../routes";
+import {
+    draftsEntryDetailPath,
+    draftsCreatePath,
+    draftsListRouteApi,
+} from "../routes";
 import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBreadcrumbs";
@@ -14,6 +19,51 @@ import { DraftsContent } from "../components/DraftsContent";
 
 export const DraftsPage = () => {
     const navigate = useNavigate();
+    const { sortField, sortDirection, filter } = draftsListRouteApi.useSearch();
+
+    const sortModel = useMemo<GridSortModel>(() => {
+        if (sortField && sortDirection) {
+            return [{ field: sortField, sort: sortDirection }];
+        }
+        return [{ field: "updatedAt", sort: "desc" }];
+    }, [sortField, sortDirection]);
+
+    const handleSortModelChange = useCallback(
+        (model: GridSortModel) => {
+            const first = model[0];
+            void navigate({
+                to: "/drafts",
+                search: {
+                    sortField: first?.field as
+                        | "entryText"
+                        | "createdAt"
+                        | "updatedAt"
+                        | "translationCount"
+                        | "definitionCount"
+                        | undefined,
+                    sortDirection: first?.sort ?? undefined,
+                    filter: filter || undefined,
+                },
+                replace: true,
+            });
+        },
+        [navigate, filter]
+    );
+
+    const handleFilterValueChange = useCallback(
+        (value: string) => {
+            void navigate({
+                to: "/drafts",
+                search: {
+                    sortField,
+                    sortDirection,
+                    filter: value || undefined,
+                },
+                replace: true,
+            });
+        },
+        [navigate, sortField, sortDirection]
+    );
 
     const { data, isLoading, isError, refetch } = useDraftsQuery();
 
@@ -50,6 +100,10 @@ export const DraftsPage = () => {
                 entries={data.entries}
                 onEntryClick={handleEntryClick}
                 onAddDraftClick={handleAddDraftClick}
+                sortModel={sortModel}
+                onSortModelChange={handleSortModelChange}
+                filterValue={filter ?? ""}
+                onFilterValueChange={handleFilterValueChange}
             />
         );
     };
