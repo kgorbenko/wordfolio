@@ -1,5 +1,5 @@
-import { Box } from "@mui/material";
-import { Link } from "@tanstack/react-router";
+import { Box, IconButton } from "@mui/material";
+import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 
 import styles from "./BreadcrumbNav.module.scss";
@@ -55,7 +55,20 @@ export const BreadcrumbNav = ({
     items,
     truncate = false,
 }: BreadcrumbNavProps) => {
+    const router = useRouter();
+    const navigate = useNavigate();
     const displayItems = processItems(items, truncate);
+
+    const handleBack = (
+        fallbackTo?: string,
+        fallbackParams?: Record<string, string | number>
+    ) => {
+        if (router.history.canGoBack()) {
+            router.history.back();
+        } else if (fallbackTo) {
+            void navigate({ to: fallbackTo, params: fallbackParams });
+        }
+    };
 
     return (
         <div className={styles.breadcrumbs}>
@@ -64,7 +77,7 @@ export const BreadcrumbNav = ({
                     key={`${crumb.label}-${index}`}
                     className={styles.breadcrumbItem}
                 >
-                    {index > 0 && (
+                    {index > 0 && !displayItems[index - 1].isBackButton && (
                         <Box
                             component="span"
                             className={styles.separator}
@@ -73,26 +86,14 @@ export const BreadcrumbNav = ({
                             /
                         </Box>
                     )}
-                    {crumb.isBackButton && crumb.to ? (
-                        <Link
-                            to={crumb.to}
-                            params={crumb.params}
-                            className={styles.backButton}
+                    {crumb.isBackButton ? (
+                        <IconButton
+                            onClick={() => handleBack(crumb.to, crumb.params)}
+                            size="small"
+                            sx={{ color: "text.neutral" }}
                         >
-                            <Box
-                                component="span"
-                                className={styles.backButtonInner}
-                                sx={{
-                                    color: "text.neutral",
-                                    "&:hover": { color: "text.primary" },
-                                }}
-                            >
-                                <ChevronLeftIcon sx={{ fontSize: 20 }} />
-                                <span className={styles.breadcrumbLabel}>
-                                    {crumb.label}
-                                </span>
-                            </Box>
-                        </Link>
+                            <ChevronLeftIcon />
+                        </IconButton>
                     ) : crumb.to && !crumb.active ? (
                         <Link
                             to={crumb.to}
