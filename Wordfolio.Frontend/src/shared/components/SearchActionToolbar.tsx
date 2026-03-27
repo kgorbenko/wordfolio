@@ -1,4 +1,4 @@
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button, InputAdornment, TextField } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
@@ -49,31 +49,20 @@ export const SearchActionToolbar = ({
                             slotProps={{
                                 input: {
                                     startAdornment: (
-                                        <Box
-                                            component="span"
-                                            className={styles.searchIcon}
-                                            sx={{
-                                                color: "text.placeholder",
-                                            }}
-                                        >
+                                        <InputAdornment position="start">
                                             <SearchIcon />
-                                        </Box>
+                                        </InputAdornment>
                                     ),
                                     endAdornment: state.value ? (
-                                        <Box
-                                            component="span"
-                                            className={styles.clearIcon}
-                                            sx={{
-                                                color: "text.placeholder",
-                                            }}
-                                        >
+                                        <InputAdornment position="end">
                                             <QuickFilterClear
                                                 size="small"
+                                                edge="end"
                                                 aria-label="Clear search"
                                             >
                                                 <ClearIcon />
                                             </QuickFilterClear>
-                                        </Box>
+                                        </InputAdornment>
                                     ) : null,
                                     ...controlProps.slotProps?.input,
                                 },
