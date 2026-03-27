@@ -89,8 +89,7 @@ export const BreadcrumbNav = ({
                     {crumb.isBackButton ? (
                         <IconButton
                             onClick={() => handleBack(crumb.to, crumb.params)}
-                            size="small"
-                            sx={{ color: "text.neutral" }}
+                            sx={{ color: "text.neutral", mr: 1.5 }}
                         >
                             <ChevronLeftIcon />
                         </IconButton>
