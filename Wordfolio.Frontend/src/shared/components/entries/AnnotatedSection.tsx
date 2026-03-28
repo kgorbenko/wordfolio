@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material";
 
-import type { AnnotatedItemColor } from "../../types/entries";
+import type { AnnotatedItemColor } from "../../api/types/entries";
 import styles from "./AnnotatedSection.module.scss";
 
 interface AnnotatedSectionProps {

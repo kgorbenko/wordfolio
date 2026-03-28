@@ -2,9 +2,9 @@ import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { Box, Button, CircularProgress } from "@mui/material";
 
 import { ensureNonNullable } from "../../utils/misc";
-import { useCollectionsHierarchyQuery } from "../../queries/useCollectionsHierarchyQuery";
+import { useCollectionsHierarchyQuery } from "../../api/queries/collections";
 import type { EntryFormHandle } from "./EntryForm";
-import type { CreateEntryData } from "../../types/entries";
+import type { CreateEntryData } from "../../api/types/entries";
 import { useWordLookup } from "../../hooks/useWordLookup";
 import { VocabularySelector } from "./VocabularySelector";
 import { WordLookupInput } from "./WordLookupInput";

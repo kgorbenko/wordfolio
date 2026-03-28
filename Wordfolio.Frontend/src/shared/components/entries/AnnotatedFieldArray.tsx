@@ -21,8 +21,8 @@ import AddIcon from "@mui/icons-material/Add";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 
 import type { EntryFormInput } from "../../schemas/entryFormSchemas";
-import { ExampleSource } from "../../types/entries";
-import type { AnnotatedItemColor } from "../../types/entries";
+import { ExampleSource } from "../../api/types/entries";
+import type { AnnotatedItemColor } from "../../api/types/entries";
 import styles from "./AnnotatedFieldArray.module.scss";
 
 type DefinitionTextPath = `definitions.${number}.definitionText`;

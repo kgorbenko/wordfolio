@@ -13,13 +13,13 @@ import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 
-import { useDraftEntryQuery } from "../hooks/useDraftEntryQuery";
-import { useUpdateDraftEntryMutation } from "../hooks/useUpdateDraftEntryMutation";
+import { useDraftEntryQuery } from "../../../shared/api/queries/drafts";
+import { useUpdateDraftEntryMutation } from "../../../shared/api/mutations/drafts";
 import type {
     Entry,
     EntryFormValues,
     CreateEntryData,
-} from "../../../shared/types/entries";
+} from "../../../shared/api/types/entries";
 import { EntryForm } from "../../../shared/components/entries/EntryForm";
 
 const mapEntryToFormValues = (entry: Entry): EntryFormValues => ({

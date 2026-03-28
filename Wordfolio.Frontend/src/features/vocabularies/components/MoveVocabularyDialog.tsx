@@ -13,7 +13,7 @@ import {
 
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
-import { useCollectionsHierarchyQuery } from "../../../shared/queries/useCollectionsHierarchyQuery";
+import { useCollectionsHierarchyQuery } from "../../../shared/api/queries/collections";
 
 export interface MoveVocabularySelectionResult {
     readonly collectionId: number;

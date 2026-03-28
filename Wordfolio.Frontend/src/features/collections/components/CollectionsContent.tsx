@@ -2,7 +2,7 @@ import type { GridColDef, GridSortModel } from "@mui/x-data-grid";
 
 import { ContentDataGrid } from "../../../shared/components/ContentDataGrid";
 import { TextWithSubtext } from "../../../shared/components/TextWithSubtext";
-import { CollectionWithVocabularyCount } from "../types";
+import type { CollectionWithVocabularyCount } from "../../../shared/api/types/collections";
 
 interface CollectionsContentProps {
     readonly collections: CollectionWithVocabularyCount[];

@@ -14,15 +14,15 @@ import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 
-import { useVocabularyDetailQuery } from "../../../shared/queries/useVocabularyDetailQuery";
-import { useEntryQuery } from "../hooks/useEntryQuery";
-import { useUpdateEntryMutation } from "../hooks/useUpdateEntryMutation";
+import { useVocabularyDetailQuery } from "../../../shared/api/queries/vocabularies";
+import { useEntryQuery } from "../../../shared/api/queries/entries";
+import { useUpdateEntryMutation } from "../../../shared/api/mutations/entries";
 import { EntryForm } from "../../../shared/components/entries/EntryForm";
 import type {
     Entry,
     EntryFormValues,
     CreateEntryData,
-} from "../../../shared/types/entries";
+} from "../../../shared/api/types/entries";
 
 const mapEntryToFormValues = (entry: Entry): EntryFormValues => ({
     entryText: entry.entryText,

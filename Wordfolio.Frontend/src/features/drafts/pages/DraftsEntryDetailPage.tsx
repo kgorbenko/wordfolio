@@ -19,9 +19,11 @@ import { useNotificationContext } from "../../../shared/contexts/NotificationCon
 import { useConfirmDialog } from "../../../shared/contexts/ConfirmDialogContext";
 import { assertNonNullable } from "../../../shared/utils/misc";
 
-import { useDraftEntryQuery } from "../hooks/useDraftEntryQuery";
-import { useDeleteDraftEntryMutation } from "../hooks/useDeleteDraftEntryMutation";
-import { useMoveDraftEntryMutation } from "../hooks/useMoveDraftEntryMutation";
+import { useDraftEntryQuery } from "../../../shared/api/queries/drafts";
+import {
+    useDeleteDraftEntryMutation,
+    useMoveDraftEntryMutation,
+} from "../../../shared/api/mutations/drafts";
 import { useMoveEntryDialog } from "../../../shared/hooks/useMoveEntryDialog";
 import { EntryDetailContent } from "../../../shared/components/entries/EntryDetailContent";
 

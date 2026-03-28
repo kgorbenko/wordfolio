@@ -1,4 +1,4 @@
-import type { Entry } from "../../types/entries";
+import type { Entry } from "../../api/types/entries";
 import { AnnotatedSection } from "./AnnotatedSection";
 import { AnnotatedItemCard } from "./AnnotatedItemCard";
 import { EntryFooter } from "./EntryFooter";

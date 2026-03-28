@@ -6,7 +6,7 @@ import {
     ListSubheader,
 } from "@mui/material";
 
-import type { CollectionsHierarchy } from "../../types/collectionsHierarchy";
+import type { CollectionsHierarchy } from "../../api/types/collections";
 import styles from "./VocabularySelector.module.scss";
 
 const DRAFTS_SENTINEL = 0;

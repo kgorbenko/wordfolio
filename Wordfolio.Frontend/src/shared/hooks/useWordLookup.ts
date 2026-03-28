@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 
-import { dictionaryApi } from "../api/dictionaryApi";
-import { mapDictionaryResult } from "../api/dictionaryMappers";
-import { LookupState, UseWordLookupResult } from "../types/wordLookup";
+import { lookupStream } from "../api/queries/dictionary";
+import { mapDictionaryResult } from "../api/mappers/dictionary";
+import { LookupState, UseWordLookupResult } from "../api/types/dictionary";
 
 const DEBOUNCE_DELAY_MS = 500;
 const MIN_WORD_LENGTH = 2;
@@ -31,7 +31,7 @@ export function useWordLookup(
             abortControllerRef.current = new AbortController();
             setLookupState({ status: "loading", streamingText: "" });
 
-            await dictionaryApi.lookupStream(
+            await lookupStream(
                 searchWord,
                 {
                     onText: (text) =>

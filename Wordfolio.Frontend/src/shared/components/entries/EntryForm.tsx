@@ -8,7 +8,7 @@ import {
     EntryFormInput,
     EntryFormData,
 } from "../../schemas/entryFormSchemas";
-import { DefinitionSource, TranslationSource } from "../../types/entries";
+import { DefinitionSource, TranslationSource } from "../../api/types/entries";
 import type {
     EntryFormValues,
     CreateEntryData,
@@ -17,7 +17,7 @@ import type {
     CreateDefinitionData,
     CreateTranslationData,
     CreateExampleData,
-} from "../../types/entries";
+} from "../../api/types/entries";
 import { AnnotatedItemSection } from "./AnnotatedItemSection";
 import { AnnotatedFieldArray } from "./AnnotatedFieldArray";
 import styles from "./EntryForm.module.scss";

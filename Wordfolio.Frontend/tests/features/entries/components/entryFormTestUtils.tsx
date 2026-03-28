@@ -4,8 +4,8 @@ import {
     DefinitionSource,
     ExampleSource,
     TranslationSource,
-} from "../../../../src/shared/types/entries";
-import type { EntryFormValues } from "../../../../src/shared/types/entries";
+} from "../../../../src/shared/api/types/entries";
+import type { EntryFormValues } from "../../../../src/shared/api/types/entries";
 
 export interface ExampleData {
     readonly text: string;

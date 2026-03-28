@@ -7,7 +7,7 @@ import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBrea
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { CollectionsContent } from "../components/CollectionsContent";
-import { useCollectionsQuery } from "../hooks/useCollectionsQuery";
+import { useCollectionsQuery } from "../../../shared/api/queries/collections";
 import {
     collectionListRouteApi,
     collectionDetailPath,

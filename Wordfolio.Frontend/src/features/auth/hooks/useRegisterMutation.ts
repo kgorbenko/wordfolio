@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { ApiError } from "../../../shared/api/common";
+import type { ApiError } from "../../../shared/api/types/entries";
 import { authApi } from "../api/authApi";
 import { mapRegisterRequest } from "../api/mappers";
 import type { RegisterCredentials } from "../types";

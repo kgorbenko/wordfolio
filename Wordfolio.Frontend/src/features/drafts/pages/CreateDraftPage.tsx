@@ -7,8 +7,8 @@ import { PageHeader } from "../../../shared/components/PageHeader";
 import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBreadcrumbs";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { useDuplicateEntryDialog } from "../../../shared/hooks/useDuplicateEntryDialog";
-import { useCreateDraftMutation } from "../../../shared/queries/useCreateDraftMutation";
-import type { CreateEntryData } from "../../../shared/types/entries";
+import { useCreateDraftMutation } from "../../../shared/api/mutations/drafts";
+import type { CreateEntryData } from "../../../shared/api/types/entries";
 import {
     EntryLookupForm,
     VocabularyContext,

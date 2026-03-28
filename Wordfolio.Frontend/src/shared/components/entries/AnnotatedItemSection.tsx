@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Box, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
-import type { AnnotatedItemColor } from "../../types/entries";
+import type { AnnotatedItemColor } from "../../api/types/entries";
 import styles from "./AnnotatedItemSection.module.scss";
 
 interface AnnotatedItemSectionProps {

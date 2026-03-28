@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-import type { Entry } from "../../types/entries";
+import type { Entry } from "../../api/types/entries";
 import { EntryDetailContent } from "./EntryDetailContent";
 import styles from "./DuplicateEntryDialog.module.scss";
 

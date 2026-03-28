@@ -4,7 +4,7 @@ import {
     DefinitionSource,
     ExampleSource,
     TranslationSource,
-} from "../types/entries";
+} from "../api/types/entries";
 
 const trimmed = (value: string) => value === value.trim();
 

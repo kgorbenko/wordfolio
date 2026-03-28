@@ -12,8 +12,8 @@ import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBrea
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
-import { useVocabularyDetailQuery } from "../../../shared/queries/useVocabularyDetailQuery";
-import { useUpdateVocabularyMutation } from "../hooks/useUpdateVocabularyMutation";
+import { useVocabularyDetailQuery } from "../../../shared/api/queries/vocabularies";
+import { useUpdateVocabularyMutation } from "../../../shared/api/mutations/vocabularies";
 import { VocabularyForm } from "../components/VocabularyForm";
 import { VocabularyFormData } from "../schemas/vocabularySchemas";
 

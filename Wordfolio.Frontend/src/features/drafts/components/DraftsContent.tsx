@@ -2,7 +2,7 @@ import type { GridColDef, GridSortModel } from "@mui/x-data-grid";
 
 import { ContentDataGrid } from "../../../shared/components/ContentDataGrid";
 import { TextWithSubtext } from "../../../shared/components/TextWithSubtext";
-import { Entry } from "../../../shared/types/entries";
+import { Entry } from "../../../shared/api/types/entries";
 
 interface DraftsContentProps {
     readonly entries: Entry[];
