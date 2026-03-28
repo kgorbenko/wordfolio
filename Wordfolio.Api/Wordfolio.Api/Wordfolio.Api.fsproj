@@ -55,6 +55,23 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
+
+  <PropertyGroup>
+    <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
+    <OpenApiDocumentsDirectory>$(BaseIntermediateOutputPath)</OpenApiDocumentsDirectory>
+  </PropertyGroup>
+
+  <Target Name="PublishOpenApiSpec" AfterTargets="Build"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <Copy
+      SourceFiles="$(BaseIntermediateOutputPath)$(MSBuildProjectName).json"
+      DestinationFiles="$(MSBuildProjectDirectory)/../../api/openapi.json"
+      Condition="Exists('$(BaseIntermediateOutputPath)$(MSBuildProjectName).json')" />
+  </Target>
 
 </Project>

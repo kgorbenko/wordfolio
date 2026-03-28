@@ -7,7 +7,7 @@ open Microsoft.AspNetCore.Authorization
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 
-open Microsoft.OpenApi.Models
+open Microsoft.OpenApi
 
 let addOpenApi<'TBuilder when 'TBuilder :> IHostApplicationBuilder>(builder: 'TBuilder) =
     builder.Services.AddOpenApi(fun options ->
@@ -16,7 +16,7 @@ let addOpenApi<'TBuilder when 'TBuilder :> IHostApplicationBuilder>(builder: 'TB
                 document.Components <- OpenApiComponents()
 
             if isNull document.Components.SecuritySchemes then
-                document.Components.SecuritySchemes <- Dictionary<string, OpenApiSecurityScheme>()
+                document.Components.SecuritySchemes <- Dictionary<string, IOpenApiSecurityScheme>()
 
             document.Components.SecuritySchemes["Bearer"] <-
                 OpenApiSecurityScheme(
@@ -41,12 +41,7 @@ let addOpenApi<'TBuilder when 'TBuilder :> IHostApplicationBuilder>(builder: 'TB
                 let securityRequirement =
                     OpenApiSecurityRequirement()
 
-                securityRequirement.Add(
-                    OpenApiSecurityScheme(
-                        Reference = OpenApiReference(Type = ReferenceType.SecurityScheme, Id = "Bearer")
-                    ),
-                    List<string>()
-                )
+                securityRequirement.Add(OpenApiSecuritySchemeReference("Bearer"), List<string>())
 
                 operation.Security <- ResizeArray([ securityRequirement ])
 
