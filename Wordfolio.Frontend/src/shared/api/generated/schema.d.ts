@@ -1813,58 +1813,58 @@ export interface components {
             /** Format: int32 */
             id: number;
             name: string;
-            description: string;
+            description?: null | string;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt: string;
+            updatedAt?: null | string;
         };
         CollectionsHierarchyResultResponse: {
             collections: components["schemas"]["CollectionWithVocabulariesResponse"][];
-            defaultVocabulary: null | components["schemas"]["VocabularyWithEntryCountResponse"];
+            defaultVocabulary?: null | components["schemas"]["VocabularyWithEntryCountResponse"];
         };
         CollectionWithVocabulariesResponse: {
             /** Format: int32 */
             id: number;
             name: string;
-            description: string;
+            description?: null | string;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt: string;
+            updatedAt?: null | string;
             vocabularies: components["schemas"]["VocabularyWithEntryCountResponse"][];
         };
         CollectionWithVocabularyCountResponse: {
             /** Format: int32 */
             id: number;
             name: string;
-            description: string;
+            description?: null | string;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt: string;
+            updatedAt?: null | string;
             /** Format: int32 */
             vocabularyCount: number;
         };
         CreateCollectionRequest: {
             name: string;
-            description: string;
+            description?: null | string;
         };
         CreateDraftRequest: {
             entryText: string;
             definitions: components["schemas"]["DefinitionRequest"][];
             translations: components["schemas"]["TranslationRequest"][];
-            allowDuplicate: boolean;
+            allowDuplicate?: null | boolean;
         };
         CreateEntryRequest: {
             entryText: string;
             definitions: components["schemas"]["DefinitionRequest"][];
             translations: components["schemas"]["TranslationRequest"][];
-            allowDuplicate: boolean;
+            allowDuplicate?: null | boolean;
         };
         CreateVocabularyRequest: {
             name: string;
-            description: string;
+            description?: null | string;
         };
         DefinitionRequest: {
             definitionText: string;
@@ -1895,7 +1895,7 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt: string;
+            updatedAt?: null | string;
             definitions: components["schemas"]["DefinitionResponse"][];
             translations: components["schemas"]["TranslationResponse"][];
         };
@@ -2006,7 +2006,7 @@ export interface components {
         };
         UpdateCollectionRequest: {
             name: string;
-            description: string;
+            description?: null | string;
         };
         UpdateEntryRequest: {
             entryText: string;
@@ -2015,7 +2015,7 @@ export interface components {
         };
         UpdateVocabularyRequest: {
             name: string;
-            description: string;
+            description?: null | string;
         };
         VocabularyDetailResponse: {
             /** Format: int32 */
@@ -2024,11 +2024,11 @@ export interface components {
             collectionId: number;
             collectionName: string;
             name: string;
-            description: string;
+            description?: null | string;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt: string;
+            updatedAt?: null | string;
         };
         VocabularyResponse: {
             /** Format: int32 */
@@ -2036,21 +2036,21 @@ export interface components {
             /** Format: int32 */
             collectionId: number;
             name: string;
-            description: string;
+            description?: null | string;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt: string;
+            updatedAt?: null | string;
         };
         VocabularyWithEntryCountResponse: {
             /** Format: int32 */
             id: number;
             name: string;
-            description: string;
+            description?: null | string;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt: string;
+            updatedAt?: null | string;
             /** Format: int32 */
             entryCount: number;
         };

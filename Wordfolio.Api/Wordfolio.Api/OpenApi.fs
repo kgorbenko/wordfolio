@@ -85,6 +85,11 @@ let private fixSchemas(document: OpenApiDocument) =
 
                 schema.Properties[propName] <- inlinedSchema
 
+                // Also remove from required: option<'T> fields are optional by definition.
+                if not(isNull schema.Required) then
+                    schema.Required.Remove(propName)
+                    |> ignore
+
     // Step 2: remove null from the type union of required non-object properties.
     // Fixes non-nullable F# strings being emitted as ["null", "string"].
     for schema in schemas.Values do

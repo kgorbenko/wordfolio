@@ -1675,9 +1675,7 @@
         "required": [
           "id",
           "name",
-          "description",
-          "createdAt",
-          "updatedAt"
+          "createdAt"
         ],
         "type": "object",
         "properties": {
@@ -1689,22 +1687,27 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "date-time"
           }
         }
       },
       "CollectionsHierarchyResultResponse": {
         "required": [
-          "collections",
-          "defaultVocabulary"
+          "collections"
         ],
         "type": "object",
         "properties": {
@@ -1730,9 +1733,7 @@
         "required": [
           "id",
           "name",
-          "description",
           "createdAt",
-          "updatedAt",
           "vocabularies"
         ],
         "type": "object",
@@ -1745,14 +1746,20 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "date-time"
           },
           "vocabularies": {
@@ -1767,9 +1774,7 @@
         "required": [
           "id",
           "name",
-          "description",
           "createdAt",
-          "updatedAt",
           "vocabularyCount"
         ],
         "type": "object",
@@ -1782,14 +1787,20 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "date-time"
           },
           "vocabularyCount": {
@@ -1800,8 +1811,7 @@
       },
       "CreateCollectionRequest": {
         "required": [
-          "name",
-          "description"
+          "name"
         ],
         "type": "object",
         "properties": {
@@ -1809,7 +1819,10 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -1817,8 +1830,7 @@
         "required": [
           "entryText",
           "definitions",
-          "translations",
-          "allowDuplicate"
+          "translations"
         ],
         "type": "object",
         "properties": {
@@ -1838,7 +1850,10 @@
             }
           },
           "allowDuplicate": {
-            "type": "boolean"
+            "type": [
+              "null",
+              "boolean"
+            ]
           }
         }
       },
@@ -1846,8 +1861,7 @@
         "required": [
           "entryText",
           "definitions",
-          "translations",
-          "allowDuplicate"
+          "translations"
         ],
         "type": "object",
         "properties": {
@@ -1867,14 +1881,16 @@
             }
           },
           "allowDuplicate": {
-            "type": "boolean"
+            "type": [
+              "null",
+              "boolean"
+            ]
           }
         }
       },
       "CreateVocabularyRequest": {
         "required": [
-          "name",
-          "description"
+          "name"
         ],
         "type": "object",
         "properties": {
@@ -1882,7 +1898,10 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -1970,7 +1989,6 @@
           "vocabularyId",
           "entryText",
           "createdAt",
-          "updatedAt",
           "definitions",
           "translations"
         ],
@@ -1992,7 +2010,10 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "date-time"
           },
           "definitions": {
@@ -2405,8 +2426,7 @@
       },
       "UpdateCollectionRequest": {
         "required": [
-          "name",
-          "description"
+          "name"
         ],
         "type": "object",
         "properties": {
@@ -2414,7 +2434,10 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -2445,8 +2468,7 @@
       },
       "UpdateVocabularyRequest": {
         "required": [
-          "name",
-          "description"
+          "name"
         ],
         "type": "object",
         "properties": {
@@ -2454,7 +2476,10 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -2464,9 +2489,7 @@
           "collectionId",
           "collectionName",
           "name",
-          "description",
-          "createdAt",
-          "updatedAt"
+          "createdAt"
         ],
         "type": "object",
         "properties": {
@@ -2485,14 +2508,20 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "date-time"
           }
         }
@@ -2502,9 +2531,7 @@
           "id",
           "collectionId",
           "name",
-          "description",
-          "createdAt",
-          "updatedAt"
+          "createdAt"
         ],
         "type": "object",
         "properties": {
@@ -2520,14 +2547,20 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "date-time"
           }
         }
@@ -2536,9 +2569,7 @@
         "required": [
           "id",
           "name",
-          "description",
           "createdAt",
-          "updatedAt",
           "entryCount"
         ],
         "type": "object",
@@ -2551,14 +2582,20 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "date-time"
           },
           "entryCount": {
