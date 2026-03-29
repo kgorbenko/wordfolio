@@ -5,6 +5,7 @@ import {
     Divider,
     Drawer,
     IconButton,
+    Link as MuiLink,
     List,
     ListItemButton,
     ListItemIcon,
@@ -78,6 +79,7 @@ interface SidebarContentProps {
     readonly user: NavUser;
     readonly onAddEntry: () => void;
     readonly onDraftsClick: () => void;
+    readonly onCreateCollection?: () => void;
 }
 
 const SidebarListItem = ({
@@ -146,6 +148,7 @@ const SidebarContent = ({
     user,
     onAddEntry,
     onDraftsClick,
+    onCreateCollection,
 }: SidebarContentProps) => (
     <Box className={styles.sidebarContent}>
         <Toolbar
@@ -196,10 +199,29 @@ const SidebarContent = ({
                 disablePadding
                 subheader={
                     collections.length > 0 ? (
-                        <ListSubheader disableSticky>Collections</ListSubheader>
+                        <ListSubheader
+                            disableSticky
+                            className={styles.collectionsSubheader}
+                        >
+                            Collections
+                        </ListSubheader>
                     ) : undefined
                 }
             >
+                {collections.length === 0 && (
+                    <Box className={styles.collectionsEmpty}>
+                        <Typography variant="body2" color="text.secondary">
+                            <MuiLink
+                                component="button"
+                                variant="body2"
+                                onClick={onCreateCollection}
+                            >
+                                Create
+                            </MuiLink>{" "}
+                            collection to get started.
+                        </Typography>
+                    </Box>
+                )}
                 {collections.map((collection) => {
                     const hasChildren =
                         collection.children && collection.children.length > 0;
@@ -303,6 +325,7 @@ interface AppSidebarProps {
     readonly user: NavUser;
     readonly onAddEntry: () => void;
     readonly onDraftsClick: () => void;
+    readonly onCreateCollection?: () => void;
 }
 
 export const AppSidebar = ({
@@ -314,6 +337,7 @@ export const AppSidebar = ({
     user,
     onAddEntry,
     onDraftsClick,
+    onCreateCollection,
 }: AppSidebarProps) => {
     const contentProps = {
         draftCount,
@@ -321,6 +345,7 @@ export const AppSidebar = ({
         user,
         onAddEntry,
         onDraftsClick,
+        onCreateCollection,
     };
 
     if (variant === "temporary") {

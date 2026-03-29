@@ -15,7 +15,10 @@ import type { CreateEntryData } from "../../api/types/entries";
 import { VocabularyContext } from "../entries/EntryLookupForm";
 import { WordEntrySheet } from "../entries/WordEntrySheet";
 import { loginPath } from "../../../features/auth/routes";
-import { collectionDetailPath } from "../../../features/collections/routes";
+import {
+    collectionCreatePath,
+    collectionDetailPath,
+} from "../../../features/collections/routes";
 import { vocabularyDetailPath } from "../../../features/vocabularies/routes";
 import { draftsPath } from "../../../features/drafts/routes";
 import { RetryOnError } from "../RetryOnError";
@@ -208,6 +211,7 @@ export const AuthenticatedLayout = () => {
             user={user}
             onAddEntry={() => openWordEntry()}
             onDraftsClick={() => void navigate(draftsPath())}
+            onCreateCollection={() => void navigate(collectionCreatePath())}
         >
             <Outlet />
             <WordEntrySheet
