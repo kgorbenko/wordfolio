@@ -24,17 +24,19 @@ describe("AppSidebar", () => {
         onCreateCollection: vi.fn(),
     };
 
-    it("renders the Collections subheader when collections is empty", () => {
+    it("does not render the Collections subheader when collections is empty", () => {
         render(<AppSidebar {...defaultProps} />);
 
-        expect(screen.getByText("Collections")).toBeInTheDocument();
+        expect(screen.queryByText("Collections")).not.toBeInTheDocument();
     });
 
     it("renders the empty state sentence when collections is empty", () => {
         render(<AppSidebar {...defaultProps} />);
 
-        expect(screen.getByText(/No collections yet/)).toBeInTheDocument();
         expect(screen.getByText("Create")).toBeInTheDocument();
+        expect(
+            screen.getByText(/collection to get started/)
+        ).toBeInTheDocument();
     });
 
     it("calls onCreateCollection when the link is clicked", async () => {
@@ -62,7 +64,7 @@ describe("AppSidebar", () => {
         render(<AppSidebar {...defaultProps} collections={collections} />);
 
         expect(
-            screen.queryByText(/No collections yet/)
+            screen.queryByText(/collection to get started/)
         ).not.toBeInTheDocument();
     });
 });

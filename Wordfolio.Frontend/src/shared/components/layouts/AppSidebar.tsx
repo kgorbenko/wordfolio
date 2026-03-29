@@ -198,13 +198,19 @@ const SidebarContent = ({
             <List
                 disablePadding
                 subheader={
-                    <ListSubheader disableSticky>Collections</ListSubheader>
+                    collections.length > 0 ? (
+                        <ListSubheader
+                            disableSticky
+                            className={styles.collectionsSubheader}
+                        >
+                            Collections
+                        </ListSubheader>
+                    ) : undefined
                 }
             >
                 {collections.length === 0 && (
                     <Box className={styles.collectionsEmpty}>
                         <Typography variant="body2" color="text.secondary">
-                            No collections yet.{" "}
                             <MuiLink
                                 component="button"
                                 variant="body2"
@@ -212,7 +218,7 @@ const SidebarContent = ({
                             >
                                 Create
                             </MuiLink>{" "}
-                            one to get started.
+                            collection to get started.
                         </Typography>
                     </Box>
                 )}

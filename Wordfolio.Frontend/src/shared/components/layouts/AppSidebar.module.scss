@@ -157,6 +157,12 @@
 }
 
 .collectionsEmpty {
-    padding: 4px 16px 8px;
+    margin-top: 50px;
+    padding: 0 16px 8px;
     text-align: center;
+}
+
+.collectionsSubheader:global(.MuiListSubheader-root) {
+    padding-left: 10px;
+    padding-right: 10px;
 }
