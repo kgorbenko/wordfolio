@@ -1819,9 +1819,7 @@ export interface components {
             updatedAt: components["schemas"]["FSharpOptionOfDateTimeOffset"];
         };
         CollectionsHierarchyResultResponse: {
-            collections:
-                | null
-                | components["schemas"]["CollectionWithVocabulariesResponse"][];
+            collections: null | components["schemas"]["CollectionWithVocabulariesResponse"][];
             defaultVocabulary: components["schemas"]["FSharpOptionOfVocabularyWithEntryCountResponse"];
         };
         CollectionWithVocabulariesResponse: {
@@ -1832,9 +1830,7 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             updatedAt: components["schemas"]["FSharpOptionOfDateTimeOffset"];
-            vocabularies:
-                | null
-                | components["schemas"]["VocabularyWithEntryCountResponse"][];
+            vocabularies: null | components["schemas"]["VocabularyWithEntryCountResponse"][];
         };
         CollectionWithVocabularyCountResponse: {
             /** Format: int32 */
