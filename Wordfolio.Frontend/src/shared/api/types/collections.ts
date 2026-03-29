@@ -17,7 +17,6 @@ export interface CollectionWithVocabularyCount {
 
 export interface VocabularyWithEntryCount {
     readonly id: number;
-    readonly collectionId?: number;
     readonly name: string;
     readonly description: string | null;
     readonly entryCount: number;

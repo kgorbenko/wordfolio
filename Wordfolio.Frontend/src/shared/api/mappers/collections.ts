@@ -39,11 +39,9 @@ export const mapCollectionWithVocabularyCount = (
 });
 
 export const mapVocabularyWithEntryCount = (
-    response: VocabularyWithEntryCountResponse,
-    collectionId?: number
+    response: VocabularyWithEntryCountResponse
 ): VocabularyWithEntryCount => ({
     id: response.id,
-    collectionId,
     name: response.name,
     description: response.description ?? null,
     entryCount: response.entryCount,

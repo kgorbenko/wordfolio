@@ -70,9 +70,7 @@ export const useCollectionVocabulariesQuery = (
                 { params: { path: { collectionId } } }
             );
             if (error) throw error;
-            return data!.map((v) =>
-                mapVocabularyWithEntryCount(v, collectionId)
-            );
+            return data!.map((v) => mapVocabularyWithEntryCount(v));
         },
         ...options,
     });
