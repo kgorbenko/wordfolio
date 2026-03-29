@@ -13,7 +13,7 @@ open Microsoft.OpenApi
 let private FSharpOptionPrefix =
     "FSharpOptionOf"
 
-let private fixSchemas(document: OpenApiDocument) =
+let private inlineFSharpOptionSchemas(document: OpenApiDocument) =
     let schemas = document.Components.Schemas
 
     let fsOptionKeys =
@@ -26,8 +26,6 @@ let private fixSchemas(document: OpenApiDocument) =
         |> Array.map(fun k -> k, schemas[k])
         |> dict
 
-    // Step 1: replace FSharpOption $refs with inline nullable schemas.
-    // Must run before Step 2 so that required-property checks see inline types.
     for schema in (schemas.Values |> Seq.toArray) do
         if not(isNull schema.Properties) then
             let replacements =
@@ -55,7 +53,6 @@ let private fixSchemas(document: OpenApiDocument) =
                         innerSchema.Type.HasValue
                         && innerSchema.Type.Value = JsonSchemaType.Object
                     then
-                        // Object option: oneOf [null, $ref to unwrapped schema name]
                         let innerName =
                             refId.Substring(FSharpOptionPrefix.Length)
 
@@ -69,7 +66,6 @@ let private fixSchemas(document: OpenApiDocument) =
 
                         s
                     else
-                        // Primitive option: inline nullable type
                         let s = OpenApiSchema()
 
                         s.Type <-
@@ -85,14 +81,15 @@ let private fixSchemas(document: OpenApiDocument) =
 
                 schema.Properties[propName] <- inlinedSchema
 
-                // Also remove from required: option<'T> fields are optional by definition.
                 if not(isNull schema.Required) then
                     schema.Required.Remove(propName)
                     |> ignore
 
-    // Step 2: remove null from the type union of required non-object properties.
-    // Fixes non-nullable F# strings being emitted as ["null", "string"].
-    for schema in schemas.Values do
+    for key in fsOptionKeys do
+        schemas.Remove(key) |> ignore
+
+let private removeNullFromRequiredProperties(document: OpenApiDocument) =
+    for schema in document.Components.Schemas.Values do
         if
             not(isNull schema.Required)
             && not(isNull schema.Properties)
@@ -109,9 +106,8 @@ let private fixSchemas(document: OpenApiDocument) =
                         propSchema.Type <- Nullable(t &&& ~~~JsonSchemaType.Null)
                 | _ -> ()
 
-    // Step 3: strip the "string" alternative and pattern from all integer fields.
-    // Fixes int32/int64 being emitted as ["integer", "string"].
-    for schema in schemas.Values do
+let private removeStringFromIntegerProperties(document: OpenApiDocument) =
+    for schema in document.Components.Schemas.Values do
         if not(isNull schema.Properties) then
             for propSchema in schema.Properties.Values do
                 match propSchema with
@@ -124,10 +120,6 @@ let private fixSchemas(document: OpenApiDocument) =
 
                     p.Pattern <- null
                 | _ -> ()
-
-    // Step 4: remove FSharpOption helper schemas from components.
-    for key in fsOptionKeys do
-        schemas.Remove(key) |> ignore
 
 let addOpenApi<'TBuilder when 'TBuilder :> IHostApplicationBuilder>(builder: 'TBuilder) =
     builder.Services.AddOpenApi(fun options ->
@@ -150,7 +142,17 @@ let addOpenApi<'TBuilder when 'TBuilder :> IHostApplicationBuilder>(builder: 'TB
         |> ignore
 
         options.AddDocumentTransformer(fun document _ _ ->
-            fixSchemas document
+            inlineFSharpOptionSchemas document
+            Task.CompletedTask)
+        |> ignore
+
+        options.AddDocumentTransformer(fun document _ _ ->
+            removeNullFromRequiredProperties document
+            Task.CompletedTask)
+        |> ignore
+
+        options.AddDocumentTransformer(fun document _ _ ->
+            removeStringFromIntegerProperties document
             Task.CompletedTask)
         |> ignore
 
@@ -167,7 +169,6 @@ let addOpenApi<'TBuilder when 'TBuilder :> IHostApplicationBuilder>(builder: 'TB
                     OpenApiSecurityRequirement()
 
                 securityRequirement.Add(OpenApiSecuritySchemeReference("Bearer"), List<string>())
-
                 operation.Security <- ResizeArray([ securityRequirement ])
 
             Task.CompletedTask)
