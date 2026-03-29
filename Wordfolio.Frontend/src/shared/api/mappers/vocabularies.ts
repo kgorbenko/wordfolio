@@ -11,33 +11,29 @@ type VocabularyDetailResponse =
 type CollectionResponse = components["schemas"]["CollectionResponse"];
 
 export const mapVocabulary = (response: VocabularyResponse): Vocabulary => ({
-    id: Number(response.id),
-    collectionId: Number(response.collectionId),
-    name: response.name as string,
-    description: response.description as string | null,
+    id: response.id,
+    collectionId: response.collectionId,
+    name: response.name,
+    description: response.description ?? null,
     createdAt: new Date(response.createdAt),
-    updatedAt: (response.updatedAt as string | null)
-        ? new Date(response.updatedAt as string)
-        : null,
+    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
 });
 
 export const mapVocabularyDetail = (
     response: VocabularyDetailResponse
 ): VocabularyDetail => ({
-    id: Number(response.id),
-    collectionId: Number(response.collectionId),
-    collectionName: response.collectionName as string,
-    name: response.name as string,
-    description: response.description as string | null,
+    id: response.id,
+    collectionId: response.collectionId,
+    collectionName: response.collectionName,
+    name: response.name,
+    description: response.description ?? null,
     createdAt: new Date(response.createdAt),
-    updatedAt: (response.updatedAt as string | null)
-        ? new Date(response.updatedAt as string)
-        : null,
+    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
 });
 
 export const mapVocabularyCollectionContext = (
     response: CollectionResponse
 ): VocabularyCollectionContext => ({
-    id: Number(response.id),
-    name: response.name as string,
+    id: response.id,
+    name: response.name,
 });

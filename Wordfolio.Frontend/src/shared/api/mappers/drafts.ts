@@ -6,11 +6,9 @@ type VocabularyResponse = components["schemas"]["VocabularyResponse"];
 export const mapDraftsVocabulary = (
     response: VocabularyResponse
 ): DraftsVocabulary => ({
-    id: Number(response.id),
-    name: response.name as string,
-    description: response.description as string | null,
+    id: response.id,
+    name: response.name,
+    description: response.description ?? null,
     createdAt: new Date(response.createdAt),
-    updatedAt: (response.updatedAt as string | null)
-        ? new Date(response.updatedAt as string)
-        : null,
+    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
 });

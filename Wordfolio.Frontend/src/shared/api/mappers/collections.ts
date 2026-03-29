@@ -20,53 +20,45 @@ type VocabularyWithEntryCountResponse =
 export const mapCollectionDetail = (
     response: CollectionResponse
 ): Collection => ({
-    id: Number(response.id),
-    name: response.name as string,
-    description: response.description as string | null,
+    id: response.id,
+    name: response.name,
+    description: response.description ?? null,
     createdAt: new Date(response.createdAt),
-    updatedAt: (response.updatedAt as string | null)
-        ? new Date(response.updatedAt as string)
-        : null,
+    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
 });
 
 export const mapCollectionWithVocabularyCount = (
     response: CollectionWithVocabularyCountResponse
 ): CollectionWithVocabularyCount => ({
-    id: Number(response.id),
-    name: response.name as string,
-    description: response.description as string | null,
-    vocabularyCount: Number(response.vocabularyCount),
+    id: response.id,
+    name: response.name,
+    description: response.description ?? null,
+    vocabularyCount: response.vocabularyCount,
     createdAt: new Date(response.createdAt),
-    updatedAt: (response.updatedAt as string | null)
-        ? new Date(response.updatedAt as string)
-        : null,
+    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
 });
 
 export const mapVocabularyWithEntryCount = (
     response: VocabularyWithEntryCountResponse,
     collectionId?: number
 ): VocabularyWithEntryCount => ({
-    id: Number(response.id),
+    id: response.id,
     collectionId,
-    name: response.name as string,
-    description: response.description as string | null,
-    entryCount: Number(response.entryCount),
+    name: response.name,
+    description: response.description ?? null,
+    entryCount: response.entryCount,
     createdAt: new Date(response.createdAt),
-    updatedAt: (response.updatedAt as string | null)
-        ? new Date(response.updatedAt as string)
-        : null,
+    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
 });
 
 const mapCollectionWithVocabularies = (
     response: CollectionWithVocabulariesResponse
 ): CollectionWithVocabularies => ({
-    id: Number(response.id),
-    name: response.name as string,
-    description: response.description as string | null,
+    id: response.id,
+    name: response.name,
+    description: response.description ?? null,
     createdAt: new Date(response.createdAt),
-    updatedAt: (response.updatedAt as string | null)
-        ? new Date(response.updatedAt as string)
-        : null,
+    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
     vocabularies: (response.vocabularies ?? []).map((v) =>
         mapVocabularyWithEntryCount(v)
     ),

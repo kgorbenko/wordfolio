@@ -102,35 +102,33 @@ const toApiExampleSource = (source: ExampleSource): ApiExampleSource => {
 };
 
 export const mapExample = (response: ExampleResponse): Example => ({
-    id: Number(response.id),
-    exampleText: response.exampleText as string,
+    id: response.id,
+    exampleText: response.exampleText,
     source: mapExampleSourceFromApi(response.source),
 });
 
 export const mapDefinition = (response: DefinitionResponse): Definition => ({
-    id: Number(response.id),
-    definitionText: response.definitionText as string,
+    id: response.id,
+    definitionText: response.definitionText,
     source: mapDefinitionSourceFromApi(response.source),
-    displayOrder: Number(response.displayOrder),
+    displayOrder: response.displayOrder,
     examples: (response.examples ?? []).map(mapExample),
 });
 
 export const mapTranslation = (response: TranslationResponse): Translation => ({
-    id: Number(response.id),
-    translationText: response.translationText as string,
+    id: response.id,
+    translationText: response.translationText,
     source: mapTranslationSourceFromApi(response.source),
-    displayOrder: Number(response.displayOrder),
+    displayOrder: response.displayOrder,
     examples: (response.examples ?? []).map(mapExample),
 });
 
 export const mapEntry = (response: EntryResponse): Entry => ({
-    id: Number(response.id),
-    vocabularyId: Number(response.vocabularyId),
-    entryText: response.entryText as string,
+    id: response.id,
+    vocabularyId: response.vocabularyId,
+    entryText: response.entryText,
     createdAt: new Date(response.createdAt),
-    updatedAt: (response.updatedAt as string | null)
-        ? new Date(response.updatedAt as string)
-        : null,
+    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
     definitions: (response.definitions ?? []).map(mapDefinition),
     translations: (response.translations ?? []).map(mapTranslation),
 });
