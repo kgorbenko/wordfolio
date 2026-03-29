@@ -161,7 +161,7 @@ export const mapCreateEntryData = (
     entryText: data.entryText,
     definitions: data.definitions.map(mapCreateDefinitionData),
     translations: data.translations.map(mapCreateTranslationData),
-    allowDuplicate: allowDuplicate as boolean,
+    allowDuplicate,
 });
 
 export const mapUpdateEntryData = (

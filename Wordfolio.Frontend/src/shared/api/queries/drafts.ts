@@ -18,7 +18,7 @@ export const useDraftsQuery = (
             const data = result.data!;
             return {
                 vocabulary: mapDraftsVocabulary(data.vocabulary),
-                entries: (data.entries ?? []).map(mapEntry),
+                entries: data.entries.map(mapEntry),
             };
         },
         ...options,

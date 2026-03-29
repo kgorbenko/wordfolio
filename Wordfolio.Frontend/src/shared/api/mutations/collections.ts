@@ -26,7 +26,7 @@ export function useCreateCollectionMutation(
                 {
                     body: {
                         name: data.name,
-                        description: data.description as string,
+                        description: data.description,
                     },
                 }
             );
@@ -60,7 +60,7 @@ export function useUpdateCollectionMutation(
                     params: { path: { id } },
                     body: {
                         name: data.name,
-                        description: data.description as string,
+                        description: data.description,
                     },
                 }
             );

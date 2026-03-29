@@ -35,7 +35,7 @@ export const useCreateVocabularyMutation = (
                     params: { path: { collectionId } },
                     body: {
                         name: data.name,
-                        description: data.description as string,
+                        description: data.description,
                     },
                 }
             );
@@ -80,7 +80,7 @@ export const useUpdateVocabularyMutation = (
                     },
                     body: {
                         name: data.name,
-                        description: data.description as string,
+                        description: data.description,
                     },
                 }
             );
