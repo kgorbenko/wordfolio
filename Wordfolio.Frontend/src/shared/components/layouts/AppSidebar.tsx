@@ -204,15 +204,15 @@ const SidebarContent = ({
                 {collections.length === 0 && (
                     <Box className={styles.collectionsEmpty}>
                         <Typography variant="body2" color="text.secondary">
-                            Get started by{" "}
+                            No collections yet.{" "}
                             <MuiLink
                                 component="button"
                                 variant="body2"
                                 onClick={onCreateCollection}
                             >
-                                creating your first collection
-                            </MuiLink>
-                            .
+                                Create
+                            </MuiLink>{" "}
+                            one to get started.
                         </Typography>
                     </Box>
                 )}

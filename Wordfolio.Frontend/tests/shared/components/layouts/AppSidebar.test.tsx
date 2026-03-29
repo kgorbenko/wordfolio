@@ -33,10 +33,8 @@ describe("AppSidebar", () => {
     it("renders the empty state sentence when collections is empty", () => {
         render(<AppSidebar {...defaultProps} />);
 
-        expect(screen.getByText(/Get started by/)).toBeInTheDocument();
-        expect(
-            screen.getByText("creating your first collection")
-        ).toBeInTheDocument();
+        expect(screen.getByText(/No collections yet/)).toBeInTheDocument();
+        expect(screen.getByText("Create")).toBeInTheDocument();
     });
 
     it("calls onCreateCollection when the link is clicked", async () => {
@@ -48,9 +46,7 @@ describe("AppSidebar", () => {
             />
         );
 
-        await userEvent.click(
-            screen.getByText("creating your first collection")
-        );
+        await userEvent.click(screen.getByText("Create"));
 
         expect(onCreateCollection).toHaveBeenCalledOnce();
     });
@@ -65,6 +61,8 @@ describe("AppSidebar", () => {
         ];
         render(<AppSidebar {...defaultProps} collections={collections} />);
 
-        expect(screen.queryByText(/Get started by/)).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/No collections yet/)
+        ).not.toBeInTheDocument();
     });
 });
