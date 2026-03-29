@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseApiError } from "../../../src/features/auth/errorHandling";
-import { ApiError } from "../../../src/shared/api/common";
+import { ApiError } from "../../../src/shared/api/types/entries";
 
 describe("parseApiError", () => {
     it("should return all error messages as an array", () => {

@@ -1,6 +1,6 @@
 import { ReactNode, useCallback, useMemo, useState } from "react";
 
-import type { Entry } from "../types/entries";
+import type { Entry } from "../api/types/entries";
 import { assertNonNullable } from "../utils/misc";
 import { DuplicateEntryDialog } from "../components/entries/DuplicateEntryDialog";
 

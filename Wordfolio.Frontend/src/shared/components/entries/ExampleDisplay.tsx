@@ -1,7 +1,7 @@
 import { Box, Typography, alpha, useTheme } from "@mui/material";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 
-import type { Example, AnnotatedItemColor } from "../../types/entries";
+import type { Example, AnnotatedItemColor } from "../../api/types/entries";
 import styles from "./ExampleDisplay.module.scss";
 
 interface ExampleDisplayProps {

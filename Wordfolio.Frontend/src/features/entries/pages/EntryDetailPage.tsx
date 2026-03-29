@@ -19,10 +19,12 @@ import { useNotificationContext } from "../../../shared/contexts/NotificationCon
 import { useConfirmDialog } from "../../../shared/contexts/ConfirmDialogContext";
 import { assertNonNullable } from "../../../shared/utils/misc";
 
-import { useVocabularyDetailQuery } from "../../../shared/queries/useVocabularyDetailQuery";
-import { useEntryQuery } from "../hooks/useEntryQuery";
-import { useDeleteEntryMutation } from "../hooks/useDeleteEntryMutation";
-import { useMoveEntryMutation } from "../hooks/useMoveEntryMutation";
+import { useVocabularyDetailQuery } from "../../../shared/api/queries/vocabularies";
+import { useEntryQuery } from "../../../shared/api/queries/entries";
+import {
+    useDeleteEntryMutation,
+    useMoveEntryMutation,
+} from "../../../shared/api/mutations/entries";
 import { useMoveEntryDialog } from "../../../shared/hooks/useMoveEntryDialog";
 import { EntryDetailContent } from "../../../shared/components/entries/EntryDetailContent";
 

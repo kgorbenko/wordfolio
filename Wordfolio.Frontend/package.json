@@ -12,9 +12,11 @@
     "format:check": "prettier --check .",
     "preview": "vite preview",
     "test": "tsc -b && vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "generate:api": "openapi-typescript ../api/openapi.json -o src/shared/api/generated/schema.d.ts"
   },
   "dependencies": {
+    "openapi-fetch": "0.17.0",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.0",
     "@hookform/resolvers": "5.2.2",
@@ -34,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/css": "0.14.1",
+    "openapi-typescript": "7.13.0",
     "@tanstack/router-devtools": "1.134.17",
     "@tanstack/router-plugin": "1.134.17",
     "@testing-library/jest-dom": "6.9.1",

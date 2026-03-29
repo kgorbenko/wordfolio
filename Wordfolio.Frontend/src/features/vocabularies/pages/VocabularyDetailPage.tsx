@@ -23,12 +23,14 @@ import { useNotificationContext } from "../../../shared/contexts/NotificationCon
 import { useConfirmDialog } from "../../../shared/contexts/ConfirmDialogContext";
 import { assertNonNullable } from "../../../shared/utils/misc";
 
-import { useVocabularyDetailQuery } from "../../../shared/queries/useVocabularyDetailQuery";
-import { useDeleteVocabularyMutation } from "../hooks/useDeleteVocabularyMutation";
-import { useMoveVocabularyMutation } from "../hooks/useMoveVocabularyMutation";
+import { useVocabularyDetailQuery } from "../../../shared/api/queries/vocabularies";
+import {
+    useDeleteVocabularyMutation,
+    useMoveVocabularyMutation,
+} from "../../../shared/api/mutations/vocabularies";
 import { useMoveVocabularyDialog } from "../hooks/useMoveVocabularyDialog";
 import { VocabularyDetailContent } from "../components/VocabularyDetailContent";
-import { useVocabularyEntriesQuery } from "../../../shared/queries/useVocabularyEntriesQuery";
+import { useVocabularyEntriesQuery } from "../../../shared/api/queries/entries";
 
 export const VocabularyDetailPage = () => {
     const { collectionId, vocabularyId } = vocabularyDetailRouteApi.useParams();

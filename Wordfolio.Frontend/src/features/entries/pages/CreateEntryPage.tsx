@@ -13,10 +13,10 @@ import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBrea
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
-import { useVocabularyDetailQuery } from "../../../shared/queries/useVocabularyDetailQuery";
+import { useVocabularyDetailQuery } from "../../../shared/api/queries/vocabularies";
 import { useDuplicateEntryDialog } from "../../../shared/hooks/useDuplicateEntryDialog";
-import { useCreateEntryMutation } from "../../../shared/queries/useCreateEntryMutation";
-import type { CreateEntryData } from "../../../shared/types/entries";
+import { useCreateEntryMutation } from "../../../shared/api/mutations/entries";
+import type { CreateEntryData } from "../../../shared/api/types/entries";
 import {
     EntryLookupForm,
     VocabularyContext,

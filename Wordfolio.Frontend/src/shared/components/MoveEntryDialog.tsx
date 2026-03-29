@@ -15,7 +15,7 @@ import {
 
 import { ContentSkeleton } from "./ContentSkeleton";
 import { RetryOnError } from "./RetryOnError";
-import { useCollectionsHierarchyQuery } from "../queries/useCollectionsHierarchyQuery";
+import { useCollectionsHierarchyQuery } from "../api/queries/collections";
 
 export interface MoveEntrySelectionResult {
     readonly vocabularyId: number;

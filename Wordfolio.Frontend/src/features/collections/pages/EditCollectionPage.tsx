@@ -5,8 +5,8 @@ import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBrea
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { CollectionForm } from "../components/CollectionForm";
-import { useCollectionQuery } from "../hooks/useCollectionQuery";
-import { useUpdateCollectionMutation } from "../hooks/useUpdateCollectionMutation";
+import { useCollectionQuery } from "../../../shared/api/queries/collections";
+import { useUpdateCollectionMutation } from "../../../shared/api/mutations/collections";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { CollectionFormData } from "../schemas/collectionSchemas";
 import {

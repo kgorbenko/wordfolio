@@ -6,10 +6,10 @@ import {
     DefinitionSource,
     ExampleSource,
     TranslationSource,
-} from "../../types/entries";
-import type { CreateEntryData } from "../../types/entries";
-import type { EntryFormValues } from "../../types/entries";
-import type { LookupState, WordLookupResult } from "../../types/wordLookup";
+} from "../../api/types/entries";
+import type { CreateEntryData } from "../../api/types/entries";
+import type { EntryFormValues } from "../../api/types/entries";
+import type { LookupState, WordLookupResult } from "../../api/types/dictionary";
 import { LookupStreamingDisplay } from "./LookupStreamingDisplay";
 import styles from "./LookupResultsSection.module.scss";
 

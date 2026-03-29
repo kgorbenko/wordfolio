@@ -13,7 +13,7 @@ import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBrea
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 
-import { useDraftsQuery } from "../hooks/useDraftsQuery";
+import { useDraftsQuery } from "../../../shared/api/queries/drafts";
 import { EmptyState } from "../../../shared/components/EmptyState";
 import { DraftsContent } from "../components/DraftsContent";
 

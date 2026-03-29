@@ -3,7 +3,7 @@ import { PageContainer } from "../../../shared/components/PageContainer";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { TopBarBreadcrumbs } from "../../../shared/components/layouts/TopBarBreadcrumbs";
 import { CollectionForm } from "../components/CollectionForm";
-import { useCreateCollectionMutation } from "../hooks/useCreateCollectionMutation";
+import { useCreateCollectionMutation } from "../../../shared/api/mutations/collections";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { CollectionFormData } from "../schemas/collectionSchemas";
 import { collectionsPath } from "../routes";

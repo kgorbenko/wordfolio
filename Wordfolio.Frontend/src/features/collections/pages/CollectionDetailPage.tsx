@@ -19,9 +19,11 @@ import type { BreadcrumbItem } from "../../../shared/components/layouts/Breadcru
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { CollectionDetailContent } from "../components/CollectionDetailContent";
-import { useCollectionQuery } from "../hooks/useCollectionQuery";
-import { useCollectionVocabulariesQuery } from "../hooks/useVocabulariesSummaryQuery";
-import { useDeleteCollectionMutation } from "../hooks/useDeleteCollectionMutation";
+import {
+    useCollectionQuery,
+    useCollectionVocabulariesQuery,
+} from "../../../shared/api/queries/collections";
+import { useDeleteCollectionMutation } from "../../../shared/api/mutations/collections";
 import { useConfirmDialog } from "../../../shared/contexts/ConfirmDialogContext";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { assertNonNullable } from "../../../shared/utils/misc";

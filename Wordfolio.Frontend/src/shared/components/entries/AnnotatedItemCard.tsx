@@ -1,6 +1,6 @@
 import { Box, Paper, Chip, Typography, alpha, useTheme } from "@mui/material";
 
-import type { Example, AnnotatedItemColor } from "../../types/entries";
+import type { Example, AnnotatedItemColor } from "../../api/types/entries";
 import { ExampleDisplay } from "./ExampleDisplay";
 import styles from "./AnnotatedItemCard.module.scss";
 

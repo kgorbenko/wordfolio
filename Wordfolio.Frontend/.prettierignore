@@ -6,4 +6,5 @@ coverage
 *.min.css
 package-lock.json
 src/routeTree.gen.ts
+src/shared/api/generated/schema.d.ts
 *.json

@@ -11,7 +11,7 @@ import {
     DefinitionSource,
     ExampleSource,
     TranslationSource,
-} from "../../../../src/shared/types/entries";
+} from "../../../../src/shared/api/types/entries";
 import {
     createFormValues,
     readFormData,

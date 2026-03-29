@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'Wordfolio.Frontend/**'
+      - 'api/**'
       - '.github/workflows/frontend.yml'
   workflow_dispatch:
 
@@ -31,7 +32,15 @@ jobs:
     
     - name: Install dependencies
       run: npm ci
-    
+
+    - name: Check API schema freshness
+      run: |
+        npm run generate:api
+        if ! git diff --exit-code src/shared/api/generated/schema.d.ts; then
+          echo "schema.d.ts is out of date. Run 'npm run generate:api' and commit the result."
+          exit 1
+        fi
+
     - name: Check formatting
       run: npm run format:check
     
