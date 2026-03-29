@@ -59,7 +59,7 @@ const mapCollectionWithVocabularies = (
     description: response.description ?? null,
     createdAt: new Date(response.createdAt),
     updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
-    vocabularies: (response.vocabularies ?? []).map((v) =>
+    vocabularies: response.vocabularies.map((v) =>
         mapVocabularyWithEntryCount(v)
     ),
 });
@@ -67,9 +67,7 @@ const mapCollectionWithVocabularies = (
 export const mapCollectionsHierarchy = (
     response: CollectionsHierarchyResultResponse
 ): CollectionsHierarchy => ({
-    collections: (response.collections ?? []).map(
-        mapCollectionWithVocabularies
-    ),
+    collections: response.collections.map(mapCollectionWithVocabularies),
     defaultVocabulary: response.defaultVocabulary
         ? mapVocabularyWithEntryCount(response.defaultVocabulary)
         : null,

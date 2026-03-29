@@ -112,7 +112,7 @@ export const mapDefinition = (response: DefinitionResponse): Definition => ({
     definitionText: response.definitionText,
     source: mapDefinitionSourceFromApi(response.source),
     displayOrder: response.displayOrder,
-    examples: (response.examples ?? []).map(mapExample),
+    examples: response.examples.map(mapExample),
 });
 
 export const mapTranslation = (response: TranslationResponse): Translation => ({
@@ -120,7 +120,7 @@ export const mapTranslation = (response: TranslationResponse): Translation => ({
     translationText: response.translationText,
     source: mapTranslationSourceFromApi(response.source),
     displayOrder: response.displayOrder,
-    examples: (response.examples ?? []).map(mapExample),
+    examples: response.examples.map(mapExample),
 });
 
 export const mapEntry = (response: EntryResponse): Entry => ({
@@ -129,8 +129,8 @@ export const mapEntry = (response: EntryResponse): Entry => ({
     entryText: response.entryText,
     createdAt: new Date(response.createdAt),
     updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
-    definitions: (response.definitions ?? []).map(mapDefinition),
-    translations: (response.translations ?? []).map(mapTranslation),
+    definitions: response.definitions.map(mapDefinition),
+    translations: response.translations.map(mapTranslation),
 });
 
 const mapCreateExampleData = (data: CreateExampleData): ExampleRequest => ({
