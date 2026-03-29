@@ -37,10 +37,10 @@ export function useCreateDraftMutation(
                 body: mapCreateEntryData(input, allowDuplicate),
             });
             if (result.response.status === 409) {
-                const body = (await result.response.json()) as {
-                    existingEntry: components["schemas"]["EntryResponse"];
-                };
-                throw { ...body, status: 409 } as DuplicateEntryError;
+                throw {
+                    ...(result.error as unknown as object),
+                    status: 409,
+                } as DuplicateEntryError;
             }
             if (result.error) throw result.error;
             return mapEntry(result.data!);
