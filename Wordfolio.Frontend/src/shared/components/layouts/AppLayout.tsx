@@ -15,6 +15,7 @@ interface AppLayoutProps {
     readonly user: NavUser;
     readonly onAddEntry: () => void;
     readonly onDraftsClick: () => void;
+    readonly onCreateCollection?: () => void;
 }
 
 export const AppLayout = ({
@@ -24,6 +25,7 @@ export const AppLayout = ({
     user,
     onAddEntry,
     onDraftsClick,
+    onCreateCollection,
 }: AppLayoutProps) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -40,6 +42,7 @@ export const AppLayout = ({
         user,
         onAddEntry,
         onDraftsClick,
+        onCreateCollection,
     };
 
     return (
