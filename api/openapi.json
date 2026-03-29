@@ -1644,11 +1644,7 @@
             "type": "string"
           },
           "expiresIn": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "refreshToken": {
@@ -1665,22 +1661,13 @@
         "type": "object",
         "properties": {
           "application": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "version": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "environment": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           }
         }
       },
@@ -1695,28 +1682,22 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "description": {
-            "$ref": "#/components/schemas/FSharpOptionOfstring"
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "$ref": "#/components/schemas/FSharpOptionOfDateTimeOffset"
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -1728,16 +1709,20 @@
         "type": "object",
         "properties": {
           "collections": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/CollectionWithVocabulariesResponse"
             }
           },
           "defaultVocabulary": {
-            "$ref": "#/components/schemas/FSharpOptionOfVocabularyWithEntryCountResponse"
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VocabularyWithEntryCountResponse"
+              }
+            ]
           }
         }
       },
@@ -1753,34 +1738,25 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "description": {
-            "$ref": "#/components/schemas/FSharpOptionOfstring"
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "$ref": "#/components/schemas/FSharpOptionOfDateTimeOffset"
+            "type": "string",
+            "format": "date-time"
           },
           "vocabularies": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/VocabularyWithEntryCountResponse"
             }
@@ -1799,35 +1775,25 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "description": {
-            "$ref": "#/components/schemas/FSharpOptionOfstring"
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "$ref": "#/components/schemas/FSharpOptionOfDateTimeOffset"
+            "type": "string",
+            "format": "date-time"
           },
           "vocabularyCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -1840,13 +1806,10 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "description": {
-            "$ref": "#/components/schemas/FSharpOptionOfstring"
+            "type": "string"
           }
         }
       },
@@ -1860,31 +1823,22 @@
         "type": "object",
         "properties": {
           "entryText": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "definitions": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/DefinitionRequest"
             }
           },
           "translations": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/TranslationRequest"
             }
           },
           "allowDuplicate": {
-            "$ref": "#/components/schemas/FSharpOptionOfboolean"
+            "type": "boolean"
           }
         }
       },
@@ -1898,31 +1852,22 @@
         "type": "object",
         "properties": {
           "entryText": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "definitions": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/DefinitionRequest"
             }
           },
           "translations": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/TranslationRequest"
             }
           },
           "allowDuplicate": {
-            "$ref": "#/components/schemas/FSharpOptionOfboolean"
+            "type": "boolean"
           }
         }
       },
@@ -1934,13 +1879,10 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "description": {
-            "$ref": "#/components/schemas/FSharpOptionOfstring"
+            "type": "string"
           }
         }
       },
@@ -1953,19 +1895,13 @@
         "type": "object",
         "properties": {
           "definitionText": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "source": {
             "$ref": "#/components/schemas/DefinitionSource"
           },
           "examples": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/ExampleRequest"
             }
@@ -1983,35 +1919,21 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "definitionText": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "source": {
             "$ref": "#/components/schemas/DefinitionSource"
           },
           "displayOrder": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "examples": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/ExampleResponse"
             }
@@ -2035,10 +1957,7 @@
             "$ref": "#/components/schemas/VocabularyResponse"
           },
           "entries": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/EntryResponse"
             }
@@ -2058,48 +1977,32 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "vocabularyId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "entryText": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "$ref": "#/components/schemas/FSharpOptionOfDateTimeOffset"
+            "type": "string",
+            "format": "date-time"
           },
           "definitions": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/DefinitionResponse"
             }
           },
           "translations": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/TranslationResponse"
             }
@@ -2114,10 +2017,7 @@
         "type": "object",
         "properties": {
           "exampleText": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "source": {
             "$ref": "#/components/schemas/ExampleSource"
@@ -2133,18 +2033,11 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "exampleText": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "source": {
             "$ref": "#/components/schemas/ExampleSource"
@@ -2168,61 +2061,6 @@
           }
         }
       },
-      "FSharpOptionOfboolean": {
-        "type": "boolean"
-      },
-      "FSharpOptionOfDateTimeOffset": {
-        "type": "string",
-        "format": "date-time"
-      },
-      "FSharpOptionOfstring": {
-        "type": "string"
-      },
-      "FSharpOptionOfVocabularyWithEntryCountResponse": {
-        "required": [
-          "id",
-          "name",
-          "description",
-          "createdAt",
-          "updatedAt",
-          "entryCount"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "name": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "description": {
-            "$ref": "#/components/schemas/FSharpOptionOfstring"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/FSharpOptionOfDateTimeOffset"
-          },
-          "entryCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          }
-        }
-      },
       "HttpValidationProblemDetails": {
         "type": "object",
         "properties": {
@@ -2239,11 +2077,9 @@
             ]
           },
           "status": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "format": "int32"
           },
@@ -2342,11 +2178,7 @@
         "type": "object",
         "properties": {
           "vocabularyId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -2358,11 +2190,7 @@
         "type": "object",
         "properties": {
           "collectionId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -2379,11 +2207,7 @@
         "type": "object",
         "properties": {
           "requiredLength": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "requireDigit": {
@@ -2399,11 +2223,7 @@
             "type": "boolean"
           },
           "requiredUniqueChars": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -2473,19 +2293,13 @@
         "type": "object",
         "properties": {
           "translationText": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "source": {
             "$ref": "#/components/schemas/TranslationSource"
           },
           "examples": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/ExampleRequest"
             }
@@ -2503,35 +2317,21 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "translationText": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "source": {
             "$ref": "#/components/schemas/TranslationSource"
           },
           "displayOrder": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "examples": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/ExampleResponse"
             }
@@ -2583,11 +2383,7 @@
             "type": "string"
           },
           "recoveryCodesLeft": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "recoveryCodes": {
@@ -2615,13 +2411,10 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "description": {
-            "$ref": "#/components/schemas/FSharpOptionOfstring"
+            "type": "string"
           }
         }
       },
@@ -2634,25 +2427,16 @@
         "type": "object",
         "properties": {
           "entryText": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "definitions": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/DefinitionRequest"
             }
           },
           "translations": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/TranslationRequest"
             }
@@ -2667,13 +2451,10 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "description": {
-            "$ref": "#/components/schemas/FSharpOptionOfstring"
+            "type": "string"
           }
         }
       },
@@ -2690,42 +2471,29 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "collectionId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "collectionName": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "description": {
-            "$ref": "#/components/schemas/FSharpOptionOfstring"
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "$ref": "#/components/schemas/FSharpOptionOfDateTimeOffset"
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -2741,36 +2509,26 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "collectionId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "description": {
-            "$ref": "#/components/schemas/FSharpOptionOfstring"
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "$ref": "#/components/schemas/FSharpOptionOfDateTimeOffset"
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -2786,35 +2544,25 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "description": {
-            "$ref": "#/components/schemas/FSharpOptionOfstring"
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "$ref": "#/components/schemas/FSharpOptionOfDateTimeOffset"
+            "type": "string",
+            "format": "date-time"
           },
           "entryCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }

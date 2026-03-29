@@ -78,9 +78,7 @@ export const mapCollectionsHierarchy = (
     collections: (response.collections ?? []).map(
         mapCollectionWithVocabularies
     ),
-    defaultVocabulary: (response.defaultVocabulary as
-        | CollectionsHierarchyResultResponse["defaultVocabulary"]
-        | null)
+    defaultVocabulary: response.defaultVocabulary
         ? mapVocabularyWithEntryCount(response.defaultVocabulary)
         : null,
 });

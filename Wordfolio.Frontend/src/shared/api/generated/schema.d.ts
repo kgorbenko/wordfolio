@@ -1801,108 +1801,112 @@ export interface components {
             tokenType?: null | string;
             accessToken: string;
             /** Format: int64 */
-            expiresIn: number | string;
+            expiresIn: number;
             refreshToken: string;
         };
         ApplicationStatus: {
-            application: null | string;
-            version: null | string;
-            environment: null | string;
+            application: string;
+            version: string;
+            environment: string;
         };
         CollectionResponse: {
             /** Format: int32 */
-            id: number | string;
-            name: null | string;
-            description: components["schemas"]["FSharpOptionOfstring"];
+            id: number;
+            name: string;
+            description: string;
             /** Format: date-time */
             createdAt: string;
-            updatedAt: components["schemas"]["FSharpOptionOfDateTimeOffset"];
+            /** Format: date-time */
+            updatedAt: string;
         };
         CollectionsHierarchyResultResponse: {
-            collections: null | components["schemas"]["CollectionWithVocabulariesResponse"][];
-            defaultVocabulary: components["schemas"]["FSharpOptionOfVocabularyWithEntryCountResponse"];
+            collections: components["schemas"]["CollectionWithVocabulariesResponse"][];
+            defaultVocabulary: null | components["schemas"]["VocabularyWithEntryCountResponse"];
         };
         CollectionWithVocabulariesResponse: {
             /** Format: int32 */
-            id: number | string;
-            name: null | string;
-            description: components["schemas"]["FSharpOptionOfstring"];
+            id: number;
+            name: string;
+            description: string;
             /** Format: date-time */
             createdAt: string;
-            updatedAt: components["schemas"]["FSharpOptionOfDateTimeOffset"];
-            vocabularies: null | components["schemas"]["VocabularyWithEntryCountResponse"][];
+            /** Format: date-time */
+            updatedAt: string;
+            vocabularies: components["schemas"]["VocabularyWithEntryCountResponse"][];
         };
         CollectionWithVocabularyCountResponse: {
             /** Format: int32 */
-            id: number | string;
-            name: null | string;
-            description: components["schemas"]["FSharpOptionOfstring"];
+            id: number;
+            name: string;
+            description: string;
             /** Format: date-time */
             createdAt: string;
-            updatedAt: components["schemas"]["FSharpOptionOfDateTimeOffset"];
+            /** Format: date-time */
+            updatedAt: string;
             /** Format: int32 */
-            vocabularyCount: number | string;
+            vocabularyCount: number;
         };
         CreateCollectionRequest: {
-            name: null | string;
-            description: components["schemas"]["FSharpOptionOfstring"];
+            name: string;
+            description: string;
         };
         CreateDraftRequest: {
-            entryText: null | string;
-            definitions: null | components["schemas"]["DefinitionRequest"][];
-            translations: null | components["schemas"]["TranslationRequest"][];
-            allowDuplicate: components["schemas"]["FSharpOptionOfboolean"];
+            entryText: string;
+            definitions: components["schemas"]["DefinitionRequest"][];
+            translations: components["schemas"]["TranslationRequest"][];
+            allowDuplicate: boolean;
         };
         CreateEntryRequest: {
-            entryText: null | string;
-            definitions: null | components["schemas"]["DefinitionRequest"][];
-            translations: null | components["schemas"]["TranslationRequest"][];
-            allowDuplicate: components["schemas"]["FSharpOptionOfboolean"];
+            entryText: string;
+            definitions: components["schemas"]["DefinitionRequest"][];
+            translations: components["schemas"]["TranslationRequest"][];
+            allowDuplicate: boolean;
         };
         CreateVocabularyRequest: {
-            name: null | string;
-            description: components["schemas"]["FSharpOptionOfstring"];
+            name: string;
+            description: string;
         };
         DefinitionRequest: {
-            definitionText: null | string;
+            definitionText: string;
             source: components["schemas"]["DefinitionSource"];
-            examples: null | components["schemas"]["ExampleRequest"][];
+            examples: components["schemas"]["ExampleRequest"][];
         };
         DefinitionResponse: {
             /** Format: int32 */
-            id: number | string;
-            definitionText: null | string;
+            id: number;
+            definitionText: string;
             source: components["schemas"]["DefinitionSource"];
             /** Format: int32 */
-            displayOrder: number | string;
-            examples: null | components["schemas"]["ExampleResponse"][];
+            displayOrder: number;
+            examples: components["schemas"]["ExampleResponse"][];
         };
         /** @enum {unknown} */
         DefinitionSource: "Api" | "Manual";
         DraftsVocabularyDataResponse: {
             vocabulary: components["schemas"]["VocabularyResponse"];
-            entries: null | components["schemas"]["EntryResponse"][];
+            entries: components["schemas"]["EntryResponse"][];
         };
         EntryResponse: {
             /** Format: int32 */
-            id: number | string;
+            id: number;
             /** Format: int32 */
-            vocabularyId: number | string;
-            entryText: null | string;
+            vocabularyId: number;
+            entryText: string;
             /** Format: date-time */
             createdAt: string;
-            updatedAt: components["schemas"]["FSharpOptionOfDateTimeOffset"];
-            definitions: null | components["schemas"]["DefinitionResponse"][];
-            translations: null | components["schemas"]["TranslationResponse"][];
+            /** Format: date-time */
+            updatedAt: string;
+            definitions: components["schemas"]["DefinitionResponse"][];
+            translations: components["schemas"]["TranslationResponse"][];
         };
         ExampleRequest: {
-            exampleText: null | string;
+            exampleText: string;
             source: components["schemas"]["ExampleSource"];
         };
         ExampleResponse: {
             /** Format: int32 */
-            id: number | string;
-            exampleText: null | string;
+            id: number;
+            exampleText: string;
             source: components["schemas"]["ExampleSource"];
         };
         /** @enum {unknown} */
@@ -1910,26 +1914,11 @@ export interface components {
         ForgotPasswordRequest: {
             email: string;
         };
-        FSharpOptionOfboolean: boolean;
-        /** Format: date-time */
-        FSharpOptionOfDateTimeOffset: string;
-        FSharpOptionOfstring: string;
-        FSharpOptionOfVocabularyWithEntryCountResponse: {
-            /** Format: int32 */
-            id: number | string;
-            name: null | string;
-            description: components["schemas"]["FSharpOptionOfstring"];
-            /** Format: date-time */
-            createdAt: string;
-            updatedAt: components["schemas"]["FSharpOptionOfDateTimeOffset"];
-            /** Format: int32 */
-            entryCount: number | string;
-        };
         HttpValidationProblemDetails: {
             type?: null | string;
             title?: null | string;
             /** Format: int32 */
-            status?: null | number | string;
+            status?: null | number;
             detail?: null | string;
             instance?: null | string;
             errors?: {
@@ -1953,21 +1942,21 @@ export interface components {
         };
         MoveEntryRequest: {
             /** Format: int32 */
-            vocabularyId: number | string;
+            vocabularyId: number;
         };
         MoveVocabularyRequest: {
             /** Format: int32 */
-            collectionId: number | string;
+            collectionId: number;
         };
         PasswordRequirementsResponse: {
             /** Format: int32 */
-            requiredLength: number | string;
+            requiredLength: number;
             requireDigit: boolean;
             requireLowercase: boolean;
             requireUppercase: boolean;
             requireNonAlphanumeric: boolean;
             /** Format: int32 */
-            requiredUniqueChars: number | string;
+            requiredUniqueChars: number;
         };
         RefreshRequest: {
             refreshToken: string;
@@ -1985,18 +1974,18 @@ export interface components {
             newPassword: string;
         };
         TranslationRequest: {
-            translationText: null | string;
+            translationText: string;
             source: components["schemas"]["TranslationSource"];
-            examples: null | components["schemas"]["ExampleRequest"][];
+            examples: components["schemas"]["ExampleRequest"][];
         };
         TranslationResponse: {
             /** Format: int32 */
-            id: number | string;
-            translationText: null | string;
+            id: number;
+            translationText: string;
             source: components["schemas"]["TranslationSource"];
             /** Format: int32 */
-            displayOrder: number | string;
-            examples: null | components["schemas"]["ExampleResponse"][];
+            displayOrder: number;
+            examples: components["schemas"]["ExampleResponse"][];
         };
         /** @enum {unknown} */
         TranslationSource: "Api" | "Manual";
@@ -2010,57 +1999,60 @@ export interface components {
         TwoFactorResponse: {
             sharedKey: string;
             /** Format: int32 */
-            recoveryCodesLeft: number | string;
+            recoveryCodesLeft: number;
             recoveryCodes?: null | string[];
             isTwoFactorEnabled: boolean;
             isMachineRemembered: boolean;
         };
         UpdateCollectionRequest: {
-            name: null | string;
-            description: components["schemas"]["FSharpOptionOfstring"];
+            name: string;
+            description: string;
         };
         UpdateEntryRequest: {
-            entryText: null | string;
-            definitions: null | components["schemas"]["DefinitionRequest"][];
-            translations: null | components["schemas"]["TranslationRequest"][];
+            entryText: string;
+            definitions: components["schemas"]["DefinitionRequest"][];
+            translations: components["schemas"]["TranslationRequest"][];
         };
         UpdateVocabularyRequest: {
-            name: null | string;
-            description: components["schemas"]["FSharpOptionOfstring"];
+            name: string;
+            description: string;
         };
         VocabularyDetailResponse: {
             /** Format: int32 */
-            id: number | string;
+            id: number;
             /** Format: int32 */
-            collectionId: number | string;
-            collectionName: null | string;
-            name: null | string;
-            description: components["schemas"]["FSharpOptionOfstring"];
+            collectionId: number;
+            collectionName: string;
+            name: string;
+            description: string;
             /** Format: date-time */
             createdAt: string;
-            updatedAt: components["schemas"]["FSharpOptionOfDateTimeOffset"];
+            /** Format: date-time */
+            updatedAt: string;
         };
         VocabularyResponse: {
             /** Format: int32 */
-            id: number | string;
+            id: number;
             /** Format: int32 */
-            collectionId: number | string;
-            name: null | string;
-            description: components["schemas"]["FSharpOptionOfstring"];
+            collectionId: number;
+            name: string;
+            description: string;
             /** Format: date-time */
             createdAt: string;
-            updatedAt: components["schemas"]["FSharpOptionOfDateTimeOffset"];
+            /** Format: date-time */
+            updatedAt: string;
         };
         VocabularyWithEntryCountResponse: {
             /** Format: int32 */
-            id: number | string;
-            name: null | string;
-            description: components["schemas"]["FSharpOptionOfstring"];
+            id: number;
+            name: string;
+            description: string;
             /** Format: date-time */
             createdAt: string;
-            updatedAt: components["schemas"]["FSharpOptionOfDateTimeOffset"];
+            /** Format: date-time */
+            updatedAt: string;
             /** Format: int32 */
-            entryCount: number | string;
+            entryCount: number;
         };
     };
     responses: never;
