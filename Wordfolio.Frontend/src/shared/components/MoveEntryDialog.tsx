@@ -5,8 +5,6 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    FormControl,
-    InputLabel,
     type SelectChangeEvent,
     Typography,
 } from "@mui/material";
@@ -159,22 +157,17 @@ export const MoveEntryDialog = ({
                         entry.
                     </Typography>
                 ) : null}
-                <FormControl fullWidth>
-                    <InputLabel id="move-entry-target-select-label">
-                        Target vocabulary
-                    </InputLabel>
-                    <GroupedVocabularySelect
-                        hierarchy={hierarchy}
-                        value={selectedVocabularyId ?? ""}
-                        label="Target vocabulary"
-                        onChange={handleTargetChange}
-                        excludeVocabularyId={currentVocabularyId}
-                        draftsValue={
-                            hierarchy.defaultVocabulary?.id ?? DRAFTS_SENTINEL
-                        }
-                        labelId="move-entry-target-select-label"
-                    />
-                </FormControl>
+                <GroupedVocabularySelect
+                    hierarchy={hierarchy}
+                    value={selectedVocabularyId ?? ""}
+                    label="Target vocabulary"
+                    onChange={handleTargetChange}
+                    excludeVocabularyId={currentVocabularyId}
+                    draftsValue={
+                        hierarchy.defaultVocabulary?.id ?? DRAFTS_SENTINEL
+                    }
+                    fullWidth
+                />
             </>
         );
     }, [

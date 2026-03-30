@@ -1,10 +1,11 @@
 import { useMemo } from "react";
 import {
+    FormControl,
+    InputLabel,
     ListSubheader,
     MenuItem,
     Select,
     type SelectChangeEvent,
-    type SelectProps,
 } from "@mui/material";
 
 import type { CollectionsHierarchy } from "../api/types/collections";
@@ -18,8 +19,8 @@ interface GroupedVocabularySelectProps {
     readonly draftsLabel?: string;
     readonly draftsValue?: number | string;
     readonly excludeVocabularyId?: number;
-    readonly size?: SelectProps["size"];
-    readonly labelId?: string;
+    readonly fullWidth?: boolean;
+    readonly className?: string;
 }
 
 const buildGroupedItems = (
@@ -84,8 +85,8 @@ export const GroupedVocabularySelect = ({
     draftsLabel = "Drafts",
     draftsValue,
     excludeVocabularyId,
-    size,
-    labelId,
+    fullWidth,
+    className,
 }: GroupedVocabularySelectProps) => {
     const groupedItems = useMemo(
         () =>
@@ -101,14 +102,11 @@ export const GroupedVocabularySelect = ({
     );
 
     return (
-        <Select
-            value={value}
-            label={label}
-            onChange={onChange}
-            size={size}
-            labelId={labelId}
-        >
-            {groupedItems}
-        </Select>
+        <FormControl fullWidth={fullWidth} className={className}>
+            <InputLabel>{label}</InputLabel>
+            <Select value={value} label={label} onChange={onChange}>
+                {groupedItems}
+            </Select>
+        </FormControl>
     );
 };

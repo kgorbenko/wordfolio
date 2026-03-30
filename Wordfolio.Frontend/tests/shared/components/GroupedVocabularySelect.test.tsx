@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { FormControl, InputLabel } from "@mui/material";
 import { GroupedVocabularySelect } from "../../../src/shared/components/GroupedVocabularySelect";
 import type { CollectionsHierarchy } from "../../../src/shared/api/types/collections";
 
@@ -67,12 +66,7 @@ const renderGroupedSelect = (
         ...props,
     };
 
-    return render(
-        <FormControl fullWidth>
-            <InputLabel id="test-label">Target vocabulary</InputLabel>
-            <GroupedVocabularySelect {...defaultProps} labelId="test-label" />
-        </FormControl>
-    );
+    return render(<GroupedVocabularySelect {...defaultProps} />);
 };
 
 describe("GroupedVocabularySelect", () => {
