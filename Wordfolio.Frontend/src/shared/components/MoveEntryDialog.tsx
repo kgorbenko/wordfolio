@@ -16,6 +16,8 @@ import { GroupedVocabularySelect } from "./GroupedVocabularySelect";
 import { RetryOnError } from "./RetryOnError";
 import { useCollectionsHierarchyQuery } from "../api/queries/collections";
 
+const DRAFTS_SENTINEL = 0;
+
 export interface MoveEntrySelectionResult {
     readonly vocabularyId: number;
     readonly isDefault: boolean;
@@ -57,9 +59,8 @@ export const MoveEntryDialog = ({
             return false;
         }
 
-        const hasDefault =
-            hierarchy.defaultVocabulary !== null &&
-            hierarchy.defaultVocabulary.id !== currentVocabularyId;
+        const hasDrafts =
+            hierarchy.defaultVocabulary?.id !== currentVocabularyId;
 
         const hasCollectionVocabularies = hierarchy.collections.some(
             (collection) =>
@@ -68,7 +69,7 @@ export const MoveEntryDialog = ({
                 )
         );
 
-        return hasDefault || hasCollectionVocabularies;
+        return hasDrafts || hasCollectionVocabularies;
     }, [currentVocabularyId, hierarchy]);
 
     const resolveSelection = useCallback(
@@ -77,9 +78,13 @@ export const MoveEntryDialog = ({
                 return undefined;
             }
 
-            if (hierarchy.defaultVocabulary?.id === vocabularyId) {
+            if (
+                vocabularyId === DRAFTS_SENTINEL ||
+                hierarchy.defaultVocabulary?.id === vocabularyId
+            ) {
                 return {
-                    vocabularyId,
+                    vocabularyId:
+                        hierarchy.defaultVocabulary?.id ?? DRAFTS_SENTINEL,
                     isDefault: true,
                     collectionId: null,
                 };
@@ -164,6 +169,9 @@ export const MoveEntryDialog = ({
                         label="Target vocabulary"
                         onChange={handleTargetChange}
                         excludeVocabularyId={currentVocabularyId}
+                        draftsValue={
+                            hierarchy.defaultVocabulary?.id ?? DRAFTS_SENTINEL
+                        }
                         labelId="move-entry-target-select-label"
                     />
                 </FormControl>

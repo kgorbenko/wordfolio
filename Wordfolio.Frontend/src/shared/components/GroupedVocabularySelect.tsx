@@ -32,7 +32,9 @@ const buildGroupedItems = (
 
     const resolvedDraftsValue =
         draftsValue !== undefined
-            ? draftsValue
+            ? draftsValue !== excludeVocabularyId
+                ? draftsValue
+                : undefined
             : defaultVocabulary && defaultVocabulary.id !== excludeVocabularyId
               ? defaultVocabulary.id
               : undefined;
