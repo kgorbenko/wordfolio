@@ -1,6 +1,5 @@
 import { type ReactNode, useMemo } from "react";
 import {
-    Divider,
     ListSubheader,
     MenuItem,
     Select,
@@ -43,10 +42,8 @@ export const GroupedVocabularySelect = ({
         }
 
         const items: ReactNode[] = [];
-        let hasDraftsItem = false;
 
         if (draftsItem) {
-            hasDraftsItem = true;
             items.push(
                 <MenuItem key="drafts" value={draftsItem.value}>
                     {draftsItem.label}
@@ -55,7 +52,6 @@ export const GroupedVocabularySelect = ({
         } else if (hierarchy.defaultVocabulary) {
             const defaultVocab = hierarchy.defaultVocabulary;
             if (defaultVocab.id !== excludeVocabularyId) {
-                hasDraftsItem = true;
                 items.push(
                     <MenuItem key={defaultVocab.id} value={defaultVocab.id}>
                         Drafts
@@ -75,10 +71,6 @@ export const GroupedVocabularySelect = ({
                 continue;
             }
 
-            if (hasDraftsItem && isFirstGroup) {
-                items.push(<Divider key="drafts-divider" />);
-            }
-
             items.push(
                 <ListSubheader
                     key={`header-${collection.id}`}
@@ -94,11 +86,7 @@ export const GroupedVocabularySelect = ({
 
             for (const vocabulary of filteredVocabularies) {
                 items.push(
-                    <MenuItem
-                        key={vocabulary.id}
-                        value={vocabulary.id}
-                        className={styles.groupedItem}
-                    >
+                    <MenuItem key={vocabulary.id} value={vocabulary.id}>
                         {vocabulary.name}
                     </MenuItem>
                 );
