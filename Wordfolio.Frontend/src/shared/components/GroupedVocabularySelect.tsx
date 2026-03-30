@@ -16,6 +16,7 @@ interface GroupedVocabularySelectProps {
     readonly label: string;
     readonly onChange: (event: SelectChangeEvent<number | string>) => void;
     readonly draftsLabel?: string;
+    readonly draftsValue?: number | string;
     readonly excludeVocabularyId?: number;
     readonly size?: SelectProps["size"];
     readonly labelId?: string;
@@ -24,17 +25,22 @@ interface GroupedVocabularySelectProps {
 const buildGroupedItems = (
     hierarchy: CollectionsHierarchy,
     excludeVocabularyId: number | undefined,
-    draftsLabel: string
+    draftsLabel: string,
+    draftsValue: number | string | undefined
 ) => {
     const defaultVocabulary = hierarchy.defaultVocabulary;
 
+    const resolvedDraftsValue =
+        draftsValue !== undefined
+            ? draftsValue
+            : defaultVocabulary && defaultVocabulary.id !== excludeVocabularyId
+              ? defaultVocabulary.id
+              : undefined;
+
     const draftsItem =
-        defaultVocabulary && defaultVocabulary.id !== excludeVocabularyId
+        resolvedDraftsValue !== undefined
             ? [
-                  <MenuItem
-                      key={defaultVocabulary.id}
-                      value={defaultVocabulary.id}
-                  >
+                  <MenuItem key="drafts" value={resolvedDraftsValue}>
                       {draftsLabel}
                   </MenuItem>,
               ]
@@ -74,6 +80,7 @@ export const GroupedVocabularySelect = ({
     label,
     onChange,
     draftsLabel = "Drafts",
+    draftsValue,
     excludeVocabularyId,
     size,
     labelId,
@@ -81,9 +88,14 @@ export const GroupedVocabularySelect = ({
     const groupedItems = useMemo(
         () =>
             hierarchy
-                ? buildGroupedItems(hierarchy, excludeVocabularyId, draftsLabel)
+                ? buildGroupedItems(
+                      hierarchy,
+                      excludeVocabularyId,
+                      draftsLabel,
+                      draftsValue
+                  )
                 : [],
-        [draftsLabel, excludeVocabularyId, hierarchy]
+        [draftsLabel, draftsValue, excludeVocabularyId, hierarchy]
     );
 
     return (

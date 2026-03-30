@@ -5,6 +5,8 @@ import type { CollectionsHierarchy } from "../../api/types/collections";
 import { GroupedVocabularySelect } from "../GroupedVocabularySelect";
 import styles from "./VocabularySelector.module.scss";
 
+const DRAFTS_SENTINEL = 0;
+
 interface VocabularySelectorProps {
     readonly value: number | undefined;
     readonly hierarchy: CollectionsHierarchy | undefined;
@@ -16,14 +18,12 @@ export const VocabularySelector = ({
     hierarchy,
     onChange,
 }: VocabularySelectorProps) => {
-    const defaultVocabularyId = hierarchy?.defaultVocabulary?.id;
-
     const handleChange = useCallback(
         (event: SelectChangeEvent<number | string>) => {
             const numValue = Number(event.target.value);
-            onChange(numValue === defaultVocabularyId ? undefined : numValue);
+            onChange(numValue === DRAFTS_SENTINEL ? undefined : numValue);
         },
-        [defaultVocabularyId, onChange]
+        [onChange]
     );
 
     return (
@@ -31,10 +31,11 @@ export const VocabularySelector = ({
             <InputLabel>Vocabulary</InputLabel>
             <GroupedVocabularySelect
                 hierarchy={hierarchy}
-                value={value ?? defaultVocabularyId ?? ""}
+                value={value ?? DRAFTS_SENTINEL}
                 label="Vocabulary"
                 onChange={handleChange}
                 draftsLabel="Drafts — organize later"
+                draftsValue={DRAFTS_SENTINEL}
                 size="small"
             />
         </FormControl>

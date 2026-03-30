@@ -152,7 +152,7 @@ describe("GroupedVocabularySelect", () => {
         ).toBeInTheDocument();
     });
 
-    it("should not render drafts item when no default vocabulary exists", async () => {
+    it("should not render drafts item when no default vocabulary and no draftsValue", async () => {
         const user = userEvent.setup();
         renderGroupedSelect({
             hierarchy: createHierarchy({ defaultVocabulary: null }),
@@ -162,6 +162,22 @@ describe("GroupedVocabularySelect", () => {
 
         const listbox = screen.getByRole("listbox");
         expect(within(listbox).queryByText("Drafts")).not.toBeInTheDocument();
+    });
+
+    it("should always render drafts item when draftsValue is provided", async () => {
+        const user = userEvent.setup();
+        renderGroupedSelect({
+            hierarchy: createHierarchy({ defaultVocabulary: null }),
+            draftsLabel: "Drafts — organize later",
+            draftsValue: 0,
+        });
+
+        await user.click(screen.getByRole("combobox"));
+
+        const listbox = screen.getByRole("listbox");
+        expect(
+            within(listbox).getByText("Drafts — organize later")
+        ).toBeInTheDocument();
     });
 
     it("should exclude specified vocabulary id", async () => {
