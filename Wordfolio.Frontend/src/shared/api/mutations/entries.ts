@@ -163,7 +163,7 @@ interface MoveEntryParams {
     readonly collectionId: number;
     readonly entryId: number;
     readonly sourceVocabularyId: number;
-    readonly targetVocabularyId: number;
+    readonly targetVocabularyId: number | undefined;
 }
 
 interface UseMoveEntryMutationOptions {

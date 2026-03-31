@@ -14,7 +14,7 @@ import { RetryOnError } from "./RetryOnError";
 import { useCollectionsHierarchyQuery } from "../api/queries/collections";
 
 export interface MoveEntrySelectionResult {
-    readonly vocabularyId: number;
+    readonly vocabularyId: number | undefined;
     readonly isDefault: boolean;
     readonly collectionId: number | null;
 }
@@ -75,7 +75,7 @@ export const MoveEntryDialog = ({
 
             if (vocabularyId === draftsValue) {
                 return {
-                    vocabularyId: hierarchy.defaultVocabulary?.id ?? 0,
+                    vocabularyId: hierarchy.defaultVocabulary?.id,
                     isDefault: true,
                     collectionId: null,
                 };

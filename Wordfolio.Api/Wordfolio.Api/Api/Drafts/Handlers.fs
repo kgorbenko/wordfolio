@@ -242,7 +242,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
     group
         .MapPost(
             UrlTokens.ById + Urls.Move,
-            Func<int, MoveEntryRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
+            Func<int, MoveDraftRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
                 (fun id request user dataSource cancellationToken ->
                     task {
                         match getUserId user with

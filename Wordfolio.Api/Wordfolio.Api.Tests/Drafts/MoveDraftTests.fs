@@ -7,6 +7,7 @@ open System.Threading.Tasks
 
 open Xunit
 
+open Wordfolio.Api.Api.Drafts.Types
 open Wordfolio.Api.Api.Types
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
@@ -52,7 +53,7 @@ type MoveDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let request: MoveEntryRequest =
+            let request: MoveDraftRequest =
                 { VocabularyId = targetVocabulary.Id }
 
             let url = Urls.Drafts.moveDraftById entry.Id
@@ -146,7 +147,7 @@ type MoveDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let request: MoveEntryRequest =
+            let request: MoveDraftRequest =
                 { VocabularyId = targetVocabulary.Id }
 
             let! response = client.PostAsJsonAsync(Urls.Drafts.moveDraftById entry.Id, request)
@@ -181,7 +182,7 @@ type MoveDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let request: MoveEntryRequest =
+            let request: MoveDraftRequest =
                 { VocabularyId = 999 }
 
             let! response = client.PostAsJsonAsync(Urls.Drafts.moveDraftById 999999, request)
@@ -218,7 +219,7 @@ type MoveDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let request: MoveEntryRequest =
+            let request: MoveDraftRequest =
                 { VocabularyId = 999999 }
 
             let! response = client.PostAsJsonAsync(Urls.Drafts.moveDraftById entry.Id, request)
@@ -271,7 +272,7 @@ type MoveDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser1)
 
-            let request: MoveEntryRequest =
+            let request: MoveDraftRequest =
                 { VocabularyId = foreignTargetVocabulary.Id }
 
             let! response = client.PostAsJsonAsync(Urls.Drafts.moveDraftById entry.Id, request)
@@ -341,7 +342,7 @@ type MoveDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let request: MoveEntryRequest =
+            let request: MoveDraftRequest =
                 { VocabularyId = defaultVocabulary.Id }
 
             let! response = client.PostAsJsonAsync(Urls.Drafts.moveDraftById entry.Id, request)

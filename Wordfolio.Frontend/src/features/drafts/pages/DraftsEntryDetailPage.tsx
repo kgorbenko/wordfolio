@@ -93,6 +93,8 @@ export const DraftsEntryDetailPage = () => {
             return;
         }
 
+        assertNonNullable(moveSelection.vocabularyId);
+
         moveMutation.mutate(
             {
                 entryId: entry.id,
@@ -104,6 +106,7 @@ export const DraftsEntryDetailPage = () => {
                         await navigate(draftsEntryDetailPath(movedEntry.id));
                     } else {
                         assertNonNullable(moveSelection.collectionId);
+                        assertNonNullable(moveSelection.vocabularyId);
 
                         await navigate(
                             entryDetailPath(
