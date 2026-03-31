@@ -1945,7 +1945,7 @@ export interface components {
             vocabularyId: number;
         };
         MoveEntryRequest: {
-            vocabularyId?: null | number | string;
+            vocabularyId?: null | number;
         };
         MoveVocabularyRequest: {
             /** Format: int32 */

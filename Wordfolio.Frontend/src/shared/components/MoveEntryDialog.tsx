@@ -75,7 +75,7 @@ export const MoveEntryDialog = ({
 
             if (vocabularyId === draftsValue) {
                 return {
-                    vocabularyId: hierarchy.defaultVocabulary?.id ?? undefined,
+                    vocabularyId: undefined,
                     isDefault: true,
                     collectionId: null,
                 };

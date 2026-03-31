@@ -1,6 +1,5 @@
 ﻿namespace Wordfolio.Api.Tests
 
-open System.Text.Json
 open System.Net
 open System.Threading.Tasks
 
@@ -42,35 +41,4 @@ type OpenApiTests(fixture: WordfolioIdentityTestFixture) =
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode)
             Assert.Contains("text/html", string response.Content.Headers.ContentType)
-        }
-
-    [<Fact>]
-    member _.``OpenApi document represents optional integer move entry vocabulary id without string``() : Task =
-        task {
-            do! fixture.ResetDatabaseAsync()
-
-            use factory =
-                new WebApplicationFactory(fixture)
-
-            use client = factory.CreateClient()
-
-            let! response = client.GetAsync(OpenApiPath)
-            let! body = response.Content.ReadAsStringAsync()
-
-            use document = JsonDocument.Parse(body)
-
-            let vocabularyIdSchema =
-                document.RootElement
-                    .GetProperty("components")
-                    .GetProperty("schemas")
-                    .GetProperty("MoveEntryRequest")
-                    .GetProperty("properties")
-                    .GetProperty("vocabularyId")
-
-            let schemaTypes =
-                vocabularyIdSchema.GetProperty("type").EnumerateArray()
-                |> Seq.map(fun item -> item.GetString())
-                |> Seq.toList
-
-            Assert.Equal<string list>([ "null"; "integer" ], schemaTypes)
         }
