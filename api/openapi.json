@@ -2210,8 +2210,7 @@
           "vocabularyId": {
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ]
           }
         }

@@ -403,16 +403,48 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
                 dbVocabularies
                 |> List.find(fun vocabulary -> vocabulary.Id = regularVocabulary.Id)
 
+            let expectedDbCollections =
+                [ { Id = systemCollection.Id
+                    UserId = wordfolioUser.Id
+                    Name = "[System] Unsorted"
+                    Description = None
+                    CreatedAt = systemCollectionInDatabase.CreatedAt
+                    UpdatedAt = systemCollectionInDatabase.UpdatedAt
+                    IsSystem = true }
+                  { Id = regularCollection.Id
+                    UserId = wordfolioUser.Id
+                    Name = "Regular Collection"
+                    Description = None
+                    CreatedAt = regularCollectionInDatabase.CreatedAt
+                    UpdatedAt = regularCollectionInDatabase.UpdatedAt
+                    IsSystem = false } ]
+                |> List.sortBy(fun collection -> collection.Id)
+
             Assert.Equal<Wordfolio.Collection list>(
-                [ systemCollectionInDatabase; regularCollectionInDatabase ]
-                |> List.sortBy(fun collection -> collection.Id),
+                expectedDbCollections,
                 dbCollections
                 |> List.sortBy(fun collection -> collection.Id)
             )
 
+            let expectedDbVocabularies =
+                [ { Id = defaultVocabulary.Id
+                    CollectionId = systemCollection.Id
+                    Name = "[Default]"
+                    Description = None
+                    CreatedAt = defaultVocabularyInDatabase.CreatedAt
+                    UpdatedAt = defaultVocabularyInDatabase.UpdatedAt
+                    IsDefault = true }
+                  { Id = regularVocabulary.Id
+                    CollectionId = regularCollection.Id
+                    Name = "Regular Vocabulary"
+                    Description = None
+                    CreatedAt = regularVocabularyInDatabase.CreatedAt
+                    UpdatedAt = regularVocabularyInDatabase.UpdatedAt
+                    IsDefault = false } ]
+                |> List.sortBy(fun vocabulary -> vocabulary.Id)
+
             Assert.Equal<Wordfolio.Vocabulary list>(
-                [ defaultVocabularyInDatabase; regularVocabularyInDatabase ]
-                |> List.sortBy(fun vocabulary -> vocabulary.Id),
+                expectedDbVocabularies,
                 dbVocabularies
                 |> List.sortBy(fun vocabulary -> vocabulary.Id)
             )
@@ -499,16 +531,48 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
                 dbVocabularies
                 |> List.find(fun vocabulary -> vocabulary.Id = regularVocabulary.Id)
 
+            let expectedDbCollections =
+                [ { Id = systemCollection.Id
+                    UserId = wordfolioUser.Id
+                    Name = "[System] Unsorted"
+                    Description = None
+                    CreatedAt = systemCollectionInDatabase.CreatedAt
+                    UpdatedAt = systemCollectionInDatabase.UpdatedAt
+                    IsSystem = true }
+                  { Id = regularCollection.Id
+                    UserId = wordfolioUser.Id
+                    Name = "Regular Collection"
+                    Description = None
+                    CreatedAt = regularCollectionInDatabase.CreatedAt
+                    UpdatedAt = regularCollectionInDatabase.UpdatedAt
+                    IsSystem = false } ]
+                |> List.sortBy(fun collection -> collection.Id)
+
             Assert.Equal<Wordfolio.Collection list>(
-                [ systemCollectionInDatabase; regularCollectionInDatabase ]
-                |> List.sortBy(fun collection -> collection.Id),
+                expectedDbCollections,
                 dbCollections
                 |> List.sortBy(fun collection -> collection.Id)
             )
 
+            let expectedDbVocabularies =
+                [ { Id = defaultVocabulary.Id
+                    CollectionId = systemCollection.Id
+                    Name = "[Default]"
+                    Description = None
+                    CreatedAt = defaultVocabularyInDatabase.CreatedAt
+                    UpdatedAt = defaultVocabularyInDatabase.UpdatedAt
+                    IsDefault = true }
+                  { Id = regularVocabulary.Id
+                    CollectionId = regularCollection.Id
+                    Name = "Regular Vocabulary"
+                    Description = None
+                    CreatedAt = regularVocabularyInDatabase.CreatedAt
+                    UpdatedAt = regularVocabularyInDatabase.UpdatedAt
+                    IsDefault = false } ]
+                |> List.sortBy(fun vocabulary -> vocabulary.Id)
+
             Assert.Equal<Wordfolio.Vocabulary list>(
-                [ defaultVocabularyInDatabase; regularVocabularyInDatabase ]
-                |> List.sortBy(fun vocabulary -> vocabulary.Id),
+                expectedDbVocabularies,
                 dbVocabularies
                 |> List.sortBy(fun vocabulary -> vocabulary.Id)
             )
@@ -683,9 +747,25 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
                 dbCollections
                 |> List.find(fun collection -> collection.Id = regularCollection.Id)
 
+            let expectedDbCollections =
+                [ { Id = systemCollection.Id
+                    UserId = wordfolioUser.Id
+                    Name = "[System] Unsorted"
+                    Description = None
+                    CreatedAt = systemCollectionInDatabase.CreatedAt
+                    UpdatedAt = systemCollectionInDatabase.UpdatedAt
+                    IsSystem = true }
+                  { Id = regularCollection.Id
+                    UserId = wordfolioUser.Id
+                    Name = "Regular Collection"
+                    Description = None
+                    CreatedAt = regularCollectionInDatabase.CreatedAt
+                    UpdatedAt = regularCollectionInDatabase.UpdatedAt
+                    IsSystem = false } ]
+                |> List.sortBy(fun collection -> collection.Id)
+
             Assert.Equal<Wordfolio.Collection list>(
-                [ systemCollectionInDatabase; regularCollectionInDatabase ]
-                |> List.sortBy(fun collection -> collection.Id),
+                expectedDbCollections,
                 dbCollections
                 |> List.sortBy(fun collection -> collection.Id)
             )
@@ -697,11 +777,13 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
                 |> List.find(fun vocabulary -> vocabulary.Id <> regularVocabulary.Id)
 
             let expectedDefaultVocabulary: Wordfolio.Vocabulary =
-                { createdDefaultVocabulary with
-                    CollectionId = systemCollection.Id
-                    Name = "[Default]"
-                    Description = None
-                    IsDefault = true }
+                { Id = createdDefaultVocabulary.Id
+                  CollectionId = systemCollection.Id
+                  Name = "[Default]"
+                  Description = None
+                  CreatedAt = createdDefaultVocabulary.CreatedAt
+                  UpdatedAt = None
+                  IsDefault = true }
 
             Assert.Equal(expectedDefaultVocabulary, createdDefaultVocabulary)
 

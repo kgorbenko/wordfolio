@@ -111,14 +111,18 @@ let private removeStringFromIntegerProperties(document: OpenApiDocument) =
         if not(isNull schema.Properties) then
             for propSchema in schema.Properties.Values do
                 match propSchema with
-                | :? OpenApiSchema as p when p.Format = "int32" || p.Format = "int64" ->
-                    p.Type <-
-                        Nullable(
-                            p.Type.GetValueOrDefault()
-                            &&& ~~~JsonSchemaType.String
-                        )
+                | :? OpenApiSchema as p when p.Type.HasValue ->
+                    let schemaType = p.Type.Value
 
-                    p.Pattern <- null
+                    if
+                        schemaType.HasFlag(JsonSchemaType.String)
+                        && (schemaType.HasFlag(JsonSchemaType.Integer)
+                            || schemaType.HasFlag(JsonSchemaType.Number)
+                            || p.Format = "int32"
+                            || p.Format = "int64")
+                    then
+                        p.Type <- Nullable(schemaType &&& ~~~JsonSchemaType.String)
+                        p.Pattern <- null
                 | _ -> ()
 
 let addOpenApi<'TBuilder when 'TBuilder :> IHostApplicationBuilder>(builder: 'TBuilder) =
