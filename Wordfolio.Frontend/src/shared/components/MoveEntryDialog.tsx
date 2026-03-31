@@ -5,15 +5,11 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    FormControl,
-    InputLabel,
-    MenuItem,
-    Select,
-    SelectChangeEvent,
     Typography,
 } from "@mui/material";
 
 import { ContentSkeleton } from "./ContentSkeleton";
+import { draftsValue, VocabularySelector } from "./VocabularySelector";
 import { RetryOnError } from "./RetryOnError";
 import { useCollectionsHierarchyQuery } from "../api/queries/collections";
 
@@ -21,10 +17,6 @@ export interface MoveEntrySelectionResult {
     readonly vocabularyId: number;
     readonly isDefault: boolean;
     readonly collectionId: number | null;
-}
-
-interface MoveDialogTarget extends MoveEntrySelectionResult {
-    readonly label: string;
 }
 
 interface MoveEntryDialogProps {
@@ -57,65 +49,74 @@ export const MoveEntryDialog = ({
         }
     }, [currentVocabularyId, isOpen]);
 
-    const moveTargets = useMemo<MoveDialogTarget[]>(() => {
+    const hasTargets = useMemo(() => {
         if (!hierarchy) {
-            return [];
+            return false;
         }
 
-        const defaultTarget = hierarchy.defaultVocabulary
-            ? [
-                  {
-                      vocabularyId: hierarchy.defaultVocabulary.id,
-                      isDefault: true,
-                      collectionId: null,
-                      label: `Drafts - ${hierarchy.defaultVocabulary.name}`,
-                  },
-              ]
-            : [];
+        const hasDrafts =
+            hierarchy.defaultVocabulary?.id !== currentVocabularyId;
 
-        const collectionTargets = hierarchy.collections.flatMap((collection) =>
-            collection.vocabularies.map((vocabulary) => ({
-                vocabularyId: vocabulary.id,
-                isDefault: false,
-                collectionId: collection.id,
-                label: `${collection.name} - ${vocabulary.name}`,
-            }))
+        const hasCollectionVocabularies = hierarchy.collections.some(
+            (collection) =>
+                collection.vocabularies.some(
+                    (vocabulary) => vocabulary.id !== currentVocabularyId
+                )
         );
 
-        return [...defaultTarget, ...collectionTargets].filter(
-            (target) => target.vocabularyId !== currentVocabularyId
-        );
+        return hasDrafts || hasCollectionVocabularies;
     }, [currentVocabularyId, hierarchy]);
 
-    const selectedTarget = useMemo(
-        () =>
-            moveTargets.find(
-                (target) => target.vocabularyId === selectedVocabularyId
-            ),
-        [moveTargets, selectedVocabularyId]
+    const resolveSelection = useCallback(
+        (vocabularyId: number): MoveEntrySelectionResult | undefined => {
+            if (!hierarchy) {
+                return undefined;
+            }
+
+            if (vocabularyId === draftsValue) {
+                return {
+                    vocabularyId: hierarchy.defaultVocabulary?.id ?? 0,
+                    isDefault: true,
+                    collectionId: null,
+                };
+            }
+
+            for (const collection of hierarchy.collections) {
+                const vocabulary = collection.vocabularies.find(
+                    (vocabulary) => vocabulary.id === vocabularyId
+                );
+                if (vocabulary) {
+                    return {
+                        vocabularyId,
+                        isDefault: false,
+                        collectionId: collection.id,
+                    };
+                }
+            }
+
+            return undefined;
+        },
+        [hierarchy]
     );
 
-    const handleTargetChange = useCallback(
-        (event: SelectChangeEvent<string>) => {
-            const value = Number(event.target.value);
-            setSelectedVocabularyId(Number.isNaN(value) ? undefined : value);
-        },
-        []
-    );
+    const handleTargetChange = useCallback((value: number) => {
+        setSelectedVocabularyId(value);
+    }, []);
 
     const handleConfirm = useCallback(() => {
-        if (!selectedTarget) {
+        if (selectedVocabularyId === undefined) {
             return;
         }
 
-        onConfirm({
-            vocabularyId: selectedTarget.vocabularyId,
-            isDefault: selectedTarget.isDefault,
-            collectionId: selectedTarget.collectionId,
-        });
-    }, [onConfirm, selectedTarget]);
+        const selection = resolveSelection(selectedVocabularyId);
+        if (!selection) {
+            return;
+        }
 
-    const confirmDisabled = !selectedTarget || moveTargets.length === 0;
+        onConfirm(selection);
+    }, [onConfirm, resolveSelection, selectedVocabularyId]);
+
+    const confirmDisabled = !hasTargets || selectedVocabularyId === undefined;
 
     const renderContent = useCallback(() => {
         if (isHierarchyLoading) {
@@ -139,44 +140,29 @@ export const MoveEntryDialog = ({
                 <Typography sx={{ mb: 2 }}>
                     Choose a target vocabulary for this entry.
                 </Typography>
-                {moveTargets.length === 0 ? (
+                {!hasTargets ? (
                     <Typography color="text.secondary">
                         There are no other vocabularies available for this
                         entry.
                     </Typography>
                 ) : null}
-                <FormControl fullWidth>
-                    <InputLabel id="move-entry-target-select-label">
-                        Target vocabulary
-                    </InputLabel>
-                    <Select
-                        labelId="move-entry-target-select-label"
-                        value={
-                            selectedVocabularyId !== undefined
-                                ? String(selectedVocabularyId)
-                                : ""
-                        }
-                        label="Target vocabulary"
-                        onChange={handleTargetChange}
-                    >
-                        {moveTargets.map((target) => (
-                            <MenuItem
-                                key={target.vocabularyId}
-                                value={String(target.vocabularyId)}
-                            >
-                                {target.label}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
+                <VocabularySelector
+                    hierarchy={hierarchy}
+                    value={selectedVocabularyId}
+                    label="Target vocabulary"
+                    onChange={handleTargetChange}
+                    excludeVocabularyId={currentVocabularyId}
+                    fullWidth
+                />
             </>
         );
     }, [
+        currentVocabularyId,
         handleTargetChange,
+        hasTargets,
         hierarchy,
         isHierarchyError,
         isHierarchyLoading,
-        moveTargets,
         refetchHierarchy,
         selectedVocabularyId,
     ]);

@@ -6,7 +6,7 @@ import { useCollectionsHierarchyQuery } from "../../api/queries/collections";
 import type { EntryFormHandle } from "./EntryForm";
 import type { CreateEntryData } from "../../api/types/entries";
 import { useWordLookup } from "../../hooks/useWordLookup";
-import { VocabularySelector } from "./VocabularySelector";
+import { draftsValue, VocabularySelector } from "../VocabularySelector";
 import { WordLookupInput } from "./WordLookupInput";
 import { LookupResultsSection } from "./LookupResultsSection";
 import styles from "./EntryLookupForm.module.scss";
@@ -42,9 +42,9 @@ export const EntryLookupForm = ({
     autoFocus = false,
     variant = "modal",
 }: EntryLookupFormProps) => {
-    const [selectedVocabularyId, setSelectedVocabularyId] = useState<
-        number | undefined
-    >(vocabularyId);
+    const [selectedVocabularyId, setSelectedVocabularyId] = useState<number>(
+        vocabularyId ?? draftsValue
+    );
 
     const inputRef = useRef<HTMLInputElement>(null);
     const entryFormRef = useRef<EntryFormHandle>(null);
@@ -75,7 +75,8 @@ export const EntryLookupForm = ({
                 : vocabularyId;
 
             const context =
-                effectiveVocabularyId !== undefined
+                effectiveVocabularyId !== undefined &&
+                effectiveVocabularyId !== draftsValue
                     ? {
                           collectionId: ensureNonNullable(
                               ensureNonNullable(hierarchy).collections.find(
@@ -128,7 +129,9 @@ export const EntryLookupForm = ({
                     <VocabularySelector
                         value={selectedVocabularyId}
                         hierarchy={hierarchy}
+                        label="Vocabulary"
                         onChange={setSelectedVocabularyId}
+                        fullWidth
                     />
                 )}
                 <WordLookupInput

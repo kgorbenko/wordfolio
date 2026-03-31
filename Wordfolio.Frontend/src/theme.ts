@@ -383,7 +383,7 @@ export const theme = createTheme({
                     },
                     color: textPrimary,
                     "&:hover": {
-                        backgroundColor: surface,
+                        backgroundColor: surfaceAlt,
                     },
                     "&.Mui-selected": {
                         backgroundColor: surface,
