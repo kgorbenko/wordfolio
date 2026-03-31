@@ -117,6 +117,7 @@ export const EntryDetailPage = () => {
                         await navigate(draftsEntryDetailPath(movedEntry.id));
                     } else {
                         assertNonNullable(moveSelection.collectionId);
+                        assertNonNullable(moveSelection.vocabularyId);
 
                         await navigate(
                             entryDetailPath(

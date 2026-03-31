@@ -2,11 +2,14 @@ namespace Wordfolio.Api.Tests.Entries
 
 open System
 open System.Net
+open System.Net.Http
 open System.Net.Http.Json
+open System.Text
 open System.Threading.Tasks
 
 open Xunit
 
+open Wordfolio.Api.Api.Entries.Types
 open Wordfolio.Api.Api.Types
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
@@ -53,7 +56,7 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = targetVocabulary.Id }
+                { VocabularyId = Some targetVocabulary.Id }
 
             let url =
                 Urls.Entries.moveEntryById(collection.Id, sourceVocabulary.Id, entry.Id)
@@ -148,7 +151,7 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use client = factory.CreateClient()
 
             let request: MoveEntryRequest =
-                { VocabularyId = targetVocabulary.Id }
+                { VocabularyId = Some targetVocabulary.Id }
 
             let! response =
                 client.PostAsJsonAsync(
@@ -187,7 +190,7 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = 999 }
+                { VocabularyId = Some 999 }
 
             let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById(1, 1, 999999), request)
 
@@ -224,7 +227,7 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = 999999 }
+                { VocabularyId = Some 999999 }
 
             let! response =
                 client.PostAsJsonAsync(
@@ -281,7 +284,7 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser1)
 
             let request: MoveEntryRequest =
-                { VocabularyId = foreignTargetVocabulary.Id }
+                { VocabularyId = Some foreignTargetVocabulary.Id }
 
             let! response =
                 client.PostAsJsonAsync(
@@ -355,7 +358,7 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = defaultVocabulary.Id }
+                { VocabularyId = Some defaultVocabulary.Id }
 
             let! response =
                 client.PostAsJsonAsync(
@@ -380,6 +383,432 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = [] }
 
             Assert.Equal(expected, actual)
+
+            let! dbCollections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+            let! dbVocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+
+            let systemCollectionInDatabase =
+                dbCollections
+                |> List.find(fun collection -> collection.Id = systemCollection.Id)
+
+            let regularCollectionInDatabase =
+                dbCollections
+                |> List.find(fun collection -> collection.Id = regularCollection.Id)
+
+            let defaultVocabularyInDatabase =
+                dbVocabularies
+                |> List.find(fun vocabulary -> vocabulary.Id = defaultVocabulary.Id)
+
+            let regularVocabularyInDatabase =
+                dbVocabularies
+                |> List.find(fun vocabulary -> vocabulary.Id = regularVocabulary.Id)
+
+            let expectedDbCollections =
+                [ { Id = systemCollection.Id
+                    UserId = wordfolioUser.Id
+                    Name = "[System] Unsorted"
+                    Description = None
+                    CreatedAt = systemCollectionInDatabase.CreatedAt
+                    UpdatedAt = systemCollectionInDatabase.UpdatedAt
+                    IsSystem = true }
+                  { Id = regularCollection.Id
+                    UserId = wordfolioUser.Id
+                    Name = "Regular Collection"
+                    Description = None
+                    CreatedAt = regularCollectionInDatabase.CreatedAt
+                    UpdatedAt = regularCollectionInDatabase.UpdatedAt
+                    IsSystem = false } ]
+                |> List.sortBy(fun collection -> collection.Id)
+
+            Assert.Equal<Wordfolio.Collection list>(
+                expectedDbCollections,
+                dbCollections
+                |> List.sortBy(fun collection -> collection.Id)
+            )
+
+            let expectedDbVocabularies =
+                [ { Id = defaultVocabulary.Id
+                    CollectionId = systemCollection.Id
+                    Name = "[Default]"
+                    Description = None
+                    CreatedAt = defaultVocabularyInDatabase.CreatedAt
+                    UpdatedAt = defaultVocabularyInDatabase.UpdatedAt
+                    IsDefault = true }
+                  { Id = regularVocabulary.Id
+                    CollectionId = regularCollection.Id
+                    Name = "Regular Vocabulary"
+                    Description = None
+                    CreatedAt = regularVocabularyInDatabase.CreatedAt
+                    UpdatedAt = regularVocabularyInDatabase.UpdatedAt
+                    IsDefault = false } ]
+                |> List.sortBy(fun vocabulary -> vocabulary.Id)
+
+            Assert.Equal<Wordfolio.Vocabulary list>(
+                expectedDbVocabularies,
+                dbVocabularies
+                |> List.sortBy(fun vocabulary -> vocabulary.Id)
+            )
+        }
+
+    [<Fact>]
+    member _.``POST move to default vocabulary succeeds when request omits vocabulary id and default vocabulary exists``
+        ()
+        : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(506, "user@example.com", "P@ssw0rd!")
+
+            let systemCollection =
+                Entities.makeCollection wordfolioUser "[System] Unsorted" None DateTimeOffset.UtcNow None true
+
+            let defaultVocabulary =
+                Entities.makeVocabulary systemCollection "[Default]" None DateTimeOffset.UtcNow None true
+
+            let regularCollection =
+                Entities.makeCollection wordfolioUser "Regular Collection" None DateTimeOffset.UtcNow None false
+
+            let regularVocabulary =
+                Entities.makeVocabulary regularCollection "Regular Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry regularVocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ systemCollection; regularCollection ]
+                |> Seeder.addVocabularies [ defaultVocabulary; regularVocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let! response =
+                client.PostAsync(
+                    Urls.Entries.moveEntryById(regularCollection.Id, regularVocabulary.Id, entry.Id),
+                    new StringContent("{}", Encoding.UTF8, "application/json")
+                )
+
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode)
+
+            let! actual = response.Content.ReadFromJsonAsync<EntryResponse>()
+
+            let expected: EntryResponse =
+                { Id = entry.Id
+                  VocabularyId = defaultVocabulary.Id
+                  EntryText = "hello"
+                  CreatedAt = actual.CreatedAt
+                  UpdatedAt = actual.UpdatedAt
+                  Definitions = []
+                  Translations = [] }
+
+            Assert.Equal(expected, actual)
+
+            let! dbCollections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+            let! dbVocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+
+            let systemCollectionInDatabase =
+                dbCollections
+                |> List.find(fun collection -> collection.Id = systemCollection.Id)
+
+            let regularCollectionInDatabase =
+                dbCollections
+                |> List.find(fun collection -> collection.Id = regularCollection.Id)
+
+            let defaultVocabularyInDatabase =
+                dbVocabularies
+                |> List.find(fun vocabulary -> vocabulary.Id = defaultVocabulary.Id)
+
+            let regularVocabularyInDatabase =
+                dbVocabularies
+                |> List.find(fun vocabulary -> vocabulary.Id = regularVocabulary.Id)
+
+            let expectedDbCollections =
+                [ { Id = systemCollection.Id
+                    UserId = wordfolioUser.Id
+                    Name = "[System] Unsorted"
+                    Description = None
+                    CreatedAt = systemCollectionInDatabase.CreatedAt
+                    UpdatedAt = systemCollectionInDatabase.UpdatedAt
+                    IsSystem = true }
+                  { Id = regularCollection.Id
+                    UserId = wordfolioUser.Id
+                    Name = "Regular Collection"
+                    Description = None
+                    CreatedAt = regularCollectionInDatabase.CreatedAt
+                    UpdatedAt = regularCollectionInDatabase.UpdatedAt
+                    IsSystem = false } ]
+                |> List.sortBy(fun collection -> collection.Id)
+
+            Assert.Equal<Wordfolio.Collection list>(
+                expectedDbCollections,
+                dbCollections
+                |> List.sortBy(fun collection -> collection.Id)
+            )
+
+            let expectedDbVocabularies =
+                [ { Id = defaultVocabulary.Id
+                    CollectionId = systemCollection.Id
+                    Name = "[Default]"
+                    Description = None
+                    CreatedAt = defaultVocabularyInDatabase.CreatedAt
+                    UpdatedAt = defaultVocabularyInDatabase.UpdatedAt
+                    IsDefault = true }
+                  { Id = regularVocabulary.Id
+                    CollectionId = regularCollection.Id
+                    Name = "Regular Vocabulary"
+                    Description = None
+                    CreatedAt = regularVocabularyInDatabase.CreatedAt
+                    UpdatedAt = regularVocabularyInDatabase.UpdatedAt
+                    IsDefault = false } ]
+                |> List.sortBy(fun vocabulary -> vocabulary.Id)
+
+            Assert.Equal<Wordfolio.Vocabulary list>(
+                expectedDbVocabularies,
+                dbVocabularies
+                |> List.sortBy(fun vocabulary -> vocabulary.Id)
+            )
+
+            let entryInDatabase =
+                dbEntries
+                |> List.find(fun currentEntry -> currentEntry.Id = entry.Id)
+
+            let expectedDbEntries =
+                [ { entryInDatabase with
+                      Id = entry.Id
+                      VocabularyId = defaultVocabulary.Id
+                      EntryText = "hello" } ]
+
+            Assert.Equal<Entry list>(expectedDbEntries, dbEntries)
+        }
+
+    [<Fact>]
+    member _.``POST move to default vocabulary creates default collection and vocabulary when neither exists``
+        ()
+        : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(507, "user@example.com", "P@ssw0rd!")
+
+            let regularCollection =
+                Entities.makeCollection wordfolioUser "Regular Collection" None DateTimeOffset.UtcNow None false
+
+            let regularVocabulary =
+                Entities.makeVocabulary regularCollection "Regular Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry regularVocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ regularCollection ]
+                |> Seeder.addVocabularies [ regularVocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let! response =
+                client.PostAsync(
+                    Urls.Entries.moveEntryById(regularCollection.Id, regularVocabulary.Id, entry.Id),
+                    new StringContent("{}", Encoding.UTF8, "application/json")
+                )
+
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode)
+
+            let! actual = response.Content.ReadFromJsonAsync<EntryResponse>()
+            let! dbCollections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+            let! dbVocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+
+            Assert.Equal(2, dbCollections.Length)
+            Assert.Equal(2, dbVocabularies.Length)
+
+            let createdSystemCollection =
+                dbCollections
+                |> List.find(fun collection -> collection.Id <> regularCollection.Id)
+
+            let createdDefaultVocabulary =
+                dbVocabularies
+                |> List.find(fun vocabulary -> vocabulary.Id <> regularVocabulary.Id)
+
+            let expectedSystemCollection: Wordfolio.Collection =
+                { createdSystemCollection with
+                    UserId = wordfolioUser.Id
+                    Name = "[System] Unsorted"
+                    Description = None
+                    IsSystem = true }
+
+            let expectedDefaultVocabulary: Wordfolio.Vocabulary =
+                { createdDefaultVocabulary with
+                    CollectionId = createdSystemCollection.Id
+                    Name = "[Default]"
+                    Description = None
+                    IsDefault = true }
+
+            Assert.Equal(expectedSystemCollection, createdSystemCollection)
+            Assert.Equal(expectedDefaultVocabulary, createdDefaultVocabulary)
+
+            let expectedResponse: EntryResponse =
+                { Id = entry.Id
+                  VocabularyId = createdDefaultVocabulary.Id
+                  EntryText = "hello"
+                  CreatedAt = actual.CreatedAt
+                  UpdatedAt = actual.UpdatedAt
+                  Definitions = []
+                  Translations = [] }
+
+            Assert.Equal(expectedResponse, actual)
+
+            let entryInDatabase =
+                dbEntries
+                |> List.find(fun currentEntry -> currentEntry.Id = entry.Id)
+
+            let expectedDbEntries =
+                [ { entryInDatabase with
+                      Id = entry.Id
+                      VocabularyId = createdDefaultVocabulary.Id
+                      EntryText = "hello" } ]
+
+            Assert.Equal<Entry list>(expectedDbEntries, dbEntries)
+        }
+
+    [<Fact>]
+    member _.``POST move to default vocabulary creates default vocabulary in existing system collection when vocabulary is missing``
+        ()
+        : Task =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            use factory =
+                new WebApplicationFactory(fixture)
+
+            let! identityUser, wordfolioUser = factory.CreateUserAsync(508, "user@example.com", "P@ssw0rd!")
+
+            let systemCollection =
+                Entities.makeCollection wordfolioUser "[System] Unsorted" None DateTimeOffset.UtcNow None true
+
+            let regularCollection =
+                Entities.makeCollection wordfolioUser "Regular Collection" None DateTimeOffset.UtcNow None false
+
+            let regularVocabulary =
+                Entities.makeVocabulary regularCollection "Regular Vocabulary" None DateTimeOffset.UtcNow None false
+
+            let entry =
+                Entities.makeEntry regularVocabulary "hello" DateTimeOffset.UtcNow None
+
+            do!
+                fixture.WordfolioSeeder
+                |> Seeder.addUsers [ wordfolioUser ]
+                |> Seeder.addCollections [ systemCollection; regularCollection ]
+                |> Seeder.addVocabularies [ regularVocabulary ]
+                |> Seeder.addEntries [ entry ]
+                |> Seeder.saveChangesAsync
+
+            use! client = factory.CreateAuthenticatedClientAsync(identityUser)
+
+            let! response =
+                client.PostAsync(
+                    Urls.Entries.moveEntryById(regularCollection.Id, regularVocabulary.Id, entry.Id),
+                    new StringContent("{}", Encoding.UTF8, "application/json")
+                )
+
+            let! body = response.Content.ReadAsStringAsync()
+
+            Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode)
+
+            let! actual = response.Content.ReadFromJsonAsync<EntryResponse>()
+            let! dbCollections = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
+            let! dbVocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+            let! dbEntries = Seeder.getAllEntriesAsync fixture.WordfolioSeeder
+
+            let systemCollectionInDatabase =
+                dbCollections
+                |> List.find(fun collection -> collection.Id = systemCollection.Id)
+
+            let regularCollectionInDatabase =
+                dbCollections
+                |> List.find(fun collection -> collection.Id = regularCollection.Id)
+
+            let expectedDbCollections =
+                [ { Id = systemCollection.Id
+                    UserId = wordfolioUser.Id
+                    Name = "[System] Unsorted"
+                    Description = None
+                    CreatedAt = systemCollectionInDatabase.CreatedAt
+                    UpdatedAt = systemCollectionInDatabase.UpdatedAt
+                    IsSystem = true }
+                  { Id = regularCollection.Id
+                    UserId = wordfolioUser.Id
+                    Name = "Regular Collection"
+                    Description = None
+                    CreatedAt = regularCollectionInDatabase.CreatedAt
+                    UpdatedAt = regularCollectionInDatabase.UpdatedAt
+                    IsSystem = false } ]
+                |> List.sortBy(fun collection -> collection.Id)
+
+            Assert.Equal<Wordfolio.Collection list>(
+                expectedDbCollections,
+                dbCollections
+                |> List.sortBy(fun collection -> collection.Id)
+            )
+
+            Assert.Equal(2, dbVocabularies.Length)
+
+            let createdDefaultVocabulary =
+                dbVocabularies
+                |> List.find(fun vocabulary -> vocabulary.Id <> regularVocabulary.Id)
+
+            let expectedDefaultVocabulary: Wordfolio.Vocabulary =
+                { Id = createdDefaultVocabulary.Id
+                  CollectionId = systemCollection.Id
+                  Name = "[Default]"
+                  Description = None
+                  CreatedAt = createdDefaultVocabulary.CreatedAt
+                  UpdatedAt = None
+                  IsDefault = true }
+
+            Assert.Equal(expectedDefaultVocabulary, createdDefaultVocabulary)
+
+            let expectedResponse: EntryResponse =
+                { Id = entry.Id
+                  VocabularyId = createdDefaultVocabulary.Id
+                  EntryText = "hello"
+                  CreatedAt = actual.CreatedAt
+                  UpdatedAt = actual.UpdatedAt
+                  Definitions = []
+                  Translations = [] }
+
+            Assert.Equal(expectedResponse, actual)
+
+            let entryInDatabase =
+                dbEntries
+                |> List.find(fun currentEntry -> currentEntry.Id = entry.Id)
+
+            let expectedDbEntries =
+                [ { entryInDatabase with
+                      Id = entry.Id
+                      VocabularyId = createdDefaultVocabulary.Id
+                      EntryText = "hello" } ]
+
+            Assert.Equal<Entry list>(expectedDbEntries, dbEntries)
         }
 
     [<Fact>]
@@ -412,7 +841,7 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = vocabulary.Id }
+                { VocabularyId = Some vocabulary.Id }
 
             let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById(999999, vocabulary.Id, entry.Id), request)
 
@@ -452,7 +881,7 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = vocabularyA.Id }
+                { VocabularyId = Some vocabularyA.Id }
 
             let! response =
                 client.PostAsJsonAsync(Urls.Entries.moveEntryById(collection.Id, vocabularyB.Id, entry.Id), request)
@@ -493,7 +922,7 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = vocabulary.Id }
+                { VocabularyId = Some vocabulary.Id }
 
             let! response =
                 client.PostAsJsonAsync(Urls.Entries.moveEntryById(collectionA.Id, vocabulary.Id, entry.Id), request)

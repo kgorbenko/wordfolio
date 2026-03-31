@@ -7,3 +7,5 @@ type CreateEntryRequest =
       Definitions: DefinitionRequest list
       Translations: TranslationRequest list
       AllowDuplicate: bool option }
+
+type MoveEntryRequest = { VocabularyId: int option }

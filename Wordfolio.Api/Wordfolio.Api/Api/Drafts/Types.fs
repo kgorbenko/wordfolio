@@ -10,6 +10,8 @@ type CreateDraftRequest =
       Translations: TranslationRequest list
       AllowDuplicate: bool option }
 
+type MoveDraftRequest = { VocabularyId: int }
+
 type VocabularyResponse =
     { Id: int
       Name: string

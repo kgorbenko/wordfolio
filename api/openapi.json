@@ -1198,7 +1198,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MoveEntryRequest"
+                "$ref": "#/components/schemas/MoveDraftRequest"
               }
             }
           }
@@ -2192,7 +2192,7 @@
           }
         }
       },
-      "MoveEntryRequest": {
+      "MoveDraftRequest": {
         "required": [
           "vocabularyId"
         ],
@@ -2201,6 +2201,17 @@
           "vocabularyId": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "MoveEntryRequest": {
+        "type": "object",
+        "properties": {
+          "vocabularyId": {
+            "type": [
+              "null",
+              "integer"
+            ]
           }
         }
       },

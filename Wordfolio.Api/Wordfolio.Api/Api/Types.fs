@@ -37,8 +37,6 @@ type UpdateEntryRequest =
       Definitions: DefinitionRequest list
       Translations: TranslationRequest list }
 
-type MoveEntryRequest = { VocabularyId: int }
-
 type ExampleResponse =
     { Id: int
       ExampleText: string

@@ -50,7 +50,7 @@ type MoveParameters =
       CollectionId: CollectionId
       VocabularyId: VocabularyId
       EntryId: EntryId
-      TargetVocabularyId: VocabularyId
+      TargetVocabularyId: VocabularyId option
       UpdatedAt: DateTimeOffset }
 
 let private checkVocabularyAccessInCollection env userId collectionId vocabularyId =
@@ -263,22 +263,40 @@ let move env (parameters: MoveParameters) : Task<Result<Entry, MoveEntryError>> 
                     match checkEntryBelongsToVocabulary parameters.EntryId entry parameters.VocabularyId with
                     | Error() -> return Error(MoveEntryError.EntryNotFound parameters.EntryId)
                     | Ok _ ->
-                        let! targetAccessResult =
-                            checkVocabularyAccess
-                                appEnv
-                                { UserId = parameters.UserId
-                                  VocabularyId = parameters.TargetVocabularyId }
+                        let! resolvedTargetVocabularyResult =
+                            task {
+                                match parameters.TargetVocabularyId with
+                                | Some targetVocabularyId ->
+                                    let! targetAccessResult =
+                                        checkVocabularyAccess
+                                            appEnv
+                                            { UserId = parameters.UserId
+                                              VocabularyId = targetVocabularyId }
 
-                        match targetAccessResult with
-                        | Error() ->
-                            return Error(MoveEntryError.VocabularyNotFoundOrAccessDenied parameters.TargetVocabularyId)
-                        | Ok _ ->
+                                    return
+                                        match targetAccessResult with
+                                        | Error() ->
+                                            Error(MoveEntryError.VocabularyNotFoundOrAccessDenied targetVocabularyId)
+                                        | Ok _ -> Ok targetVocabularyId
+                                | None ->
+                                    let! defaultVocabularyId =
+                                        Operations.getOrCreateDefaultVocabulary
+                                            appEnv
+                                            parameters.UserId
+                                            parameters.UpdatedAt
+
+                                    return Ok defaultVocabularyId
+                            }
+
+                        match resolvedTargetVocabularyResult with
+                        | Error error -> return Error error
+                        | Ok resolvedTargetVocabularyId ->
                             do!
                                 moveEntry
                                     appEnv
                                     { EntryId = parameters.EntryId
                                       OldVocabularyId = entry.VocabularyId
-                                      NewVocabularyId = parameters.TargetVocabularyId
+                                      NewVocabularyId = resolvedTargetVocabularyId
                                       UpdatedAt = parameters.UpdatedAt }
 
                             let! maybeUpdatedEntry = getEntryById appEnv parameters.EntryId

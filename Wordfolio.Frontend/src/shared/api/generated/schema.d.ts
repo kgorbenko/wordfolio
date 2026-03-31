@@ -1262,7 +1262,7 @@ export interface paths {
             };
             requestBody?: {
                 content: {
-                    "application/json": components["schemas"]["MoveEntryRequest"];
+                    "application/json": components["schemas"]["MoveDraftRequest"];
                 };
             };
             responses: {
@@ -1940,9 +1940,12 @@ export interface components {
             twoFactorCode?: null | string;
             twoFactorRecoveryCode?: null | string;
         };
-        MoveEntryRequest: {
+        MoveDraftRequest: {
             /** Format: int32 */
             vocabularyId: number;
+        };
+        MoveEntryRequest: {
+            vocabularyId?: null | number;
         };
         MoveVocabularyRequest: {
             /** Format: int32 */

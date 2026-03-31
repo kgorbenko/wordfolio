@@ -282,7 +282,9 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
                                       CollectionId = CollectionId collectionId
                                       VocabularyId = VocabularyId vocabularyId
                                       EntryId = EntryId id
-                                      TargetVocabularyId = VocabularyId request.VocabularyId
+                                      TargetVocabularyId =
+                                        request.VocabularyId
+                                        |> Option.map VocabularyId
                                       UpdatedAt = DateTimeOffset.UtcNow }
 
                             return
