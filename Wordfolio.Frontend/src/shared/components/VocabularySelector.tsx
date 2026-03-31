@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import {
     FormControl,
     InputLabel,
@@ -9,45 +9,37 @@ import {
 } from "@mui/material";
 
 import type { CollectionsHierarchy } from "../api/types/collections";
-import styles from "./GroupedVocabularySelect.module.scss";
+import styles from "./VocabularySelector.module.scss";
 
-interface GroupedVocabularySelectProps {
+interface VocabularySelectorProps {
     readonly hierarchy: CollectionsHierarchy | undefined;
-    readonly value: number | string;
+    readonly value: number | undefined;
     readonly label: string;
-    readonly onChange: (event: SelectChangeEvent<number | string>) => void;
+    readonly onChange: (value: number | undefined) => void;
     readonly draftsLabel?: string;
-    readonly draftsValue?: number | string;
     readonly excludeVocabularyId?: number;
     readonly fullWidth?: boolean;
     readonly className?: string;
 }
 
+const DRAFTS_VALUE = 0;
+
 const buildGroupedItems = (
     hierarchy: CollectionsHierarchy,
     excludeVocabularyId: number | undefined,
-    draftsLabel: string,
-    draftsValue: number | string | undefined
+    draftsLabel: string
 ) => {
-    const defaultVocabulary = hierarchy.defaultVocabulary;
+    const showDrafts =
+        excludeVocabularyId === undefined ||
+        excludeVocabularyId !== hierarchy.defaultVocabulary?.id;
 
-    const resolvedDraftsValue =
-        draftsValue !== undefined
-            ? draftsValue !== excludeVocabularyId
-                ? draftsValue
-                : undefined
-            : defaultVocabulary && defaultVocabulary.id !== excludeVocabularyId
-              ? defaultVocabulary.id
-              : undefined;
-
-    const draftsItem =
-        resolvedDraftsValue !== undefined
-            ? [
-                  <MenuItem key="drafts" value={resolvedDraftsValue}>
-                      {draftsLabel}
-                  </MenuItem>,
-              ]
-            : [];
+    const draftsItem = showDrafts
+        ? [
+              <MenuItem key="drafts" value={DRAFTS_VALUE}>
+                  {draftsLabel}
+              </MenuItem>,
+          ]
+        : [];
 
     const collectionGroups = hierarchy.collections.flatMap((collection) => {
         const vocabularies = collection.vocabularies.filter(
@@ -77,34 +69,40 @@ const buildGroupedItems = (
     return [...draftsItem, ...collectionGroups];
 };
 
-export const GroupedVocabularySelect = ({
+export const VocabularySelector = ({
     hierarchy,
     value,
     label,
     onChange,
     draftsLabel = "Drafts",
-    draftsValue,
     excludeVocabularyId,
     fullWidth,
     className,
-}: GroupedVocabularySelectProps) => {
+}: VocabularySelectorProps) => {
     const groupedItems = useMemo(
         () =>
             hierarchy
-                ? buildGroupedItems(
-                      hierarchy,
-                      excludeVocabularyId,
-                      draftsLabel,
-                      draftsValue
-                  )
+                ? buildGroupedItems(hierarchy, excludeVocabularyId, draftsLabel)
                 : [],
-        [draftsLabel, draftsValue, excludeVocabularyId, hierarchy]
+        [draftsLabel, excludeVocabularyId, hierarchy]
+    );
+
+    const handleChange = useCallback(
+        (event: SelectChangeEvent<number | string>) => {
+            const rawValue = Number(event.target.value);
+            onChange(rawValue === DRAFTS_VALUE ? undefined : rawValue);
+        },
+        [onChange]
     );
 
     return (
         <FormControl fullWidth={fullWidth} className={className}>
             <InputLabel>{label}</InputLabel>
-            <Select value={value} label={label} onChange={onChange}>
+            <Select
+                value={value ?? DRAFTS_VALUE}
+                label={label}
+                onChange={handleChange}
+            >
                 {groupedItems}
             </Select>
         </FormControl>

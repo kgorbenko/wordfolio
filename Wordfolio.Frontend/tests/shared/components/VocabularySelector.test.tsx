@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { GroupedVocabularySelect } from "../../../src/shared/components/GroupedVocabularySelect";
+import { VocabularySelector } from "../../../src/shared/components/VocabularySelector";
 import type { CollectionsHierarchy } from "../../../src/shared/api/types/collections";
 
 const createHierarchy = (
@@ -55,24 +55,24 @@ const createHierarchy = (
     ...overrides,
 });
 
-const renderGroupedSelect = (
-    props?: Partial<React.ComponentProps<typeof GroupedVocabularySelect>>
+const renderVocabularySelector = (
+    props?: Partial<React.ComponentProps<typeof VocabularySelector>>
 ) => {
     const defaultProps = {
         hierarchy: createHierarchy(),
-        value: "" as number | string,
+        value: undefined as number | undefined,
         label: "Target vocabulary",
-        onChange: vi.fn(),
+        onChange: vi.fn() as (value: number | undefined) => void,
         ...props,
     };
 
-    return render(<GroupedVocabularySelect {...defaultProps} />);
+    return render(<VocabularySelector {...defaultProps} />);
 };
 
-describe("GroupedVocabularySelect", () => {
+describe("VocabularySelector", () => {
     it("should render collection group headers and vocabulary items", async () => {
         const user = userEvent.setup();
-        renderGroupedSelect();
+        renderVocabularySelector();
 
         await user.click(screen.getByRole("combobox"));
 
@@ -91,7 +91,7 @@ describe("GroupedVocabularySelect", () => {
     it("should not trigger onChange when clicking a group header", async () => {
         const user = userEvent.setup();
         const onChange = vi.fn();
-        renderGroupedSelect({ onChange });
+        renderVocabularySelector({ onChange });
 
         await user.click(screen.getByRole("combobox"));
 
@@ -101,9 +101,21 @@ describe("GroupedVocabularySelect", () => {
         expect(onChange).not.toHaveBeenCalled();
     });
 
-    it("should render drafts item from default vocabulary", async () => {
+    it("should render drafts item even when no default vocabulary", async () => {
         const user = userEvent.setup();
-        renderGroupedSelect({
+        renderVocabularySelector({
+            hierarchy: createHierarchy({ defaultVocabulary: null }),
+        });
+
+        await user.click(screen.getByRole("combobox"));
+
+        const listbox = screen.getByRole("listbox");
+        expect(within(listbox).getByText("Drafts")).toBeInTheDocument();
+    });
+
+    it("should render drafts item when default vocabulary is set", async () => {
+        const user = userEvent.setup();
+        renderVocabularySelector({
             hierarchy: createHierarchy({
                 defaultVocabulary: {
                     id: 99,
@@ -124,46 +136,8 @@ describe("GroupedVocabularySelect", () => {
 
     it("should render custom drafts label when provided", async () => {
         const user = userEvent.setup();
-        renderGroupedSelect({
-            hierarchy: createHierarchy({
-                defaultVocabulary: {
-                    id: 99,
-                    name: "Default Vocab",
-                    description: null,
-                    entryCount: 0,
-                    createdAt: new Date(),
-                    updatedAt: null,
-                },
-            }),
+        renderVocabularySelector({
             draftsLabel: "Drafts — organize later",
-        });
-
-        await user.click(screen.getByRole("combobox"));
-
-        const listbox = screen.getByRole("listbox");
-        expect(
-            within(listbox).getByText("Drafts — organize later")
-        ).toBeInTheDocument();
-    });
-
-    it("should not render drafts item when no default vocabulary and no draftsValue", async () => {
-        const user = userEvent.setup();
-        renderGroupedSelect({
-            hierarchy: createHierarchy({ defaultVocabulary: null }),
-        });
-
-        await user.click(screen.getByRole("combobox"));
-
-        const listbox = screen.getByRole("listbox");
-        expect(within(listbox).queryByText("Drafts")).not.toBeInTheDocument();
-    });
-
-    it("should always render drafts item when draftsValue is provided", async () => {
-        const user = userEvent.setup();
-        renderGroupedSelect({
-            hierarchy: createHierarchy({ defaultVocabulary: null }),
-            draftsLabel: "Drafts — organize later",
-            draftsValue: 0,
         });
 
         await user.click(screen.getByRole("combobox"));
@@ -176,7 +150,7 @@ describe("GroupedVocabularySelect", () => {
 
     it("should exclude specified vocabulary id", async () => {
         const user = userEvent.setup();
-        renderGroupedSelect({ excludeVocabularyId: 10 });
+        renderVocabularySelector({ excludeVocabularyId: 10 });
 
         await user.click(screen.getByRole("combobox"));
 
@@ -188,7 +162,7 @@ describe("GroupedVocabularySelect", () => {
 
     it("should exclude entire collection when all its vocabularies are excluded", async () => {
         const user = userEvent.setup();
-        renderGroupedSelect({ excludeVocabularyId: 20 });
+        renderVocabularySelector({ excludeVocabularyId: 20 });
 
         await user.click(screen.getByRole("combobox"));
 
@@ -201,9 +175,9 @@ describe("GroupedVocabularySelect", () => {
         ).not.toBeInTheDocument();
     });
 
-    it("should exclude default vocabulary when it matches excludeVocabularyId", async () => {
+    it("should hide drafts item when excludeVocabularyId matches default vocabulary", async () => {
         const user = userEvent.setup();
-        renderGroupedSelect({
+        renderVocabularySelector({
             hierarchy: createHierarchy({
                 defaultVocabulary: {
                     id: 99,
@@ -223,22 +197,38 @@ describe("GroupedVocabularySelect", () => {
         expect(within(listbox).queryByText("Drafts")).not.toBeInTheDocument();
     });
 
-    it("should call onChange with correct value when option is selected", async () => {
+    it("should call onChange with the vocabulary id when a vocabulary option is selected", async () => {
         const user = userEvent.setup();
         const onChange = vi.fn();
-        renderGroupedSelect({ onChange });
+        renderVocabularySelector({ onChange });
 
         await user.click(screen.getByRole("combobox"));
 
         const listbox = screen.getByRole("listbox");
         await user.click(within(listbox).getByText("Phrasal Verbs"));
 
-        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange).toHaveBeenCalledWith(11);
+    });
+
+    it("should call onChange with undefined when the Drafts option is selected", async () => {
+        const user = userEvent.setup();
+        const onChange = vi.fn();
+        renderVocabularySelector({
+            value: 11,
+            onChange,
+        });
+
+        await user.click(screen.getByRole("combobox"));
+
+        const listbox = screen.getByRole("listbox");
+        await user.click(within(listbox).getByText("Drafts"));
+
+        expect(onChange).toHaveBeenCalledWith(undefined);
     });
 
     it("should render nothing when hierarchy is undefined", async () => {
         const user = userEvent.setup();
-        renderGroupedSelect({ hierarchy: undefined });
+        renderVocabularySelector({ hierarchy: undefined });
 
         await user.click(screen.getByRole("combobox"));
 

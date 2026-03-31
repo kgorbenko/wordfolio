@@ -6,7 +6,7 @@ import { useCollectionsHierarchyQuery } from "../../api/queries/collections";
 import type { EntryFormHandle } from "./EntryForm";
 import type { CreateEntryData } from "../../api/types/entries";
 import { useWordLookup } from "../../hooks/useWordLookup";
-import { VocabularySelector } from "./VocabularySelector";
+import { VocabularySelector } from "../VocabularySelector";
 import { WordLookupInput } from "./WordLookupInput";
 import { LookupResultsSection } from "./LookupResultsSection";
 import styles from "./EntryLookupForm.module.scss";
@@ -128,7 +128,11 @@ export const EntryLookupForm = ({
                     <VocabularySelector
                         value={selectedVocabularyId}
                         hierarchy={hierarchy}
+                        label="Vocabulary"
                         onChange={setSelectedVocabularyId}
+                        draftsLabel="Drafts — organize later"
+                        fullWidth
+                        className={styles.vocabularySelector}
                     />
                 )}
                 <WordLookupInput

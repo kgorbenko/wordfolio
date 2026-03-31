@@ -5,16 +5,13 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    type SelectChangeEvent,
     Typography,
 } from "@mui/material";
 
 import { ContentSkeleton } from "./ContentSkeleton";
-import { GroupedVocabularySelect } from "./GroupedVocabularySelect";
+import { VocabularySelector } from "./VocabularySelector";
 import { RetryOnError } from "./RetryOnError";
 import { useCollectionsHierarchyQuery } from "../api/queries/collections";
-
-const DRAFTS_SENTINEL = 0;
 
 export interface MoveEntrySelectionResult {
     readonly vocabularyId: number;
@@ -52,6 +49,11 @@ export const MoveEntryDialog = ({
         }
     }, [currentVocabularyId, isOpen]);
 
+    const isDraftsExcluded = useMemo(
+        () => hierarchy?.defaultVocabulary?.id === currentVocabularyId,
+        [currentVocabularyId, hierarchy]
+    );
+
     const hasTargets = useMemo(() => {
         if (!hierarchy) {
             return false;
@@ -71,18 +73,16 @@ export const MoveEntryDialog = ({
     }, [currentVocabularyId, hierarchy]);
 
     const resolveSelection = useCallback(
-        (vocabularyId: number): MoveEntrySelectionResult | undefined => {
+        (
+            vocabularyId: number | undefined
+        ): MoveEntrySelectionResult | undefined => {
             if (!hierarchy) {
                 return undefined;
             }
 
-            if (
-                vocabularyId === DRAFTS_SENTINEL ||
-                hierarchy.defaultVocabulary?.id === vocabularyId
-            ) {
+            if (vocabularyId === undefined) {
                 return {
-                    vocabularyId:
-                        hierarchy.defaultVocabulary?.id ?? DRAFTS_SENTINEL,
+                    vocabularyId: hierarchy.defaultVocabulary?.id ?? 0,
                     isDefault: true,
                     collectionId: null,
                 };
@@ -106,16 +106,12 @@ export const MoveEntryDialog = ({
         [hierarchy]
     );
 
-    const handleTargetChange = useCallback(
-        (event: SelectChangeEvent<number | string>) => {
-            const value = Number(event.target.value);
-            setSelectedVocabularyId(Number.isNaN(value) ? undefined : value);
-        },
-        []
-    );
+    const handleTargetChange = useCallback((value: number | undefined) => {
+        setSelectedVocabularyId(value);
+    }, []);
 
     const handleConfirm = useCallback(() => {
-        if (selectedVocabularyId === undefined) {
+        if (isDraftsExcluded && selectedVocabularyId === undefined) {
             return;
         }
 
@@ -125,9 +121,10 @@ export const MoveEntryDialog = ({
         }
 
         onConfirm(selection);
-    }, [onConfirm, resolveSelection, selectedVocabularyId]);
+    }, [isDraftsExcluded, onConfirm, resolveSelection, selectedVocabularyId]);
 
-    const confirmDisabled = selectedVocabularyId === undefined || !hasTargets;
+    const confirmDisabled =
+        !hasTargets || (isDraftsExcluded && selectedVocabularyId === undefined);
 
     const renderContent = useCallback(() => {
         if (isHierarchyLoading) {
@@ -157,15 +154,12 @@ export const MoveEntryDialog = ({
                         entry.
                     </Typography>
                 ) : null}
-                <GroupedVocabularySelect
+                <VocabularySelector
                     hierarchy={hierarchy}
-                    value={selectedVocabularyId ?? ""}
+                    value={selectedVocabularyId}
                     label="Target vocabulary"
                     onChange={handleTargetChange}
                     excludeVocabularyId={currentVocabularyId}
-                    draftsValue={
-                        hierarchy.defaultVocabulary?.id ?? DRAFTS_SENTINEL
-                    }
                     fullWidth
                 />
             </>
