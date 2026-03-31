@@ -43,11 +43,21 @@ export const MoveEntryDialog = ({
         refetch: refetchHierarchy,
     } = useCollectionsHierarchyQuery();
 
+    const defaultTargetVocabularyId = useMemo(() => {
+        if (!hierarchy) {
+            return undefined;
+        }
+
+        return hierarchy.defaultVocabulary?.id !== currentVocabularyId
+            ? draftsValue
+            : undefined;
+    }, [currentVocabularyId, hierarchy]);
+
     useEffect(() => {
         if (isOpen) {
-            setSelectedVocabularyId(undefined);
+            setSelectedVocabularyId(defaultTargetVocabularyId);
         }
-    }, [currentVocabularyId, isOpen]);
+    }, [currentVocabularyId, defaultTargetVocabularyId, isOpen]);
 
     const hasTargets = useMemo(() => {
         if (!hierarchy) {
