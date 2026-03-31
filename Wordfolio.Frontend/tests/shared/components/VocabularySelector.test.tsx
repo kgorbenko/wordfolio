@@ -1,7 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { VocabularySelector } from "../../../src/shared/components/VocabularySelector";
+import {
+    draftsValue,
+    VocabularySelector,
+} from "../../../src/shared/components/VocabularySelector";
 import type { CollectionsHierarchy } from "../../../src/shared/api/types/collections";
 
 const createHierarchy = (
@@ -62,7 +65,7 @@ const renderVocabularySelector = (
         hierarchy: createHierarchy(),
         value: undefined as number | undefined,
         label: "Target vocabulary",
-        onChange: vi.fn() as (value: number | undefined) => void,
+        onChange: vi.fn() as (value: number) => void,
         ...props,
     };
 
@@ -110,7 +113,9 @@ describe("VocabularySelector", () => {
         await user.click(screen.getByRole("combobox"));
 
         const listbox = screen.getByRole("listbox");
-        expect(within(listbox).getByText("Drafts")).toBeInTheDocument();
+        expect(
+            within(listbox).getByText("Drafts — organize later")
+        ).toBeInTheDocument();
     });
 
     it("should render drafts item when default vocabulary is set", async () => {
@@ -126,18 +131,6 @@ describe("VocabularySelector", () => {
                     updatedAt: null,
                 },
             }),
-        });
-
-        await user.click(screen.getByRole("combobox"));
-
-        const listbox = screen.getByRole("listbox");
-        expect(within(listbox).getByText("Drafts")).toBeInTheDocument();
-    });
-
-    it("should render custom drafts label when provided", async () => {
-        const user = userEvent.setup();
-        renderVocabularySelector({
-            draftsLabel: "Drafts — organize later",
         });
 
         await user.click(screen.getByRole("combobox"));
@@ -194,7 +187,9 @@ describe("VocabularySelector", () => {
         await user.click(screen.getByRole("combobox"));
 
         const listbox = screen.getByRole("listbox");
-        expect(within(listbox).queryByText("Drafts")).not.toBeInTheDocument();
+        expect(
+            within(listbox).queryByText("Drafts — organize later")
+        ).not.toBeInTheDocument();
     });
 
     it("should call onChange with the vocabulary id when a vocabulary option is selected", async () => {
@@ -210,7 +205,7 @@ describe("VocabularySelector", () => {
         expect(onChange).toHaveBeenCalledWith(11);
     });
 
-    it("should call onChange with undefined when the Drafts option is selected", async () => {
+    it("should call onChange with draftsValue when the Drafts option is selected", async () => {
         const user = userEvent.setup();
         const onChange = vi.fn();
         renderVocabularySelector({
@@ -221,9 +216,9 @@ describe("VocabularySelector", () => {
         await user.click(screen.getByRole("combobox"));
 
         const listbox = screen.getByRole("listbox");
-        await user.click(within(listbox).getByText("Drafts"));
+        await user.click(within(listbox).getByText("Drafts — organize later"));
 
-        expect(onChange).toHaveBeenCalledWith(undefined);
+        expect(onChange).toHaveBeenCalledWith(draftsValue);
     });
 
     it("should render nothing when hierarchy is undefined", async () => {

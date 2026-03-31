@@ -1,7 +1,5 @@
 import { useCallback, useMemo } from "react";
 import {
-    FormControl,
-    InputLabel,
     ListSubheader,
     MenuItem,
     Select,
@@ -11,23 +9,23 @@ import {
 import type { CollectionsHierarchy } from "../api/types/collections";
 import styles from "./VocabularySelector.module.scss";
 
+export const draftsValue = 0;
+
 interface VocabularySelectorProps {
     readonly hierarchy: CollectionsHierarchy | undefined;
     readonly value: number | undefined;
     readonly label: string;
-    readonly onChange: (value: number | undefined) => void;
-    readonly draftsLabel?: string;
+    readonly onChange: (value: number) => void;
     readonly excludeVocabularyId?: number;
     readonly fullWidth?: boolean;
     readonly className?: string;
 }
 
-const DRAFTS_VALUE = 0;
+const DRAFTS_LABEL = "Drafts — organize later";
 
 const buildGroupedItems = (
     hierarchy: CollectionsHierarchy,
-    excludeVocabularyId: number | undefined,
-    draftsLabel: string
+    excludeVocabularyId: number | undefined
 ) => {
     const showDrafts =
         excludeVocabularyId === undefined ||
@@ -35,8 +33,8 @@ const buildGroupedItems = (
 
     const draftsItem = showDrafts
         ? [
-              <MenuItem key="drafts" value={DRAFTS_VALUE}>
-                  {draftsLabel}
+              <MenuItem key="drafts" value={draftsValue}>
+                  {DRAFTS_LABEL}
               </MenuItem>,
           ]
         : [];
@@ -74,37 +72,35 @@ export const VocabularySelector = ({
     value,
     label,
     onChange,
-    draftsLabel = "Drafts",
     excludeVocabularyId,
     fullWidth,
     className,
 }: VocabularySelectorProps) => {
     const groupedItems = useMemo(
         () =>
-            hierarchy
-                ? buildGroupedItems(hierarchy, excludeVocabularyId, draftsLabel)
-                : [],
-        [draftsLabel, excludeVocabularyId, hierarchy]
+            hierarchy ? buildGroupedItems(hierarchy, excludeVocabularyId) : [],
+        [excludeVocabularyId, hierarchy]
     );
 
     const handleChange = useCallback(
         (event: SelectChangeEvent<number | string>) => {
-            const rawValue = Number(event.target.value);
-            onChange(rawValue === DRAFTS_VALUE ? undefined : rawValue);
+            onChange(Number(event.target.value));
         },
         [onChange]
     );
 
     return (
-        <FormControl fullWidth={fullWidth} className={className}>
-            <InputLabel>{label}</InputLabel>
-            <Select
-                value={value ?? DRAFTS_VALUE}
-                label={label}
-                onChange={handleChange}
-            >
-                {groupedItems}
-            </Select>
-        </FormControl>
+        <Select
+            value={value ?? ""}
+            label={label}
+            onChange={handleChange}
+            fullWidth={fullWidth}
+            className={className}
+            MenuProps={{
+                PaperProps: { className: styles.vocabularySelector },
+            }}
+        >
+            {groupedItems}
+        </Select>
     );
 };

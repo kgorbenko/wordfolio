@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 
 import { ContentSkeleton } from "./ContentSkeleton";
-import { VocabularySelector } from "./VocabularySelector";
+import { draftsValue, VocabularySelector } from "./VocabularySelector";
 import { RetryOnError } from "./RetryOnError";
 import { useCollectionsHierarchyQuery } from "../api/queries/collections";
 
@@ -49,11 +49,6 @@ export const MoveEntryDialog = ({
         }
     }, [currentVocabularyId, isOpen]);
 
-    const isDraftsExcluded = useMemo(
-        () => hierarchy?.defaultVocabulary?.id === currentVocabularyId,
-        [currentVocabularyId, hierarchy]
-    );
-
     const hasTargets = useMemo(() => {
         if (!hierarchy) {
             return false;
@@ -73,14 +68,12 @@ export const MoveEntryDialog = ({
     }, [currentVocabularyId, hierarchy]);
 
     const resolveSelection = useCallback(
-        (
-            vocabularyId: number | undefined
-        ): MoveEntrySelectionResult | undefined => {
+        (vocabularyId: number): MoveEntrySelectionResult | undefined => {
             if (!hierarchy) {
                 return undefined;
             }
 
-            if (vocabularyId === undefined) {
+            if (vocabularyId === draftsValue) {
                 return {
                     vocabularyId: hierarchy.defaultVocabulary?.id ?? 0,
                     isDefault: true,
@@ -106,12 +99,12 @@ export const MoveEntryDialog = ({
         [hierarchy]
     );
 
-    const handleTargetChange = useCallback((value: number | undefined) => {
+    const handleTargetChange = useCallback((value: number) => {
         setSelectedVocabularyId(value);
     }, []);
 
     const handleConfirm = useCallback(() => {
-        if (isDraftsExcluded && selectedVocabularyId === undefined) {
+        if (selectedVocabularyId === undefined) {
             return;
         }
 
@@ -121,10 +114,9 @@ export const MoveEntryDialog = ({
         }
 
         onConfirm(selection);
-    }, [isDraftsExcluded, onConfirm, resolveSelection, selectedVocabularyId]);
+    }, [onConfirm, resolveSelection, selectedVocabularyId]);
 
-    const confirmDisabled =
-        !hasTargets || (isDraftsExcluded && selectedVocabularyId === undefined);
+    const confirmDisabled = !hasTargets || selectedVocabularyId === undefined;
 
     const renderContent = useCallback(() => {
         if (isHierarchyLoading) {
