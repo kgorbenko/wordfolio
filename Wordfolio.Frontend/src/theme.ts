@@ -221,6 +221,9 @@ export const theme = createTheme({
                     "&.MuiInputBase-multiline": {
                         padding: 0,
                     },
+                    "&.MuiInputBase-multiline.MuiInputBase-adornedEnd": {
+                        paddingRight: "14px",
+                    },
                     "& .MuiOutlinedInput-notchedOutline": {
                         borderColor: border,
                         borderWidth: 2,
