@@ -1,17 +1,19 @@
 .example {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
-    margin-top: 8px;
-    padding-left: 8px;
+    gap: 6px;
 }
 
-.icon {
-    font-size: 16px;
-    margin-top: 2px;
+.prefix {
+    flex-shrink: 0;
+    font-style: normal;
+    color: var(--mui-palette-text-disabled);
+    line-height: 1.5;
 }
 
 .text {
     font-style: italic;
+    color: var(--mui-palette-text-secondary);
+    line-height: 1.5;
     flex: 1;
 }

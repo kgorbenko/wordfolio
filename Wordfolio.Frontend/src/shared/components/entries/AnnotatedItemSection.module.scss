@@ -9,8 +9,45 @@
     margin-bottom: 16px;
 }
 
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    &::before {
+        content: "";
+        width: 32px;
+        height: 4px;
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+}
+
+.label {
+    letter-spacing: 0.08em;
+}
+
 .items {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+@media (max-width: 600px) {
+    .section {
+        margin-bottom: 24px;
+    }
+
+    .header {
+        margin-bottom: 12px;
+    }
+
+    .headerLeft::before {
+        width: 24px;
+        height: 3px;
+    }
+
+    .items {
+        gap: 16px;
+    }
 }

@@ -1,13 +1,51 @@
 .section {
-    margin-bottom: 32px;
+    margin-bottom: 36px;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
 }
 
-.title {
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 16px;
+
+    &::before {
+        content: "";
+        width: 32px;
+        height: 4px;
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+}
+
+.label {
+    letter-spacing: 0.08em;
 }
 
 .items {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+@media (max-width: 600px) {
+    .section {
+        margin-bottom: 28px;
+    }
+
+    .header {
+        margin-bottom: 12px;
+
+        &::before {
+            width: 24px;
+            height: 3px;
+        }
+    }
+
+    .items {
+        gap: 12px;
+    }
 }

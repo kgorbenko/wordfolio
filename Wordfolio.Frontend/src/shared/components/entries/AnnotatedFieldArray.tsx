@@ -8,17 +8,13 @@ import {
 } from "react-hook-form";
 import {
     Box,
-    Paper,
-    Chip,
     TextField,
     IconButton,
+    InputAdornment,
     Button,
-    alpha,
-    useTheme,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
-import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 
 import type { EntryFormInput } from "../../schemas/entryFormSchemas";
 import { ExampleSource } from "../../api/types/entries";
@@ -38,32 +34,28 @@ interface AnnotatedFieldArrayProps {
     readonly control: Control<EntryFormInput>;
     readonly register: UseFormRegister<EntryFormInput>;
     readonly errors: FieldErrors<EntryFormInput>;
-    readonly index: number;
-    readonly color: AnnotatedItemColor;
     readonly textFieldPath: DefinitionTextPath | TranslationTextPath;
     readonly examplesPath: ExamplesPath;
     readonly getExampleTextPath: (exIndex: number) => ExampleTextPath;
     readonly getTextError: () => string | undefined;
     readonly getExampleError: (exIndex: number) => string | undefined;
     readonly onRemove: () => void;
+    readonly color: AnnotatedItemColor;
     readonly isLoading?: boolean;
 }
 
 export const AnnotatedFieldArray = ({
     control,
     register,
-    index,
-    color,
     textFieldPath,
     examplesPath,
     getExampleTextPath,
     getTextError,
     getExampleError,
     onRemove,
+    color,
     isLoading = false,
 }: AnnotatedFieldArrayProps) => {
-    const theme = useTheme();
-
     const {
         fields: exampleFields,
         append: appendExample,
@@ -84,114 +76,94 @@ export const AnnotatedFieldArray = ({
         );
     };
 
-    const paletteColor =
-        color === "primary"
-            ? theme.palette.primary.main
-            : theme.palette.secondary.main;
-    const borderColor = alpha(paletteColor, 0.2);
-    const exampleBorderColor = alpha(paletteColor, 0.3);
     const textError = getTextError();
 
     return (
-        <Paper
-            variant="outlined"
-            className={styles.card}
-            sx={{ borderColor }}
-            data-testid="card"
-        >
-            <Box className={styles.content}>
-                <Chip
-                    label={index + 1}
-                    size="small"
-                    color={color}
-                    className={styles.chip}
-                />
-                <Box className={styles.body}>
-                    <Box className={styles.textRow}>
-                        <TextField
-                            fullWidth
-                            multiline
-                            size="small"
-                            disabled={isLoading}
-                            error={!!textError}
-                            helperText={textError}
-                            {...register(
-                                textFieldPath as FieldPath<EntryFormInput>
-                            )}
-                            data-testid="text-field"
-                        />
-                        <IconButton
-                            size="small"
-                            onClick={onRemove}
-                            sx={{ color: "error.main" }}
-                            disabled={isLoading}
-                            data-testid="delete-button"
-                        >
-                            <DeleteIcon fontSize="small" />
-                        </IconButton>
-                    </Box>
+        <Box className={styles.item} data-testid="card">
+            <TextField
+                fullWidth
+                multiline
+                minRows={1}
+                size="small"
+                disabled={isLoading}
+                error={!!textError}
+                helperText={textError}
+                {...register(textFieldPath as FieldPath<EntryFormInput>)}
+                slotProps={{
+                    input: {
+                        endAdornment: (
+                            <InputAdornment position="end">
+                                <IconButton
+                                    onClick={onRemove}
+                                    disabled={isLoading}
+                                    edge="end"
+                                    data-testid="delete-button"
+                                >
+                                    <CloseIcon />
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                    },
+                }}
+                data-testid="text-field"
+            />
 
-                    {exampleFields.length > 0 && (
-                        <Box className={styles.examplesContainer}>
-                            {exampleFields.map((exampleField, exIndex) => {
-                                const exampleError = getExampleError(exIndex);
-                                return (
-                                    <Box
-                                        key={exampleField.id}
-                                        className={styles.example}
-                                        sx={{
-                                            borderLeft: `2px solid ${exampleBorderColor}`,
-                                        }}
-                                        data-testid="example"
-                                    >
-                                        <FormatQuoteIcon
-                                            className={styles.quoteIcon}
-                                        />
-                                        <TextField
-                                            fullWidth
-                                            multiline
-                                            size="small"
-                                            disabled={isLoading}
-                                            error={!!exampleError}
-                                            helperText={exampleError}
-                                            placeholder="Example sentence"
-                                            className={styles.exampleTextField}
-                                            {...register(
-                                                getExampleTextPath(
-                                                    exIndex
-                                                ) as FieldPath<EntryFormInput>
-                                            )}
-                                            data-testid="example-text-field"
-                                        />
-                                        <IconButton
-                                            size="small"
-                                            onClick={() =>
-                                                removeExample(exIndex)
-                                            }
-                                            sx={{ color: "error.main" }}
-                                            disabled={isLoading}
-                                            data-testid="example-delete-button"
-                                        >
-                                            <DeleteIcon fontSize="small" />
-                                        </IconButton>
-                                    </Box>
-                                );
-                            })}
-                        </Box>
-                    )}
-
-                    <Button
-                        size="small"
-                        startIcon={<AddIcon />}
-                        onClick={handleAddExample}
-                        className={styles.addButton}
-                        disabled={isLoading}
-                        data-testid="add-example-button"
-                    >
-                        Add Example
-                    </Button>
+            {exampleFields.length > 0 && (
+                <Box className={styles.examplesContainer}>
+                    {exampleFields.map((exampleField, exIndex) => {
+                        const exampleError = getExampleError(exIndex);
+                        return (
+                            <TextField
+                                key={exampleField.id}
+                                fullWidth
+                                multiline
+                                minRows={1}
+                                size="small"
+                                disabled={isLoading}
+                                error={!!exampleError}
+                                helperText={exampleError}
+                                placeholder="e.g. Example sentence"
+                                {...register(
+                                    getExampleTextPath(
+                                        exIndex
+                                    ) as FieldPath<EntryFormInput>
+                                )}
+                                slotProps={{
+                                    input: {
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    onClick={() =>
+                                                        removeExample(exIndex)
+                                                    }
+                                                    disabled={isLoading}
+                                                    edge="end"
+                                                    data-testid="example-delete-button"
+                                                >
+                                                    <CloseIcon />
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    },
+                                }}
+                                data-testid="example-text-field"
+                            />
+                        );
+                    })}
                 </Box>
-            </Box>
-        </Paper>
+            )}
+
+            <Button
+                size="small"
+                color={color}
+                startIcon={<AddIcon />}
+                onClick={handleAddExample}
+                className={styles.addExampleButton}
+                disabled={isLoading}
+                data-testid="add-example-button"
+            >
+                Add Example
+            </Button>
+        </Box>
     );
 };

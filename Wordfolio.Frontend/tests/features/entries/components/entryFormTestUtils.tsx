@@ -78,10 +78,9 @@ const readItemsFromSection = (sectionTestId: string): DefinitionData[] => {
         const textField = within(card).getByTestId("text-field");
         const { text, error } = getTextFieldData(textField);
 
-        const exampleContainers = within(card).queryAllByTestId("example");
-        const examples = exampleContainers.map((container) => {
-            const exampleTextField =
-                within(container).getByTestId("example-text-field");
+        const exampleTextFields =
+            within(card).queryAllByTestId("example-text-field");
+        const examples = exampleTextFields.map((exampleTextField) => {
             return getTextFieldData(exampleTextField);
         });
 
@@ -134,7 +133,7 @@ const getCardsInSection = (sectionTestId: string): HTMLElement[] => {
 };
 
 const getExamplesInCard = (card: HTMLElement): HTMLElement[] =>
-    within(card).queryAllByTestId("example");
+    within(card).queryAllByTestId("example-text-field");
 
 export const getAddDefinitionButton = (): HTMLElement => {
     const section = screen.getByTestId("definitions-section");
@@ -205,11 +204,8 @@ export const getDefinitionExampleInput = (
     exampleIndex: number
 ): HTMLElement => {
     const cards = getCardsInSection("definitions-section");
-    const examples = getExamplesInCard(cards[defIndex]);
-    const textField = within(examples[exampleIndex]).getByTestId(
-        "example-text-field"
-    );
-    return within(textField).getByRole("textbox");
+    const exampleTextFields = getExamplesInCard(cards[defIndex]);
+    return within(exampleTextFields[exampleIndex]).getByRole("textbox");
 };
 
 export const getTranslationExampleInput = (
@@ -217,11 +213,8 @@ export const getTranslationExampleInput = (
     exampleIndex: number
 ): HTMLElement => {
     const cards = getCardsInSection("translations-section");
-    const examples = getExamplesInCard(cards[transIndex]);
-    const textField = within(examples[exampleIndex]).getByTestId(
-        "example-text-field"
-    );
-    return within(textField).getByRole("textbox");
+    const exampleTextFields = getExamplesInCard(cards[transIndex]);
+    return within(exampleTextFields[exampleIndex]).getByRole("textbox");
 };
 
 export const getSubmitButton = (label: string = "Save"): HTMLElement => {

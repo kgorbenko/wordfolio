@@ -15,14 +15,18 @@ export const AnnotatedSection = ({
     children,
 }: AnnotatedSectionProps) => (
     <Box className={styles.section}>
-        <Typography
-            variant="h6"
-            fontWeight={600}
-            sx={{ color: `${color}.main` }}
-            className={styles.title}
+        <Box
+            className={styles.header}
+            sx={{
+                "&::before": {
+                    backgroundColor: `${color}.main`,
+                },
+            }}
         >
-            {title}
-        </Typography>
+            <Typography variant="overline" className={styles.label}>
+                {title}
+            </Typography>
+        </Box>
         <Box className={styles.items}>{children}</Box>
     </Box>
 );

@@ -183,6 +183,11 @@ export const EntryDetailPage = () => {
             />
             <PageHeader
                 title={isLoading ? "Loading..." : (entry?.entryText ?? "Entry")}
+                description={
+                    entry
+                        ? `Added ${entry.createdAt.toLocaleDateString()}${entry.updatedAt ? ` · Updated ${entry.updatedAt.toLocaleDateString()}` : ""}`
+                        : undefined
+                }
                 actions={
                     <PageHeaderActions
                         actions={[
