@@ -1,0 +1,56 @@
+- generic [ref=e3]:
+  - img
+  - generic:
+    - generic:
+      - generic: perdu
+      - generic: FR
+    - generic:
+      - generic: verloren
+      - generic: DE
+    - generic:
+      - generic: perdido
+      - generic: ES
+    - generic:
+      - generic: smarrito
+      - generic: IT
+    - generic:
+      - generic: χαμένος
+      - generic: EL
+    - generic:
+      - generic: elveszett
+      - generic: HU
+    - generic:
+      - generic: 迷失
+      - generic: ZH
+    - generic:
+      - generic: 迷子
+      - generic: JA
+    - generic:
+      - generic: kayboldu
+      - generic: TR
+    - generic:
+      - generic: خسارة
+      - generic: AR
+    - generic:
+      - generic: пропало
+      - generic: RU
+    - generic:
+      - generic: verdwijnen
+      - generic: NL
+  - generic [ref=e4]:
+    - generic "HTTP status 404 — page not found" [ref=e5]: HTTP 404 · PAGE NOT FOUND
+    - img "Globe" [ref=e8]
+    - generic "Error 404" [ref=e15]:
+      - generic [ref=e16]: "4"
+      - generic [ref=e17]: "0"
+      - generic [ref=e18]: "4"
+    - heading "Lost in Translation" [level=1] [ref=e19]
+    - paragraph [ref=e20]:
+      - text: This page exists in no known language.
+      - text: It may have drifted beyond the edge of the atlas.
+    - generic [ref=e21]:
+      - img [ref=e22]
+      - paragraph [ref=e24]: φ 40.404° N · λ 0.404° W
+    - link "Return Home" [ref=e26] [cursor=pointer]:
+      - /url: /
+    - paragraph [ref=e27]: TERRA INCOGNITA

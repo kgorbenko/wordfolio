@@ -8,10 +8,14 @@ import { NotificationProvider } from "./shared/contexts/NotificationProvider";
 import { ConfirmDialogProvider } from "./shared/contexts/ConfirmDialogProvider";
 import { theme } from "./theme";
 import { routeTree } from "./routeTree.gen";
+import { LostInTranslationAtlasPage } from "./features/not-found/pages/LostInTranslationAtlasPage";
 
 import "./main.css";
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+    routeTree,
+    defaultNotFoundComponent: LostInTranslationAtlasPage,
+});
 
 declare module "@tanstack/react-router" {
     interface Register {
