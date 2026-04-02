@@ -62,11 +62,12 @@ export const WordNotFoundPage = () => (
 
             <div className={styles.definitionSection}>
                 <p className={styles.definition}>
-                    <span className={styles.senseNumber}>1</span>
+                    <span className={styles.senseNumber}>1.</span>
                     The state of seeking a page that does not, has never, and
                     will never exist at this address — a digital cul-de-sac, if
                     you will.
                 </p>
+                <span className={styles.etymology}>[HTTP/1.0, 1996]</span>
             </div>
 
             <div className={styles.exampleSection}>
