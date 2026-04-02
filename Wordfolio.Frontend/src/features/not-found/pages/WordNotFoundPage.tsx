@@ -41,10 +41,11 @@ export const WordNotFoundPage = () => (
                     <span className={styles.cursor} aria-hidden="true" />
                 </h1>
                 <span className={styles.phonetics}>/nɒt.faʊnd/</span>
+                <span className={styles.partOfSpeech}>n.</span>
             </div>
 
             <div className={styles.meta}>
-                <span className={styles.badge}>http · status</span>
+                <span className={styles.badge}>Computing</span>
                 <div
                     className={styles.frequencyDots}
                     title="Frequency: disturbingly common"
@@ -60,8 +61,8 @@ export const WordNotFoundPage = () => (
             <hr className={styles.divider} />
 
             <div className={styles.definitionSection}>
-                <p className={styles.definitionLabel}>Definition</p>
                 <p className={styles.definition}>
+                    <span className={styles.senseNumber}>1</span>
                     The state of seeking a page that does not, has never, and
                     will never exist at this address — a digital cul-de-sac, if
                     you will.
@@ -77,7 +78,7 @@ export const WordNotFoundPage = () => (
             </div>
 
             <div className={styles.synonyms}>
-                <span className={styles.synonymsLabel}>See also</span>
+                <span className={styles.synonymsLabel}>cf.</span>
                 <span className={styles.synonymTag}>gone</span>
                 <span className={styles.synonymTag}>missing</span>
                 <span className={styles.synonymTag}>void</span>
@@ -107,9 +108,13 @@ export const WordNotFoundPage = () => (
                     variant="outlined"
                     className={styles.secondaryAction}
                 >
-                    Browse Collections
+                    Missing Collection
                 </Button>
             </div>
+
+            <p className={styles.edition} aria-hidden="true">
+                Wordfolio Unabridged · 2025 ed.
+            </p>
         </article>
     </div>
 );
