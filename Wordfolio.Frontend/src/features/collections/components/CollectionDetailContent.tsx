@@ -48,7 +48,7 @@ const desktopColumns: GridColDef<VocabularyWithEntryCount>[] = [
         field: "entryCount",
         headerName: "Entries",
         type: "number",
-        width: 100,
+        width: 105,
         align: "right",
         headerAlign: "right",
     },

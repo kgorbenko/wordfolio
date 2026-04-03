@@ -90,14 +90,14 @@ export const theme = createTheme({
         },
     },
     typography: {
-        fontFamily: "'DM Sans', Arial, sans-serif",
+        fontFamily: "'Open Sans', Arial, sans-serif",
         fontWeightLight: 200,
         fontWeightRegular: 200,
         fontWeightMedium: 200,
         fontWeightBold: 200,
         h1: {
             fontSize: 26,
-            fontWeight: 400,
+            fontWeight: 300,
             letterSpacing: "-0.02em",
             "@media (min-width: 900px)": {
                 fontSize: 32,
@@ -105,10 +105,22 @@ export const theme = createTheme({
         },
         h2: {
             fontSize: 18,
-            fontWeight: 400,
+            fontWeight: 300,
             "@media (min-width: 900px)": {
                 fontSize: 22,
             },
+        },
+        h3: {
+            fontWeight: 300,
+        },
+        h4: {
+            fontWeight: 300,
+        },
+        h5: {
+            fontWeight: 300,
+        },
+        h6: {
+            fontWeight: 300,
         },
         body1: {
             fontSize: 14,
@@ -148,7 +160,7 @@ export const theme = createTheme({
                     textTransform: "none",
                     fontSize: 13,
                     "@media (min-width: 900px)": {
-                        fontSize: 16,
+                        fontSize: 14,
                     },
                     borderRadius: 8,
                     padding: "6px 16px",
@@ -216,7 +228,7 @@ export const theme = createTheme({
                     borderRadius: 8,
                     fontSize: 13,
                     "@media (min-width: 900px)": {
-                        fontSize: 16,
+                        fontSize: 14,
                     },
                     "&.MuiInputBase-multiline": {
                         padding: 0,
@@ -273,7 +285,7 @@ export const theme = createTheme({
                     alignItems: "center",
                     fontSize: 13,
                     "@media (min-width: 900px)": {
-                        fontSize: 16,
+                        fontSize: 14,
                     },
                 },
                 icon: {
@@ -382,7 +394,7 @@ export const theme = createTheme({
                 root: {
                     fontSize: 13,
                     "@media (min-width: 900px)": {
-                        fontSize: 16,
+                        fontSize: 14,
                     },
                     color: textPrimary,
                     "&:hover": {
@@ -537,7 +549,7 @@ export const theme = createTheme({
             styleOverrides: {
                 root: {
                     border: "none",
-                    fontFamily: "'DM Sans', Arial, sans-serif",
+                    fontFamily: "'Open Sans', Arial, sans-serif",
                     backgroundColor: "transparent",
                     "--DataGrid-rowBorderColor": "transparent",
                     "--DataGrid-containerBackground": "transparent",
@@ -598,17 +610,21 @@ export const theme = createTheme({
                         },
                     },
                     "&:first-of-type": {
-                        borderTop: defaultBorder,
+                        boxShadow: `inset 0 2px 0 0 ${border}`,
                         borderTopLeftRadius: 8,
                         borderTopRightRadius: 8,
                     },
                     "&:last-of-type": {
-                        borderBottom: defaultBorder,
+                        boxShadow: `inset 0 -2px 0 0 ${border}`,
                         borderBottomLeftRadius: 8,
                         borderBottomRightRadius: 8,
                     },
+                    "&:first-of-type:last-of-type": {
+                        boxShadow: `inset 0 2px 0 0 ${border}, inset 0 -2px 0 0 ${border}`,
+                    },
                 },
                 cell: {
+                    borderTop: "none",
                     borderBottom: "none",
                     padding: "0 16px",
                     display: "flex",

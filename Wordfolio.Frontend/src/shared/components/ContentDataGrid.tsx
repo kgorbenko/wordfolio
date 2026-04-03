@@ -98,7 +98,7 @@ export const ContentDataGrid = <R extends GridValidRowModel>({
         <DataGrid
             rows={rows}
             columns={activeColumns}
-            rowHeight={isMobile ? 48 : 52}
+            rowHeight={isMobile ? 47 : 51}
             onRowClick={(params) => onRowClick(params.row.id)}
             showToolbar
             slots={{
