@@ -145,9 +145,8 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
             cy={CENTER}
             r={INNER_RADIUS - 4}
             stroke="#B5F507"
-            strokeWidth="0.3"
-            opacity="0.08"
-            strokeDasharray="2 6"
+            strokeWidth="0.25"
+            opacity="0.06"
         />
 
         <circle cx={CENTER} cy={CENTER} r="2.5" fill="#B5F507" opacity="0.12" />
@@ -180,24 +179,12 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
             x={CENTER + OUTER_RADIUS + 4}
             y={CENTER - 2}
             fill="#B5F507"
-            opacity="0.12"
+            opacity="0.1"
             fontSize="5"
             fontFamily="monospace"
             letterSpacing="0.08em"
         >
             ƒ
-        </text>
-        <text
-            x={CENTER - 5}
-            y={CENTER - OUTER_RADIUS - 6}
-            fill="#B5F507"
-            opacity="0.1"
-            fontSize="4.5"
-            fontFamily="monospace"
-            letterSpacing="0.1em"
-            textAnchor="middle"
-        >
-            LEXICON
         </text>
     </svg>
 );

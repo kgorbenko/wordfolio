@@ -243,8 +243,8 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-top: 16px;
-    margin-bottom: 20px;
+    margin-top: 12px;
+    margin-bottom: 18px;
     animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
 }
 
@@ -293,10 +293,10 @@
     font-family: "DM Sans", sans-serif;
     font-size: clamp(0.875rem, 1.8vw, 1.05rem);
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.38);
+    color: rgba(255, 255, 255, 0.42);
     line-height: 1.7;
     max-width: 380px;
-    margin: 0 0 28px;
+    margin: 0 0 26px;
     animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.65s both;
 }
 
@@ -311,7 +311,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 30px;
+    padding: 10px 34px;
     font-family: "DM Sans", sans-serif;
     font-size: 0.8125rem;
     font-weight: 500;
@@ -330,29 +330,29 @@
 .ctaLogin {
     background: linear-gradient(
         165deg,
-        rgba(203, 255, 69, 1) 0%,
-        rgba(181, 245, 7, 1) 100%
+        rgba(195, 248, 56, 1) 0%,
+        rgba(171, 232, 7, 1) 100%
     );
     color: #0b0b0b;
-    border: 1px solid rgba(181, 245, 7, 0.6);
+    border: 1px solid rgba(181, 245, 7, 0.45);
     box-shadow:
-        0 0 20px rgba(181, 245, 7, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        0 0 18px rgba(181, 245, 7, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
 
     &:hover {
         background: linear-gradient(
             165deg,
-            rgba(215, 255, 100, 1) 0%,
-            rgba(203, 255, 69, 1) 100%
+            rgba(205, 252, 80, 1) 0%,
+            rgba(195, 248, 56, 1) 100%
         );
         box-shadow:
-            0 0 32px rgba(181, 245, 7, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            0 0 28px rgba(181, 245, 7, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
         transform: translateY(-1px);
     }
 
     &:active {
-        background: #a4e000;
+        background: #9ad600;
         transform: translateY(0);
     }
 }
@@ -360,19 +360,19 @@
 .ctaRegister {
     background: rgba(255, 255, 255, 0.03);
     color: rgba(255, 255, 255, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(181, 245, 7, 0.1);
     backdrop-filter: blur(8px);
 
     &:hover {
-        border-color: rgba(233, 30, 140, 0.4);
-        color: rgba(233, 30, 140, 0.85);
-        background: rgba(233, 30, 140, 0.04);
-        box-shadow: 0 0 24px rgba(233, 30, 140, 0.1);
+        border-color: rgba(181, 245, 7, 0.3);
+        color: rgba(255, 255, 255, 0.8);
+        background: rgba(181, 245, 7, 0.04);
+        box-shadow: 0 0 20px rgba(181, 245, 7, 0.06);
         transform: translateY(-1px);
     }
 
     &:active {
-        border-color: rgba(233, 30, 140, 0.55);
+        border-color: rgba(181, 245, 7, 0.4);
         transform: translateY(0);
     }
 }
