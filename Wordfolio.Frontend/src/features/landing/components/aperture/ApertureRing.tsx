@@ -63,6 +63,21 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
     >
+        <defs>
+            <radialGradient id="aperture-core-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#B5F507" stopOpacity="0.06" />
+                <stop offset="40%" stopColor="#B5F507" stopOpacity="0.02" />
+                <stop offset="100%" stopColor="#B5F507" stopOpacity="0" />
+            </radialGradient>
+        </defs>
+
+        <circle
+            cx={CENTER}
+            cy={CENTER}
+            r={INNER_RADIUS + 10}
+            fill="url(#aperture-core-glow)"
+        />
+
         <circle
             cx={CENTER}
             cy={CENTER}
@@ -81,7 +96,7 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
                 y2={tick.y2.toFixed(1)}
                 stroke="#B5F507"
                 strokeWidth={tick.major ? "0.7" : "0.35"}
-                opacity={tick.major ? "0.22" : "0.1"}
+                opacity={tick.major ? "0.24" : "0.1"}
                 strokeLinecap="round"
             />
         ))}
@@ -135,13 +150,7 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
             strokeDasharray="2 6"
         />
 
-        <circle
-            cx={CENTER}
-            cy={CENTER}
-            r="2.5"
-            fill="#B5F507"
-            opacity="0.12"
-        />
+        <circle cx={CENTER} cy={CENTER} r="2.5" fill="#B5F507" opacity="0.12" />
 
         <circle
             cx={CENTER}
@@ -166,5 +175,29 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
             strokeDashoffset="200"
             strokeLinecap="round"
         />
+
+        <text
+            x={CENTER + OUTER_RADIUS + 4}
+            y={CENTER - 2}
+            fill="#B5F507"
+            opacity="0.12"
+            fontSize="5"
+            fontFamily="monospace"
+            letterSpacing="0.08em"
+        >
+            ƒ
+        </text>
+        <text
+            x={CENTER - 5}
+            y={CENTER - OUTER_RADIUS - 6}
+            fill="#B5F507"
+            opacity="0.1"
+            fontSize="4.5"
+            fontFamily="monospace"
+            letterSpacing="0.1em"
+            textAnchor="middle"
+        >
+            LEXICON
+        </text>
     </svg>
 );

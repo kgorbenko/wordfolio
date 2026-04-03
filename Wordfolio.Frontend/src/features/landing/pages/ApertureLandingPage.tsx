@@ -10,21 +10,22 @@ import styles from "./ApertureLandingPage.module.scss";
 type MorphEntry = {
     word: string;
     lang: string;
+    hint: string;
 };
 
 const morphSequence: MorphEntry[] = [
-    { word: "word", lang: "English" },
-    { word: "mot", lang: "Français" },
-    { word: "Wort", lang: "Deutsch" },
-    { word: "слово", lang: "Русский" },
-    { word: "言葉", lang: "日本語" },
-    { word: "단어", lang: "한국어" },
-    { word: "词", lang: "中文" },
-    { word: "λέξη", lang: "Ελληνικά" },
-    { word: "كلمة", lang: "العربية" },
-    { word: "palavra", lang: "Português" },
-    { word: "kelime", lang: "Türkçe" },
-    { word: "szó", lang: "Magyar" },
+    { word: "word", lang: "English", hint: "the smallest unit of meaning" },
+    { word: "mot", lang: "Français", hint: "le pouvoir de nommer" },
+    { word: "Wort", lang: "Deutsch", hint: "Sprache formt Gedanken" },
+    { word: "слово", lang: "Русский", hint: "начало всякой мысли" },
+    { word: "言葉", lang: "日本語", hint: "意味を宿すもの" },
+    { word: "단어", lang: "한국어", hint: "생각을 담는 그릇" },
+    { word: "词", lang: "中文", hint: "字里行间的力量" },
+    { word: "λέξη", lang: "Ελληνικά", hint: "η αρχή του λόγου" },
+    { word: "كلمة", lang: "العربية", hint: "أصل كلّ بيان" },
+    { word: "palavra", lang: "Português", hint: "a matéria da memória" },
+    { word: "kelime", lang: "Türkçe", hint: "dilin en küçük parçası" },
+    { word: "szó", lang: "Magyar", hint: "a gondolat hangja" },
 ];
 
 type GhostWord = {
@@ -39,18 +40,109 @@ type GhostWord = {
 };
 
 const ghostWords: GhostWord[] = [
-    { text: "ephemeral", x: 7, y: 14, size: 0.85, blur: 2, opacity: 0.09, delay: 0 },
-    { text: "語彙", x: 86, y: 11, size: 1.05, blur: 2.5, opacity: 0.07, delay: 1.8 },
-    { text: "serendipity", x: 4, y: 50, size: 0.72, blur: 1.8, opacity: 0.07, delay: 3.2 },
-    { text: "Wanderlust", x: 89, y: 46, size: 0.8, blur: 2.2, opacity: 0.06, delay: 2.4 },
-    { text: "saudade", x: 10, y: 83, size: 0.9, blur: 2.8, opacity: 0.07, delay: 4.1, magenta: true },
+    {
+        text: "ephemeral",
+        x: 7,
+        y: 14,
+        size: 0.85,
+        blur: 2,
+        opacity: 0.09,
+        delay: 0,
+    },
+    {
+        text: "語彙",
+        x: 86,
+        y: 11,
+        size: 1.05,
+        blur: 2.5,
+        opacity: 0.07,
+        delay: 1.8,
+    },
+    {
+        text: "serendipity",
+        x: 4,
+        y: 50,
+        size: 0.72,
+        blur: 1.8,
+        opacity: 0.07,
+        delay: 3.2,
+    },
+    {
+        text: "Wanderlust",
+        x: 89,
+        y: 46,
+        size: 0.8,
+        blur: 2.2,
+        opacity: 0.06,
+        delay: 2.4,
+    },
+    {
+        text: "saudade",
+        x: 10,
+        y: 83,
+        size: 0.9,
+        blur: 2.8,
+        opacity: 0.07,
+        delay: 4.1,
+        magenta: true,
+    },
     { text: "詩", x: 84, y: 80, size: 1.1, blur: 2, opacity: 0.08, delay: 1.2 },
-    { text: "parole", x: 74, y: 90, size: 0.75, blur: 2.5, opacity: 0.06, delay: 2.8 },
-    { text: "τέχνη", x: 15, y: 32, size: 0.7, blur: 1.6, opacity: 0.07, delay: 3.6 },
-    { text: "скрижаль", x: 80, y: 30, size: 0.62, blur: 3, opacity: 0.05, delay: 0.6, magenta: true },
-    { text: "florilegio", x: 22, y: 92, size: 0.78, blur: 2.2, opacity: 0.06, delay: 4.6 },
-    { text: "Zeitgeist", x: 90, y: 64, size: 0.68, blur: 2.4, opacity: 0.05, delay: 5.2 },
-    { text: "murmure", x: 6, y: 68, size: 0.74, blur: 2.6, opacity: 0.06, delay: 1.5, magenta: true },
+    {
+        text: "parole",
+        x: 74,
+        y: 90,
+        size: 0.75,
+        blur: 2.5,
+        opacity: 0.06,
+        delay: 2.8,
+    },
+    {
+        text: "τέχνη",
+        x: 15,
+        y: 32,
+        size: 0.7,
+        blur: 1.6,
+        opacity: 0.07,
+        delay: 3.6,
+    },
+    {
+        text: "скрижаль",
+        x: 80,
+        y: 30,
+        size: 0.62,
+        blur: 3,
+        opacity: 0.05,
+        delay: 0.6,
+        magenta: true,
+    },
+    {
+        text: "florilegio",
+        x: 22,
+        y: 92,
+        size: 0.78,
+        blur: 2.2,
+        opacity: 0.06,
+        delay: 4.6,
+    },
+    {
+        text: "Zeitgeist",
+        x: 90,
+        y: 64,
+        size: 0.68,
+        blur: 2.4,
+        opacity: 0.05,
+        delay: 5.2,
+    },
+    {
+        text: "murmure",
+        x: 6,
+        y: 68,
+        size: 0.74,
+        blur: 2.6,
+        opacity: 0.06,
+        delay: 1.5,
+        magenta: true,
+    },
 ];
 
 const MORPH_INTERVAL_MS = 3200;
@@ -102,6 +194,13 @@ export const ApertureLandingPage = () => {
         .filter(Boolean)
         .join(" ");
 
+    const hintClassName = [
+        styles.morphHint,
+        phase !== "visible" ? styles.morphHintHidden : "",
+    ]
+        .filter(Boolean)
+        .join(" ");
+
     return (
         <main className={styles.page}>
             <div className={styles.ghostLayer} aria-hidden="true">
@@ -131,31 +230,47 @@ export const ApertureLandingPage = () => {
                 <div className={styles.morphContainer}>
                     <span className={morphClassName}>{current.word}</span>
                     <span className={langClassName}>{current.lang}</span>
+                    <span className={hintClassName}>{current.hint}</span>
                 </div>
+            </div>
+
+            <div className={styles.bridge} aria-hidden="true">
+                <span className={styles.bridgeLine} />
+                <span className={styles.bridgeLabel}>lexicon · focused</span>
+                <span className={styles.bridgeLine} />
             </div>
 
             <div className={styles.content}>
                 <p className={styles.brandName}>Wordfolio</p>
-                <p className={styles.tagline}>Your vocabulary, in focus.</p>
+                <p className={styles.tagline}>
+                    A private archive for every word worth remembering — across
+                    every language you carry.
+                </p>
 
                 <div className={styles.ctaRow}>
                     <Link
                         {...loginPath()}
                         className={`${styles.cta} ${styles.ctaLogin}`}
                     >
-                        Login
+                        Sign in
                     </Link>
                     <Link
                         {...registerPath()}
                         className={`${styles.cta} ${styles.ctaRegister}`}
                     >
-                        Register
+                        Create archive
                     </Link>
                 </div>
+
+                <ul className={styles.pillRow} aria-label="Features">
+                    <li className={styles.pill}>Entries · living</li>
+                    <li className={styles.pill}>Context · preserved</li>
+                    <li className={styles.pill}>Recall · intentional</li>
+                </ul>
             </div>
 
             <p className={styles.footerMark} aria-hidden="true">
-                ƒ/1.4 · ∞
+                ƒ/1.4 · {morphSequence.length} languages · ∞
             </p>
         </main>
     );
