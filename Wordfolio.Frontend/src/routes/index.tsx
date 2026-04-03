@@ -1,8 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { useAuthStore } from "../shared/stores/authStore";
-import { HomePage } from "../features/auth/pages/HomePage";
 import { dashboardPath } from "../features/auth/routes";
+import { ApertureLandingPage } from "../features/landing/pages/ApertureLandingPage";
 
 export const Route = createFileRoute("/")({
     beforeLoad: () => {
@@ -11,5 +11,5 @@ export const Route = createFileRoute("/")({
             throw redirect(dashboardPath());
         }
     },
-    component: HomePage,
+    component: ApertureLandingPage,
 });
