@@ -122,7 +122,7 @@ const columns: GridColDef[] = [
     {
         field: "created",
         headerName: "Created At",
-        width: 120,
+        width: 130,
         align: "right",
         headerAlign: "right",
     },
@@ -136,7 +136,7 @@ const columns: GridColDef[] = [
     {
         field: "count",
         headerName: "Entries",
-        width: 90,
+        width: 105,
         align: "right",
         headerAlign: "right",
     },

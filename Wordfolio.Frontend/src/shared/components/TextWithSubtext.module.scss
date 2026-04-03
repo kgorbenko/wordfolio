@@ -10,6 +10,7 @@
 
 .subtext:global(.MuiTypography-root) {
     display: block;
+    line-height: 18px;
 
     @media (min-width: 900px) {
         font-size: 12px;
