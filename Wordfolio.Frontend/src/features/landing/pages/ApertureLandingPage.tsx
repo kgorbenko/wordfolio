@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 
 import { loginPath, registerPath } from "../../auth/routes";
-import { ApertureRing } from "../components/aperture/ApertureRing";
+import { ApertureRing } from "../../../shared/components/aperture/ApertureRing";
 
 import styles from "./ApertureLandingPage.module.scss";
 

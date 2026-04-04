@@ -1,0 +1,180 @@
+@keyframes cardReveal {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.shell {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    max-width: 420px;
+    animation: cardReveal 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    :global {
+        .MuiOutlinedInput-root {
+            border-radius: 10px;
+            background: rgba(181, 245, 7, 0.03);
+
+            .MuiOutlinedInput-notchedOutline {
+                border-color: rgba(181, 245, 7, 0.32);
+                transition: border-color 0.25s ease;
+            }
+
+            &:hover .MuiOutlinedInput-notchedOutline {
+                border-color: rgba(181, 245, 7, 0.52);
+            }
+
+            &.Mui-focused .MuiOutlinedInput-notchedOutline {
+                border-color: rgba(181, 245, 7, 0.72);
+                border-width: 1px;
+            }
+
+            &.Mui-focused {
+                box-shadow: 0 0 0 3px rgba(181, 245, 7, 0.1);
+            }
+        }
+
+        .MuiInputLabel-root {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.78rem;
+            letter-spacing: 0.05em;
+
+            &.Mui-focused {
+                color: rgba(181, 245, 7, 0.92);
+            }
+        }
+
+        .MuiInputBase-input {
+            color: rgba(255, 255, 255, 0.94);
+        }
+
+        .MuiFormHelperText-root {
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+        .MuiIconButton-root {
+            color: rgba(255, 255, 255, 0.42);
+
+            &:hover {
+                color: rgba(181, 245, 7, 0.82);
+                background: rgba(181, 245, 7, 0.08);
+            }
+        }
+    }
+}
+
+.alert {
+    margin-bottom: 0;
+
+    :global {
+        .MuiAlert-message {
+            white-space: pre-wrap;
+        }
+    }
+}
+
+.submitButton {
+    width: 100%;
+    margin-top: 6px;
+    padding: 12px 32px;
+    font-family: "DM Sans", sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    border-radius: 100px;
+    cursor: pointer;
+    transition:
+        background 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease,
+        transform 0.2s ease,
+        opacity 0.2s ease;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    color: #0b0b0b;
+    background: linear-gradient(
+        165deg,
+        rgba(195, 248, 56, 1) 0%,
+        rgba(171, 232, 7, 1) 100%
+    );
+    border: 1px solid rgba(181, 245, 7, 0.5);
+    box-shadow:
+        0 0 22px rgba(181, 245, 7, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+
+    &:hover:not(:disabled) {
+        background: linear-gradient(
+            165deg,
+            rgba(205, 252, 80, 1) 0%,
+            rgba(195, 248, 56, 1) 100%
+        );
+        box-shadow:
+            0 0 36px rgba(181, 245, 7, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+        background: #9ad600;
+        transform: translateY(0);
+    }
+}
+
+.footerText {
+    color: rgba(255, 255, 255, 0.48) !important;
+    font-size: 0.78rem !important;
+}
+
+.footerLink {
+    color: rgba(181, 245, 7, 0.85) !important;
+    transition: color 0.2s ease !important;
+
+    &:hover {
+        color: rgba(181, 245, 7, 1) !important;
+    }
+}
+
+.stateBlock {
+    display: grid;
+    gap: 18px;
+
+    :global {
+        .MuiSkeleton-root {
+            background: rgba(181, 245, 7, 0.12);
+        }
+
+        .MuiPaper-root,
+        .MuiAlert-root {
+            background: rgba(14, 18, 14, 0.7);
+            border: 1px solid rgba(181, 245, 7, 0.16);
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .shell {
+        max-width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shell {
+        animation: none;
+    }
+}

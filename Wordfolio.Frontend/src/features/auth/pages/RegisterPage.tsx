@@ -2,26 +2,23 @@ import { useCallback } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-    Container,
-    Typography,
-    TextField,
-    Button,
-    Box,
-    Alert,
-    Link as MuiLink,
-} from "@mui/material";
+import { Alert, Link as MuiLink, TextField, Typography } from "@mui/material";
 
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { PasswordField } from "../../../shared/components/PasswordField";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
+import { SignalApertureAuthBackground } from "../components/SignalApertureAuthBackground";
+import { SignalApertureDialogPaper } from "../components/SignalApertureDialogPaper";
 import { useRegisterMutation } from "../hooks/useRegisterMutation";
 import { usePasswordRequirementsQuery } from "../hooks/usePasswordRequirementsQuery";
-import { createRegisterSchema, RegisterFormData } from "../schemas/authSchemas";
 import { parseApiError } from "../errorHandling";
 import { loginPath } from "../routes";
+import {
+    createRegisterSchema,
+    type RegisterFormData,
+} from "../schemas/authSchemas";
 
-import styles from "./RegisterPage.module.scss";
+import styles from "../components/SignalApertureAuthView.module.scss";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
@@ -73,20 +70,27 @@ export const RegisterPage = () => {
     );
 
     const renderContent = () => {
-        if (isLoadingRequirements) return <ContentSkeleton variant="form" />;
+        if (isLoadingRequirements) {
+            return (
+                <div className={styles.stateBlock}>
+                    <ContentSkeleton variant="form" />
+                </div>
+            );
+        }
 
         if (isRequirementsError || !passwordRequirements) {
             return (
-                <RetryOnError
-                    onRetry={() => void refetchPasswordRequirements()}
-                />
+                <div className={styles.stateBlock}>
+                    <RetryOnError
+                        onRetry={() => void refetchPasswordRequirements()}
+                    />
+                </div>
             );
         }
 
         return (
-            <Box
+            <form
                 className={styles.form}
-                component="form"
                 onSubmit={handleSubmit(onSubmit)}
                 noValidate
             >
@@ -130,45 +134,46 @@ export const RegisterPage = () => {
                     {...register("confirmPassword")}
                 />
 
-                <Button
-                    fullWidth
+                <button
                     type="submit"
-                    variant="contained"
                     disabled={registerMutation.isPending}
-                    className={styles.button}
+                    aria-busy={registerMutation.isPending}
+                    className={styles.submitButton}
                 >
-                    {registerMutation.isPending ? "Registering..." : "Register"}
-                </Button>
-
-                <Box className={styles.footer}>
-                    <Typography variant="body2">
-                        Already have an account?{" "}
-                        <MuiLink
-                            component={Link}
-                            {...loginPath()}
-                            underline="hover"
-                        >
-                            Login here
-                        </MuiLink>
-                    </Typography>
-                </Box>
-            </Box>
+                    {registerMutation.isPending
+                        ? "Opening archive…"
+                        : "Create archive"}
+                </button>
+            </form>
         );
     };
 
     return (
-        <div className="centered-page-container">
-            <Container maxWidth="sm" className={styles.container}>
-                <Typography
-                    className={styles.header}
-                    variant="h5"
-                    component="h1"
-                    align="center"
+        <SignalApertureAuthBackground>
+            <div className={styles.shell}>
+                <SignalApertureDialogPaper
+                    title="Wordfolio"
+                    subtitle="open a new archive"
+                    footer={
+                        <Typography
+                            variant="body2"
+                            className={styles.footerText}
+                        >
+                            Already have an account?{" "}
+                            <MuiLink
+                                component={Link}
+                                {...loginPath()}
+                                underline="hover"
+                                className={styles.footerLink}
+                            >
+                                Login here
+                            </MuiLink>
+                        </Typography>
+                    }
                 >
-                    Sign Up for Wordfolio
-                </Typography>
-                {renderContent()}
-            </Container>
-        </div>
+                    {renderContent()}
+                </SignalApertureDialogPaper>
+            </div>
+        </SignalApertureAuthBackground>
     );
 };

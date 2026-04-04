@@ -1,0 +1,218 @@
+@keyframes breathe {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.018);
+    }
+}
+
+.paper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: rgba(14, 18, 14, 0.88);
+    backdrop-filter: blur(32px) saturate(140%);
+    -webkit-backdrop-filter: blur(32px) saturate(140%);
+    border: 1px solid rgba(181, 245, 7, 0.3);
+    border-radius: 20px;
+    padding: 36px 36px 28px;
+    box-shadow:
+        0 0 80px rgba(0, 0, 0, 0.72),
+        0 0 0 1px rgba(181, 245, 7, 0.1),
+        0 0 80px rgba(181, 245, 7, 0.1),
+        0 0 160px rgba(181, 245, 7, 0.06),
+        inset 0 1px 0 rgba(181, 245, 7, 0.22);
+    transition:
+        border-color 0.4s ease,
+        box-shadow 0.4s ease;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 70%;
+        height: 1px;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(181, 245, 7, 0.78),
+            transparent
+        );
+        border-radius: 100%;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 14px;
+        pointer-events: none;
+        z-index: 0;
+        background:
+            linear-gradient(
+                    to right,
+                    rgba(181, 245, 7, 0.5) 14px,
+                    transparent 14px
+                )
+                top left / 14px 1px no-repeat,
+            linear-gradient(
+                    to bottom,
+                    rgba(181, 245, 7, 0.5) 14px,
+                    transparent 14px
+                )
+                top left / 1px 14px no-repeat,
+            linear-gradient(
+                    to left,
+                    rgba(181, 245, 7, 0.5) 14px,
+                    transparent 14px
+                )
+                top right / 14px 1px no-repeat,
+            linear-gradient(
+                    to bottom,
+                    rgba(181, 245, 7, 0.5) 14px,
+                    transparent 14px
+                )
+                top right / 1px 14px no-repeat,
+            linear-gradient(
+                    to right,
+                    rgba(181, 245, 7, 0.5) 14px,
+                    transparent 14px
+                )
+                bottom left / 14px 1px no-repeat,
+            linear-gradient(
+                    to top,
+                    rgba(181, 245, 7, 0.5) 14px,
+                    transparent 14px
+                )
+                bottom left / 1px 14px no-repeat,
+            linear-gradient(
+                    to left,
+                    rgba(181, 245, 7, 0.5) 14px,
+                    transparent 14px
+                )
+                bottom right / 14px 1px no-repeat,
+            linear-gradient(
+                    to top,
+                    rgba(181, 245, 7, 0.5) 14px,
+                    transparent 14px
+                )
+                bottom right / 1px 14px no-repeat;
+    }
+
+    &:focus-within {
+        border-color: rgba(181, 245, 7, 0.42);
+        box-shadow:
+            0 0 80px rgba(0, 0, 0, 0.75),
+            0 0 100px rgba(181, 245, 7, 0.14),
+            0 0 200px rgba(181, 245, 7, 0.07),
+            0 0 0 1px rgba(181, 245, 7, 0.12),
+            inset 0 1px 0 rgba(181, 245, 7, 0.28);
+    }
+}
+
+.header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.apertureIcon {
+    position: relative;
+    width: 54px;
+    height: 54px;
+    margin-bottom: 18px;
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: -16px;
+        border-radius: 50%;
+        background: radial-gradient(
+            circle,
+            rgba(181, 245, 7, 0.22) 0%,
+            transparent 68%
+        );
+        pointer-events: none;
+    }
+}
+
+.apertureRing {
+    width: 100%;
+    height: 100%;
+    animation: breathe 6s ease-in-out infinite;
+    filter: drop-shadow(0 0 12px rgba(181, 245, 7, 0.5))
+        drop-shadow(0 0 4px rgba(181, 245, 7, 0.8));
+}
+
+.title {
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    color: #fff !important;
+    letter-spacing: -0.03em !important;
+    line-height: 1.1 !important;
+    margin: 0 0 6px !important;
+    text-shadow: 0 0 48px rgba(181, 245, 7, 0.38);
+}
+
+.subtitle {
+    font-family: "DM Mono", "Fira Code", monospace;
+    font-size: 0.5625rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(181, 245, 7, 0.72);
+    margin: 0;
+}
+
+.content {
+    position: relative;
+    z-index: 1;
+}
+
+.footer {
+    position: relative;
+    z-index: 1;
+    margin-top: 20px;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .paper {
+        padding: 26px 20px 20px;
+        border-radius: 16px;
+        box-shadow:
+            0 0 60px rgba(0, 0, 0, 0.65),
+            0 0 0 1px rgba(181, 245, 7, 0.12),
+            0 0 60px rgba(181, 245, 7, 0.12),
+            0 0 120px rgba(181, 245, 7, 0.07),
+            inset 0 1px 0 rgba(181, 245, 7, 0.24);
+    }
+
+    .apertureIcon {
+        width: 46px;
+        height: 46px;
+        margin-bottom: 14px;
+    }
+
+    .title {
+        font-size: 1.5rem !important;
+    }
+
+    .header {
+        margin-bottom: 22px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .apertureRing {
+        animation: none;
+    }
+}

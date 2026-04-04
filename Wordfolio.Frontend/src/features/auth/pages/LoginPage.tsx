@@ -2,24 +2,18 @@ import { useNavigate, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import {
-    Container,
-    Typography,
-    TextField,
-    Button,
-    Box,
-    Alert,
-    Link as MuiLink,
-} from "@mui/material";
+import { Alert, Link as MuiLink, TextField, Typography } from "@mui/material";
 
 import { useAuthStore } from "../../../shared/stores/authStore";
 import { PasswordField } from "../../../shared/components/PasswordField";
+import { SignalApertureAuthBackground } from "../components/SignalApertureAuthBackground";
+import { SignalApertureDialogPaper } from "../components/SignalApertureDialogPaper";
 import { useLoginMutation } from "../hooks/useLoginMutation";
-import { createLoginSchema, LoginFormData } from "../schemas/authSchemas";
+import { createLoginSchema, type LoginFormData } from "../schemas/authSchemas";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { loginRouteApi, homePath, registerPath } from "../routes";
 
-import styles from "./LoginPage.module.scss";
+import styles from "../components/SignalApertureAuthView.module.scss";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -68,75 +62,75 @@ export const LoginPage = () => {
     };
 
     return (
-        <div className="centered-page-container">
-            <Container maxWidth="sm" className={styles.container}>
-                <Typography
-                    className={styles.header}
-                    variant="h5"
-                    component="h1"
-                    align="center"
-                >
-                    Login to Wordfolio
-                </Typography>
-                <Box
-                    className={styles.form}
-                    component="form"
-                    onSubmit={handleSubmit(onSubmit)}
-                    noValidate
-                >
-                    {errors.root && (
-                        <Alert severity="error" className={styles.alert}>
-                            {errors.root.message}
-                        </Alert>
-                    )}
-
-                    <TextField
-                        fullWidth
-                        id="email"
-                        label="Email"
-                        type="email"
-                        autoComplete="email"
-                        disabled={loginMutation.isPending}
-                        error={!!errors.email}
-                        helperText={errors.email?.message}
-                        {...register("email")}
-                    />
-
-                    <PasswordField
-                        fullWidth
-                        id="password"
-                        label="Password"
-                        autoComplete="current-password"
-                        disabled={loginMutation.isPending}
-                        error={!!errors.password}
-                        helperText={errors.password?.message}
-                        {...register("password")}
-                    />
-
-                    <Button
-                        fullWidth
-                        type="submit"
-                        variant="contained"
-                        disabled={loginMutation.isPending}
-                        className={styles.button}
-                    >
-                        {loginMutation.isPending ? "Logging in..." : "Login"}
-                    </Button>
-
-                    <Box className={styles.footer}>
-                        <Typography variant="body2">
+        <SignalApertureAuthBackground>
+            <div className={styles.shell}>
+                <SignalApertureDialogPaper
+                    title="Wordfolio"
+                    subtitle="enter your archive"
+                    footer={
+                        <Typography
+                            variant="body2"
+                            className={styles.footerText}
+                        >
                             Don't have an account?{" "}
                             <MuiLink
                                 component={Link}
                                 {...registerPath()}
                                 underline="hover"
+                                className={styles.footerLink}
                             >
                                 Register here
                             </MuiLink>
                         </Typography>
-                    </Box>
-                </Box>
-            </Container>
-        </div>
+                    }
+                >
+                    <form
+                        className={styles.form}
+                        onSubmit={handleSubmit(onSubmit)}
+                        noValidate
+                    >
+                        {errors.root && (
+                            <Alert severity="error" className={styles.alert}>
+                                {errors.root.message}
+                            </Alert>
+                        )}
+
+                        <TextField
+                            fullWidth
+                            id="email"
+                            label="Email"
+                            type="email"
+                            autoComplete="email"
+                            disabled={loginMutation.isPending}
+                            error={!!errors.email}
+                            helperText={errors.email?.message}
+                            {...register("email")}
+                        />
+
+                        <PasswordField
+                            fullWidth
+                            id="password"
+                            label="Password"
+                            autoComplete="current-password"
+                            disabled={loginMutation.isPending}
+                            error={!!errors.password}
+                            helperText={errors.password?.message}
+                            {...register("password")}
+                        />
+
+                        <button
+                            type="submit"
+                            disabled={loginMutation.isPending}
+                            aria-busy={loginMutation.isPending}
+                            className={styles.submitButton}
+                        >
+                            {loginMutation.isPending
+                                ? "Authenticating…"
+                                : "Enter archive"}
+                        </button>
+                    </form>
+                </SignalApertureDialogPaper>
+            </div>
+        </SignalApertureAuthBackground>
     );
 };

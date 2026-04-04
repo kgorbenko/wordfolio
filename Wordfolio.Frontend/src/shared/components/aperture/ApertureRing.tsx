@@ -1,48 +1,49 @@
-const CENTER = 200;
-const OUTER_RADIUS = 192;
-const RING_RADIUS = 172;
-const INNER_RADIUS = 76;
-const BLADE_COUNT = 8;
+const center = 200;
+const outerRadius = 192;
+const ringRadius = 172;
+const innerRadius = 76;
+const bladeCount = 8;
 
 const generateBlades = (): string[] =>
-    Array.from({ length: BLADE_COUNT }, (_, i) => {
-        const step = (2 * Math.PI) / BLADE_COUNT;
+    Array.from({ length: bladeCount }, (_, i) => {
+        const step = (2 * Math.PI) / bladeCount;
         const start = i * step - Math.PI / 2;
         const end = start + step * 0.78;
         const mid = (start + end) / 2;
-        const controlR = (RING_RADIUS + INNER_RADIUS) * 0.53;
+        const controlRadius = (ringRadius + innerRadius) * 0.53;
 
-        const x1 = CENTER + RING_RADIUS * Math.cos(start);
-        const y1 = CENTER + RING_RADIUS * Math.sin(start);
-        const x2 = CENTER + INNER_RADIUS * Math.cos(end);
-        const y2 = CENTER + INNER_RADIUS * Math.sin(end);
-        const cx = CENTER + controlR * Math.cos(mid);
-        const cy = CENTER + controlR * Math.sin(mid);
+        const x1 = center + ringRadius * Math.cos(start);
+        const y1 = center + ringRadius * Math.sin(start);
+        const x2 = center + innerRadius * Math.cos(end);
+        const y2 = center + innerRadius * Math.sin(end);
+        const cx = center + controlRadius * Math.cos(mid);
+        const cy = center + controlRadius * Math.sin(mid);
 
         return `M ${x1.toFixed(1)} ${y1.toFixed(1)} Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
     });
 
 type Tick = {
-    x1: number;
-    y1: number;
-    x2: number;
-    y2: number;
-    major: boolean;
+    readonly x1: number;
+    readonly y1: number;
+    readonly x2: number;
+    readonly y2: number;
+    readonly major: boolean;
 };
 
 const generateTicks = (): Tick[] => {
     const count = 72;
+
     return Array.from({ length: count }, (_, i) => {
         const angle = ((i * 5 - 90) * Math.PI) / 180;
         const major = i % 9 === 0;
-        const outer = OUTER_RADIUS;
-        const inner = major ? OUTER_RADIUS - 8 : OUTER_RADIUS - 4;
+        const outer = outerRadius;
+        const inner = major ? outerRadius - 8 : outerRadius - 4;
 
         return {
-            x1: CENTER + outer * Math.cos(angle),
-            y1: CENTER + outer * Math.sin(angle),
-            x2: CENTER + inner * Math.cos(angle),
-            y2: CENTER + inner * Math.sin(angle),
+            x1: center + outer * Math.cos(angle),
+            y1: center + outer * Math.sin(angle),
+            x2: center + inner * Math.cos(angle),
+            y2: center + inner * Math.sin(angle),
             major,
         };
     });
@@ -72,16 +73,16 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
         </defs>
 
         <circle
-            cx={CENTER}
-            cy={CENTER}
-            r={INNER_RADIUS + 10}
+            cx={center}
+            cy={center}
+            r={innerRadius + 10}
             fill="url(#aperture-core-glow)"
         />
 
         <circle
-            cx={CENTER}
-            cy={CENTER}
-            r={OUTER_RADIUS}
+            cx={center}
+            cy={center}
+            r={outerRadius}
             stroke="#B5F507"
             strokeWidth="0.3"
             opacity="0.1"
@@ -89,7 +90,7 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
 
         {ticks.map((tick, i) => (
             <line
-                key={`t${i}`}
+                key={`tick-${i}`}
                 x1={tick.x1.toFixed(1)}
                 y1={tick.y1.toFixed(1)}
                 x2={tick.x2.toFixed(1)}
@@ -102,27 +103,27 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
         ))}
 
         <circle
-            cx={CENTER}
-            cy={CENTER}
-            r={RING_RADIUS}
+            cx={center}
+            cy={center}
+            r={ringRadius}
             stroke="#B5F507"
             strokeWidth="1.2"
             opacity="0.55"
         />
 
         <circle
-            cx={CENTER}
-            cy={CENTER}
-            r={RING_RADIUS + 3}
+            cx={center}
+            cy={center}
+            r={ringRadius + 3}
             stroke="#B5F507"
             strokeWidth="0.3"
             opacity="0.15"
         />
 
-        {blades.map((d, i) => (
+        {blades.map((path, i) => (
             <path
-                key={`b${i}`}
-                d={d}
+                key={`blade-${i}`}
+                d={path}
                 stroke="#B5F507"
                 strokeWidth="0.7"
                 opacity="0.3"
@@ -132,29 +133,29 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
         ))}
 
         <circle
-            cx={CENTER}
-            cy={CENTER}
-            r={INNER_RADIUS}
+            cx={center}
+            cy={center}
+            r={innerRadius}
             stroke="#B5F507"
             strokeWidth="0.5"
             opacity="0.18"
         />
 
         <circle
-            cx={CENTER}
-            cy={CENTER}
-            r={INNER_RADIUS - 4}
+            cx={center}
+            cy={center}
+            r={innerRadius - 4}
             stroke="#B5F507"
             strokeWidth="0.25"
             opacity="0.06"
         />
 
-        <circle cx={CENTER} cy={CENTER} r="2.5" fill="#B5F507" opacity="0.12" />
+        <circle cx={center} cy={center} r="2.5" fill="#B5F507" opacity="0.12" />
 
         <circle
-            cx={CENTER}
-            cy={CENTER}
-            r={RING_RADIUS}
+            cx={center}
+            cy={center}
+            r={ringRadius}
             stroke="#E91E8C"
             strokeWidth="1.6"
             opacity="0.1"
@@ -164,9 +165,9 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
         />
 
         <circle
-            cx={CENTER}
-            cy={CENTER}
-            r={RING_RADIUS}
+            cx={center}
+            cy={center}
+            r={ringRadius}
             stroke="#E91E8C"
             strokeWidth="1"
             opacity="0.06"
@@ -176,8 +177,8 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
         />
 
         <text
-            x={CENTER + OUTER_RADIUS + 4}
-            y={CENTER - 2}
+            x={center + outerRadius + 4}
+            y={center - 2}
             fill="#B5F507"
             opacity="0.1"
             fontSize="5"
