@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 
 import { loginPath, registerPath } from "../../auth/routes";
 import { ApertureRing } from "../../../shared/components/aperture/ApertureRing";
+import type { GhostWord } from "../../../shared/components/aperture/GhostWord";
 
 import styles from "./ApertureLandingPage.module.scss";
 
@@ -27,17 +28,6 @@ const morphSequence: MorphEntry[] = [
     { word: "kelime", lang: "Türkçe", hint: "dilin en küçük parçası" },
     { word: "szó", lang: "Magyar", hint: "a gondolat hangja" },
 ];
-
-type GhostWord = {
-    text: string;
-    x: number;
-    y: number;
-    size: number;
-    blur: number;
-    opacity: number;
-    delay: number;
-    magenta?: boolean;
-};
 
 const ghostWords: GhostWord[] = [
     {
