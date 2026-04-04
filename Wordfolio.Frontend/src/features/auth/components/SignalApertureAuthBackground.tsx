@@ -9,7 +9,7 @@ type SignalApertureAuthBackgroundProps = {
 };
 
 export const SignalApertureAuthBackground = ({
-    children
+    children,
 }: SignalApertureAuthBackgroundProps) => (
     <main className={styles.page}>
         <div className={styles.apertureBackdrop} aria-hidden="true">

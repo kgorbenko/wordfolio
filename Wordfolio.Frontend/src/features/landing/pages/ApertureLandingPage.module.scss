@@ -33,25 +33,6 @@
     }
 }
 
-@keyframes ghostDrift {
-    0%,
-    100% {
-        transform: translate(0, 0);
-    }
-
-    25% {
-        transform: translate(4px, -6px);
-    }
-
-    50% {
-        transform: translate(-2px, 4px);
-    }
-
-    75% {
-        transform: translate(5px, 2px);
-    }
-}
-
 @keyframes footerPulse {
     0%,
     100% {
@@ -103,29 +84,6 @@
     gap: 0;
     padding: 32px 24px;
     box-sizing: border-box;
-}
-
-.ghostLayer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-}
-
-.ghostWord {
-    position: absolute;
-    font-family: "DM Sans", sans-serif;
-    font-weight: 400;
-    color: rgba(181, 245, 7, 0.15);
-    white-space: nowrap;
-    filter: blur(var(--ghost-blur, 2px));
-    animation: ghostDrift 14s ease-in-out infinite;
-    user-select: none;
-    line-height: 1;
-}
-
-.magentaGhost {
-    color: rgba(233, 30, 140, 0.1);
 }
 
 .apertureStage {
@@ -424,12 +382,6 @@
         height: clamp(240px, 65vw, 360px);
     }
 
-    .ghostWord {
-        &:nth-child(n + 9) {
-            display: none;
-        }
-    }
-
     .pillRow {
         gap: 6px;
     }
@@ -445,12 +397,6 @@
         height: 72vw;
         max-width: 300px;
         max-height: 300px;
-    }
-
-    .ghostWord {
-        &:nth-child(n + 6) {
-            display: none;
-        }
     }
 
     .bridge {
@@ -486,10 +432,6 @@
 
 @media (prefers-reduced-motion: reduce) {
     .apertureRing {
-        animation: none;
-    }
-
-    .ghostWord {
         animation: none;
     }
 
