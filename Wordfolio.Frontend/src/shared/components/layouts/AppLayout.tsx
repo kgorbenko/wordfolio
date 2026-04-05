@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Box, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Toolbar, useMediaQuery, useTheme } from "@mui/material";
 
 import { BreadcrumbPortalContext } from "../../contexts/BreadcrumbPortalContext";
 import { AppSidebar } from "./AppSidebar";
@@ -47,24 +47,24 @@ export const AppLayout = ({
 
     return (
         <BreadcrumbPortalContext.Provider value={portalNode}>
-            <Box className={styles.root} sx={{ bgcolor: "background.sidebar" }}>
-                {isMobile ? (
-                    <AppSidebar
-                        variant="temporary"
-                        open={sidebarOpen}
-                        onClose={() => setSidebarOpen(false)}
-                        {...sidebarProps}
-                    />
-                ) : (
-                    <AppSidebar variant="permanent" {...sidebarProps} />
-                )}
-
-                <Box className={styles.content}>
-                    <AppTopBar
-                        showMenuButton={isMobile}
-                        onMenuClick={() => setSidebarOpen(true)}
-                        portalRef={portalRef}
-                    />
+            <Box className={styles.root}>
+                <AppTopBar
+                    showMenuButton={isMobile}
+                    onMenuClick={() => setSidebarOpen(true)}
+                    portalRef={portalRef}
+                />
+                <Toolbar />
+                <Box className={styles.body}>
+                    {isMobile ? (
+                        <AppSidebar
+                            variant="temporary"
+                            open={sidebarOpen}
+                            onClose={() => setSidebarOpen(false)}
+                            {...sidebarProps}
+                        />
+                    ) : (
+                        <AppSidebar variant="permanent" {...sidebarProps} />
+                    )}
                     <main className={styles.main}>{children}</main>
                 </Box>
             </Box>

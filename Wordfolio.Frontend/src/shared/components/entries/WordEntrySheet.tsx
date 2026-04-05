@@ -53,9 +53,7 @@ export const WordEntrySheet = ({
             }}
         >
             <Box className={styles.header}>
-                <Typography variant="h6" fontWeight={600}>
-                    Add Word
-                </Typography>
+                <Typography variant="h6">Add Word</Typography>
                 <IconButton onClick={onClose} size="small">
                     <CloseIcon />
                 </IconButton>

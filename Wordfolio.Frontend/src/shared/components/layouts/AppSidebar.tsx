@@ -11,7 +11,6 @@ import {
     ListItemIcon,
     ListItemText,
     ListSubheader,
-    Toolbar,
     Typography,
 } from "@mui/material";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
@@ -22,6 +21,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import classnames from "classnames";
 
 import styles from "./AppSidebar.module.scss";
+import { WordfolioBrand } from "./WordfolioBrand";
 
 export interface NavCollection {
     readonly id: number;
@@ -80,6 +80,7 @@ interface SidebarContentProps {
     readonly onAddEntry: () => void;
     readonly onDraftsClick: () => void;
     readonly onCreateCollection?: () => void;
+    readonly showBrand?: boolean;
 }
 
 const SidebarListItem = ({
@@ -149,25 +150,20 @@ const SidebarContent = ({
     onAddEntry,
     onDraftsClick,
     onCreateCollection,
+    showBrand,
 }: SidebarContentProps) => (
     <Box className={styles.sidebarContent}>
-        <Toolbar
-            className={styles.header}
-            sx={{
-                bgcolor: "background.toolbar",
-            }}
-        >
-            <Box
-                className={styles.logo}
-                sx={{
-                    bgcolor: "background.surfaceAccent",
-                    border: "1px solid",
-                    borderColor: "divider",
-                }}
-            />
-            <span className={styles.logoText}>Wordfolio</span>
-        </Toolbar>
-
+        {showBrand && (
+            <>
+                <Box
+                    className={styles.sidebarBrand}
+                    sx={{ bgcolor: "primary.main" }}
+                >
+                    <WordfolioBrand />
+                </Box>
+                <Divider />
+            </>
+        )}
         <Box className={styles.nav}>
             <Box className={styles.addEntryWrapper}>
                 <Button variant="contained" fullWidth onClick={onAddEntry}>
@@ -228,14 +224,15 @@ const SidebarContent = ({
                     return (
                         <Box
                             key={collection.id}
-                            className={classnames({
+                            className={classnames(styles.collectionItem, {
                                 [styles.collectionGroup]: hasChildren,
                             })}
-                            sx={
-                                collection.expanded
+                            sx={(theme) => ({
+                                borderRadius: `${theme.shape.borderRadius}px`,
+                                ...(collection.expanded
                                     ? { bgcolor: "action.listSelected" }
-                                    : undefined
-                            }
+                                    : {}),
+                            })}
                         >
                             <SidebarListItem
                                 title={collection.name}
@@ -284,15 +281,13 @@ const SidebarContent = ({
             <Box
                 className={styles.avatar}
                 sx={{
-                    bgcolor: "background.surfaceAccent",
-                    border: "1px solid",
-                    borderColor: "divider",
+                    bgcolor: "primary.main",
                 }}
             >
                 <Box
                     component="span"
                     className={styles.avatarText}
-                    sx={{ color: "text.neutral" }}
+                    sx={{ color: "text.topbarPrimary" }}
                 >
                     {user.initials}
                 </Box>
@@ -356,7 +351,7 @@ export const AppSidebar = ({
                 onClose={onClose}
                 ModalProps={{ keepMounted: true }}
             >
-                <SidebarContent {...contentProps} />
+                <SidebarContent {...contentProps} showBrand />
             </Drawer>
         );
     }

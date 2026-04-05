@@ -11,6 +11,8 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+import Add from "@mui/icons-material/Add";
+import Label from "@mui/icons-material/Label";
 import Visibility from "@mui/icons-material/Visibility";
 import type { GridColDef, GridSortModel } from "@mui/x-data-grid";
 
@@ -150,12 +152,12 @@ const paletteGroups = [
     {
         label: "Backgrounds",
         swatches: [
-            { hex: "#1E1E1E", role: "Page" },
-            { hex: "#2C2C2C", role: "Surface" },
-            { hex: "#323232", role: "Surface Alt" },
-            { hex: "#262626", role: "Sidebar" },
-            { hex: "#444444", role: "Accent" },
-            { hex: "#363636", role: "Toolbar" },
+            { hex: "#141816", role: "Page" },
+            { hex: "#1B201C", role: "Surface" },
+            { hex: "#242924", role: "Surface Alt" },
+            { hex: "#1E1E1E", role: "Sidebar" },
+            { hex: "#3A3A3A", role: "Accent" },
+            { hex: "#2A2F2A", role: "Toolbar" },
         ],
     },
     {
@@ -172,22 +174,25 @@ const paletteGroups = [
     {
         label: "Borders",
         swatches: [
-            { hex: "#555555", role: "Default" },
-            { hex: "#666666", role: "Hover" },
+            { hex: "#555555", role: "Neutral Default" },
+            { hex: "#666666", role: "Neutral Hover" },
+            { hex: "rgba(22, 219, 147, 0.62)", role: "Input Rest" },
+            { hex: "rgba(22, 219, 147, 0.62)", role: "Input Hover" },
+            { hex: "#16DB93", role: "Input Focus" },
         ],
     },
     {
         label: "Accents",
         swatches: [
-            { hex: "#E91E8C", role: "Primary" },
-            { hex: "#B5F507", role: "Secondary" },
+            { hex: "#B5F507", role: "Lime / Action" },
+            { hex: "#E91E8C", role: "Magenta / Brand" },
         ],
     },
     {
         label: "Error",
         swatches: [
-            { hex: "#AA5555", role: "Default" },
-            { hex: "#CC6666", role: "Hover" },
+            { hex: "#D95555", role: "Default" },
+            { hex: "#E56767", role: "Hover" },
         ],
     },
 ];
@@ -340,7 +345,7 @@ export const DesignSystemPage = () => {
                                 <Box className={styles.paletteGroup}>
                                     {group.swatches.map((swatch) => (
                                         <ColorSwatch
-                                            key={swatch.hex}
+                                            key={`${swatch.hex}-${swatch.role}`}
                                             {...swatch}
                                         />
                                     ))}
@@ -358,19 +363,73 @@ export const DesignSystemPage = () => {
                         </Typography>
                         <Divider className={styles.sectionDivider} />
                         <Box className={styles.typographyStack}>
+                            <Typography variant="overline" display="block">
+                                Primary
+                            </Typography>
                             <Box className={styles.buttonsRow}>
                                 <Button variant="contained">Add Entry</Button>
                                 <Button variant="outlined">Cancel</Button>
-                                <Button variant="outlined" color="error">
+                                <Button variant="text">View</Button>
+                            </Box>
+                            <Typography variant="overline" display="block">
+                                Error
+                            </Typography>
+                            <Box className={styles.buttonsRow}>
+                                <Button variant="contained" color="error">
                                     Delete
                                 </Button>
+                                <Button variant="outlined" color="error">
+                                    Remove
+                                </Button>
+                                <Button variant="text" color="error">
+                                    Discard
+                                </Button>
                             </Box>
+                            <Typography variant="overline" display="block">
+                                With Icon
+                            </Typography>
+                            <Box className={styles.buttonsRow}>
+                                <Button variant="contained" startIcon={<Add />}>
+                                    Add Entry
+                                </Button>
+                                <Button variant="outlined" startIcon={<Add />}>
+                                    Add Entry
+                                </Button>
+                                <Button variant="text" startIcon={<Add />}>
+                                    Add Entry
+                                </Button>
+                            </Box>
+                            <Typography variant="overline" display="block">
+                                Disabled
+                            </Typography>
                             <Box className={styles.buttonsRow}>
                                 <Button variant="contained" disabled>
                                     Add Entry
                                 </Button>
                                 <Button variant="outlined" disabled>
                                     Cancel
+                                </Button>
+                                <Button variant="text" disabled>
+                                    View
+                                </Button>
+                            </Box>
+                            <Box className={styles.buttonsRow}>
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    disabled
+                                >
+                                    Delete
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    disabled
+                                >
+                                    Remove
+                                </Button>
+                                <Button variant="text" color="error" disabled>
+                                    Discard
                                 </Button>
                             </Box>
                         </Box>
@@ -389,6 +448,7 @@ export const DesignSystemPage = () => {
                                 label="Text Input"
                                 placeholder="Enter a name..."
                                 fullWidth
+                                helperText="This is a helpful hint."
                             />
                             <TextField
                                 label="Input with Icon"
@@ -407,41 +467,105 @@ export const DesignSystemPage = () => {
                                 }}
                             />
                             <TextField
-                                label="Text Input"
-                                placeholder="Enter a name..."
+                                select
+                                label="Select"
+                                defaultValue="custom"
+                                fullWidth
+                            >
+                                <MenuItem value="custom">Custom</MenuItem>
+                                <MenuItem value="api">API</MenuItem>
+                            </TextField>
+                            <TextField
+                                label="Textarea"
+                                placeholder="A feeling of great pleasure and happiness brought about by something good."
+                                fullWidth
+                                multiline
+                                rows={3}
+                            />
+                            <Typography
+                                variant="overline"
+                                display="block"
+                                className={styles.formSectionLabel}
+                            >
+                                Error States
+                            </Typography>
+                            <TextField
+                                label="Input with Icon"
+                                placeholder="Enter a value..."
                                 fullWidth
                                 error
                                 helperText="This field is required"
+                                slotProps={{
+                                    input: {
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton edge="end">
+                                                    <Visibility />
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    },
+                                }}
                             />
+                            <TextField
+                                select
+                                label="Select"
+                                defaultValue="custom"
+                                fullWidth
+                                error
+                                helperText="Please select a valid option"
+                            >
+                                <MenuItem value="custom">Custom</MenuItem>
+                                <MenuItem value="api">API</MenuItem>
+                            </TextField>
+                            <Typography
+                                variant="overline"
+                                display="block"
+                                className={styles.formSectionLabel}
+                            >
+                                Disabled States
+                            </Typography>
+                            <TextField
+                                label="Text Input"
+                                placeholder="Enter a name..."
+                                fullWidth
+                                disabled
+                            />
+                            <TextField
+                                label="Input with Icon"
+                                placeholder="Enter a value..."
+                                fullWidth
+                                disabled
+                                slotProps={{
+                                    input: {
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton edge="end" disabled>
+                                                    <Visibility />
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    },
+                                }}
+                            />
+                            <TextField
+                                select
+                                label="Select"
+                                defaultValue="custom"
+                                fullWidth
+                                disabled
+                            >
+                                <MenuItem value="custom">Custom</MenuItem>
+                                <MenuItem value="api">API</MenuItem>
+                            </TextField>
                             <TextField
                                 label="Textarea"
                                 placeholder="A feeling of great pleasure and happiness brought about by something good."
                                 multiline
                                 rows={3}
                                 fullWidth
+                                disabled
                             />
-                            <Box className={styles.formRow}>
-                                <TextField
-                                    select
-                                    label="Select"
-                                    defaultValue="custom"
-                                    className={styles.demoSelect}
-                                >
-                                    <MenuItem value="custom">Custom</MenuItem>
-                                    <MenuItem value="api">API</MenuItem>
-                                </TextField>
-                                <TextField
-                                    select
-                                    label="Status"
-                                    defaultValue="active"
-                                    className={styles.demoSelect}
-                                >
-                                    <MenuItem value="active">Active</MenuItem>
-                                    <MenuItem value="archived">
-                                        Archived
-                                    </MenuItem>
-                                </TextField>
-                            </Box>
                         </Box>
                     </Box>
 
@@ -506,15 +630,110 @@ export const DesignSystemPage = () => {
                             Chips
                         </Typography>
                         <Divider className={styles.sectionDivider} />
-                        <Box className={styles.chipsRow}>
-                            <Chip label="Custom" size="small" />
-                            <Chip label="API" size="small" color="primary" />
-                            <Chip
-                                label="Active"
-                                size="small"
-                                color="secondary"
-                            />
-                            <Chip label="Error" size="small" color="error" />
+                        <Box className={styles.typographyStack}>
+                            <Typography variant="overline" display="block">
+                                Outlined
+                            </Typography>
+                            <Box className={styles.chipsRow}>
+                                <Chip label="Default" />
+                                <Chip label="Primary" color="primary" />
+                                <Chip label="Secondary" color="secondary" />
+                                <Chip label="Error" color="error" />
+                                <Chip label="Disabled" disabled />
+                            </Box>
+
+                            <Typography variant="overline" display="block">
+                                Filled — Selected / Active
+                            </Typography>
+                            <Box className={styles.chipsRow}>
+                                <Chip label="Default" variant="filled" />
+                                <Chip
+                                    label="Primary"
+                                    variant="filled"
+                                    color="primary"
+                                />
+                                <Chip
+                                    label="Secondary"
+                                    variant="filled"
+                                    color="secondary"
+                                />
+                                <Chip
+                                    label="Error"
+                                    variant="filled"
+                                    color="error"
+                                />
+                                <Chip
+                                    label="Disabled"
+                                    variant="filled"
+                                    disabled
+                                />
+                            </Box>
+
+                            <Typography variant="overline" display="block">
+                                Clickable
+                            </Typography>
+                            <Box className={styles.chipsRow}>
+                                <Chip label="Default" onClick={() => {}} />
+                                <Chip
+                                    label="Primary"
+                                    color="primary"
+                                    onClick={() => {}}
+                                />
+                                <Chip
+                                    label="Secondary"
+                                    color="secondary"
+                                    onClick={() => {}}
+                                />
+                                <Chip
+                                    label="Error"
+                                    color="error"
+                                    onClick={() => {}}
+                                />
+                            </Box>
+
+                            <Typography variant="overline" display="block">
+                                Deletable
+                            </Typography>
+                            <Box className={styles.chipsRow}>
+                                <Chip label="Default" onDelete={() => {}} />
+                                <Chip
+                                    label="Primary"
+                                    color="primary"
+                                    onDelete={() => {}}
+                                />
+                                <Chip
+                                    label="Error"
+                                    color="error"
+                                    onDelete={() => {}}
+                                />
+                            </Box>
+
+                            <Typography variant="overline" display="block">
+                                With Leading Icon
+                            </Typography>
+                            <Box className={styles.chipsRow}>
+                                <Chip
+                                    label="Primary"
+                                    color="primary"
+                                    icon={<Label />}
+                                />
+                                <Chip
+                                    label="Error"
+                                    color="error"
+                                    icon={<Label />}
+                                />
+                            </Box>
+
+                            <Typography variant="overline" display="block">
+                                Size Hierarchy — Chip 26px vs Button 32px
+                            </Typography>
+                            <Box
+                                className={styles.chipsRow}
+                                sx={{ alignItems: "center" }}
+                            >
+                                <Chip label="Tag" />
+                                <Button variant="outlined">Action</Button>
+                            </Box>
                         </Box>
                     </Box>
                 </Box>

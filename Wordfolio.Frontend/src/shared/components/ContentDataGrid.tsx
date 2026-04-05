@@ -118,7 +118,7 @@ export const ContentDataGrid = <R extends GridValidRowModel>({
                 noResultsOverlay: {
                     icon: (
                         <SearchOffIcon
-                            sx={{ fontSize: 32, color: "secondary.main" }}
+                            sx={{ fontSize: 32, color: "primary.main" }}
                         />
                     ),
                     title: "No matches found",

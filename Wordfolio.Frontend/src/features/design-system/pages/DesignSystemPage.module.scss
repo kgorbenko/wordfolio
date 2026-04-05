@@ -77,14 +77,17 @@
 }
 
 .formInputs {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 20px;
+
+    @media (min-width: 900px) {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
-.formRow {
-    display: flex;
-    gap: 16px;
+.formSectionLabel {
+    grid-column: 1 / -1;
 }
 
 .statesRow {
@@ -106,8 +109,6 @@
 .chipsRow {
     display: flex;
     gap: 8px;
-}
-
-.demoSelect {
-    min-width: 160px;
+    flex-wrap: wrap;
+    align-items: center;
 }
