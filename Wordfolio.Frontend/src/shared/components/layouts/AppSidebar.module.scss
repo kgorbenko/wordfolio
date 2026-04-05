@@ -3,25 +3,29 @@
     flex-direction: column;
     height: 100%;
 
+    .sidebarBrand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 10px;
+        height: 48px;
+        flex-shrink: 0;
+    }
+
     .sidebarListItem:global(.MuiListItemButton-root) {
         height: 32px;
         border-radius: 8px;
 
         :global(.MuiListItemText-primary) {
-            font-size: 15px;
+            font-size: 13px;
 
             @media (min-width: 900px) {
-                font-size: 16px;
+                font-size: 14px;
             }
         }
 
         &:hover {
-            background-color: transparent;
-
-            :global(.MuiListItemText-primary) {
-                text-decoration: underline;
-                text-decoration-thickness: 1px;
-            }
+            background-color: rgba(255, 255, 255, 0.06);
         }
 
         &:global(.Mui-selected) {
@@ -41,130 +45,121 @@
 
     .childrenTree .sidebarListItem:global(.MuiListItemButton-root) {
         :global(.MuiListItemText-primary) {
-            font-size: 13px;
+            font-size: 12px;
 
             @media (min-width: 900px) {
-                font-size: 14px;
+                font-size: 13px;
             }
         }
     }
-}
 
-.collectionGroup {
-    border-radius: 8px;
-    margin-left: 8px;
-    margin-right: 8px;
-    transition: background-color 250ms ease;
-
-    .sidebarListItem:global(.MuiListItemButton-root) {
-        margin-left: 0;
-        margin-right: 0;
+    .collectionItem {
+        margin-bottom: 4px;
     }
-}
 
-.header:global(.MuiToolbar-root) {
-    padding: 0 10px;
-    gap: 10px;
-}
+    .collectionGroup {
+        margin-left: 8px;
+        margin-right: 8px;
+        transition: background-color 250ms ease;
 
-.logo {
-    width: 26px;
-    height: 26px;
-    border-radius: 8px;
-    flex-shrink: 0;
-}
-
-.logoText {
-    font-size: 18px;
-    letter-spacing: 0.1em;
-}
-
-.nav {
-    flex: 1;
-    overflow: auto;
-
-    .navDivider:global(.MuiDivider-root) {
-        margin: 5px 16px;
+        .sidebarListItem:global(.MuiListItemButton-root) {
+            margin-left: 0;
+            margin-right: 0;
+        }
     }
-}
 
-.addEntryWrapper {
-    padding: 10px 10px 5px;
-}
+    .nav {
+        flex: 1;
+        overflow: auto;
 
-.drafts {
-}
-
-.count {
-    margin-left: auto;
-    flex-shrink: 0;
-    font-size: 15px;
-
-    @media (min-width: 900px) {
-        font-size: 16px;
+        .navDivider:global(.MuiDivider-root) {
+            margin: 5px 16px;
+        }
     }
-}
 
-.childrenTree {
-    position: relative;
-    margin-left: 17px;
-    padding-left: 8px;
-    border-left-width: 1px;
-    border-left-style: solid;
-}
+    .addEntryWrapper {
+        padding: 10px 10px 5px;
+    }
 
-.childItemCount {
-    font-size: 13px;
-    margin-left: auto;
-    flex-shrink: 0;
+    .drafts {
+    }
 
-    @media (min-width: 900px) {
+    .count {
+        margin-left: auto;
+        flex-shrink: 0;
+        font-size: 13px;
+
+        @media (min-width: 900px) {
+            font-size: 14px;
+        }
+    }
+
+    .childrenTree {
+        position: relative;
+        margin-left: 17px;
+        padding-left: 8px;
+        border-left-width: 1px;
+        border-left-style: solid;
+    }
+
+    .childItemCount {
+        font-size: 12px;
+        margin-left: auto;
+        flex-shrink: 0;
+
+        @media (min-width: 900px) {
+            font-size: 13px;
+        }
+    }
+
+    .navIcon {
         font-size: 14px;
     }
-}
 
-.navIcon {
-    font-size: 14px !important;
-}
+    .collectionsEmpty {
+        margin-top: 50px;
+        padding: 0 16px 8px;
+        text-align: center;
+    }
 
-.userSection {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-}
+    .collectionsSubheader:global(.MuiListSubheader-root) {
+        padding-left: 10px;
+        padding-right: 10px;
+        margin-left: 8px;
+        margin-right: 8px;
+    }
 
-.avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
+    .userSection {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+    }
 
-.avatarText {
-    font-size: 11px;
-}
+    .avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
 
-.userEmail {
-    flex: 1;
-}
+    .avatarText {
+        font-size: 11px;
+    }
 
-.logoutIcon {
-    font-size: 16px !important;
-}
+    .userEmail {
+        flex: 1;
+        font-size: 13px;
 
-.collectionsEmpty {
-    margin-top: 50px;
-    padding: 0 16px 8px;
-    text-align: center;
-}
+        @media (min-width: 900px) {
+            font-size: 14px;
+        }
+    }
 
-.collectionsSubheader:global(.MuiListSubheader-root) {
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-left: 8px;
-    margin-right: 8px;
+    .logoutIcon {
+        font-size: 16px;
+    }
 }

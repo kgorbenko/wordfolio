@@ -1,7 +1,8 @@
-import { AppBar, IconButton, Toolbar } from "@mui/material";
+import { AppBar, Box, IconButton, Toolbar } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
 import styles from "./AppTopBar.module.scss";
+import { WordfolioBrand } from "./WordfolioBrand";
 
 interface AppTopBarProps {
     readonly onMenuClick?: () => void;
@@ -14,21 +15,27 @@ export const AppTopBar = ({
     showMenuButton,
     portalRef,
 }: AppTopBarProps) => (
-    <AppBar position="static" className={styles.appTopBar}>
+    <AppBar position="fixed" className={styles.appTopBar}>
         <Toolbar className={styles.appToolbar}>
+            {!showMenuButton && (
+                <Box className={styles.brandZone} sx={{ width: 278 }}>
+                    <WordfolioBrand />
+                </Box>
+            )}
+
+            <div ref={portalRef} className={styles.portalSlot} />
+
             {showMenuButton && (
                 <IconButton
-                    edge="start"
+                    edge="end"
                     aria-label="open menu"
                     onClick={onMenuClick}
                     className={styles.menuButton}
-                    sx={{ color: "text.primary" }}
+                    sx={{ color: "text.topbarPrimary" }}
                 >
                     <MenuIcon />
                 </IconButton>
             )}
-
-            <div ref={portalRef} />
         </Toolbar>
     </AppBar>
 );

@@ -11,7 +11,7 @@ interface EmptyStateProps {
 }
 
 const DefaultIcon = () => (
-    <DataArrayIcon sx={{ fontSize: 32, color: "secondary.main" }} />
+    <DataArrayIcon sx={{ fontSize: 32, color: "primary.main" }} />
 );
 
 export const EmptyState = ({

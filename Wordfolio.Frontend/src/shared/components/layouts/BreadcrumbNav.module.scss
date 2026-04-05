@@ -11,6 +11,7 @@ $desktopFontSize: 16px;
 
         .breadcrumbLabel {
             font-size: $mobileFontSize;
+            font-weight: 400;
 
             @media (min-width: 900px) {
                 font-size: $desktopFontSize;
@@ -23,6 +24,7 @@ $desktopFontSize: 16px;
 
         .separator {
             font-size: $mobileFontSize;
+            font-weight: 400;
             padding: 0 8px;
 
             @media (min-width: 900px) {

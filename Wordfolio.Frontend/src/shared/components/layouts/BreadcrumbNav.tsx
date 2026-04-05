@@ -81,7 +81,7 @@ export const BreadcrumbNav = ({
                         <Box
                             component="span"
                             className={styles.separator}
-                            sx={{ color: "text.secondary" }}
+                            sx={{ color: "text.topbarPrimary" }}
                         >
                             /
                         </Box>
@@ -89,7 +89,7 @@ export const BreadcrumbNav = ({
                     {crumb.isBackButton ? (
                         <IconButton
                             onClick={() => handleBack(crumb.to, crumb.params)}
-                            sx={{ color: "text.neutral", mr: 1.5 }}
+                            sx={{ color: "text.topbarMuted", mr: 1.5 }}
                         >
                             <ChevronLeftIcon />
                         </IconButton>
@@ -103,8 +103,8 @@ export const BreadcrumbNav = ({
                                 component="span"
                                 className={styles.breadcrumbLabel}
                                 sx={{
-                                    color: "text.neutral",
-                                    "&:hover": { color: "text.primary" },
+                                    color: "text.topbarMuted",
+                                    "&:hover": { color: "text.topbarPrimary" },
                                 }}
                             >
                                 {crumb.label}
@@ -114,7 +114,7 @@ export const BreadcrumbNav = ({
                         <Box
                             component="span"
                             className={styles.breadcrumbLabel}
-                            sx={{ color: "text.primary" }}
+                            sx={{ color: "text.topbarPrimary" }}
                         >
                             {crumb.label}
                         </Box>
