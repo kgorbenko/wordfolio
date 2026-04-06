@@ -58,20 +58,6 @@
             ellipse 100% 42% at 50% 100%,
             var(--atlas-atmosphere-subtle) 0%,
             transparent 50%
-        ),
-        repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 79px,
-            rgba(255, 255, 255, 0.018) 79px,
-            rgba(255, 255, 255, 0.018) 80px
-        ),
-        repeating-linear-gradient(
-            90deg,
-            transparent,
-            transparent 79px,
-            rgba(255, 255, 255, 0.018) 79px,
-            rgba(255, 255, 255, 0.018) 80px
         );
     overflow: hidden;
     display: flex;
