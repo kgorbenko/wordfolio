@@ -24,10 +24,22 @@ export const SignalApertureDialogPaper = ({
             <div className={styles.apertureIcon} aria-hidden="true">
                 <ApertureRing className={styles.apertureRing} />
             </div>
-            <Typography component="h1" className={styles.title}>
+            <Typography
+                variant="h2"
+                component="h1"
+                color="text.primary"
+                className={styles.title}
+            >
                 {title}
             </Typography>
-            <p className={styles.subtitle}>{subtitle}</p>
+            <Typography
+                component="p"
+                variant="overline"
+                color="primary.main"
+                className={styles.subtitle}
+            >
+                {subtitle}
+            </Typography>
         </header>
 
         <div className={styles.content}>{children}</div>

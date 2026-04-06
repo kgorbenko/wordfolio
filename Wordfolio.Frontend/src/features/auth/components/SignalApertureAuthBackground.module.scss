@@ -70,25 +70,25 @@
     position: relative;
     min-height: 100dvh;
     width: 100%;
-    background-color: #0a0d0a;
+    background-color: #141816;
     background-image: radial-gradient(
             ellipse 80% 72% at 50% 48%,
-            rgba(181, 245, 7, 0.26) 0%,
+            rgba(22, 219, 147, 0.04) 0%,
             transparent 60%
         ),
         radial-gradient(
             ellipse 55% 58% at 68% 54%,
-            rgba(181, 245, 7, 0.18) 0%,
+            rgba(22, 219, 147, 0.025) 0%,
             transparent 56%
         ),
         radial-gradient(
             ellipse 44% 46% at 32% 44%,
-            rgba(233, 30, 140, 0.1) 0%,
+            rgba(233, 30, 140, 0.035) 0%,
             transparent 52%
         ),
         radial-gradient(
             ellipse 100% 42% at 50% 100%,
-            rgba(181, 245, 7, 0.08) 0%,
+            rgba(22, 219, 147, 0.015) 0%,
             transparent 50%
         );
     display: flex;
@@ -116,8 +116,8 @@
     width: 100%;
     height: 100%;
     animation: ringRotateSlow 200s linear infinite;
-    filter: drop-shadow(0 0 22px rgba(181, 245, 7, 0.28))
-        drop-shadow(0 0 6px rgba(181, 245, 7, 0.5));
+    filter: drop-shadow(0 0 14px rgba(22, 219, 147, 0.09))
+        drop-shadow(0 0 4px rgba(22, 219, 147, 0.18));
 }
 
 .apertureBackdropSecondary {
@@ -137,7 +137,7 @@
     width: 100%;
     height: 100%;
     animation: ringRotateReverse 130s linear infinite;
-    filter: drop-shadow(0 0 10px rgba(181, 245, 7, 0.22));
+    filter: drop-shadow(0 0 8px rgba(22, 219, 147, 0.07));
 }
 
 .signalTraces {
@@ -157,9 +157,9 @@
         180deg,
         transparent 0%,
         transparent 18%,
-        rgba(181, 245, 7, 0.09) 32%,
-        rgba(181, 245, 7, 0.2) 50%,
-        rgba(181, 245, 7, 0.11) 66%,
+        rgba(22, 219, 147, 0.07) 32%,
+        rgba(22, 219, 147, 0.16) 50%,
+        rgba(22, 219, 147, 0.09) 66%,
         transparent 80%,
         transparent 100%
     );
@@ -176,9 +176,9 @@
     border-radius: 50%;
     background: radial-gradient(
         circle,
-        rgba(181, 245, 7, 0.2) 0%,
-        rgba(181, 245, 7, 0.08) 35%,
-        rgba(233, 30, 140, 0.06) 55%,
+        rgba(22, 219, 147, 0.035) 0%,
+        rgba(22, 219, 147, 0.018) 35%,
+        rgba(233, 30, 140, 0.018) 55%,
         transparent 68%
     );
     z-index: 2;
@@ -195,8 +195,8 @@
     height: clamp(360px, 80vh, 700px);
     background: radial-gradient(
         ellipse 70% 60% at 50% 50%,
-        rgba(181, 245, 7, 0.09) 0%,
-        rgba(181, 245, 7, 0.04) 45%,
+        rgba(22, 219, 147, 0.04) 0%,
+        rgba(22, 219, 147, 0.02) 45%,
         transparent 70%
     );
     z-index: 2;

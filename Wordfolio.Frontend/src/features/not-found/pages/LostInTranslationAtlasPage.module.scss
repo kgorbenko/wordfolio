@@ -1,3 +1,5 @@
+@use "../../../shared/styles/signalAperture" as signal;
+
 @keyframes float {
     0%,
     100% {
@@ -22,304 +24,338 @@
 }
 
 .page {
+    @include signal.panel-vars;
+    --atlas-atmosphere-strong: rgba(var(--signal-accent-rgb) / 0.04);
+    --atlas-atmosphere-medium: rgba(var(--signal-accent-rgb) / 0.025);
+    --atlas-atmosphere-subtle: rgba(var(--signal-accent-rgb) / 0.015);
+    --atlas-line: rgba(var(--signal-accent-rgb) / 0.12);
+    --atlas-node-dot: rgba(var(--signal-accent-rgb) / 0.45);
+    --atlas-node-glow: rgba(var(--signal-accent-rgb) / 0.2);
+    --atlas-node-word: rgba(var(--signal-accent-rgb) / 0.72);
+    --atlas-node-lang: rgba(var(--signal-accent-rgb) / 0.38);
+    --atlas-status-border: rgba(var(--signal-accent-rgb) / 0.18);
+    --atlas-status-text: rgba(var(--signal-accent-rgb) / 0.55);
+    --atlas-status-background: rgba(var(--signal-accent-rgb) / 0.04);
+    --atlas-status-dot: rgba(var(--signal-accent-rgb) / 0.6);
+    --atlas-status-glow: rgba(var(--signal-accent-rgb) / 0.3);
+    --atlas-digit-glow-primary: rgba(var(--signal-accent-rgb) / 0.18);
+    --atlas-digit-glow-secondary: rgba(var(--signal-accent-rgb) / 0.06);
     position: relative;
     min-height: 100dvh;
     width: 100%;
-    background-color: #1e1e1e;
+    background-color: #141816;
     background-image: radial-gradient(
-            ellipse 70% 55% at 50% 50%,
-            rgba(181, 245, 7, 0.045) 0%,
-            transparent 70%
-        ),
-        radial-gradient(
-            ellipse 100% 55% at 50% 105%,
-            rgba(233, 30, 140, 0.04) 0%,
+            ellipse 80% 72% at 50% 48%,
+            var(--atlas-atmosphere-strong) 0%,
             transparent 60%
         ),
-        repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 79px,
-            rgba(255, 255, 255, 0.018) 79px,
-            rgba(255, 255, 255, 0.018) 80px
+        radial-gradient(
+            ellipse 55% 58% at 68% 54%,
+            var(--atlas-atmosphere-medium) 0%,
+            transparent 56%
         ),
-        repeating-linear-gradient(
-            90deg,
-            transparent,
-            transparent 79px,
-            rgba(255, 255, 255, 0.018) 79px,
-            rgba(255, 255, 255, 0.018) 80px
+        radial-gradient(
+            ellipse 100% 42% at 50% 100%,
+            var(--atlas-atmosphere-subtle) 0%,
+            transparent 50%
         );
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-}
 
-.constellationSvg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 0;
-}
-
-.constellationLine {
-    stroke: rgba(181, 245, 7, 0.13);
-    stroke-width: 1px;
-    stroke-dasharray: 3 7;
-    stroke-linecap: round;
-    vector-effect: non-scaling-stroke;
-}
-
-.nodesLayer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 1;
-}
-
-.languageNode {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    animation: float 7s ease-in-out infinite;
-
-    &::before {
-        content: "";
+    .constellationSvg {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: rgba(181, 245, 7, 0.5);
-        box-shadow: 0 0 8px rgba(181, 245, 7, 0.25);
-        transform: translate(-50%, -50%);
-        z-index: -1;
-    }
-}
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
 
-.nodeWord {
-    font-family: "DM Sans", sans-serif;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: rgba(181, 245, 7, 0.8);
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-    line-height: 1;
-}
-
-.nodeLang {
-    font-family: "DM Sans", sans-serif;
-    font-size: 0.5625rem;
-    font-weight: 400;
-    color: rgba(181, 245, 7, 0.4);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    line-height: 1;
-}
-
-.hero {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 44px 48px 52px;
-    max-width: 580px;
-    width: calc(100% - 48px);
-    background: rgba(30, 30, 30, 0.76);
-    backdrop-filter: blur(28px);
-    -webkit-backdrop-filter: blur(28px);
-    border: 1px solid rgba(181, 245, 7, 0.11);
-    border-radius: 18px;
-    box-shadow:
-        0 0 0 1px rgba(181, 245, 7, 0.04),
-        0 32px 80px rgba(0, 0, 0, 0.7),
-        0 0 100px rgba(181, 245, 7, 0.04);
-    animation: heroFadeIn 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
-
-    &::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 12%;
-        right: 12%;
-        height: 1px;
-        background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(181, 245, 7, 0.32),
-            transparent
-        );
-        border-radius: 1px;
-    }
-}
-
-.statusBadge {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 4px 11px;
-    border: 1px solid rgba(181, 245, 7, 0.18);
-    border-radius: 100px;
-    font-family: "DM Mono", "Fira Code", monospace;
-    font-size: 0.5625rem;
-    letter-spacing: 0.13em;
-    color: rgba(181, 245, 7, 0.52);
-    background: rgba(181, 245, 7, 0.04);
-    margin-bottom: 28px;
-    user-select: none;
-}
-
-.statusDot {
-    display: inline-block;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: rgba(181, 245, 7, 0.55);
-    box-shadow: 0 0 6px rgba(181, 245, 7, 0.35);
-    flex-shrink: 0;
-}
-
-.globeWrapper {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 24px;
-    opacity: 0.85;
-}
-
-.display404 {
-    display: flex;
-    align-items: baseline;
-    gap: 2px;
-    margin-bottom: 20px;
-    line-height: 1;
-}
-
-.digit {
-    font-family: "DM Sans", sans-serif;
-    font-size: clamp(68px, 11vw, 136px);
-    font-weight: 800;
-    line-height: 0.9;
-    letter-spacing: -0.05em;
-    color: #b5f507;
-    text-shadow:
-        0 0 40px rgba(181, 245, 7, 0.28),
-        0 0 90px rgba(181, 245, 7, 0.1);
-    opacity: 0.92;
-}
-
-.digitZero {
-    font-family: "DM Sans", sans-serif;
-    font-size: clamp(76px, 12.5vw, 154px);
-    font-weight: 800;
-    line-height: 0.9;
-    letter-spacing: -0.05em;
-    color: #e91e8c;
-    text-shadow:
-        0 0 40px rgba(233, 30, 140, 0.28),
-        0 0 90px rgba(233, 30, 140, 0.1);
-}
-
-.title {
-    font-size: clamp(1.2rem, 2.8vw, 1.75rem) !important;
-    font-weight: 600 !important;
-    color: rgba(255, 255, 255, 0.95) !important;
-    letter-spacing: -0.025em !important;
-    line-height: 1.2 !important;
-    margin-bottom: 14px !important;
-}
-
-.subtitle {
-    color: rgba(255, 255, 255, 0.42) !important;
-    font-size: 0.9375rem !important;
-    line-height: 1.7 !important;
-    margin-bottom: 20px !important;
-    max-width: 360px;
-}
-
-.coordinatesRow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 32px;
-}
-
-.compassRose {
-    width: 11px;
-    height: 11px;
-    color: rgba(255, 255, 255, 0.2);
-    flex-shrink: 0;
-}
-
-.coordinates {
-    font-family: "DM Mono", "Fira Code", monospace;
-    font-size: 0.625rem;
-    letter-spacing: 0.12em;
-    color: rgba(255, 255, 255, 0.2);
-    margin: 0;
-    user-select: none;
-}
-
-.homeLinkRow {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-}
-
-.homeLink:global(.MuiLink-root) {
-    font-size: 0.875rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    text-decoration-thickness: 1px;
-}
-
-.terraNota {
-    font-family: "DM Mono", "Fira Code", monospace;
-    font-size: 0.5rem;
-    letter-spacing: 0.24em;
-    color: rgba(255, 255, 255, 0.1);
-    margin: 20px 0 0;
-    user-select: none;
-}
-
-@media (max-width: 768px) {
-    .languageNode {
-        &:nth-child(n + 7) {
+        @media (max-width: 480px) {
             display: none;
         }
-    }
-}
 
-@media (max-width: 480px) {
-    .nodesLayer,
-    .constellationSvg {
-        display: none;
+        .constellationLine {
+            stroke: var(--atlas-line);
+            stroke-width: 1px;
+            stroke-dasharray: 3 7;
+            stroke-linecap: round;
+            vector-effect: non-scaling-stroke;
+        }
+    }
+
+    .nodesLayer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+
+        @media (max-width: 480px) {
+            display: none;
+        }
+
+        .languageNode {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            animation: float 7s ease-in-out infinite;
+
+            @media (max-width: 768px) {
+                &:nth-child(n + 7) {
+                    display: none;
+                }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                animation: none;
+                transform: translate(-50%, -50%);
+            }
+
+            &::before {
+                content: "";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 5px;
+                height: 5px;
+                border-radius: 50%;
+                background: var(--atlas-node-dot);
+                box-shadow: 0 0 8px var(--atlas-node-glow);
+                transform: translate(-50%, -50%);
+                z-index: -1;
+            }
+
+            .nodeWord {
+                font-family: "DM Sans", sans-serif;
+                font-size: 0.8125rem;
+                font-weight: 500;
+                color: var(--atlas-node-word);
+                letter-spacing: 0.02em;
+                white-space: nowrap;
+                line-height: 1;
+            }
+
+            .nodeLang {
+                font-family: "DM Sans", sans-serif;
+                font-size: 0.5625rem;
+                font-weight: 400;
+                color: var(--atlas-node-lang);
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                line-height: 1;
+            }
+        }
     }
 
     .hero {
-        padding: 40px 28px;
-        border-radius: 14px;
-        width: calc(100% - 32px);
-        margin: 16px;
-    }
-}
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 44px 48px 52px;
+        max-width: 580px;
+        width: calc(100% - 48px);
+        background: var(--signal-panel-surface);
+        backdrop-filter: blur(32px) saturate(140%);
+        -webkit-backdrop-filter: blur(32px) saturate(140%);
+        border: 1px solid var(--signal-panel-border);
+        border-radius: 20px;
+        box-shadow: var(--signal-panel-shadow);
+        animation: heroFadeIn 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
 
-@media (prefers-reduced-motion: reduce) {
-    .languageNode {
-        animation: none;
-        transform: translate(-50%, -50%);
-    }
+        @media (max-width: 480px) {
+            padding: 40px 28px;
+            border-radius: 14px;
+            width: calc(100% - 32px);
+            margin: 16px;
+        }
 
-    .hero {
-        animation: none;
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+        }
+
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 1px;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                var(--signal-panel-top-highlight),
+                transparent
+            );
+            border-radius: 100%;
+            pointer-events: none;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 14px;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                linear-gradient(
+                        to right,
+                        var(--signal-panel-corner-accent) 14px,
+                        transparent 14px
+                    )
+                    top left / 14px 1px no-repeat,
+                linear-gradient(
+                        to bottom,
+                        var(--signal-panel-corner-accent) 14px,
+                        transparent 14px
+                    )
+                    top left / 1px 14px no-repeat,
+                linear-gradient(
+                        to left,
+                        var(--signal-panel-corner-accent) 14px,
+                        transparent 14px
+                    )
+                    top right / 14px 1px no-repeat,
+                linear-gradient(
+                        to bottom,
+                        var(--signal-panel-corner-accent) 14px,
+                        transparent 14px
+                    )
+                    top right / 1px 14px no-repeat,
+                linear-gradient(
+                        to right,
+                        var(--signal-panel-corner-accent) 14px,
+                        transparent 14px
+                    )
+                    bottom left / 14px 1px no-repeat,
+                linear-gradient(
+                        to top,
+                        var(--signal-panel-corner-accent) 14px,
+                        transparent 14px
+                    )
+                    bottom left / 1px 14px no-repeat,
+                linear-gradient(
+                        to left,
+                        var(--signal-panel-corner-accent) 14px,
+                        transparent 14px
+                    )
+                    bottom right / 14px 1px no-repeat,
+                linear-gradient(
+                        to top,
+                        var(--signal-panel-corner-accent) 14px,
+                        transparent 14px
+                    )
+                    bottom right / 1px 14px no-repeat;
+        }
+
+        .statusBadge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 4px 11px;
+            border: 1px solid var(--atlas-status-border);
+            border-radius: 100px;
+            font-family: "DM Mono", "Fira Code", monospace;
+            font-size: 0.5625rem;
+            letter-spacing: 0.13em;
+            color: var(--atlas-status-text);
+            background: var(--atlas-status-background);
+            margin-bottom: 28px;
+            user-select: none;
+
+            .statusDot {
+                display: inline-block;
+                width: 5px;
+                height: 5px;
+                border-radius: 50%;
+                background: var(--atlas-status-dot);
+                box-shadow: 0 0 6px var(--atlas-status-glow);
+                flex-shrink: 0;
+            }
+        }
+
+        .globeWrapper {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 24px;
+            color: var(--signal-accent);
+            opacity: 0.9;
+        }
+
+        .display404 {
+            display: flex;
+            align-items: baseline;
+            gap: 2px;
+            margin-bottom: 20px;
+            line-height: 1;
+
+            .digit {
+                font-family: "DM Sans", sans-serif;
+                font-size: clamp(68px, 11vw, 136px);
+                font-weight: 800;
+                line-height: 0.9;
+                letter-spacing: -0.05em;
+                color: var(--signal-accent);
+                text-shadow:
+                    0 0 30px var(--atlas-digit-glow-primary),
+                    0 0 60px var(--atlas-digit-glow-secondary);
+                opacity: 0.92;
+            }
+        }
+
+        .title {
+            margin-bottom: 14px;
+        }
+
+        .subtitle {
+            max-width: 360px;
+            margin-bottom: 20px;
+        }
+
+        .coordinatesRow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+
+            .compassRose {
+                width: 11px;
+                height: 11px;
+                color: rgba(255, 255, 255, 0.2);
+                flex-shrink: 0;
+            }
+
+            .coordinates {
+                font-family: "DM Mono", "Fira Code", monospace;
+                font-size: 0.625rem;
+                letter-spacing: 0.12em;
+                color: rgba(255, 255, 255, 0.2);
+                margin: 0;
+                user-select: none;
+            }
+        }
+
+        .homeLinkRow {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .terraNota {
+            font-family: "DM Mono", "Fira Code", monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.24em;
+            color: rgba(255, 255, 255, 0.1);
+            margin: 20px 0 0;
+            user-select: none;
+        }
     }
 }

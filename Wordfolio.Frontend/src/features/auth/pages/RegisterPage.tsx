@@ -2,7 +2,13 @@ import { useCallback } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Alert, Link as MuiLink, TextField, Typography } from "@mui/material";
+import {
+    Alert,
+    Button,
+    Link as MuiLink,
+    TextField,
+    Typography,
+} from "@mui/material";
 
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { PasswordField } from "../../../shared/components/PasswordField";
@@ -134,16 +140,18 @@ export const RegisterPage = () => {
                     {...register("confirmPassword")}
                 />
 
-                <button
+                <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
                     type="submit"
                     disabled={registerMutation.isPending}
                     aria-busy={registerMutation.isPending}
-                    className={styles.submitButton}
                 >
                     {registerMutation.isPending
                         ? "Opening archive…"
                         : "Create archive"}
-                </button>
+                </Button>
             </form>
         );
     };
@@ -155,16 +163,12 @@ export const RegisterPage = () => {
                     title="Wordfolio"
                     subtitle="open a new archive"
                     footer={
-                        <Typography
-                            variant="body2"
-                            className={styles.footerText}
-                        >
+                        <Typography variant="body2">
                             Already have an account?{" "}
                             <MuiLink
                                 component={Link}
                                 {...loginPath()}
                                 underline="hover"
-                                className={styles.footerLink}
                             >
                                 Login here
                             </MuiLink>
