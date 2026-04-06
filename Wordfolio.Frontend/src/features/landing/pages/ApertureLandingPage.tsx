@@ -104,13 +104,15 @@ export const ApertureLandingPage = () => {
 
             <div className={styles.content}>
                 <Typography
+                    variant="h2"
                     component="p"
-                    color="text.secondary"
+                    color="text.primary"
                     className={styles.brandName}
                 >
                     Wordfolio
                 </Typography>
                 <Typography
+                    variant="body2"
                     component="p"
                     color="text.secondary"
                     className={styles.tagline}

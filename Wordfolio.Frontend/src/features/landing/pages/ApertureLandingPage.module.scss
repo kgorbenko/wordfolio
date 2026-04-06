@@ -287,11 +287,6 @@
         text-align: center;
 
         .brandName {
-            font-family: "DM Sans", sans-serif;
-            font-size: 0.6875rem;
-            font-weight: 500;
-            letter-spacing: 0.3em;
-            text-transform: uppercase;
             margin: 0 0 10px;
             animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s
                 both;
@@ -303,10 +298,6 @@
         }
 
         .tagline {
-            font-family: "DM Sans", sans-serif;
-            font-size: clamp(0.875rem, 1.8vw, 1.05rem);
-            font-weight: 400;
-            line-height: 1.7;
             max-width: 380px;
             margin: 0 0 26px;
             animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.65s

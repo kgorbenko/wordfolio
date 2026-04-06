@@ -167,7 +167,7 @@ const GlobeSvg = () => (
             cx="32"
             cy="32"
             r="28.5"
-            stroke="#16db93"
+            stroke="currentColor"
             strokeWidth="1.5"
             opacity="0.7"
         />
@@ -176,7 +176,7 @@ const GlobeSvg = () => (
             cy="32"
             rx="28.5"
             ry="11"
-            stroke="#16db93"
+            stroke="currentColor"
             strokeWidth="1"
             opacity="0.3"
         />
@@ -185,7 +185,7 @@ const GlobeSvg = () => (
             cy="18"
             rx="21"
             ry="8"
-            stroke="#16db93"
+            stroke="currentColor"
             strokeWidth="0.8"
             opacity="0.22"
         />
@@ -194,19 +194,19 @@ const GlobeSvg = () => (
             cy="46"
             rx="21"
             ry="8"
-            stroke="#16db93"
+            stroke="currentColor"
             strokeWidth="0.8"
             opacity="0.22"
         />
         <path
             d="M 32 3.5 C 44 17 44 47 32 60.5"
-            stroke="#16db93"
+            stroke="currentColor"
             strokeWidth="1"
             opacity="0.3"
         />
         <path
             d="M 32 3.5 C 20 17 20 47 32 60.5"
-            stroke="#16db93"
+            stroke="currentColor"
             strokeWidth="1"
             opacity="0.3"
         />
@@ -215,7 +215,7 @@ const GlobeSvg = () => (
             y1="32"
             x2="60.5"
             y2="32"
-            stroke="#16db93"
+            stroke="currentColor"
             strokeWidth="0.8"
             opacity="0.22"
         />
@@ -281,28 +281,18 @@ export const LostInTranslationAtlasPage = () => {
                 </div>
 
                 <Typography
+                    variant="h2"
                     component="h1"
-                    sx={{
-                        fontFamily: '"DM Sans", sans-serif',
-                        fontSize: { xs: "1.2rem", sm: "1.75rem" },
-                        fontWeight: 600,
-                        color: "text.primary",
-                        letterSpacing: "-0.025em",
-                        lineHeight: 1.2,
-                        mb: "14px",
-                    }}
+                    color="text.primary"
+                    className={styles.title}
                 >
                     Lost in Translation
                 </Typography>
 
                 <Typography
-                    sx={{
-                        color: "text.secondary",
-                        fontSize: "0.9375rem",
-                        lineHeight: 1.7,
-                        mb: "20px",
-                        maxWidth: "360px",
-                    }}
+                    variant="body2"
+                    color="text.secondary"
+                    className={styles.subtitle}
                 >
                     This page exists in no known language.
                     <br />
