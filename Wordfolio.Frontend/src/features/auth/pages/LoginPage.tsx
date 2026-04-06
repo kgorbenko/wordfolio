@@ -2,7 +2,13 @@ import { useNavigate, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { Alert, Link as MuiLink, TextField, Typography } from "@mui/material";
+import {
+    Alert,
+    Button,
+    Link as MuiLink,
+    TextField,
+    Typography,
+} from "@mui/material";
 
 import { useAuthStore } from "../../../shared/stores/authStore";
 import { PasswordField } from "../../../shared/components/PasswordField";
@@ -68,16 +74,12 @@ export const LoginPage = () => {
                     title="Wordfolio"
                     subtitle="enter your archive"
                     footer={
-                        <Typography
-                            variant="body2"
-                            className={styles.footerText}
-                        >
+                        <Typography variant="body2">
                             Don't have an account?{" "}
                             <MuiLink
                                 component={Link}
                                 {...registerPath()}
                                 underline="hover"
-                                className={styles.footerLink}
                             >
                                 Register here
                             </MuiLink>
@@ -118,16 +120,18 @@ export const LoginPage = () => {
                             {...register("password")}
                         />
 
-                        <button
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            fullWidth
                             type="submit"
                             disabled={loginMutation.isPending}
                             aria-busy={loginMutation.isPending}
-                            className={styles.submitButton}
                         >
                             {loginMutation.isPending
                                 ? "Authenticating…"
                                 : "Enter archive"}
-                        </button>
+                        </Button>
                     </form>
                 </SignalApertureDialogPaper>
             </div>

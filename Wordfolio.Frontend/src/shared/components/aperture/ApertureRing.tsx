@@ -66,9 +66,9 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
     >
         <defs>
             <radialGradient id="aperture-core-glow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#B5F507" stopOpacity="0.06" />
-                <stop offset="40%" stopColor="#B5F507" stopOpacity="0.02" />
-                <stop offset="100%" stopColor="#B5F507" stopOpacity="0" />
+                <stop offset="0%" stopColor="#16DB93" stopOpacity="0.06" />
+                <stop offset="40%" stopColor="#16DB93" stopOpacity="0.02" />
+                <stop offset="100%" stopColor="#16DB93" stopOpacity="0" />
             </radialGradient>
         </defs>
 
@@ -83,7 +83,7 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
             cx={center}
             cy={center}
             r={outerRadius}
-            stroke="#B5F507"
+            stroke="#16DB93"
             strokeWidth="0.3"
             opacity="0.1"
         />
@@ -95,7 +95,7 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
                 y1={tick.y1.toFixed(1)}
                 x2={tick.x2.toFixed(1)}
                 y2={tick.y2.toFixed(1)}
-                stroke="#B5F507"
+                stroke="#16DB93"
                 strokeWidth={tick.major ? "0.7" : "0.35"}
                 opacity={tick.major ? "0.24" : "0.1"}
                 strokeLinecap="round"
@@ -106,7 +106,7 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
             cx={center}
             cy={center}
             r={ringRadius}
-            stroke="#B5F507"
+            stroke="#16DB93"
             strokeWidth="1.2"
             opacity="0.55"
         />
@@ -115,7 +115,7 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
             cx={center}
             cy={center}
             r={ringRadius + 3}
-            stroke="#B5F507"
+            stroke="#16DB93"
             strokeWidth="0.3"
             opacity="0.15"
         />
@@ -124,7 +124,7 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
             <path
                 key={`blade-${i}`}
                 d={path}
-                stroke="#B5F507"
+                stroke="#16DB93"
                 strokeWidth="0.7"
                 opacity="0.3"
                 fill="none"
@@ -136,7 +136,7 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
             cx={center}
             cy={center}
             r={innerRadius}
-            stroke="#B5F507"
+            stroke="#16DB93"
             strokeWidth="0.5"
             opacity="0.18"
         />
@@ -145,12 +145,12 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
             cx={center}
             cy={center}
             r={innerRadius - 4}
-            stroke="#B5F507"
+            stroke="#16DB93"
             strokeWidth="0.25"
             opacity="0.06"
         />
 
-        <circle cx={center} cy={center} r="2.5" fill="#B5F507" opacity="0.12" />
+        <circle cx={center} cy={center} r="2.5" fill="#16DB93" opacity="0.12" />
 
         <circle
             cx={center}
@@ -179,7 +179,7 @@ export const ApertureRing = ({ className }: ApertureRingProps) => (
         <text
             x={center + outerRadius + 4}
             y={center - 2}
-            fill="#B5F507"
+            fill="#16DB93"
             opacity="0.1"
             fontSize="5"
             fontFamily="monospace"

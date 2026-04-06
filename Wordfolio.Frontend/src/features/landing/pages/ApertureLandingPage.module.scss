@@ -60,10 +60,10 @@
     position: relative;
     min-height: 100dvh;
     width: 100%;
-    background-color: #0b0b0b;
+    background-color: #141816;
     background-image: radial-gradient(
             ellipse 60% 50% at 50% 38%,
-            rgba(181, 245, 7, 0.03) 0%,
+            rgba(22, 219, 147, 0.025) 0%,
             transparent 65%
         ),
         radial-gradient(
@@ -73,7 +73,7 @@
         ),
         radial-gradient(
             ellipse 80% 60% at 50% 100%,
-            rgba(181, 245, 7, 0.015) 0%,
+            rgba(22, 219, 147, 0.012) 0%,
             transparent 50%
         );
     display: flex;
@@ -84,385 +84,321 @@
     gap: 0;
     padding: 32px 24px;
     box-sizing: border-box;
-}
 
-.apertureStage {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: clamp(260px, 52vmin, 460px);
-    height: clamp(260px, 52vmin, 460px);
-    flex-shrink: 0;
-    animation: ringReveal 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
-
-    &::after {
-        content: "";
-        position: absolute;
-        width: 52%;
-        height: 52%;
-        border-radius: 50%;
-        background: radial-gradient(
-            circle,
-            rgba(181, 245, 7, 0.06) 0%,
-            rgba(255, 255, 255, 0.018) 40%,
-            transparent 70%
-        );
-        z-index: 1;
-        pointer-events: none;
-    }
-}
-
-.apertureRing {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    animation: breathe 7s ease-in-out infinite;
-}
-
-.morphContainer {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    pointer-events: none;
-}
-
-.morphWord {
-    font-family: "DM Sans", sans-serif;
-    font-size: clamp(2.2rem, 5.5vw, 3.6rem);
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-    transition:
-        opacity 0.48s cubic-bezier(0.4, 0, 0.2, 1),
-        transform 0.48s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 1;
-    transform: translateY(0);
-    text-shadow:
-        0 0 24px rgba(255, 255, 255, 0.12),
-        0 0 60px rgba(181, 245, 7, 0.07),
-        0 0 100px rgba(181, 245, 7, 0.03);
-}
-
-.morphExiting {
-    opacity: 0;
-    transform: translateY(-14px);
-}
-
-.morphEntering {
-    opacity: 0;
-    transform: translateY(14px);
-    transition: none;
-}
-
-.morphLang {
-    font-family: "DM Mono", "Fira Code", monospace;
-    font-size: 0.625rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: rgba(181, 245, 7, 0.5);
-    transition: opacity 0.4s ease;
-    opacity: 1;
-}
-
-.morphLangHidden {
-    opacity: 0;
-}
-
-.morphHint {
-    font-family: "DM Sans", sans-serif;
-    font-size: 0.65rem;
-    font-weight: 400;
-    font-style: italic;
-    color: rgba(255, 255, 255, 0.18);
-    letter-spacing: 0.01em;
-    margin-top: 4px;
-    transition: opacity 0.5s ease 0.15s;
-    opacity: 1;
-    max-width: 200px;
-    text-align: center;
-    line-height: 1.4;
-}
-
-.morphHintHidden {
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.bridge {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 12px;
-    margin-bottom: 18px;
-    animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
-}
-
-.bridgeLine {
-    display: block;
-    width: 28px;
-    height: 1px;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(181, 245, 7, 0.25),
-        transparent
-    );
-}
-
-.bridgeLabel {
-    font-family: "DM Mono", "Fira Code", monospace;
-    font-size: 0.5rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: rgba(181, 245, 7, 0.3);
-    white-space: nowrap;
-}
-
-.content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-}
-
-.brandName {
-    font-family: "DM Sans", sans-serif;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.55);
-    margin: 0 0 10px;
-    animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
-}
-
-.tagline {
-    font-family: "DM Sans", sans-serif;
-    font-size: clamp(0.875rem, 1.8vw, 1.05rem);
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.42);
-    line-height: 1.7;
-    max-width: 380px;
-    margin: 0 0 26px;
-    animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.65s both;
-}
-
-.ctaRow {
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.8s both;
-}
-
-.cta {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 34px;
-    font-family: "DM Sans", sans-serif;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-decoration: none;
-    border-radius: 100px;
-    transition:
-        background 0.3s ease,
-        color 0.3s ease,
-        border-color 0.3s ease,
-        box-shadow 0.3s ease,
-        transform 0.2s ease;
-    cursor: pointer;
-}
-
-.ctaLogin {
-    background: linear-gradient(
-        165deg,
-        rgba(195, 248, 56, 1) 0%,
-        rgba(171, 232, 7, 1) 100%
-    );
-    color: #0b0b0b;
-    border: 1px solid rgba(181, 245, 7, 0.45);
-    box-shadow:
-        0 0 18px rgba(181, 245, 7, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.12);
-
-    &:hover {
-        background: linear-gradient(
-            165deg,
-            rgba(205, 252, 80, 1) 0%,
-            rgba(195, 248, 56, 1) 100%
-        );
-        box-shadow:
-            0 0 28px rgba(181, 245, 7, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.15);
-        transform: translateY(-1px);
-    }
-
-    &:active {
-        background: #9ad600;
-        transform: translateY(0);
-    }
-}
-
-.ctaRegister {
-    background: rgba(255, 255, 255, 0.03);
-    color: rgba(255, 255, 255, 0.55);
-    border: 1px solid rgba(181, 245, 7, 0.1);
-    backdrop-filter: blur(8px);
-
-    &:hover {
-        border-color: rgba(181, 245, 7, 0.3);
-        color: rgba(255, 255, 255, 0.8);
-        background: rgba(181, 245, 7, 0.04);
-        box-shadow: 0 0 20px rgba(181, 245, 7, 0.06);
-        transform: translateY(-1px);
-    }
-
-    &:active {
-        border-color: rgba(181, 245, 7, 0.4);
-        transform: translateY(0);
-    }
-}
-
-.pillRow {
-    display: flex;
-    gap: 8px;
-    list-style: none;
-    padding: 0;
-    margin: 20px 0 0;
-    animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.95s both;
-}
-
-.pill {
-    font-family: "DM Mono", "Fira Code", monospace;
-    font-size: 0.5rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.22);
-    padding: 4px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 100px;
-    white-space: nowrap;
-    transition:
-        border-color 0.3s ease,
-        color 0.3s ease;
-
-    &:hover {
-        border-color: rgba(181, 245, 7, 0.15);
-        color: rgba(255, 255, 255, 0.35);
-    }
-}
-
-.footerMark {
-    position: absolute;
-    bottom: 22px;
-    font-family: "DM Mono", "Fira Code", monospace;
-    font-size: 0.5rem;
-    letter-spacing: 0.22em;
-    color: rgba(255, 255, 255, 0.1);
-    user-select: none;
-    margin: 0;
-    animation: footerPulse 6s ease-in-out infinite;
-}
-
-@media (max-width: 768px) {
-    .apertureStage {
-        width: clamp(240px, 65vw, 360px);
-        height: clamp(240px, 65vw, 360px);
-    }
-
-    .pillRow {
-        gap: 6px;
-    }
-}
-
-@media (max-width: 480px) {
-    .page {
+    @media (max-width: 480px) {
         padding: 24px 16px;
     }
 
     .apertureStage {
-        width: 72vw;
-        height: 72vw;
-        max-width: 300px;
-        max-height: 300px;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: clamp(260px, 52vmin, 460px);
+        height: clamp(260px, 52vmin, 460px);
+        flex-shrink: 0;
+        animation: ringReveal 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+        @media (max-width: 768px) {
+            width: clamp(240px, 65vw, 360px);
+            height: clamp(240px, 65vw, 360px);
+        }
+
+        @media (max-width: 480px) {
+            width: 72vw;
+            height: 72vw;
+            max-width: 300px;
+            max-height: 300px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+            opacity: 1;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            width: 52%;
+            height: 52%;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgba(22, 219, 147, 0.045) 0%,
+                rgba(255, 255, 255, 0.012) 40%,
+                transparent 70%
+            );
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .apertureRing {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            animation: breathe 7s ease-in-out infinite;
+
+            @media (prefers-reduced-motion: reduce) {
+                animation: none;
+            }
+        }
+
+        .morphContainer {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            pointer-events: none;
+
+            .morphWord {
+                font-family: "DM Sans", sans-serif;
+                font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+                font-weight: 700;
+                color: #fff;
+                letter-spacing: -0.03em;
+                line-height: 1.1;
+                transition:
+                    opacity 0.48s cubic-bezier(0.4, 0, 0.2, 1),
+                    transform 0.48s cubic-bezier(0.4, 0, 0.2, 1);
+                opacity: 1;
+                transform: translateY(0);
+                text-shadow:
+                    0 0 24px rgba(255, 255, 255, 0.1),
+                    0 0 60px rgba(22, 219, 147, 0.05),
+                    0 0 100px rgba(22, 219, 147, 0.02);
+
+                @media (prefers-reduced-motion: reduce) {
+                    transition: none;
+                }
+
+                &.morphExiting {
+                    opacity: 0;
+                    transform: translateY(-14px);
+                }
+
+                &.morphEntering {
+                    opacity: 0;
+                    transform: translateY(14px);
+                    transition: none;
+                }
+            }
+
+            .morphLang {
+                font-family: "DM Mono", "Fira Code", monospace;
+                font-size: 0.625rem;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                color: rgba(22, 219, 147, 0.55);
+                transition: opacity 0.4s ease;
+                opacity: 1;
+
+                @media (prefers-reduced-motion: reduce) {
+                    transition: none;
+                }
+
+                &.morphLangHidden {
+                    opacity: 0;
+                }
+            }
+
+            .morphHint {
+                font-family: "DM Sans", sans-serif;
+                font-size: 0.65rem;
+                font-weight: 400;
+                font-style: italic;
+                color: rgba(255, 255, 255, 0.18);
+                letter-spacing: 0.01em;
+                margin-top: 4px;
+                transition: opacity 0.5s ease 0.15s;
+                opacity: 1;
+                max-width: 200px;
+                text-align: center;
+                line-height: 1.4;
+
+                @media (max-width: 480px) {
+                    font-size: 0.6rem;
+                    max-width: 160px;
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    transition: none;
+                }
+
+                &.morphHintHidden {
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                }
+            }
+        }
     }
 
     .bridge {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
         margin-top: 12px;
-        margin-bottom: 16px;
+        margin-bottom: 18px;
+        animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+
+        @media (max-width: 480px) {
+            margin-top: 12px;
+            margin-bottom: 16px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+            opacity: 1;
+        }
+
+        .bridgeLine {
+            display: block;
+            width: 28px;
+            height: 1px;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(22, 219, 147, 0.22),
+                transparent
+            );
+        }
+
+        .bridgeLabel {
+            font-family: "DM Mono", "Fira Code", monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(22, 219, 147, 0.3);
+            white-space: nowrap;
+        }
     }
 
-    .tagline {
-        margin-bottom: 22px;
-    }
+    .content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
 
-    .cta {
-        padding: 9px 24px;
-        font-size: 0.75rem;
-    }
+        .brandName {
+            font-family: "DM Sans", sans-serif;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            margin: 0 0 10px;
+            animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s
+                both;
 
-    .pillRow {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 5px;
-    }
+            @media (prefers-reduced-motion: reduce) {
+                animation: none;
+                opacity: 1;
+            }
+        }
 
-    .pill {
-        font-size: 0.4375rem;
-        padding: 3px 8px;
-    }
+        .tagline {
+            font-family: "DM Sans", sans-serif;
+            font-size: clamp(0.875rem, 1.8vw, 1.05rem);
+            font-weight: 400;
+            line-height: 1.7;
+            max-width: 380px;
+            margin: 0 0 26px;
+            animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.65s
+                both;
 
-    .morphHint {
-        font-size: 0.6rem;
-        max-width: 160px;
-    }
-}
+            @media (max-width: 480px) {
+                margin-bottom: 22px;
+            }
 
-@media (prefers-reduced-motion: reduce) {
-    .apertureRing {
-        animation: none;
-    }
+            @media (prefers-reduced-motion: reduce) {
+                animation: none;
+                opacity: 1;
+            }
+        }
 
-    .morphWord {
-        transition: none;
-    }
+        .ctaRow {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.8s
+                both;
 
-    .morphLang {
-        transition: none;
-    }
+            @media (prefers-reduced-motion: reduce) {
+                animation: none;
+                opacity: 1;
+            }
+        }
 
-    .morphHint {
-        transition: none;
-    }
+        .pillRow {
+            display: flex;
+            gap: 8px;
+            list-style: none;
+            padding: 0;
+            margin: 20px 0 0;
+            animation: contentReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.95s
+                both;
 
-    .apertureStage {
-        animation: none;
-        opacity: 1;
-    }
+            @media (max-width: 768px) {
+                gap: 6px;
+            }
 
-    .bridge,
-    .content::before,
-    .brandName,
-    .tagline,
-    .ctaRow,
-    .pillRow {
-        animation: none;
-        opacity: 1;
+            @media (max-width: 480px) {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 5px;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                animation: none;
+                opacity: 1;
+            }
+
+            .pill {
+                font-family: "DM Mono", "Fira Code", monospace;
+                font-size: 0.5rem;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.22);
+                padding: 4px 10px;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 100px;
+                white-space: nowrap;
+                transition:
+                    border-color 0.3s ease,
+                    color 0.3s ease;
+
+                @media (max-width: 480px) {
+                    font-size: 0.4375rem;
+                    padding: 3px 8px;
+                }
+
+                &:hover {
+                    border-color: rgba(22, 219, 147, 0.15);
+                    color: rgba(255, 255, 255, 0.35);
+                }
+            }
+        }
     }
 
     .footerMark {
-        animation: none;
+        position: absolute;
+        bottom: 22px;
+        font-family: "DM Mono", "Fira Code", monospace;
+        font-size: 0.5rem;
+        letter-spacing: 0.22em;
+        color: rgba(255, 255, 255, 0.1);
+        user-select: none;
+        margin: 0;
+        animation: footerPulse 6s ease-in-out infinite;
+
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+        }
     }
 }

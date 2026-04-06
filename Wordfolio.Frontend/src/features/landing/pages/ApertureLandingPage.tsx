@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { Button, Typography } from "@mui/material";
 
 import { loginPath, registerPath } from "../../auth/routes";
 import { ApertureRing } from "../../../shared/components/aperture/ApertureRing";
@@ -102,25 +103,39 @@ export const ApertureLandingPage = () => {
             </div>
 
             <div className={styles.content}>
-                <p className={styles.brandName}>Wordfolio</p>
-                <p className={styles.tagline}>
+                <Typography
+                    component="p"
+                    color="text.secondary"
+                    className={styles.brandName}
+                >
+                    Wordfolio
+                </Typography>
+                <Typography
+                    component="p"
+                    color="text.secondary"
+                    className={styles.tagline}
+                >
                     A private archive for every word worth remembering — across
                     every language you carry.
-                </p>
+                </Typography>
 
                 <div className={styles.ctaRow}>
-                    <Link
+                    <Button
+                        component={Link as React.ElementType}
                         {...loginPath()}
-                        className={`${styles.cta} ${styles.ctaLogin}`}
+                        variant="contained"
+                        color="primary"
                     >
                         Sign in
-                    </Link>
-                    <Link
+                    </Button>
+                    <Button
+                        component={Link as React.ElementType}
                         {...registerPath()}
-                        className={`${styles.cta} ${styles.ctaRegister}`}
+                        variant="outlined"
+                        color="primary"
                     >
                         Create archive
-                    </Link>
+                    </Button>
                 </div>
 
                 <ul className={styles.pillRow} aria-label="Features">

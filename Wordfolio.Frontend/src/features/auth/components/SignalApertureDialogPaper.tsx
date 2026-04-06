@@ -24,10 +24,38 @@ export const SignalApertureDialogPaper = ({
             <div className={styles.apertureIcon} aria-hidden="true">
                 <ApertureRing className={styles.apertureRing} />
             </div>
-            <Typography component="h1" className={styles.title}>
+            <Typography
+                component="h1"
+                sx={{
+                    fontFamily: '"DM Sans", sans-serif',
+                    fontSize: { xs: "1.5rem", sm: "1.75rem" },
+                    fontWeight: 700,
+                    color: "#fff",
+                    letterSpacing: "-0.03em",
+                    lineHeight: 1.1,
+                    mb: "6px",
+                    textShadow: "0 0 40px rgba(22, 219, 147, 0.16)",
+                }}
+            >
                 {title}
             </Typography>
-            <p className={styles.subtitle}>{subtitle}</p>
+            <Typography
+                component="p"
+                variant="overline"
+                sx={{
+                    fontFamily: '"DM Mono", "Fira Code", monospace',
+                    fontSize: "0.5625rem",
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                    color: "rgba(22, 219, 147, 0.65)",
+                    lineHeight: 1.5,
+                    display: "block",
+                    mt: 0,
+                    mb: 0,
+                }}
+            >
+                {subtitle}
+            </Typography>
         </header>
 
         <div className={styles.content}>{children}</div>

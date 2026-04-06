@@ -1,5 +1,5 @@
 import { Link as RouterLink } from "@tanstack/react-router";
-import { Link as MuiLink, Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 
 import { homePath } from "../../auth/routes";
 import styles from "./LostInTranslationAtlasPage.module.scss";
@@ -167,7 +167,7 @@ const GlobeSvg = () => (
             cx="32"
             cy="32"
             r="28.5"
-            stroke="#B5F507"
+            stroke="#16db93"
             strokeWidth="1.5"
             opacity="0.7"
         />
@@ -176,7 +176,7 @@ const GlobeSvg = () => (
             cy="32"
             rx="28.5"
             ry="11"
-            stroke="#B5F507"
+            stroke="#16db93"
             strokeWidth="1"
             opacity="0.3"
         />
@@ -185,7 +185,7 @@ const GlobeSvg = () => (
             cy="18"
             rx="21"
             ry="8"
-            stroke="#B5F507"
+            stroke="#16db93"
             strokeWidth="0.8"
             opacity="0.22"
         />
@@ -194,19 +194,19 @@ const GlobeSvg = () => (
             cy="46"
             rx="21"
             ry="8"
-            stroke="#B5F507"
+            stroke="#16db93"
             strokeWidth="0.8"
             opacity="0.22"
         />
         <path
             d="M 32 3.5 C 44 17 44 47 32 60.5"
-            stroke="#B5F507"
+            stroke="#16db93"
             strokeWidth="1"
             opacity="0.3"
         />
         <path
             d="M 32 3.5 C 20 17 20 47 32 60.5"
-            stroke="#B5F507"
+            stroke="#16db93"
             strokeWidth="1"
             opacity="0.3"
         />
@@ -215,7 +215,7 @@ const GlobeSvg = () => (
             y1="32"
             x2="60.5"
             y2="32"
-            stroke="#B5F507"
+            stroke="#16db93"
             strokeWidth="0.8"
             opacity="0.22"
         />
@@ -276,15 +276,34 @@ export const LostInTranslationAtlasPage = () => {
 
                 <div className={styles.display404} aria-label="Error 404">
                     <span className={styles.digit}>4</span>
-                    <span className={styles.digitZero}>0</span>
+                    <span className={styles.digit}>0</span>
                     <span className={styles.digit}>4</span>
                 </div>
 
-                <Typography className={styles.title} component="h1">
+                <Typography
+                    component="h1"
+                    sx={{
+                        fontFamily: '"DM Sans", sans-serif',
+                        fontSize: { xs: "1.2rem", sm: "1.75rem" },
+                        fontWeight: 600,
+                        color: "text.primary",
+                        letterSpacing: "-0.025em",
+                        lineHeight: 1.2,
+                        mb: "14px",
+                    }}
+                >
                     Lost in Translation
                 </Typography>
 
-                <Typography className={styles.subtitle}>
+                <Typography
+                    sx={{
+                        color: "text.secondary",
+                        fontSize: "0.9375rem",
+                        lineHeight: 1.7,
+                        mb: "20px",
+                        maxWidth: "360px",
+                    }}
+                >
                     This page exists in no known language.
                     <br />
                     It may have drifted beyond the edge of the atlas.
@@ -298,13 +317,14 @@ export const LostInTranslationAtlasPage = () => {
                 </div>
 
                 <div className={styles.homeLinkRow}>
-                    <MuiLink
+                    <Button
+                        variant="contained"
+                        color="primary"
                         component={RouterLink}
                         {...homePath()}
-                        className={styles.homeLink}
                     >
                         Return Home
-                    </MuiLink>
+                    </Button>
                 </div>
 
                 <p className={styles.terraNota} aria-hidden="true">
