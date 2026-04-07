@@ -12,11 +12,12 @@ import {
 
 import { useAuthStore } from "../../../shared/stores/authStore";
 import { PasswordField } from "../../../shared/components/PasswordField";
+import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
+import { getSafeRedirectPath } from "../../../shared/utils/redirectUtils";
 import { SignalApertureAuthBackground } from "../components/SignalApertureAuthBackground";
 import { SignalApertureDialogPaper } from "../components/SignalApertureDialogPaper";
 import { useLoginMutation } from "../hooks/useLoginMutation";
 import { createLoginSchema, type LoginFormData } from "../schemas/authSchemas";
-import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { loginRouteApi, homePath, registerPath } from "../routes";
 
 import styles from "../components/SignalApertureAuthView.module.scss";
@@ -24,6 +25,10 @@ import styles from "../components/SignalApertureAuthView.module.scss";
 export const LoginPage = () => {
     const navigate = useNavigate();
     const search = loginRouteApi.useSearch();
+    const safeRedirect = getSafeRedirectPath(search.redirect);
+    const registerNavigation = safeRedirect
+        ? registerPath({ redirect: safeRedirect })
+        : registerPath();
     const setTokens = useAuthStore((state) => state.setTokens);
     const { openNotification } = useNotificationContext();
 
@@ -40,7 +45,11 @@ export const LoginPage = () => {
     const loginMutation = useLoginMutation({
         onSuccess: async (data) => {
             setTokens(data);
-            await navigate({ ...homePath(), replace: true });
+            const destination = getSafeRedirectPath(
+                safeRedirect,
+                homePath().to
+            );
+            await navigate({ to: destination, replace: true });
         },
         onError: (error) => {
             const errorMessage =
@@ -78,7 +87,7 @@ export const LoginPage = () => {
                             Don't have an account?{" "}
                             <MuiLink
                                 component={Link}
-                                {...registerPath()}
+                                {...registerNavigation}
                                 underline="hover"
                             >
                                 Register here

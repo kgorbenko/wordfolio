@@ -18,7 +18,8 @@ import { SignalApertureDialogPaper } from "../components/SignalApertureDialogPap
 import { useRegisterMutation } from "../hooks/useRegisterMutation";
 import { usePasswordRequirementsQuery } from "../hooks/usePasswordRequirementsQuery";
 import { parseApiError } from "../errorHandling";
-import { loginPath } from "../routes";
+import { loginPath, registerRouteApi } from "../routes";
+import { getSafeRedirectPath } from "../../../shared/utils/redirectUtils";
 import {
     createRegisterSchema,
     type RegisterFormData,
@@ -28,6 +29,11 @@ import styles from "../components/SignalApertureAuthView.module.scss";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
+    const search = registerRouteApi.useSearch();
+    const safeRedirect = getSafeRedirectPath(search.redirect);
+    const loginNavigation = safeRedirect
+        ? loginPath({ redirect: safeRedirect })
+        : loginPath();
     const {
         data: passwordRequirements,
         isLoading: isLoadingRequirements,
@@ -48,7 +54,10 @@ export const RegisterPage = () => {
 
     const registerMutation = useRegisterMutation({
         onSuccess: async () => {
-            await navigate({ ...loginPath(), replace: true });
+            await navigate({
+                ...loginNavigation,
+                replace: true,
+            });
         },
         onError: (error) => {
             const errorMessages = parseApiError(error);
@@ -167,7 +176,7 @@ export const RegisterPage = () => {
                             Already have an account?{" "}
                             <MuiLink
                                 component={Link}
-                                {...loginPath()}
+                                {...loginNavigation}
                                 underline="hover"
                             >
                                 Login here

@@ -5,6 +5,7 @@ import { LoginPage } from "../features/auth/pages/LoginPage";
 
 const loginSearchSchema = z.object({
     message: z.string().optional(),
+    redirect: z.string().optional(),
 });
 
 export const Route = createFileRoute("/login")({
