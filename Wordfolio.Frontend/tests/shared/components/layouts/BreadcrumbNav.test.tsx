@@ -157,6 +157,7 @@ describe("BreadcrumbNav", () => {
             expect(mockNavigate).toHaveBeenCalledWith({
                 to: "/vocabularies/1",
                 params: { vocabularyId: "1" },
+                replace: true,
             });
             expect(mockHistoryBack).not.toHaveBeenCalled();
         });
