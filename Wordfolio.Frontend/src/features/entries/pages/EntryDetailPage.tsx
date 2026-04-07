@@ -53,7 +53,10 @@ export const EntryDetailPage = () => {
 
     const deleteMutation = useDeleteEntryMutation({
         onSuccess: async () => {
-            await navigate(vocabularyDetailPath(collectionId, vocabularyId));
+            await navigate({
+                ...vocabularyDetailPath(collectionId, vocabularyId),
+                replace: true,
+            });
         },
         onError: () => {
             openErrorNotification({
@@ -114,18 +117,22 @@ export const EntryDetailPage = () => {
             {
                 onSuccess: async (movedEntry) => {
                     if (moveSelection.isDefault) {
-                        await navigate(draftsEntryDetailPath(movedEntry.id));
+                        await navigate({
+                            ...draftsEntryDetailPath(movedEntry.id),
+                            replace: true,
+                        });
                     } else {
                         assertNonNullable(moveSelection.collectionId);
                         assertNonNullable(moveSelection.vocabularyId);
 
-                        await navigate(
-                            entryDetailPath(
+                        await navigate({
+                            ...entryDetailPath(
                                 moveSelection.collectionId,
                                 moveSelection.vocabularyId,
                                 movedEntry.id
-                            )
-                        );
+                            ),
+                            replace: true,
+                        });
                     }
 
                     void queryClient.invalidateQueries();

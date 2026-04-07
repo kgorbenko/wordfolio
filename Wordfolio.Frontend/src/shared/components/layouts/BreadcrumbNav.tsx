@@ -66,7 +66,11 @@ export const BreadcrumbNav = ({
         if (router.history.canGoBack()) {
             router.history.back();
         } else if (fallbackTo) {
-            void navigate({ to: fallbackTo, params: fallbackParams });
+            void navigate({
+                to: fallbackTo,
+                params: fallbackParams,
+                replace: true,
+            });
         }
     };
 

@@ -25,7 +25,7 @@ export const CreateDraftPage = () => {
     const createMutation = useCreateDraftMutation({
         onSuccess: async () => {
             openSuccessNotification({ message: "Draft created successfully" });
-            await navigate(draftsPath());
+            await navigate({ ...draftsPath(), replace: true });
         },
         onError: () => {
             openErrorNotification({
@@ -53,7 +53,7 @@ export const CreateDraftPage = () => {
     );
 
     const handleCancel = useCallback(() => {
-        void navigate(draftsPath());
+        void navigate({ ...draftsPath(), replace: true });
     }, [navigate]);
 
     const handleLookupError = useCallback(

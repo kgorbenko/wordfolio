@@ -27,6 +27,7 @@ export const useTokenRefresh = () => {
                 search: {
                     message: "Your session has expired. Please log in again.",
                 },
+                replace: true,
             });
         },
     });

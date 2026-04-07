@@ -40,7 +40,7 @@ export const LoginPage = () => {
     const loginMutation = useLoginMutation({
         onSuccess: async (data) => {
             setTokens(data);
-            await navigate(homePath());
+            await navigate({ ...homePath(), replace: true });
         },
         onError: (error) => {
             const errorMessage =

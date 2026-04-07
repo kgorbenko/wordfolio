@@ -60,7 +60,10 @@ export const DraftsEntryEditPage = () => {
 
     const updateMutation = useUpdateDraftEntryMutation({
         onSuccess: async () => {
-            await navigate(draftsEntryDetailPath(entryId));
+            await navigate({
+                ...draftsEntryDetailPath(entryId),
+                replace: true,
+            });
         },
         onError: () => {
             openErrorNotification({
@@ -80,7 +83,7 @@ export const DraftsEntryEditPage = () => {
     );
 
     const handleCancel = useCallback(() => {
-        void navigate(draftsEntryDetailPath(entryId));
+        void navigate({ ...draftsEntryDetailPath(entryId), replace: true });
     }, [navigate, entryId]);
 
     const isLoading = isEntryLoading;

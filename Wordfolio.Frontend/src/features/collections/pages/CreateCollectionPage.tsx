@@ -18,7 +18,7 @@ export const CreateCollectionPage = () => {
             openSuccessNotification({
                 message: "Collection created successfully",
             });
-            await navigate(collectionsPath());
+            await navigate({ ...collectionsPath(), replace: true });
         },
         onError: () => {
             openErrorNotification({ message: "Failed to create collection" });
@@ -30,7 +30,7 @@ export const CreateCollectionPage = () => {
     };
 
     const handleCancel = () => {
-        void navigate(collectionsPath());
+        void navigate({ ...collectionsPath(), replace: true });
     };
 
     return (
