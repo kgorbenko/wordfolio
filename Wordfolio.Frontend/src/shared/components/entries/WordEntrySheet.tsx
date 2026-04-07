@@ -1,7 +1,5 @@
 import { useCallback } from "react";
 import {
-    Drawer,
-    Dialog,
     Box,
     Typography,
     IconButton,
@@ -12,6 +10,7 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import type { CreateEntryData } from "../../api/types/entries";
 import { EntryLookupForm, VocabularyContext } from "./EntryLookupForm";
+import { ResponsiveDialog } from "../ResponsiveDialog";
 import styles from "./WordEntrySheet.module.scss";
 
 interface WordEntrySheetProps {
@@ -73,28 +72,15 @@ export const WordEntrySheet = ({
         </Box>
     );
 
-    if (isMobile) {
-        return (
-            <Drawer
-                anchor="bottom"
-                open={open}
-                onClose={onClose}
-                PaperProps={{ className: styles.mobileDrawer }}
-            >
-                {content}
-            </Drawer>
-        );
-    }
-
     return (
-        <Dialog
+        <ResponsiveDialog
             open={open}
             onClose={onClose}
             maxWidth="md"
             fullWidth
-            PaperProps={{ className: styles.dialog }}
+            dialogPaperClassName={styles.dialog}
         >
             {content}
-        </Dialog>
+        </ResponsiveDialog>
     );
 };
