@@ -1,6 +1,5 @@
 import { useState, useCallback, useMemo, ReactNode } from "react";
 import {
-    Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
@@ -9,6 +8,7 @@ import {
 } from "@mui/material";
 
 import { ConfirmDialogContext } from "./ConfirmDialogContext";
+import { ResponsiveDialog } from "../components/ResponsiveDialog";
 import { assertNonNullable } from "../utils/misc.ts";
 
 export interface ConfirmDialogOptions {
@@ -72,7 +72,7 @@ export const ConfirmDialogProvider = ({
     const DialogElement = useMemo(
         () =>
             dialogState !== undefined ? (
-                <Dialog open={isOpen} onClose={handleReject}>
+                <ResponsiveDialog open={isOpen} onClose={handleReject}>
                     <DialogTitle>{dialogState.title}</DialogTitle>
                     <DialogContent>
                         <Typography>{dialogState.message}</Typography>
@@ -89,7 +89,7 @@ export const ConfirmDialogProvider = ({
                             {dialogState.confirmLabel ?? "Confirm"}
                         </Button>
                     </DialogActions>
-                </Dialog>
+                </ResponsiveDialog>
             ) : undefined,
         [dialogState, handleConfirm, handleReject, isOpen]
     );

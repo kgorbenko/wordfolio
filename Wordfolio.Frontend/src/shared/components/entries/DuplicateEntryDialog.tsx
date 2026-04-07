@@ -1,21 +1,18 @@
 import {
-    Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
-    Drawer,
     Typography,
     Accordion,
     AccordionSummary,
     AccordionDetails,
     Button,
-    useMediaQuery,
-    useTheme,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import type { Entry } from "../../api/types/entries";
 import { EntryDetailContent } from "./EntryDetailContent";
+import { ResponsiveDialog } from "../ResponsiveDialog";
 import styles from "./DuplicateEntryDialog.module.scss";
 
 interface DuplicateEntryDialogProps {
@@ -31,9 +28,6 @@ export const DuplicateEntryDialog = ({
     onCancel,
     onConfirm,
 }: DuplicateEntryDialogProps) => {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
     const content = (
         <>
             <DialogTitle>Already in Vocabulary</DialogTitle>
@@ -63,28 +57,15 @@ export const DuplicateEntryDialog = ({
         </>
     );
 
-    if (isMobile) {
-        return (
-            <Drawer
-                anchor="bottom"
-                open={isOpen}
-                onClose={onCancel}
-                PaperProps={{ className: styles.mobileDrawer }}
-            >
-                {content}
-            </Drawer>
-        );
-    }
-
     return (
-        <Dialog
+        <ResponsiveDialog
             open={isOpen}
             onClose={onCancel}
             maxWidth="md"
             fullWidth
-            PaperProps={{ className: styles.dialog }}
+            dialogPaperClassName={styles.dialog}
         >
             {content}
-        </Dialog>
+        </ResponsiveDialog>
     );
 };

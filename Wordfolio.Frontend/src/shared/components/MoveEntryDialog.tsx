@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     Button,
-    Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
@@ -11,6 +10,7 @@ import {
 import { ContentSkeleton } from "./ContentSkeleton";
 import { draftsValue, VocabularySelector } from "./VocabularySelector";
 import { RetryOnError } from "./RetryOnError";
+import { ResponsiveDialog } from "./ResponsiveDialog";
 import { useCollectionsHierarchyQuery } from "../api/queries/collections";
 
 export interface MoveEntrySelectionResult {
@@ -178,7 +178,12 @@ export const MoveEntryDialog = ({
     ]);
 
     return (
-        <Dialog open={isOpen} onClose={onCancel} fullWidth maxWidth="sm">
+        <ResponsiveDialog
+            open={isOpen}
+            onClose={onCancel}
+            fullWidth
+            maxWidth="sm"
+        >
             <DialogTitle>Move Entry</DialogTitle>
             <DialogContent>{renderContent()}</DialogContent>
             <DialogActions>
@@ -193,6 +198,6 @@ export const MoveEntryDialog = ({
                     Move
                 </Button>
             </DialogActions>
-        </Dialog>
+        </ResponsiveDialog>
     );
 };
