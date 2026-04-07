@@ -122,7 +122,7 @@ export const AuthenticatedLayout = () => {
     const handleLogout = () => {
         clearAuth();
         queryClient.clear();
-        void navigate(loginPath());
+        void navigate({ ...loginPath(), replace: true });
     };
 
     const handleSaveEntry = useCallback(

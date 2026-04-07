@@ -32,7 +32,10 @@ export const EditCollectionPage = () => {
             openSuccessNotification({
                 message: "Collection updated successfully",
             });
-            await navigate(collectionDetailPath(collectionId));
+            await navigate({
+                ...collectionDetailPath(collectionId),
+                replace: true,
+            });
         },
         onError: () => {
             openErrorNotification({ message: "Failed to update collection" });
@@ -44,7 +47,7 @@ export const EditCollectionPage = () => {
     };
 
     const handleCancel = () => {
-        void navigate(collectionDetailPath(collectionId));
+        void navigate({ ...collectionDetailPath(collectionId), replace: true });
     };
 
     if (isLoading) {

@@ -98,7 +98,7 @@ export const CollectionDetailPage = () => {
 
     const deleteMutation = useDeleteCollectionMutation({
         onSuccess: async () => {
-            await navigate(collectionsPath());
+            await navigate({ ...collectionsPath(), replace: true });
         },
         onError: () =>
             openErrorNotification({ message: "Failed to delete collection" }),

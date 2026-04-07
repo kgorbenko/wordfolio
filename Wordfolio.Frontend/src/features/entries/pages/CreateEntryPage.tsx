@@ -42,7 +42,10 @@ export const CreateEntryPage = () => {
     const createMutation = useCreateEntryMutation({
         onSuccess: async () => {
             openSuccessNotification({ message: "Entry created successfully" });
-            await navigate(vocabularyDetailPath(collectionId, vocabularyId));
+            await navigate({
+                ...vocabularyDetailPath(collectionId, vocabularyId),
+                replace: true,
+            });
         },
         onError: () => {
             openErrorNotification({
@@ -76,7 +79,10 @@ export const CreateEntryPage = () => {
     );
 
     const handleCancel = useCallback(() => {
-        void navigate(vocabularyDetailPath(collectionId, vocabularyId));
+        void navigate({
+            ...vocabularyDetailPath(collectionId, vocabularyId),
+            replace: true,
+        });
     }, [collectionId, navigate, vocabularyId]);
 
     const handleLookupError = useCallback(

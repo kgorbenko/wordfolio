@@ -31,7 +31,10 @@ export const EditVocabularyPage = () => {
 
     const updateMutation = useUpdateVocabularyMutation({
         onSuccess: async () => {
-            await navigate(vocabularyDetailPath(collectionId, vocabularyId));
+            await navigate({
+                ...vocabularyDetailPath(collectionId, vocabularyId),
+                replace: true,
+            });
         },
         onError: () => {
             openErrorNotification({
@@ -48,7 +51,10 @@ export const EditVocabularyPage = () => {
     );
 
     const handleCancel = useCallback(() => {
-        void navigate(vocabularyDetailPath(collectionId, vocabularyId));
+        void navigate({
+            ...vocabularyDetailPath(collectionId, vocabularyId),
+            replace: true,
+        });
     }, [navigate, collectionId, vocabularyId]);
 
     const renderContent = () => {

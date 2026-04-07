@@ -70,9 +70,10 @@ export const EditEntryPage = () => {
 
     const updateMutation = useUpdateEntryMutation({
         onSuccess: async () => {
-            await navigate(
-                entryDetailPath(collectionId, vocabularyId, entryId)
-            );
+            await navigate({
+                ...entryDetailPath(collectionId, vocabularyId, entryId),
+                replace: true,
+            });
         },
         onError: () => {
             openErrorNotification({
@@ -94,7 +95,10 @@ export const EditEntryPage = () => {
     );
 
     const handleCancel = useCallback(() => {
-        void navigate(entryDetailPath(collectionId, vocabularyId, entryId));
+        void navigate({
+            ...entryDetailPath(collectionId, vocabularyId, entryId),
+            replace: true,
+        });
     }, [collectionId, entryId, navigate, vocabularyId]);
 
     const isLoading = isVocabularyLoading || isEntryLoading;

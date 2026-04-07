@@ -44,7 +44,7 @@ export const DraftsEntryDetailPage = () => {
 
     const deleteMutation = useDeleteDraftEntryMutation({
         onSuccess: async () => {
-            await navigate(draftsPath());
+            await navigate({ ...draftsPath(), replace: true });
         },
         onError: () => {
             openErrorNotification({
@@ -103,18 +103,22 @@ export const DraftsEntryDetailPage = () => {
             {
                 onSuccess: async (movedEntry) => {
                     if (moveSelection.isDefault) {
-                        await navigate(draftsEntryDetailPath(movedEntry.id));
+                        await navigate({
+                            ...draftsEntryDetailPath(movedEntry.id),
+                            replace: true,
+                        });
                     } else {
                         assertNonNullable(moveSelection.collectionId);
                         assertNonNullable(moveSelection.vocabularyId);
 
-                        await navigate(
-                            entryDetailPath(
+                        await navigate({
+                            ...entryDetailPath(
                                 moveSelection.collectionId,
                                 moveSelection.vocabularyId,
                                 movedEntry.id
-                            )
-                        );
+                            ),
+                            replace: true,
+                        });
                     }
 
                     void queryClient.invalidateQueries();

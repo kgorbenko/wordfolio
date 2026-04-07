@@ -12,7 +12,7 @@ export const HomePage = () => {
 
     const handleLogout = () => {
         clearAuth();
-        navigate(loginPath());
+        navigate({ ...loginPath(), replace: true });
     };
 
     return (

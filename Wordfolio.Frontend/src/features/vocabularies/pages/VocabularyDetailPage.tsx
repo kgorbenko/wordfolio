@@ -99,7 +99,10 @@ export const VocabularyDetailPage = () => {
 
     const deleteMutation = useDeleteVocabularyMutation({
         onSuccess: async () => {
-            await navigate(collectionDetailPath(collectionId));
+            await navigate({
+                ...collectionDetailPath(collectionId),
+                replace: true,
+            });
         },
         onError: () => {
             openErrorNotification({
@@ -110,12 +113,13 @@ export const VocabularyDetailPage = () => {
 
     const moveMutation = useMoveVocabularyMutation({
         onSuccess: (movedVocabulary) =>
-            navigate(
-                vocabularyDetailPath(
+            navigate({
+                ...vocabularyDetailPath(
                     movedVocabulary.collectionId,
                     movedVocabulary.id
-                )
-            ),
+                ),
+                replace: true,
+            }),
         onError: () => {
             openErrorNotification({
                 message: "Failed to move vocabulary. Please try again.",
