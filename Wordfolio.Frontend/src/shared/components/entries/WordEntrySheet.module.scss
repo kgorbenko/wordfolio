@@ -4,7 +4,7 @@
 }
 
 .dialog {
-    border-radius: 12px;
+    --signal-panel-radius: 12px;
 }
 
 .container {
@@ -15,10 +15,15 @@
 }
 
 .header {
-    padding: 16px;
+    padding: 32px 32px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--mui-palette-divider);
-    background-color: var(--mui-palette-background-paper);
+}
+
+@media (max-width: 900px) {
+    .header {
+        padding: 16px;
+    }
 }
