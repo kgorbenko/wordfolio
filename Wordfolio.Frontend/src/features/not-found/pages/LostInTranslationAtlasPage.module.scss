@@ -152,7 +152,8 @@
     }
 
     .hero {
-        position: relative;
+        @include signal.panel-shell;
+        --signal-panel-radius: 20px;
         z-index: 2;
         display: flex;
         flex-direction: column;
@@ -161,98 +162,17 @@
         padding: 44px 48px 52px;
         max-width: 580px;
         width: calc(100% - 48px);
-        background: var(--signal-panel-surface);
-        backdrop-filter: blur(32px) saturate(140%);
-        -webkit-backdrop-filter: blur(32px) saturate(140%);
-        border: 1px solid var(--signal-panel-border);
-        border-radius: 20px;
-        box-shadow: var(--signal-panel-shadow);
         animation: heroFadeIn 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
 
         @media (max-width: 480px) {
+            --signal-panel-radius: 14px;
             padding: 40px 28px;
-            border-radius: 14px;
             width: calc(100% - 32px);
             margin: 16px;
         }
 
         @media (prefers-reduced-motion: reduce) {
             animation: none;
-        }
-
-        &::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 70%;
-            height: 1px;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                var(--signal-panel-top-highlight),
-                transparent
-            );
-            border-radius: 100%;
-            pointer-events: none;
-        }
-
-        &::after {
-            content: "";
-            position: absolute;
-            inset: 14px;
-            pointer-events: none;
-            z-index: 0;
-            background:
-                linear-gradient(
-                        to right,
-                        var(--signal-panel-corner-accent) 14px,
-                        transparent 14px
-                    )
-                    top left / 14px 1px no-repeat,
-                linear-gradient(
-                        to bottom,
-                        var(--signal-panel-corner-accent) 14px,
-                        transparent 14px
-                    )
-                    top left / 1px 14px no-repeat,
-                linear-gradient(
-                        to left,
-                        var(--signal-panel-corner-accent) 14px,
-                        transparent 14px
-                    )
-                    top right / 14px 1px no-repeat,
-                linear-gradient(
-                        to bottom,
-                        var(--signal-panel-corner-accent) 14px,
-                        transparent 14px
-                    )
-                    top right / 1px 14px no-repeat,
-                linear-gradient(
-                        to right,
-                        var(--signal-panel-corner-accent) 14px,
-                        transparent 14px
-                    )
-                    bottom left / 14px 1px no-repeat,
-                linear-gradient(
-                        to top,
-                        var(--signal-panel-corner-accent) 14px,
-                        transparent 14px
-                    )
-                    bottom left / 1px 14px no-repeat,
-                linear-gradient(
-                        to left,
-                        var(--signal-panel-corner-accent) 14px,
-                        transparent 14px
-                    )
-                    bottom right / 14px 1px no-repeat,
-                linear-gradient(
-                        to top,
-                        var(--signal-panel-corner-accent) 14px,
-                        transparent 14px
-                    )
-                    bottom right / 1px 14px no-repeat;
         }
 
         .statusBadge {

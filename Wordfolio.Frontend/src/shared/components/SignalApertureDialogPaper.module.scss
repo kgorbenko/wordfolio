@@ -1,0 +1,11 @@
+@use "../styles/signalAperture" as signal;
+
+.shell {
+    @include signal.panel-shell;
+
+    @media (max-width: 900px) {
+        &::after {
+            display: none;
+        }
+    }
+}

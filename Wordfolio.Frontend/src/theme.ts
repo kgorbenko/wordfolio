@@ -2,6 +2,8 @@ import { createTheme } from "@mui/material/styles";
 
 import type {} from "@mui/x-data-grid/themeAugmentation";
 
+import { SignalApertureDialogPaper } from "./shared/components/SignalApertureDialogPaper";
+
 declare module "@mui/material/IconButton" {
     interface IconButtonOwnProps {
         variant?: string;
@@ -653,11 +655,11 @@ export const theme = createTheme({
             },
         },
         MuiDialog: {
+            defaultProps: {
+                PaperComponent: SignalApertureDialogPaper,
+            },
             styleOverrides: {
                 paper: {
-                    backgroundColor: surface,
-                    borderRadius: 14,
-                    border: defaultBorder,
                     backgroundImage: "none",
                 },
             },
@@ -665,21 +667,44 @@ export const theme = createTheme({
         MuiDialogTitle: {
             styleOverrides: {
                 root: {
-                    padding: "24px",
+                    padding: "32px 32px 0",
+                    "@media (max-width: 900px)": {
+                        padding: "24px 24px 0",
+                    },
                 },
             },
         },
         MuiDialogContent: {
             styleOverrides: {
                 root: {
-                    padding: "16px 24px",
+                    padding: "20px 32px 16px",
+                    "&:first-of-type": {
+                        paddingTop: "32px",
+                    },
+                    "&:last-child": {
+                        paddingBottom: "32px",
+                    },
+                    "@media (max-width: 900px)": {
+                        padding: "16px 24px 16px",
+                        "&:first-of-type": {
+                            paddingTop: "24px",
+                        },
+                        "&:last-child": {
+                            paddingBottom: "24px",
+                        },
+                    },
                 },
             },
         },
         MuiDialogActions: {
             styleOverrides: {
                 root: {
-                    padding: "8px 24px 24px 24px",
+                    gap: "12px",
+                    padding: "8px 32px 32px",
+                    "@media (max-width: 900px)": {
+                        gap: "8px",
+                        padding: "8px 24px 24px",
+                    },
                 },
             },
         },

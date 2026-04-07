@@ -1,6 +1,7 @@
 @mixin panel-vars {
     --signal-accent: #16db93;
     --signal-accent-rgb: 22 219 147;
+    --signal-panel-radius: 14px;
     --signal-panel-surface: rgba(14, 18, 14, 0.88);
     --signal-panel-border: rgba(var(--signal-accent-rgb) / 0.14);
     --signal-panel-top-highlight: rgba(var(--signal-accent-rgb) / 0.25);
@@ -30,4 +31,96 @@
             0 0 8px rgba(var(--signal-accent-rgb) / 0.18)
         )
         drop-shadow(0 0 3px rgba(var(--signal-accent-rgb) / 0.3));
+}
+
+@mixin panel-shell {
+    @include panel-vars;
+    position: relative;
+    overflow: hidden;
+    background: var(--signal-panel-surface);
+    backdrop-filter: blur(32px) saturate(140%);
+    -webkit-backdrop-filter: blur(32px) saturate(140%);
+    border: 1px solid var(--signal-panel-border);
+    border-radius: var(--signal-panel-radius);
+    box-shadow: var(--signal-panel-shadow);
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 70%;
+        height: 1px;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            var(--signal-panel-top-highlight),
+            transparent
+        );
+        border-radius: 100%;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 14px;
+        pointer-events: none;
+        z-index: 0;
+        background:
+            linear-gradient(
+                    to right,
+                    var(--signal-panel-corner-accent) 14px,
+                    transparent 14px
+                )
+                top left / 14px 1px no-repeat,
+            linear-gradient(
+                    to bottom,
+                    var(--signal-panel-corner-accent) 14px,
+                    transparent 14px
+                )
+                top left / 1px 14px no-repeat,
+            linear-gradient(
+                    to left,
+                    var(--signal-panel-corner-accent) 14px,
+                    transparent 14px
+                )
+                top right / 14px 1px no-repeat,
+            linear-gradient(
+                    to bottom,
+                    var(--signal-panel-corner-accent) 14px,
+                    transparent 14px
+                )
+                top right / 1px 14px no-repeat,
+            linear-gradient(
+                    to right,
+                    var(--signal-panel-corner-accent) 14px,
+                    transparent 14px
+                )
+                bottom left / 14px 1px no-repeat,
+            linear-gradient(
+                    to top,
+                    var(--signal-panel-corner-accent) 14px,
+                    transparent 14px
+                )
+                bottom left / 1px 14px no-repeat,
+            linear-gradient(
+                    to left,
+                    var(--signal-panel-corner-accent) 14px,
+                    transparent 14px
+                )
+                bottom right / 14px 1px no-repeat,
+            linear-gradient(
+                    to top,
+                    var(--signal-panel-corner-accent) 14px,
+                    transparent 14px
+                )
+                bottom right / 1px 14px no-repeat;
+    }
+
+    > * {
+        position: relative;
+        z-index: 1;
+    }
 }
