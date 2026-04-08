@@ -5,10 +5,10 @@ import { AuthenticatedLayout } from "../shared/components/layouts/AuthenticatedL
 import { loginPath } from "../features/auth/routes";
 
 export const Route = createFileRoute("/_authenticated")({
-    beforeLoad: async () => {
+    beforeLoad: async ({ location }) => {
         const { isAuthenticated } = useAuthStore.getState();
         if (!isAuthenticated) {
-            throw redirect(loginPath());
+            throw redirect(loginPath({ redirect: location.href }));
         }
     },
     component: AuthenticatedLayout,
