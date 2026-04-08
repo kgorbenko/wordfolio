@@ -6,11 +6,14 @@ import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { NotificationProvider } from "./shared/contexts/NotificationProvider";
 import { ConfirmDialogProvider } from "./shared/contexts/ConfirmDialogProvider";
+import { preventIosFocusAutoZoom } from "./shared/utils/iosAutoZoomFix";
 import { theme } from "./theme";
 import { routeTree } from "./routeTree.gen";
 import { LostInTranslationAtlasPage } from "./features/not-found/pages/LostInTranslationAtlasPage";
 
 import "./main.css";
+
+preventIosFocusAutoZoom();
 
 const router = createRouter({
     routeTree,
