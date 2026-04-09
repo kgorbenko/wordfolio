@@ -22,10 +22,10 @@ type HasVocabularyAccessTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 310
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" (Some "Description") createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" (Some "Description") createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -51,10 +51,10 @@ type HasVocabularyAccessTests(fixture: WordfolioTestFixture) =
             let user2 = Entities.makeUser 312
 
             let collection =
-                Entities.makeCollection user1 "Collection 1" None createdAt None false
+                Entities.makeCollection user1 "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -98,10 +98,10 @@ type HasVocabularyAccessTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 314
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -126,10 +126,10 @@ type HasVocabularyAccessTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 315
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let defaultVocabulary =
-                Entities.makeVocabulary collection "Default" None createdAt None true
+                Entities.makeVocabulary collection "Default" None createdAt createdAt true
 
             do!
                 fixture.Seeder
@@ -156,10 +156,10 @@ type HasVocabularyAccessTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 316
 
             let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
+                Entities.makeCollection user "Unsorted" None createdAt createdAt true
 
             let vocabulary =
-                Entities.makeVocabulary systemCollection "Vocabulary" None createdAt None false
+                Entities.makeVocabulary systemCollection "Vocabulary" None createdAt createdAt false
 
             do!
                 fixture.Seeder

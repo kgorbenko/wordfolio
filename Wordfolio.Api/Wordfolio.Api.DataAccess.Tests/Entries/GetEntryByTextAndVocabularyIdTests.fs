@@ -22,13 +22,13 @@ type GetEntryByTextAndVocabularyIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 307
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "serendipity" createdAt None
+                Entities.makeEntry vocabulary "serendipity" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -45,7 +45,7 @@ type GetEntryByTextAndVocabularyIdTests(fixture: WordfolioTestFixture) =
                       VocabularyId = vocabulary.Id
                       EntryText = "serendipity"
                       CreatedAt = createdAt
-                      UpdatedAt = None }
+                      UpdatedAt = createdAt }
 
             Assert.Equal(expected, actual)
         }
@@ -61,13 +61,13 @@ type GetEntryByTextAndVocabularyIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 308
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let _ =
-                Entities.makeEntry vocabulary "ephemeral" createdAt None
+                Entities.makeEntry vocabulary "ephemeral" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -92,16 +92,16 @@ type GetEntryByTextAndVocabularyIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 309
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary1 =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let vocabulary2 =
-                Entities.makeVocabulary collection "Vocabulary 2" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 2" None createdAt createdAt false
 
             let _ =
-                Entities.makeEntry vocabulary1 "serendipity" createdAt None
+                Entities.makeEntry vocabulary1 "serendipity" createdAt createdAt
 
             do!
                 fixture.Seeder

@@ -130,7 +130,7 @@ let update env (parameters: UpdateCollectionParameters) : Task<Result<Collection
                                 { collection with
                                     Name = trimmedName
                                     Description = parameters.Description
-                                    UpdatedAt = Some parameters.UpdatedAt }
+                                    UpdatedAt = parameters.UpdatedAt }
 
                             return Ok updated
                         else

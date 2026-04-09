@@ -28,16 +28,12 @@ type GetVocabularyByIdTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(203, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary
-                    collection
-                    "Test Vocabulary"
-                    (Some "Test Description")
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeVocabulary collection "Test Vocabulary" (Some "Test Description") createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder
@@ -65,7 +61,7 @@ type GetVocabularyByIdTests(fixture: WordfolioIdentityTestFixture) =
                   Name = "Test Vocabulary"
                   Description = Some "Test Description"
                   CreatedAt = actual.CreatedAt
-                  UpdatedAt = None }
+                  UpdatedAt = actual.CreatedAt }
 
             Assert.Equal(expected, actual)
         }
@@ -81,7 +77,8 @@ type GetVocabularyByIdTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(204, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder
@@ -110,13 +107,16 @@ type GetVocabularyByIdTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(216, "user@example.com", "P@ssw0rd!")
 
             let collectionA =
-                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "Collection A" None createdAt createdAt false
 
             let collectionB =
-                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "Collection B" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collectionB "Test Vocabulary" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeVocabulary collectionB "Test Vocabulary" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder
@@ -149,21 +149,25 @@ type GetVocabularyByIdTests(fixture: WordfolioIdentityTestFixture) =
                 factory.CreateUserAsync(212, "requester@example.com", "P@ssw0rd!")
 
             let ownerCollection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     ownerWordfolioUser
                     "Owner Collection"
                     (Some "Owner Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             let ownerVocabulary =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeVocabulary
                     ownerCollection
                     "Owner Vocabulary"
                     (Some "Owner Vocabulary Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             do!

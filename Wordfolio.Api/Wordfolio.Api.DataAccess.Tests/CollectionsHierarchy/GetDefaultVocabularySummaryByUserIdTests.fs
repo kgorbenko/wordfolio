@@ -22,16 +22,16 @@ type CollectionsHierarchyGetDefaultVocabularySummaryByUserIdTests(fixture: Wordf
             let user = Entities.makeUser 100
 
             let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
+                Entities.makeCollection user "Unsorted" None createdAt createdAt true
 
             let defaultVocab =
-                Entities.makeVocabulary systemCollection "My Words" (Some "Default vocabulary") createdAt None true
+                Entities.makeVocabulary systemCollection "My Words" (Some "Default vocabulary") createdAt createdAt true
 
             let entry1 =
-                Entities.makeEntry defaultVocab "word1" createdAt None
+                Entities.makeEntry defaultVocab "word1" createdAt createdAt
 
             let entry2 =
-                Entities.makeEntry defaultVocab "word2" createdAt None
+                Entities.makeEntry defaultVocab "word2" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -51,7 +51,7 @@ type CollectionsHierarchyGetDefaultVocabularySummaryByUserIdTests(fixture: Wordf
                       Name = "My Words"
                       Description = Some "Default vocabulary"
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       EntryCount = 2 }
 
             Assert.Equal(expected, actual)
@@ -68,10 +68,10 @@ type CollectionsHierarchyGetDefaultVocabularySummaryByUserIdTests(fixture: Wordf
             let user = Entities.makeUser 100
 
             let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
+                Entities.makeCollection user "Unsorted" None createdAt createdAt true
 
             let defaultVocab =
-                Entities.makeVocabulary systemCollection "My Words" None createdAt None true
+                Entities.makeVocabulary systemCollection "My Words" None createdAt createdAt true
 
             do!
                 fixture.Seeder
@@ -90,7 +90,7 @@ type CollectionsHierarchyGetDefaultVocabularySummaryByUserIdTests(fixture: Wordf
                       Name = "My Words"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       EntryCount = 0 }
 
             Assert.Equal(expected, actual)
@@ -107,10 +107,10 @@ type CollectionsHierarchyGetDefaultVocabularySummaryByUserIdTests(fixture: Wordf
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Regular Collection" None createdAt None false
+                Entities.makeCollection user "Regular Collection" None createdAt createdAt false
 
             let regularVocab =
-                Entities.makeVocabulary collection "Regular Vocab" None createdAt None false
+                Entities.makeVocabulary collection "Regular Vocab" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -138,19 +138,19 @@ type CollectionsHierarchyGetDefaultVocabularySummaryByUserIdTests(fixture: Wordf
             let user2 = Entities.makeUser 101
 
             let user1SystemCollection =
-                Entities.makeCollection user1 "Unsorted" None createdAt None true
+                Entities.makeCollection user1 "Unsorted" None createdAt createdAt true
 
             let user2SystemCollection =
-                Entities.makeCollection user2 "Unsorted" None createdAt None true
+                Entities.makeCollection user2 "Unsorted" None createdAt createdAt true
 
             let user1DefaultVocab =
-                Entities.makeVocabulary user1SystemCollection "My Words" None createdAt None true
+                Entities.makeVocabulary user1SystemCollection "My Words" None createdAt createdAt true
 
             let user2DefaultVocab =
-                Entities.makeVocabulary user2SystemCollection "My Words" None createdAt None true
+                Entities.makeVocabulary user2SystemCollection "My Words" None createdAt createdAt true
 
             let user2Entry =
-                Entities.makeEntry user2DefaultVocab "word" createdAt None
+                Entities.makeEntry user2DefaultVocab "word" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -170,7 +170,7 @@ type CollectionsHierarchyGetDefaultVocabularySummaryByUserIdTests(fixture: Wordf
                       Name = "My Words"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       EntryCount = 0 }
 
             Assert.Equal(expected, actual)

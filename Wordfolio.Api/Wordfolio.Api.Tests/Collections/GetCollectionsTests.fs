@@ -30,21 +30,25 @@ type GetCollectionsTests(fixture: WordfolioIdentityTestFixture) =
             let! _, secondWordfolioUser = factory.CreateUserAsync(101, "user2@example.com", "P@ssw0rd!")
 
             let firstUserCollection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     firstWordfolioUser
                     "First User Collection"
                     (Some "Owned by first user")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             let secondUserCollection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     secondWordfolioUser
                     "Second User Collection"
                     (Some "Owned by second user")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             do!
@@ -67,7 +71,7 @@ type GetCollectionsTests(fixture: WordfolioIdentityTestFixture) =
                     Name = "First User Collection"
                     Description = Some "Owned by first user"
                     CreatedAt = actualCollections.Head.CreatedAt
-                    UpdatedAt = None } ]
+                    UpdatedAt = actualCollections.Head.CreatedAt } ]
 
             Assert.Equal<CollectionResponse list>(expectedCollections, actualCollections)
         }

@@ -128,7 +128,7 @@ export const mapEntry = (response: EntryResponse): Entry => ({
     vocabularyId: response.vocabularyId,
     entryText: response.entryText,
     createdAt: new Date(response.createdAt),
-    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
+    updatedAt: new Date(response.updatedAt),
     definitions: response.definitions.map(mapDefinition),
     translations: response.translations.map(mapTranslation),
 });

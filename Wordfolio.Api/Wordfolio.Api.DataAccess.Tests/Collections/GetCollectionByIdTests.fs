@@ -22,7 +22,7 @@ type GetCollectionByIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "My Collection" (Some "Test collection") createdAt None false
+                Entities.makeCollection user "My Collection" (Some "Test collection") createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -40,7 +40,7 @@ type GetCollectionByIdTests(fixture: WordfolioTestFixture) =
                       Name = "My Collection"
                       Description = Some "Test collection"
                       CreatedAt = createdAt
-                      UpdatedAt = None }
+                      UpdatedAt = createdAt }
 
             Assert.Equal(expected, actual)
         }
@@ -68,7 +68,7 @@ type GetCollectionByIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
+                Entities.makeCollection user "Unsorted" None createdAt createdAt true
 
             do!
                 fixture.Seeder

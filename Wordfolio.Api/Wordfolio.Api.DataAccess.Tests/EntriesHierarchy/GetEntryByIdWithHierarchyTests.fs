@@ -35,13 +35,13 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
             let user = Entities.makeUser 400
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "solitary" createdAt None
+                Entities.makeEntry vocabulary "solitary" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -59,7 +59,7 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
                           VocabularyId = vocabulary.Id
                           EntryText = "solitary"
                           CreatedAt = createdAt
-                          UpdatedAt = None }
+                          UpdatedAt = createdAt }
                       Definitions = []
                       Translations = [] }
 
@@ -77,13 +77,13 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
             let user = Entities.makeUser 401
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "ephemeral" createdAt None
+                Entities.makeEntry vocabulary "ephemeral" createdAt createdAt
 
             let definition =
                 Entities.makeDefinition entry "Lasting for a very short time" Definitions.DefinitionSource.Manual 0
@@ -104,7 +104,7 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
                           VocabularyId = vocabulary.Id
                           EntryText = "ephemeral"
                           CreatedAt = createdAt
-                          UpdatedAt = None }
+                          UpdatedAt = createdAt }
                       Definitions =
                         [ { Definition =
                               { Id = definition.Id
@@ -129,13 +129,13 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
             let user = Entities.makeUser 402
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "serendipity" createdAt None
+                Entities.makeEntry vocabulary "serendipity" createdAt createdAt
 
             let translation =
                 Entities.makeTranslation entry "счастливая случайность" Translations.TranslationSource.Api 0
@@ -156,7 +156,7 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
                           VocabularyId = vocabulary.Id
                           EntryText = "serendipity"
                           CreatedAt = createdAt
-                          UpdatedAt = None }
+                          UpdatedAt = createdAt }
                       Definitions = []
                       Translations =
                         [ { Translation =
@@ -181,13 +181,13 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
             let user = Entities.makeUser 403
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "ubiquitous" createdAt None
+                Entities.makeEntry vocabulary "ubiquitous" createdAt createdAt
 
             let definition =
                 Entities.makeDefinition entry "Present everywhere" Definitions.DefinitionSource.Api 0
@@ -217,7 +217,7 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
                           VocabularyId = vocabulary.Id
                           EntryText = "ubiquitous"
                           CreatedAt = createdAt
-                          UpdatedAt = None }
+                          UpdatedAt = createdAt }
                       Definitions =
                         [ { Definition =
                               { Id = definition.Id
@@ -252,13 +252,13 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
             let user = Entities.makeUser 404
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "meticulous" createdAt None
+                Entities.makeEntry vocabulary "meticulous" createdAt createdAt
 
             let translation =
                 Entities.makeTranslation entry "тщательный" Translations.TranslationSource.Manual 0
@@ -288,7 +288,7 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
                           VocabularyId = vocabulary.Id
                           EntryText = "meticulous"
                           CreatedAt = createdAt
-                          UpdatedAt = None }
+                          UpdatedAt = createdAt }
                       Definitions = []
                       Translations =
                         [ { Translation =
@@ -323,13 +323,13 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
             let user = Entities.makeUser 405
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "resilient" createdAt None
+                Entities.makeEntry vocabulary "resilient" createdAt createdAt
 
             let definition1 =
                 Entities.makeDefinition entry "Able to recover quickly" Definitions.DefinitionSource.Api 0
@@ -359,7 +359,7 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
                           VocabularyId = vocabulary.Id
                           EntryText = "resilient"
                           CreatedAt = createdAt
-                          UpdatedAt = None }
+                          UpdatedAt = createdAt }
                       Definitions =
                         [ { Definition =
                               { Id = definition1.Id
@@ -405,13 +405,13 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
             let user = Entities.makeUser 406
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "tenacious" createdAt None
+                Entities.makeEntry vocabulary "tenacious" createdAt createdAt
 
             let definition =
                 Entities.makeDefinition entry "Holding fast" Definitions.DefinitionSource.Api 0
@@ -441,7 +441,7 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
                           VocabularyId = vocabulary.Id
                           EntryText = "tenacious"
                           CreatedAt = createdAt
-                          UpdatedAt = None }
+                          UpdatedAt = createdAt }
                       Definitions =
                         [ { Definition =
                               { Id = definition.Id
@@ -486,13 +486,13 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
             let user = Entities.makeUser 407
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "benevolent" createdAt (Some updatedAt)
+                Entities.makeEntry vocabulary "benevolent" createdAt updatedAt
 
             do!
                 fixture.Seeder
@@ -510,7 +510,7 @@ type EntriesHierarchyGetEntryByIdWithHierarchyTests(fixture: WordfolioTestFixtur
                           VocabularyId = vocabulary.Id
                           EntryText = "benevolent"
                           CreatedAt = createdAt
-                          UpdatedAt = Some updatedAt }
+                          UpdatedAt = updatedAt }
                       Definitions = []
                       Translations = [] }
 

@@ -33,7 +33,7 @@ let makeCollectionWithVocabularyCount id name vocabularyCount =
       Name = name
       Description = None
       CreatedAt = now
-      UpdatedAt = None
+      UpdatedAt = now
       VocabularyCount = vocabularyCount }
 
 [<Fact>]

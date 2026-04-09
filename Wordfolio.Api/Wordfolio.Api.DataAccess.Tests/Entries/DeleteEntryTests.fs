@@ -22,13 +22,13 @@ type DeleteEntryTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 305
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "deleteme" createdAt None
+                Entities.makeEntry vocabulary "deleteme" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -71,16 +71,16 @@ type DeleteEntryTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 306
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry1 =
-                Entities.makeEntry vocabulary "cascade1" createdAt None
+                Entities.makeEntry vocabulary "cascade1" createdAt createdAt
 
             let entry2 =
-                Entities.makeEntry vocabulary "cascade2" createdAt None
+                Entities.makeEntry vocabulary "cascade2" createdAt createdAt
 
             do!
                 fixture.Seeder

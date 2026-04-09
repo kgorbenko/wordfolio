@@ -15,7 +15,7 @@ type internal VocabularyRecord =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
+      UpdatedAt: DateTimeOffset
       IsDefault: bool }
 
 type Vocabulary =
@@ -24,7 +24,7 @@ type Vocabulary =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
+      UpdatedAt: DateTimeOffset }
 
 type CreateVocabularyParameters =
     { CollectionId: int
@@ -50,11 +50,7 @@ let private fromRecord(record: VocabularyRecord) : Vocabulary =
       Name = record.Name
       Description = record.Description
       CreatedAt = record.CreatedAt
-      UpdatedAt =
-        if record.UpdatedAt.HasValue then
-            Some record.UpdatedAt.Value
-        else
-            None }
+      UpdatedAt = record.UpdatedAt }
 
 let internal vocabulariesTable =
     table'<VocabularyRecord> Schema.VocabulariesTable.Name
@@ -66,6 +62,7 @@ type internal VocabularyInsertParameters =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
+      UpdatedAt: DateTimeOffset
       IsDefault: bool }
 
 [<CLIMutable>]
@@ -88,6 +85,7 @@ let createVocabularyAsync
               Name = parameters.Name
               Description = parameters.Description
               CreatedAt = parameters.CreatedAt
+              UpdatedAt = parameters.CreatedAt
               IsDefault = false }
 
         let! record =
@@ -191,7 +189,7 @@ let updateVocabularyAsync
                     {| Id = parameters.Id
                        Name = parameters.Name
                        Description = parameters.Description |> Option.toObj
-                       UpdatedAt = Nullable parameters.UpdatedAt |},
+                       UpdatedAt = parameters.UpdatedAt |},
                 transaction = transaction,
                 cancellationToken = cancellationToken
             )
@@ -315,6 +313,7 @@ let createDefaultVocabularyAsync
               Name = parameters.Name
               Description = parameters.Description
               CreatedAt = parameters.CreatedAt
+              UpdatedAt = parameters.CreatedAt
               IsDefault = true }
 
         let! record =

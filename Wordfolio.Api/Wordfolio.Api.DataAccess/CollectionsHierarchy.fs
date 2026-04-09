@@ -12,7 +12,7 @@ type VocabularyWithEntryCount =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
+      UpdatedAt: DateTimeOffset
       EntryCount: int }
 
 type CollectionWithVocabularies =
@@ -21,7 +21,7 @@ type CollectionWithVocabularies =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
+      UpdatedAt: DateTimeOffset
       Vocabularies: VocabularyWithEntryCount list }
 
 type CollectionWithVocabularyCount =
@@ -30,7 +30,7 @@ type CollectionWithVocabularyCount =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
+      UpdatedAt: DateTimeOffset
       VocabularyCount: int }
 
 [<CLIMutable>]
@@ -40,7 +40,7 @@ type internal CollectionWithVocabularyCountRecord =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
+      UpdatedAt: DateTimeOffset
       VocabularyCount: int }
 
 [<CLIMutable>]
@@ -50,7 +50,7 @@ type internal CollectionRecord =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
+      UpdatedAt: DateTimeOffset
       IsSystem: bool }
 
 [<CLIMutable>]
@@ -59,7 +59,7 @@ type internal VocabularyRecord =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
+      UpdatedAt: DateTimeOffset
       IsDefault: bool
       EntryCount: int }
 
@@ -77,7 +77,7 @@ let private toCollectionWithVocabularies
                   Name = v.Name
                   Description = v.Description
                   CreatedAt = v.CreatedAt
-                  UpdatedAt = v.UpdatedAt |> Option.ofNullable
+                  UpdatedAt = v.UpdatedAt
                   EntryCount = v.EntryCount })
             |> Seq.toList
 
@@ -86,9 +86,7 @@ let private toCollectionWithVocabularies
           Name = collection.Name
           Description = collection.Description
           CreatedAt = collection.CreatedAt
-          UpdatedAt =
-            collection.UpdatedAt
-            |> Option.ofNullable
+          UpdatedAt = collection.UpdatedAt
           Vocabularies = vocabularies })
     |> Seq.toList
 
@@ -175,7 +173,7 @@ let getCollectionsWithVocabularyCountByUserIdAsync
                   Name = c.Name
                   Description = c.Description
                   CreatedAt = c.CreatedAt
-                  UpdatedAt = c.UpdatedAt |> Option.ofNullable
+                  UpdatedAt = c.UpdatedAt
                   VocabularyCount = c.VocabularyCount }
                 : CollectionWithVocabularyCount)
             |> Seq.toList
@@ -225,7 +223,7 @@ let getVocabulariesWithEntryCountByCollectionIdAsync
                   Name = v.Name
                   Description = v.Description
                   CreatedAt = v.CreatedAt
-                  UpdatedAt = v.UpdatedAt |> Option.ofNullable
+                  UpdatedAt = v.UpdatedAt
                   EntryCount = v.EntryCount })
             |> Seq.toList
     }
@@ -269,6 +267,6 @@ let getDefaultVocabularySummaryByUserIdAsync
                   Name = v.Name
                   Description = v.Description
                   CreatedAt = v.CreatedAt
-                  UpdatedAt = v.UpdatedAt |> Option.ofNullable
+                  UpdatedAt = v.UpdatedAt
                   EntryCount = v.EntryCount })
     }

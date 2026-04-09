@@ -115,7 +115,7 @@ type TestEnv
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
 
-let makeEntry id vocabularyId text definitions translations createdAt updatedAt =
+let makeEntry id vocabularyId text definitions translations createdAt (updatedAt: DateTimeOffset) =
     { Id = EntryId id
       VocabularyId = VocabularyId vocabularyId
       EntryText = text
@@ -161,7 +161,7 @@ let ``updates entry with new definitions and translations``() =
         let now = DateTimeOffset.UtcNow
 
         let existingEntry =
-            makeEntry 1 10 "old" [] [] now None
+            makeEntry 1 10 "old" [] [] now now
 
         let example =
             makeExample 1 "example" ExampleSource.Custom
@@ -173,7 +173,7 @@ let ``updates entry with new definitions and translations``() =
             makeTranslation 20 "translation" TranslationSource.Manual 0 [ example ]
 
         let updatedEntry =
-            makeEntry 1 10 "new" [ definition ] [ translation ] now (Some now)
+            makeEntry 1 10 "new" [ definition ] [ translation ] now now
 
         let getEntryByIdCallCount = ref 0
 
@@ -321,7 +321,7 @@ let ``returns EntryNotFound when entry does not exist``() =
 let ``returns EntryNotFound when user has no access``() =
     task {
         let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow None
+            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow DateTimeOffset.UtcNow
 
         let env =
             TestEnv(
@@ -643,13 +643,13 @@ let ``updates entry with definitions only``() =
         let now = DateTimeOffset.UtcNow
 
         let existingEntry =
-            makeEntry 1 10 "word" [] [] now None
+            makeEntry 1 10 "word" [] [] now now
 
         let definition =
             makeDefinition 10 "definition" DefinitionSource.Manual 0 []
 
         let updatedEntry =
-            makeEntry 1 10 "word" [ definition ] [] now (Some now)
+            makeEntry 1 10 "word" [ definition ] [] now now
 
         let getEntryByIdCallCount = ref 0
 
@@ -709,13 +709,13 @@ let ``updates entry with translations only``() =
         let now = DateTimeOffset.UtcNow
 
         let existingEntry =
-            makeEntry 1 10 "word" [] [] now None
+            makeEntry 1 10 "word" [] [] now now
 
         let translation =
             makeTranslation 20 "translation" TranslationSource.Manual 0 []
 
         let updatedEntry =
-            makeEntry 1 10 "word" [] [ translation ] now (Some now)
+            makeEntry 1 10 "word" [] [ translation ] now now
 
         let getEntryByIdCallCount = ref 0
 

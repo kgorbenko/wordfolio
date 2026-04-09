@@ -22,10 +22,10 @@ type GetVocabularyByIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 200
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "My Vocabulary" (Some "Test vocabulary") createdAt None false
+                Entities.makeVocabulary collection "My Vocabulary" (Some "Test vocabulary") createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -43,7 +43,7 @@ type GetVocabularyByIdTests(fixture: WordfolioTestFixture) =
                       Name = "My Vocabulary"
                       Description = Some "Test vocabulary"
                       CreatedAt = createdAt
-                      UpdatedAt = None }
+                      UpdatedAt = createdAt }
 
             Assert.Equal(expected, actual)
         }
@@ -71,10 +71,10 @@ type GetVocabularyByIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let defaultVocabulary =
-                Entities.makeVocabulary collection "Default" None createdAt None true
+                Entities.makeVocabulary collection "Default" None createdAt createdAt true
 
             do!
                 fixture.Seeder
@@ -101,10 +101,10 @@ type GetVocabularyByIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
+                Entities.makeCollection user "Unsorted" None createdAt createdAt true
 
             let vocabulary =
-                Entities.makeVocabulary systemCollection "Vocabulary" None createdAt None false
+                Entities.makeVocabulary systemCollection "Vocabulary" None createdAt createdAt false
 
             do!
                 fixture.Seeder

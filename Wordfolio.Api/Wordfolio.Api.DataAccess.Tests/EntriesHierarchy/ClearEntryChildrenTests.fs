@@ -23,13 +23,13 @@ type EntriesHierarchyClearEntryChildrenTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 500
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "ephemeral" createdAt None
+                Entities.makeEntry vocabulary "ephemeral" createdAt createdAt
 
             let _definition1 =
                 Entities.makeDefinition entry "Lasting for a short time" Definitions.DefinitionSource.Api 0
@@ -66,13 +66,13 @@ type EntriesHierarchyClearEntryChildrenTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 501
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "serendipity" createdAt None
+                Entities.makeEntry vocabulary "serendipity" createdAt createdAt
 
             let _translation1 =
                 Entities.makeTranslation entry "счастливый случай" Translations.TranslationSource.Api 0
@@ -109,13 +109,13 @@ type EntriesHierarchyClearEntryChildrenTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 502
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "ubiquitous" createdAt None
+                Entities.makeEntry vocabulary "ubiquitous" createdAt createdAt
 
             let _definition =
                 Entities.makeDefinition entry "Present everywhere" Definitions.DefinitionSource.Api 0
@@ -157,13 +157,13 @@ type EntriesHierarchyClearEntryChildrenTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 503
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "meticulous" createdAt None
+                Entities.makeEntry vocabulary "meticulous" createdAt createdAt
 
             let definition =
                 Entities.makeDefinition entry "Careful about details" Definitions.DefinitionSource.Api 0
@@ -208,13 +208,13 @@ type EntriesHierarchyClearEntryChildrenTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 504
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "tenacious" createdAt None
+                Entities.makeEntry vocabulary "tenacious" createdAt createdAt
 
             let translation =
                 Entities.makeTranslation entry "упорный" Translations.TranslationSource.Manual 0
@@ -259,13 +259,13 @@ type EntriesHierarchyClearEntryChildrenTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 507
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "standalone" createdAt None
+                Entities.makeEntry vocabulary "standalone" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -287,7 +287,7 @@ type EntriesHierarchyClearEntryChildrenTests(fixture: WordfolioTestFixture) =
                     VocabularyId = vocabulary.Id
                     EntryText = "standalone"
                     CreatedAt = createdAt
-                    UpdatedAt = None } ]
+                    UpdatedAt = createdAt } ]
 
             Assert.Equal<Entry list>(expectedEntries, actualEntries)
         }
@@ -303,13 +303,13 @@ type EntriesHierarchyClearEntryChildrenTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 505
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "solitary" createdAt None
+                Entities.makeEntry vocabulary "solitary" createdAt createdAt
 
             let definition =
                 Entities.makeDefinition entry "Alone" Definitions.DefinitionSource.Manual 0
@@ -353,13 +353,13 @@ type EntriesHierarchyClearEntryChildrenTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 506
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry1 =
-                Entities.makeEntry vocabulary "resilient" createdAt None
+                Entities.makeEntry vocabulary "resilient" createdAt createdAt
 
             let _definition1 =
                 Entities.makeDefinition entry1 "Able to recover" Definitions.DefinitionSource.Api 0
@@ -368,7 +368,7 @@ type EntriesHierarchyClearEntryChildrenTests(fixture: WordfolioTestFixture) =
                 Entities.makeTranslation entry1 "устойчивый" Translations.TranslationSource.Manual 0
 
             let entry2 =
-                Entities.makeEntry vocabulary "benevolent" createdAt None
+                Entities.makeEntry vocabulary "benevolent" createdAt createdAt
 
             let definition2 =
                 Entities.makeDefinition entry2 "Kind and generous" Definitions.DefinitionSource.Manual 0

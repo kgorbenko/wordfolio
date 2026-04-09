@@ -37,12 +37,15 @@ type TestEnv
         member this.RunInTransaction(operation) = operation this
 
 let makeCollection id userId name description =
+    let createdAt =
+        DateTimeOffset.UtcNow.AddDays(-1)
+
     { Id = CollectionId id
       UserId = UserId userId
       Name = name
       Description = description
-      CreatedAt = DateTimeOffset.UtcNow.AddDays(-1)
-      UpdatedAt = None }
+      CreatedAt = createdAt
+      UpdatedAt = createdAt }
 
 [<Fact>]
 let ``updates collection when owned by user``() =
@@ -98,7 +101,7 @@ let ``updates collection when owned by user``() =
             Assert.Equal(UserId 1, updated.UserId)
             Assert.Equal("New Name", updated.Name)
             Assert.Equal(Some "New Description", updated.Description)
-            Assert.Equal(Some now, updated.UpdatedAt)
+            Assert.Equal(now, updated.UpdatedAt)
             Assert.Equal(existingCollection.CreatedAt, updated.CreatedAt)
         | Error e -> failwith $"Expected Ok, got Error: {e}"
 

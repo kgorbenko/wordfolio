@@ -4,7 +4,7 @@ export interface Vocabulary {
     readonly name: string;
     readonly description: string | null;
     readonly createdAt: Date;
-    readonly updatedAt: Date | null;
+    readonly updatedAt: Date;
 }
 
 export interface VocabularyDetail {
@@ -14,7 +14,7 @@ export interface VocabularyDetail {
     readonly name: string;
     readonly description: string | null;
     readonly createdAt: Date;
-    readonly updatedAt: Date | null;
+    readonly updatedAt: Date;
 }
 
 export interface VocabularyCollectionContext {

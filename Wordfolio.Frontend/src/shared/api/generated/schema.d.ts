@@ -1817,7 +1817,7 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt?: null | string;
+            updatedAt: string;
         };
         CollectionsHierarchyResultResponse: {
             collections: components["schemas"]["CollectionWithVocabulariesResponse"][];
@@ -1831,7 +1831,7 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt?: null | string;
+            updatedAt: string;
             vocabularies: components["schemas"]["VocabularyWithEntryCountResponse"][];
         };
         CollectionWithVocabularyCountResponse: {
@@ -1842,7 +1842,7 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt?: null | string;
+            updatedAt: string;
             /** Format: int32 */
             vocabularyCount: number;
         };
@@ -1895,7 +1895,7 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt?: null | string;
+            updatedAt: string;
             definitions: components["schemas"]["DefinitionResponse"][];
             translations: components["schemas"]["TranslationResponse"][];
         };
@@ -2031,7 +2031,7 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt?: null | string;
+            updatedAt: string;
         };
         VocabularyResponse: {
             /** Format: int32 */
@@ -2043,7 +2043,7 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt?: null | string;
+            updatedAt: string;
         };
         VocabularyWithEntryCountResponse: {
             /** Format: int32 */
@@ -2053,7 +2053,7 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            updatedAt?: null | string;
+            updatedAt: string;
             /** Format: int32 */
             entryCount: number;
         };

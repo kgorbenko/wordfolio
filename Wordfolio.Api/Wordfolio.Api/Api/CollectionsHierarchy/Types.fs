@@ -7,7 +7,7 @@ type VocabularyWithEntryCountResponse =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
+      UpdatedAt: DateTimeOffset
       EntryCount: int }
 
 type CollectionWithVocabulariesResponse =
@@ -15,7 +15,7 @@ type CollectionWithVocabulariesResponse =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
+      UpdatedAt: DateTimeOffset
       Vocabularies: VocabularyWithEntryCountResponse list }
 
 type CollectionWithVocabularyCountResponse =
@@ -23,7 +23,7 @@ type CollectionWithVocabularyCountResponse =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
+      UpdatedAt: DateTimeOffset
       VocabularyCount: int }
 
 type CollectionsHierarchyResultResponse =

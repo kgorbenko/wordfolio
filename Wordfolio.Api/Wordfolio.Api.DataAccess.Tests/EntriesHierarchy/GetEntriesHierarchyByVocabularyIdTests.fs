@@ -23,10 +23,10 @@ type EntriesHierarchyGetEntriesHierarchyByVocabularyIdTests(fixture: WordfolioTe
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Col" None createdAt None false
+                Entities.makeCollection user "Col" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocab" None createdAt None false
+                Entities.makeVocabulary collection "Vocab" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -56,13 +56,13 @@ type EntriesHierarchyGetEntriesHierarchyByVocabularyIdTests(fixture: WordfolioTe
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Col" None createdAt None false
+                Entities.makeCollection user "Col" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocab" None createdAt None false
+                Entities.makeVocabulary collection "Vocab" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "serendipity" createdAt None
+                Entities.makeEntry vocabulary "serendipity" createdAt createdAt
 
             let definition =
                 Entities.makeDefinition entry "happy accident" Definitions.DefinitionSource.Api 1
@@ -94,7 +94,7 @@ type EntriesHierarchyGetEntriesHierarchyByVocabularyIdTests(fixture: WordfolioTe
                         VocabularyId = vocabulary.Id
                         EntryText = "serendipity"
                         CreatedAt = createdAt
-                        UpdatedAt = None }
+                        UpdatedAt = createdAt }
                     Definitions =
                       [ { Definition =
                             { Id = definition.Id
@@ -131,19 +131,19 @@ type EntriesHierarchyGetEntriesHierarchyByVocabularyIdTests(fixture: WordfolioTe
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Col" None createdAt None false
+                Entities.makeCollection user "Col" None createdAt createdAt false
 
             let vocab1 =
-                Entities.makeVocabulary collection "Vocab1" None createdAt None false
+                Entities.makeVocabulary collection "Vocab1" None createdAt createdAt false
 
             let vocab2 =
-                Entities.makeVocabulary collection "Vocab2" None createdAt None false
+                Entities.makeVocabulary collection "Vocab2" None createdAt createdAt false
 
             let entry1 =
-                Entities.makeEntry vocab1 "word1" createdAt None
+                Entities.makeEntry vocab1 "word1" createdAt createdAt
 
             let entry2 =
-                Entities.makeEntry vocab2 "word2" createdAt None
+                Entities.makeEntry vocab2 "word2" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -163,7 +163,7 @@ type EntriesHierarchyGetEntriesHierarchyByVocabularyIdTests(fixture: WordfolioTe
                         VocabularyId = vocab1.Id
                         EntryText = "word1"
                         CreatedAt = createdAt
-                        UpdatedAt = None }
+                        UpdatedAt = createdAt }
                     Definitions = []
                     Translations = [] } ]
 
@@ -186,16 +186,16 @@ type EntriesHierarchyGetEntriesHierarchyByVocabularyIdTests(fixture: WordfolioTe
             let user = Entities.makeUser 101
 
             let collection =
-                Entities.makeCollection user "Col" None earlierCreatedAt None false
+                Entities.makeCollection user "Col" None earlierCreatedAt earlierCreatedAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocab" None earlierCreatedAt None false
+                Entities.makeVocabulary collection "Vocab" None earlierCreatedAt earlierCreatedAt false
 
             let olderEntry =
-                Entities.makeEntry vocabulary "older" earlierCreatedAt None
+                Entities.makeEntry vocabulary "older" earlierCreatedAt earlierCreatedAt
 
             let newerEntry =
-                Entities.makeEntry vocabulary "newer" laterCreatedAt None
+                Entities.makeEntry vocabulary "newer" laterCreatedAt laterCreatedAt
 
             let olderDefinition =
                 Entities.makeDefinition olderEntry "older meaning" Definitions.DefinitionSource.Manual 0
@@ -223,11 +223,26 @@ type EntriesHierarchyGetEntriesHierarchyByVocabularyIdTests(fixture: WordfolioTe
 
             let expected: EntriesHierarchy.EntryHierarchy list =
                 [ { Entry =
+                      { Id = newerEntry.Id
+                        VocabularyId = vocabulary.Id
+                        EntryText = "newer"
+                        CreatedAt = laterCreatedAt
+                        UpdatedAt = laterCreatedAt }
+                    Definitions = []
+                    Translations =
+                      [ { Translation =
+                            { Id = newerTranslation.Id
+                              EntryId = newerEntry.Id
+                              TranslationText = "новее"
+                              Source = Translations.TranslationSource.Api
+                              DisplayOrder = 0 }
+                          Examples = [] } ] }
+                  { Entry =
                       { Id = olderEntry.Id
                         VocabularyId = vocabulary.Id
                         EntryText = "older"
                         CreatedAt = earlierCreatedAt
-                        UpdatedAt = None }
+                        UpdatedAt = earlierCreatedAt }
                     Definitions =
                       [ { Definition =
                             { Id = olderDefinition.Id
@@ -241,30 +256,13 @@ type EntriesHierarchyGetEntriesHierarchyByVocabularyIdTests(fixture: WordfolioTe
                                 TranslationId = None
                                 ExampleText = "older example"
                                 Source = Examples.ExampleSource.Api } ] } ]
-                    Translations = [] }
-                  { Entry =
-                      { Id = newerEntry.Id
-                        VocabularyId = vocabulary.Id
-                        EntryText = "newer"
-                        CreatedAt = laterCreatedAt
-                        UpdatedAt = None }
-                    Definitions = []
-                    Translations =
-                      [ { Translation =
-                            { Id = newerTranslation.Id
-                              EntryId = newerEntry.Id
-                              TranslationText = "новее"
-                              Source = Translations.TranslationSource.Api
-                              DisplayOrder = 0 }
-                          Examples = [] } ] } ]
+                    Translations = [] } ]
 
             Assert.Equal<EntriesHierarchy.EntryHierarchy list>(expected, actual)
         }
 
     [<Fact>]
-    member _.``getEntriesHierarchyByVocabularyIdAsync returns entries ordered by UpdatedAt desc nulls last then by Id``
-        ()
-        =
+    member _.``getEntriesHierarchyByVocabularyIdAsync returns entries ordered by UpdatedAt desc then by Id``() =
         task {
             do! fixture.ResetDatabaseAsync()
 
@@ -280,22 +278,22 @@ type EntriesHierarchyGetEntriesHierarchyByVocabularyIdTests(fixture: WordfolioTe
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Col" None createdAt None false
+                Entities.makeCollection user "Col" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocab" None createdAt None false
+                Entities.makeVocabulary collection "Vocab" None createdAt createdAt false
 
             let entryNullUpdatedFirst =
-                Entities.makeEntry vocabulary "never-updated-1" createdAt None
+                Entities.makeEntry vocabulary "never-updated-1" createdAt createdAt
 
             let entryNullUpdatedSecond =
-                Entities.makeEntry vocabulary "never-updated-2" createdAt None
+                Entities.makeEntry vocabulary "never-updated-2" createdAt createdAt
 
             let entryEarlierUpdated =
-                Entities.makeEntry vocabulary "earlier-updated" createdAt (Some earlierUpdatedAt)
+                Entities.makeEntry vocabulary "earlier-updated" createdAt earlierUpdatedAt
 
             let entryLaterUpdated =
-                Entities.makeEntry vocabulary "later-updated" createdAt (Some laterUpdatedAt)
+                Entities.makeEntry vocabulary "later-updated" createdAt laterUpdatedAt
 
             do!
                 fixture.Seeder

@@ -18,7 +18,7 @@ and [<CLIMutable>] Collection =
       Name: string
       Description: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
+      UpdatedAt: DateTimeOffset
       IsSystem: bool
       User: User
       Vocabularies: ResizeArray<Vocabulary> }
@@ -29,7 +29,7 @@ and [<CLIMutable>] Vocabulary =
       Name: string
       Description: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
+      UpdatedAt: DateTimeOffset
       IsDefault: bool
       Collection: Collection
       Entries: ResizeArray<Entry> }
@@ -39,7 +39,7 @@ and [<CLIMutable>] Entry =
       VocabularyId: int
       EntryText: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
+      UpdatedAt: DateTimeOffset
       Vocabulary: Vocabulary
       Definitions: ResizeArray<Definition>
       Translations: ResizeArray<Translation> }
@@ -139,7 +139,7 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
         collections.Property(_.CreatedAt).IsRequired()
         |> ignore
 
-        collections.Property(_.UpdatedAt).IsRequired(false)
+        collections.Property(_.UpdatedAt).IsRequired()
         |> ignore
 
         collections.Property(_.IsSystem).IsRequired()
@@ -168,7 +168,7 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
         vocabularies.Property(_.CreatedAt).IsRequired()
         |> ignore
 
-        vocabularies.Property(_.UpdatedAt).IsRequired(false)
+        vocabularies.Property(_.UpdatedAt).IsRequired()
         |> ignore
 
         vocabularies.Property(_.IsDefault).IsRequired()
@@ -199,7 +199,7 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
         entries.Property(_.CreatedAt).IsRequired()
         |> ignore
 
-        entries.Property(_.UpdatedAt).IsRequired(false)
+        entries.Property(_.UpdatedAt).IsRequired()
         |> ignore
 
         entries

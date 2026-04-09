@@ -25,7 +25,7 @@ type UpdateCollectionTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 101
 
             let collection =
-                Entities.makeCollection user "Original Name" (Some "Original Description") createdAt None false
+                Entities.makeCollection user "Original Name" (Some "Original Description") createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -51,7 +51,7 @@ type UpdateCollectionTests(fixture: WordfolioTestFixture) =
                       Name = "Updated Name"
                       Description = Some "Updated Description"
                       CreatedAt = createdAt
-                      UpdatedAt = Some updatedAt
+                      UpdatedAt = updatedAt
                       IsSystem = false }
 
             Assert.Equal(expected, actual)
@@ -71,7 +71,7 @@ type UpdateCollectionTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 104
 
             let collection =
-                Entities.makeCollection user "Collection Name" (Some "Original Description") createdAt None false
+                Entities.makeCollection user "Collection Name" (Some "Original Description") createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -97,7 +97,7 @@ type UpdateCollectionTests(fixture: WordfolioTestFixture) =
                       Name = "Collection Name"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = Some updatedAt
+                      UpdatedAt = updatedAt
                       IsSystem = false }
 
             Assert.Equal(expected, actual)
@@ -136,7 +136,7 @@ type UpdateCollectionTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
+                Entities.makeCollection user "Unsorted" None createdAt createdAt true
 
             do!
                 fixture.Seeder
@@ -163,7 +163,7 @@ type UpdateCollectionTests(fixture: WordfolioTestFixture) =
                       Name = "Unsorted"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsSystem = true }
 
             Assert.Equal(expected, actual)

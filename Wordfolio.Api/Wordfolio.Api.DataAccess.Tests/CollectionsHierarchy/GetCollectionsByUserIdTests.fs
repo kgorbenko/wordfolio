@@ -22,19 +22,19 @@ type CollectionsHierarchyGetCollectionsByUserIdTests(fixture: WordfolioTestFixtu
             let user = Entities.makeUser 100
 
             let collection1 =
-                Entities.makeCollection user "Collection 1" (Some "Description 1") createdAt None false
+                Entities.makeCollection user "Collection 1" (Some "Description 1") createdAt createdAt false
 
             let collection2 =
-                Entities.makeCollection user "Collection 2" None createdAt None false
+                Entities.makeCollection user "Collection 2" None createdAt createdAt false
 
             let vocab1 =
-                Entities.makeVocabulary collection1 "Vocab 1" (Some "Vocab desc") createdAt None false
+                Entities.makeVocabulary collection1 "Vocab 1" (Some "Vocab desc") createdAt createdAt false
 
             let vocab2 =
-                Entities.makeVocabulary collection1 "Vocab 2" None createdAt None false
+                Entities.makeVocabulary collection1 "Vocab 2" None createdAt createdAt false
 
             let vocab3 =
-                Entities.makeVocabulary collection2 "Vocab 3" None createdAt None false
+                Entities.makeVocabulary collection2 "Vocab 3" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -53,32 +53,32 @@ type CollectionsHierarchyGetCollectionsByUserIdTests(fixture: WordfolioTestFixtu
                     Name = "Collection 1"
                     Description = Some "Description 1"
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     Vocabularies =
                       [ { Id = vocab1.Id
                           Name = "Vocab 1"
                           Description = Some "Vocab desc"
                           CreatedAt = createdAt
-                          UpdatedAt = None
+                          UpdatedAt = createdAt
                           EntryCount = 0 }
                         { Id = vocab2.Id
                           Name = "Vocab 2"
                           Description = None
                           CreatedAt = createdAt
-                          UpdatedAt = None
+                          UpdatedAt = createdAt
                           EntryCount = 0 } ] }
                   { Id = collection2.Id
                     UserId = user.Id
                     Name = "Collection 2"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     Vocabularies =
                       [ { Id = vocab3.Id
                           Name = "Vocab 3"
                           Description = None
                           CreatedAt = createdAt
-                          UpdatedAt = None
+                          UpdatedAt = createdAt
                           EntryCount = 0 } ] } ]
 
             Assert.Equal<CollectionsHierarchy.CollectionWithVocabularies list>(expected, actual)
@@ -95,16 +95,16 @@ type CollectionsHierarchyGetCollectionsByUserIdTests(fixture: WordfolioTestFixtu
             let user = Entities.makeUser 100
 
             let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
+                Entities.makeCollection user "Unsorted" None createdAt createdAt true
 
             let regularCollection =
-                Entities.makeCollection user "Regular" None createdAt None false
+                Entities.makeCollection user "Regular" None createdAt createdAt false
 
             let _ =
-                Entities.makeVocabulary systemCollection "Default Vocab" None createdAt None false
+                Entities.makeVocabulary systemCollection "Default Vocab" None createdAt createdAt false
 
             let vocab =
-                Entities.makeVocabulary regularCollection "Regular Vocab" None createdAt None false
+                Entities.makeVocabulary regularCollection "Regular Vocab" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -121,13 +121,13 @@ type CollectionsHierarchyGetCollectionsByUserIdTests(fixture: WordfolioTestFixtu
                     Name = "Regular"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     Vocabularies =
                       [ { Id = vocab.Id
                           Name = "Regular Vocab"
                           Description = None
                           CreatedAt = createdAt
-                          UpdatedAt = None
+                          UpdatedAt = createdAt
                           EntryCount = 0 } ] } ]
 
             Assert.Equal<CollectionsHierarchy.CollectionWithVocabularies list>(expected, actual)
@@ -144,13 +144,13 @@ type CollectionsHierarchyGetCollectionsByUserIdTests(fixture: WordfolioTestFixtu
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Collection" None createdAt None false
+                Entities.makeCollection user "Collection" None createdAt createdAt false
 
             let defaultVocab =
-                Entities.makeVocabulary collection "Default" None createdAt None true
+                Entities.makeVocabulary collection "Default" None createdAt createdAt true
 
             let regularVocab =
-                Entities.makeVocabulary collection "Regular" None createdAt None false
+                Entities.makeVocabulary collection "Regular" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -169,13 +169,13 @@ type CollectionsHierarchyGetCollectionsByUserIdTests(fixture: WordfolioTestFixtu
                     Name = "Collection"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     Vocabularies =
                       [ { Id = regularVocab.Id
                           Name = "Regular"
                           Description = None
                           CreatedAt = createdAt
-                          UpdatedAt = None
+                          UpdatedAt = createdAt
                           EntryCount = 0 } ] } ]
 
             Assert.Equal<CollectionsHierarchy.CollectionWithVocabularies list>(expected, actual)
@@ -192,7 +192,7 @@ type CollectionsHierarchyGetCollectionsByUserIdTests(fixture: WordfolioTestFixtu
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Empty Collection" None createdAt None false
+                Entities.makeCollection user "Empty Collection" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -210,7 +210,7 @@ type CollectionsHierarchyGetCollectionsByUserIdTests(fixture: WordfolioTestFixtu
                     Name = "Empty Collection"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     Vocabularies = [] } ]
 
             Assert.Equal<CollectionsHierarchy.CollectionWithVocabularies list>(expected, actual)
@@ -227,25 +227,25 @@ type CollectionsHierarchyGetCollectionsByUserIdTests(fixture: WordfolioTestFixtu
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Collection" None createdAt None false
+                Entities.makeCollection user "Collection" None createdAt createdAt false
 
             let vocab1 =
-                Entities.makeVocabulary collection "Vocab 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocab 1" None createdAt createdAt false
 
             let vocab2 =
-                Entities.makeVocabulary collection "Vocab 2" None createdAt None false
+                Entities.makeVocabulary collection "Vocab 2" None createdAt createdAt false
 
             let entry1 =
-                Entities.makeEntry vocab1 "word1" createdAt None
+                Entities.makeEntry vocab1 "word1" createdAt createdAt
 
             let entry2 =
-                Entities.makeEntry vocab1 "word2" createdAt None
+                Entities.makeEntry vocab1 "word2" createdAt createdAt
 
             let entry3 =
-                Entities.makeEntry vocab1 "word3" createdAt None
+                Entities.makeEntry vocab1 "word3" createdAt createdAt
 
             let entry4 =
-                Entities.makeEntry vocab2 "word4" createdAt None
+                Entities.makeEntry vocab2 "word4" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -265,19 +265,19 @@ type CollectionsHierarchyGetCollectionsByUserIdTests(fixture: WordfolioTestFixtu
                     Name = "Collection"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     Vocabularies =
                       [ { Id = vocab1.Id
                           Name = "Vocab 1"
                           Description = None
                           CreatedAt = createdAt
-                          UpdatedAt = None
+                          UpdatedAt = createdAt
                           EntryCount = 3 }
                         { Id = vocab2.Id
                           Name = "Vocab 2"
                           Description = None
                           CreatedAt = createdAt
-                          UpdatedAt = None
+                          UpdatedAt = createdAt
                           EntryCount = 1 } ] } ]
 
             Assert.Equal<CollectionsHierarchy.CollectionWithVocabularies list>(expected, actual)
@@ -295,16 +295,16 @@ type CollectionsHierarchyGetCollectionsByUserIdTests(fixture: WordfolioTestFixtu
             let user2 = Entities.makeUser 101
 
             let user1Collection =
-                Entities.makeCollection user1 "User 1 Collection" None createdAt None false
+                Entities.makeCollection user1 "User 1 Collection" None createdAt createdAt false
 
             let user2Collection =
-                Entities.makeCollection user2 "User 2 Collection" None createdAt None false
+                Entities.makeCollection user2 "User 2 Collection" None createdAt createdAt false
 
             let user1Vocab =
-                Entities.makeVocabulary user1Collection "User 1 Vocab" None createdAt None false
+                Entities.makeVocabulary user1Collection "User 1 Vocab" None createdAt createdAt false
 
             let user2Vocab =
-                Entities.makeVocabulary user2Collection "User 2 Vocab" None createdAt None false
+                Entities.makeVocabulary user2Collection "User 2 Vocab" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -323,13 +323,13 @@ type CollectionsHierarchyGetCollectionsByUserIdTests(fixture: WordfolioTestFixtu
                     Name = "User 1 Collection"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     Vocabularies =
                       [ { Id = user1Vocab.Id
                           Name = "User 1 Vocab"
                           Description = None
                           CreatedAt = createdAt
-                          UpdatedAt = None
+                          UpdatedAt = createdAt
                           EntryCount = 0 } ] } ]
 
             Assert.Equal<CollectionsHierarchy.CollectionWithVocabularies list>(expected, actual)

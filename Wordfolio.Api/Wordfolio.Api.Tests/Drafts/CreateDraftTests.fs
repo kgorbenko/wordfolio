@@ -67,7 +67,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                   VocabularyId = vocabularies.[0].Id
                   EntryText = "hello"
                   CreatedAt = actual.CreatedAt
-                  UpdatedAt = None
+                  UpdatedAt = actual.CreatedAt
                   Definitions = [ expectedDefinition ]
                   Translations = [] }
 
@@ -105,10 +105,12 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(401, "user@example.com", "P@ssw0rd!")
 
             let systemCollection =
-                Entities.makeCollection wordfolioUser "[System] Unsorted" None DateTimeOffset.UtcNow None true
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "[System] Unsorted" None createdAt createdAt true
 
             let defaultVocabulary =
-                Entities.makeVocabulary systemCollection "[Default]" None DateTimeOffset.UtcNow None true
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeVocabulary systemCollection "[Default]" None createdAt createdAt true
 
             do!
                 fixture.WordfolioSeeder
@@ -148,7 +150,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                   VocabularyId = defaultVocabulary.Id
                   EntryText = "hello"
                   CreatedAt = actual.CreatedAt
-                  UpdatedAt = None
+                  UpdatedAt = actual.CreatedAt
                   Definitions = [ expectedDefinition ]
                   Translations = [] }
 
@@ -249,7 +251,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                   VocabularyId = vocabularies.[0].Id
                   EntryText = "hello"
                   CreatedAt = actual.CreatedAt
-                  UpdatedAt = None
+                  UpdatedAt = actual.CreatedAt
                   Definitions = [ expectedDefinition ]
                   Translations = [ expectedTranslation ] }
 
@@ -510,13 +512,16 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(604, "user@example.com", "P@ssw0rd!")
 
             let systemCollection =
-                Entities.makeCollection wordfolioUser "[System] Unsorted" None DateTimeOffset.UtcNow None true
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "[System] Unsorted" None createdAt createdAt true
 
             let defaultVocabulary =
-                Entities.makeVocabulary systemCollection "[Default]" None DateTimeOffset.UtcNow None true
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeVocabulary systemCollection "[Default]" None createdAt createdAt true
 
             let existingEntry =
-                Entities.makeEntry defaultVocabulary "hello" DateTimeOffset.UtcNow None
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeEntry defaultVocabulary "hello" createdAt createdAt
 
             do!
                 fixture.WordfolioSeeder
@@ -553,13 +558,16 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(605, "user@example.com", "P@ssw0rd!")
 
             let systemCollection =
-                Entities.makeCollection wordfolioUser "[System] Unsorted" None DateTimeOffset.UtcNow None true
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "[System] Unsorted" None createdAt createdAt true
 
             let defaultVocabulary =
-                Entities.makeVocabulary systemCollection "[Default]" None DateTimeOffset.UtcNow None true
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeVocabulary systemCollection "[Default]" None createdAt createdAt true
 
             let existingEntry =
-                Entities.makeEntry defaultVocabulary "hello" DateTimeOffset.UtcNow None
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeEntry defaultVocabulary "hello" createdAt createdAt
 
             do!
                 fixture.WordfolioSeeder
@@ -600,7 +608,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                   VocabularyId = defaultVocabulary.Id
                   EntryText = "hello"
                   CreatedAt = actual.CreatedAt
-                  UpdatedAt = None
+                  UpdatedAt = actual.CreatedAt
                   Definitions = [ expectedDefinition ]
                   Translations = [] }
 

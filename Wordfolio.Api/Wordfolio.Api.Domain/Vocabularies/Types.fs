@@ -11,7 +11,7 @@ type VocabularyDetail =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
+      UpdatedAt: DateTimeOffset }
 
 type VocabularyNameValidationResult =
     | NameRequired

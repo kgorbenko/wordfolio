@@ -28,13 +28,16 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(208, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                Entities.makeCollection wordfolioUser "My Collection" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "My Collection" None createdAt createdAt false
 
             let firstVocabulary =
-                Entities.makeVocabulary collection "Animals" (Some "Animal words") DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeVocabulary collection "Animals" (Some "Animal words") createdAt createdAt false
 
             let secondVocabulary =
-                Entities.makeVocabulary collection "Travel" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeVocabulary collection "Travel" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder
@@ -66,13 +69,13 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
                      Name = "Animals"
                      Description = Some "Animal words"
                      CreatedAt = sortedResult[0].CreatedAt
-                     UpdatedAt = None }
+                     UpdatedAt = sortedResult[0].CreatedAt }
                    { Id = secondVocabulary.Id
                      CollectionId = collection.Id
                      Name = "Travel"
                      Description = None
                      CreatedAt = sortedResult[1].CreatedAt
-                     UpdatedAt = None } |]
+                     UpdatedAt = sortedResult[1].CreatedAt } |]
                 |> Array.sortBy _.Id
 
             Assert.Equal<VocabularyResponse>(expected, sortedResult)
@@ -89,7 +92,8 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(202, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder
@@ -145,22 +149,20 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
                 factory.CreateUserAsync(210, "requester@example.com", "P@ssw0rd!")
 
             let ownerCollection =
-                Entities.makeCollection ownerWordfolioUser "Owner Collection" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection ownerWordfolioUser "Owner Collection" None createdAt createdAt false
 
             let ownerVocabulary =
-                Entities.makeVocabulary ownerCollection "Owner Vocabulary" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeVocabulary ownerCollection "Owner Vocabulary" None createdAt createdAt false
 
             let requesterCollection =
-                Entities.makeCollection
-                    requesterWordfolioUser
-                    "Requester Collection"
-                    None
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection requesterWordfolioUser "Requester Collection" None createdAt createdAt false
 
             let requesterVocabulary =
-                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder

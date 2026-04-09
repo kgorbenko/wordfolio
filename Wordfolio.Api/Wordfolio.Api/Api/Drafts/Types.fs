@@ -17,7 +17,7 @@ type VocabularyResponse =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
+      UpdatedAt: DateTimeOffset }
 
 type DraftsVocabularyDataResponse =
     { Vocabulary: VocabularyResponse

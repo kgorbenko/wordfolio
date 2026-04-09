@@ -28,21 +28,25 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(105, "user@example.com", "P@ssw0rd!")
 
             let collection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     wordfolioUser
                     "Original Name"
                     (Some "Original Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             let untouchedCollection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     wordfolioUser
                     "Untouched Name"
                     (Some "Untouched Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             do!
@@ -131,7 +135,8 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(106, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                Entities.makeCollection wordfolioUser "Original Name" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "Original Name" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder
@@ -178,21 +183,25 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 factory.CreateUserAsync(108, "requester@example.com", "P@ssw0rd!")
 
             let ownerCollection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     ownerWordfolioUser
                     "Owner Collection"
                     (Some "Owner Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             let requesterCollection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     requesterWordfolioUser
                     "Requester Collection"
                     (Some "Requester Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             do!
@@ -254,12 +263,14 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let! _, wordfolioUser = factory.CreateUserAsync(109, "user@example.com", "P@ssw0rd!")
 
             let collection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     wordfolioUser
                     "Original Name"
                     (Some "Original Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             do!

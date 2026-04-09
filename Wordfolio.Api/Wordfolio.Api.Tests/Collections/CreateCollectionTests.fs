@@ -52,7 +52,7 @@ type CreateCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   Name = "My Collection"
                   Description = Some "A test collection"
                   CreatedAt = result.CreatedAt
-                  UpdatedAt = None }
+                  UpdatedAt = result.CreatedAt }
 
             Assert.Equal(expectedResult, result)
 
@@ -62,7 +62,7 @@ type CreateCollectionTests(fixture: WordfolioIdentityTestFixture) =
                     Name = "My Collection"
                     Description = Some "A test collection"
                     CreatedAt = result.CreatedAt
-                    UpdatedAt = None
+                    UpdatedAt = result.CreatedAt
                     IsSystem = false } ]
 
             let! databaseState = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder

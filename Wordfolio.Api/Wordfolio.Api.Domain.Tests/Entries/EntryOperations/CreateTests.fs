@@ -79,8 +79,8 @@ let makeEntry id vocabularyId text =
     { Id = EntryId id
       VocabularyId = VocabularyId vocabularyId
       EntryText = text
-      CreatedAt = DateTimeOffset.UtcNow
-      UpdatedAt = None
+      CreatedAt = DateTimeOffset.UnixEpoch
+      UpdatedAt = DateTimeOffset.UnixEpoch
       Definitions = []
       Translations = [] }
 
@@ -110,7 +110,7 @@ let makeEntryWithContent id vocabularyId text createdAt definitions translations
       VocabularyId = VocabularyId vocabularyId
       EntryText = text
       CreatedAt = createdAt
-      UpdatedAt = None
+      UpdatedAt = createdAt
       Definitions = definitions
       Translations = translations }
 

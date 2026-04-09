@@ -5,7 +5,7 @@ export interface DraftsVocabulary {
     readonly name: string;
     readonly description: string | null;
     readonly createdAt: Date;
-    readonly updatedAt: Date | null;
+    readonly updatedAt: Date;
 }
 
 export interface DraftsData {

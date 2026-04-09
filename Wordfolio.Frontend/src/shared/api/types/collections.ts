@@ -3,7 +3,7 @@ export interface Collection {
     readonly name: string;
     readonly description: string | null;
     readonly createdAt: Date;
-    readonly updatedAt: Date | null;
+    readonly updatedAt: Date;
 }
 
 export interface CollectionWithVocabularyCount {
@@ -12,7 +12,7 @@ export interface CollectionWithVocabularyCount {
     readonly description: string | null;
     readonly vocabularyCount: number;
     readonly createdAt: Date;
-    readonly updatedAt: Date | null;
+    readonly updatedAt: Date;
 }
 
 export interface VocabularyWithEntryCount {
@@ -21,7 +21,7 @@ export interface VocabularyWithEntryCount {
     readonly description: string | null;
     readonly entryCount: number;
     readonly createdAt: Date;
-    readonly updatedAt: Date | null;
+    readonly updatedAt: Date;
 }
 
 export interface CollectionWithVocabularies {
@@ -29,7 +29,7 @@ export interface CollectionWithVocabularies {
     readonly name: string;
     readonly description: string | null;
     readonly createdAt: Date;
-    readonly updatedAt: Date | null;
+    readonly updatedAt: Date;
     readonly vocabularies: VocabularyWithEntryCount[];
 }
 

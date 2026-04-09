@@ -1675,7 +1675,8 @@
         "required": [
           "id",
           "name",
-          "createdAt"
+          "createdAt",
+          "updatedAt"
         ],
         "type": "object",
         "properties": {
@@ -1697,10 +1698,7 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "format": "date-time"
           }
         }
@@ -1734,6 +1732,7 @@
           "id",
           "name",
           "createdAt",
+          "updatedAt",
           "vocabularies"
         ],
         "type": "object",
@@ -1756,10 +1755,7 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "format": "date-time"
           },
           "vocabularies": {
@@ -1775,6 +1771,7 @@
           "id",
           "name",
           "createdAt",
+          "updatedAt",
           "vocabularyCount"
         ],
         "type": "object",
@@ -1797,10 +1794,7 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "format": "date-time"
           },
           "vocabularyCount": {
@@ -1989,6 +1983,7 @@
           "vocabularyId",
           "entryText",
           "createdAt",
+          "updatedAt",
           "definitions",
           "translations"
         ],
@@ -2010,10 +2005,7 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "format": "date-time"
           },
           "definitions": {
@@ -2500,7 +2492,8 @@
           "collectionId",
           "collectionName",
           "name",
-          "createdAt"
+          "createdAt",
+          "updatedAt"
         ],
         "type": "object",
         "properties": {
@@ -2529,10 +2522,7 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "format": "date-time"
           }
         }
@@ -2542,7 +2532,8 @@
           "id",
           "collectionId",
           "name",
-          "createdAt"
+          "createdAt",
+          "updatedAt"
         ],
         "type": "object",
         "properties": {
@@ -2568,10 +2559,7 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "format": "date-time"
           }
         }
@@ -2581,6 +2569,7 @@
           "id",
           "name",
           "createdAt",
+          "updatedAt",
           "entryCount"
         ],
         "type": "object",
@@ -2603,10 +2592,7 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "format": "date-time"
           },
           "entryCount": {

@@ -26,15 +26,18 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(106, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
 
             let untouchedCollection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     wordfolioUser
                     "Untouched Collection"
                     (Some "Untouched Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             do!
@@ -80,28 +83,35 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(112, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                Entities.makeCollection wordfolioUser "Collection with content" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "Collection with content" None createdAt createdAt false
 
             let untouchedCollection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     wordfolioUser
                     "Untouched Collection"
                     (Some "Untouched Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeVocabulary collection "Vocabulary" None createdAt createdAt false
 
             let untouchedVocabulary =
-                Entities.makeVocabulary untouchedCollection "Untouched Vocabulary" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeVocabulary untouchedCollection "Untouched Vocabulary" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "word" DateTimeOffset.UtcNow None
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeEntry vocabulary "word" createdAt createdAt
 
             let untouchedEntry =
-                Entities.makeEntry untouchedVocabulary "untouched word" DateTimeOffset.UtcNow None
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeEntry untouchedVocabulary "untouched word" createdAt createdAt
 
             do!
                 fixture.WordfolioSeeder
@@ -205,12 +215,14 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let! _, wordfolioUser = factory.CreateUserAsync(109, "user@example.com", "P@ssw0rd!")
 
             let collection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     wordfolioUser
                     "Protected Collection"
                     (Some "Protected Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             do!
@@ -254,21 +266,25 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 factory.CreateUserAsync(111, "requester@example.com", "P@ssw0rd!")
 
             let ownerCollection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     ownerWordfolioUser
                     "Owner Collection"
                     (Some "Owner Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             let requesterCollection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     requesterWordfolioUser
                     "Requester Collection"
                     (Some "Requester Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             do!

@@ -25,13 +25,13 @@ type CreateDefinitionsTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 400
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "serendipity" createdAt None
+                Entities.makeEntry vocabulary "serendipity" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -125,13 +125,13 @@ type CreateDefinitionsTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 401
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "test" createdAt None
+                Entities.makeEntry vocabulary "test" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -168,13 +168,13 @@ type CreateDefinitionsTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 402
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "ordered" createdAt None
+                Entities.makeEntry vocabulary "ordered" createdAt createdAt
 
             do!
                 fixture.Seeder

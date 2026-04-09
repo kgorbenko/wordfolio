@@ -195,7 +195,7 @@ let update env (parameters: UpdateVocabularyParameters) : Task<Result<Vocabulary
                                 { vocabulary with
                                     Name = trimmedName
                                     Description = parameters.Description
-                                    UpdatedAt = Some parameters.UpdatedAt }
+                                    UpdatedAt = parameters.UpdatedAt }
 
                             return Ok updated
                         else

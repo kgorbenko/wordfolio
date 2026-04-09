@@ -25,10 +25,10 @@ type CreateEntryTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 300
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -52,7 +52,7 @@ type CreateEntryTests(fixture: WordfolioTestFixture) =
                       VocabularyId = vocabulary.Id
                       EntryText = "serendipity"
                       CreatedAt = createdAt
-                      UpdatedAt = None }
+                      UpdatedAt = createdAt }
 
             Assert.Equivalent(expected, actualEntry)
         }

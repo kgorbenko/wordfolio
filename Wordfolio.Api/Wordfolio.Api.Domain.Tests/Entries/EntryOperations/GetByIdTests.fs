@@ -43,8 +43,8 @@ let makeEntry id vocabularyId entryText =
     { Id = EntryId id
       VocabularyId = VocabularyId vocabularyId
       EntryText = entryText
-      CreatedAt = System.DateTimeOffset.UtcNow
-      UpdatedAt = None
+      CreatedAt = System.DateTimeOffset.UnixEpoch
+      UpdatedAt = System.DateTimeOffset.UnixEpoch
       Definitions = []
       Translations = [] }
 

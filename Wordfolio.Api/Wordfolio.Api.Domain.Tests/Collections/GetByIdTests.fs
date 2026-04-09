@@ -25,12 +25,14 @@ type TestEnv(getCollectionById: CollectionId -> Task<Collection option>) =
         member this.RunInTransaction(operation) = operation this
 
 let makeCollection id userId name =
+    let createdAt = DateTimeOffset.UtcNow
+
     { Id = CollectionId id
       UserId = UserId userId
       Name = name
       Description = None
-      CreatedAt = DateTimeOffset.UtcNow
-      UpdatedAt = None }
+      CreatedAt = createdAt
+      UpdatedAt = createdAt }
 
 [<Fact>]
 let ``returns collection when found and owned by user``() =

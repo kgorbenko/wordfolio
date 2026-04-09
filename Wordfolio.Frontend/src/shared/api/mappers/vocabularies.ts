@@ -16,7 +16,7 @@ export const mapVocabulary = (response: VocabularyResponse): Vocabulary => ({
     name: response.name,
     description: response.description ?? null,
     createdAt: new Date(response.createdAt),
-    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
+    updatedAt: new Date(response.updatedAt),
 });
 
 export const mapVocabularyDetail = (
@@ -28,7 +28,7 @@ export const mapVocabularyDetail = (
     name: response.name,
     description: response.description ?? null,
     createdAt: new Date(response.createdAt),
-    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
+    updatedAt: new Date(response.updatedAt),
 });
 
 export const mapVocabularyCollectionContext = (

@@ -34,7 +34,7 @@ let makeVocabulary vocabularyId name entryCount =
       Name = name
       Description = None
       CreatedAt = now
-      UpdatedAt = None
+      UpdatedAt = now
       EntryCount = entryCount }
 
 [<Fact>]

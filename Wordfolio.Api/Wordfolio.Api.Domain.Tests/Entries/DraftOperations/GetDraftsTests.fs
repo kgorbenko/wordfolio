@@ -51,14 +51,14 @@ let private vocabulary: Vocabulary =
       Name = "[Default]"
       Description = None
       CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-      UpdatedAt = None }
+      UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
 let private entry: Entry =
     { Id = EntryId 100
       VocabularyId = VocabularyId 10
       EntryText = "serendipity"
       CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-      UpdatedAt = None
+      UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
       Definitions =
         [ { Id = DefinitionId 1
             DefinitionText = "happy accident"

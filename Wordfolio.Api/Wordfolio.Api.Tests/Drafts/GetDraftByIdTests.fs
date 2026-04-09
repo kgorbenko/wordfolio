@@ -28,13 +28,16 @@ type GetDraftByIdTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(700, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeVocabulary collection "Test Vocabulary" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeEntry vocabulary "hello" createdAt createdAt
 
             let definition =
                 Entities.makeDefinition
@@ -109,7 +112,7 @@ type GetDraftByIdTests(fixture: WordfolioIdentityTestFixture) =
                   VocabularyId = vocabulary.Id
                   EntryText = "hello"
                   CreatedAt = actual.CreatedAt
-                  UpdatedAt = None
+                  UpdatedAt = actual.CreatedAt
                   Definitions = [ expectedDefinition ]
                   Translations = [ expectedTranslation ] }
 

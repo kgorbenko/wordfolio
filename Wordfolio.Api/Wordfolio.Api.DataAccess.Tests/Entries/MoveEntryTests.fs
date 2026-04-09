@@ -28,16 +28,16 @@ type MoveEntryTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 317
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let sourceVocabulary =
-                Entities.makeVocabulary collection "Source" None createdAt None false
+                Entities.makeVocabulary collection "Source" None createdAt createdAt false
 
             let targetVocabulary =
-                Entities.makeVocabulary collection "Target" None createdAt None false
+                Entities.makeVocabulary collection "Target" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry sourceVocabulary "move-me" createdAt None
+                Entities.makeEntry sourceVocabulary "move-me" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -65,7 +65,7 @@ type MoveEntryTests(fixture: WordfolioTestFixture) =
                       VocabularyId = targetVocabulary.Id
                       EntryText = "move-me"
                       CreatedAt = createdAt
-                      UpdatedAt = Some updatedAt }
+                      UpdatedAt = updatedAt }
 
             Assert.Equal(expected, actual)
         }
@@ -103,19 +103,19 @@ type MoveEntryTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 318
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let sourceVocabulary =
-                Entities.makeVocabulary collection "Source" None createdAt None false
+                Entities.makeVocabulary collection "Source" None createdAt createdAt false
 
             let targetVocabulary =
-                Entities.makeVocabulary collection "Target" None createdAt None false
+                Entities.makeVocabulary collection "Target" None createdAt createdAt false
 
             let anotherVocabulary =
-                Entities.makeVocabulary collection "Another" None createdAt None false
+                Entities.makeVocabulary collection "Another" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry sourceVocabulary "move-me" createdAt None
+                Entities.makeEntry sourceVocabulary "move-me" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -143,7 +143,7 @@ type MoveEntryTests(fixture: WordfolioTestFixture) =
                       VocabularyId = sourceVocabulary.Id
                       EntryText = "move-me"
                       CreatedAt = createdAt
-                      UpdatedAt = None }
+                      UpdatedAt = createdAt }
 
             Assert.Equal(expected, actual)
         }
@@ -162,13 +162,13 @@ type MoveEntryTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 326
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let sourceVocabulary =
-                Entities.makeVocabulary collection "Source" None createdAt None false
+                Entities.makeVocabulary collection "Source" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry sourceVocabulary "move-me" createdAt None
+                Entities.makeEntry sourceVocabulary "move-me" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -198,7 +198,7 @@ type MoveEntryTests(fixture: WordfolioTestFixture) =
                       VocabularyId = sourceVocabulary.Id
                       EntryText = "move-me"
                       CreatedAt = createdAt
-                      UpdatedAt = None }
+                      UpdatedAt = createdAt }
 
             Assert.Equal(expected, actual)
         }

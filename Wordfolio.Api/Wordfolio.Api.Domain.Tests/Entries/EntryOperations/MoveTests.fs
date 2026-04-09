@@ -115,7 +115,7 @@ type TestEnv
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
 
-let makeEntry id vocabularyId text createdAt updatedAt =
+let makeEntry id vocabularyId text createdAt (updatedAt: DateTimeOffset) =
     { Id = EntryId id
       VocabularyId = VocabularyId vocabularyId
       EntryText = text
@@ -125,12 +125,14 @@ let makeEntry id vocabularyId text createdAt updatedAt =
       Translations = [] }
 
 let makeCollection id userId : Collection =
+    let createdAt = DateTimeOffset.UtcNow
+
     { Id = CollectionId id
       UserId = UserId userId
       Name = SystemCollectionName
       Description = None
-      CreatedAt = DateTimeOffset.UtcNow
-      UpdatedAt = None }
+      CreatedAt = createdAt
+      UpdatedAt = createdAt }
 
 let makeVocabulary id collectionId createdAt : Vocabulary =
     { Id = VocabularyId id
@@ -138,7 +140,7 @@ let makeVocabulary id collectionId createdAt : Vocabulary =
       Name = DefaultVocabularyName
       Description = None
       CreatedAt = createdAt
-      UpdatedAt = None }
+      UpdatedAt = createdAt }
 
 [<Fact>]
 let ``moves entry when explicit target vocabulary is accessible``() =
@@ -146,10 +148,10 @@ let ``moves entry when explicit target vocabulary is accessible``() =
         let now = DateTimeOffset.UtcNow
 
         let existingEntry =
-            makeEntry 10 100 "hello" now None
+            makeEntry 10 100 "hello" now now
 
         let movedEntry =
-            makeEntry 10 200 "hello" now (Some now)
+            makeEntry 10 200 "hello" now now
 
         let getEntryByIdCallCount = ref 0
 
@@ -223,13 +225,13 @@ let ``moves entry to existing default vocabulary when target vocabulary id is No
         let now = DateTimeOffset.UtcNow
 
         let existingEntry =
-            makeEntry 10 100 "hello" now None
+            makeEntry 10 100 "hello" now now
 
         let existingDefaultVocabulary =
             makeVocabulary 300 20 now
 
         let movedEntry =
-            makeEntry 10 300 "hello" now (Some now)
+            makeEntry 10 300 "hello" now now
 
         let getEntryByIdCallCount = ref 0
 
@@ -298,13 +300,13 @@ let ``creates default vocabulary when target vocabulary id is None and default c
         let now = DateTimeOffset.UtcNow
 
         let existingEntry =
-            makeEntry 10 100 "hello" now None
+            makeEntry 10 100 "hello" now now
 
         let existingDefaultCollection =
             makeCollection 55 1
 
         let movedEntry =
-            makeEntry 10 300 "hello" now (Some now)
+            makeEntry 10 300 "hello" now now
 
         let expectedVocabularyParams: CreateDefaultVocabularyParameters =
             { CollectionId = CollectionId 55
@@ -382,10 +384,10 @@ let ``creates default collection and vocabulary when target vocabulary id is Non
         let now = DateTimeOffset.UtcNow
 
         let existingEntry =
-            makeEntry 10 100 "hello" now None
+            makeEntry 10 100 "hello" now now
 
         let movedEntry =
-            makeEntry 10 300 "hello" now (Some now)
+            makeEntry 10 300 "hello" now now
 
         let expectedCollectionParams: CreateDefaultCollectionParameters =
             { UserId = UserId 1
@@ -542,8 +544,7 @@ let ``returns EntryNotFound when entry belongs to different vocabulary``() =
     task {
         let now = DateTimeOffset.UtcNow
 
-        let entry =
-            makeEntry 10 999 "hello" now None
+        let entry = makeEntry 10 999 "hello" now now
 
         let env =
             TestEnv(
@@ -583,7 +584,7 @@ let ``returns VocabularyNotFoundOrAccessDenied when explicit target vocabulary a
         let now = DateTimeOffset.UtcNow
 
         let existingEntry =
-            makeEntry 10 100 "hello" now None
+            makeEntry 10 100 "hello" now now
 
         let env =
             TestEnv(
@@ -630,7 +631,7 @@ let ``throws when post-move entry fetch returns None``() =
         let now = DateTimeOffset.UtcNow
 
         let existingEntry =
-            makeEntry 10 100 "hello" now None
+            makeEntry 10 100 "hello" now now
 
         let getEntryByIdCallCount = ref 0
 
@@ -675,10 +676,10 @@ let ``move succeeds without duplicate checks in explicit target vocabulary``() =
         let now = DateTimeOffset.UtcNow
 
         let existingEntry =
-            makeEntry 10 100 "duplicate-text" now None
+            makeEntry 10 100 "duplicate-text" now now
 
         let movedEntry =
-            makeEntry 10 200 "duplicate-text" now (Some now)
+            makeEntry 10 200 "duplicate-text" now now
 
         let getEntryByIdCallCount = ref 0
 

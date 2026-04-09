@@ -10,5 +10,5 @@ export const mapDraftsVocabulary = (
     name: response.name,
     description: response.description ?? null,
     createdAt: new Date(response.createdAt),
-    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
+    updatedAt: new Date(response.updatedAt),
 });

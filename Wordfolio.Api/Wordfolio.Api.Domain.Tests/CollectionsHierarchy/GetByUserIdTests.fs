@@ -49,7 +49,7 @@ let makeVocabularySummary vocabularyId name entryCount =
       Name = name
       Description = None
       CreatedAt = now
-      UpdatedAt = None
+      UpdatedAt = now
       EntryCount = entryCount }
 
 let makeCollectionSummary id name vocabularies =
@@ -57,7 +57,7 @@ let makeCollectionSummary id name vocabularies =
       Name = name
       Description = None
       CreatedAt = now
-      UpdatedAt = None
+      UpdatedAt = now
       Vocabularies = vocabularies }
 
 [<Fact>]

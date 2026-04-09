@@ -54,20 +54,24 @@ type TestEnv
         member this.RunInTransaction(operation) = operation this
 
 let makeCollection id userId =
+    let createdAt = DateTimeOffset.UtcNow
+
     { Id = CollectionId id
       UserId = UserId userId
       Name = "Test Collection"
       Description = None
-      CreatedAt = DateTimeOffset.UtcNow
-      UpdatedAt = None }
+      CreatedAt = createdAt
+      UpdatedAt = createdAt }
 
 let makeVocabulary id collectionId name =
+    let createdAt = DateTimeOffset.UtcNow
+
     { Id = VocabularyId id
       CollectionId = CollectionId collectionId
       Name = name
       Description = None
-      CreatedAt = DateTimeOffset.UtcNow
-      UpdatedAt = None }
+      CreatedAt = createdAt
+      UpdatedAt = createdAt }
 
 [<Fact>]
 let ``moves vocabulary when both collections are owned and vocabulary is in source``() =
@@ -83,7 +87,7 @@ let ``moves vocabulary when both collections are owned and vocabulary is in sour
         let movedVocabulary =
             { existingVocabulary with
                 CollectionId = CollectionId 20
-                UpdatedAt = Some now }
+                UpdatedAt = now }
 
         let getVocabularyByIdCallCount = ref 0
 

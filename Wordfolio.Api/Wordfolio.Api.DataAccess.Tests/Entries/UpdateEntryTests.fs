@@ -25,13 +25,13 @@ type UpdateEntryTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 304
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "original" createdAt None
+                Entities.makeEntry vocabulary "original" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -55,7 +55,7 @@ type UpdateEntryTests(fixture: WordfolioTestFixture) =
                       VocabularyId = vocabulary.Id
                       EntryText = "updated"
                       CreatedAt = createdAt
-                      UpdatedAt = Some updatedAt }
+                      UpdatedAt = updatedAt }
 
             Assert.Equal(expected, actual)
         }
@@ -92,16 +92,16 @@ type UpdateEntryTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 325
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let targetEntry =
-                Entities.makeEntry vocabulary "target-original" createdAt None
+                Entities.makeEntry vocabulary "target-original" createdAt createdAt
 
             let untouchedEntry =
-                Entities.makeEntry vocabulary "untouched" createdAt None
+                Entities.makeEntry vocabulary "untouched" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -126,7 +126,7 @@ type UpdateEntryTests(fixture: WordfolioTestFixture) =
                       VocabularyId = vocabulary.Id
                       EntryText = "target-updated"
                       CreatedAt = createdAt
-                      UpdatedAt = Some updatedAt }
+                      UpdatedAt = updatedAt }
 
             let expectedUntouchedEntry: Entry option =
                 Some
@@ -134,7 +134,7 @@ type UpdateEntryTests(fixture: WordfolioTestFixture) =
                       VocabularyId = vocabulary.Id
                       EntryText = "untouched"
                       CreatedAt = createdAt
-                      UpdatedAt = None }
+                      UpdatedAt = createdAt }
 
             Assert.Equal(expectedTargetEntry, actualTargetEntry)
             Assert.Equal(expectedUntouchedEntry, actualUntouchedEntry)
