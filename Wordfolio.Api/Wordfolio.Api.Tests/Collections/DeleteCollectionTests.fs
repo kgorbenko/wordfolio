@@ -65,8 +65,8 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   UserId = 106
                   Name = "Untouched Collection"
                   Description = Some "Untouched Description"
-                  CreatedAt = actual.CreatedAt
-                  UpdatedAt = actual.UpdatedAt
+                  CreatedAt = untouchedCollection.CreatedAt
+                  UpdatedAt = untouchedCollection.CreatedAt
                   IsSystem = false }
 
             Assert.Equal(expected, actual)
@@ -141,8 +141,8 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   UserId = 112
                   Name = "Untouched Collection"
                   Description = Some "Untouched Description"
-                  CreatedAt = actualCollection.CreatedAt
-                  UpdatedAt = actualCollection.UpdatedAt
+                  CreatedAt = untouchedCollection.CreatedAt
+                  UpdatedAt = untouchedCollection.CreatedAt
                   IsSystem = false }
 
             Assert.Equal(expectedCollection, actualCollection)
@@ -159,8 +159,8 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   CollectionId = untouchedCollection.Id
                   Name = "Untouched Vocabulary"
                   Description = None
-                  CreatedAt = actualVocabulary.CreatedAt
-                  UpdatedAt = actualVocabulary.UpdatedAt
+                  CreatedAt = untouchedVocabulary.CreatedAt
+                  UpdatedAt = untouchedVocabulary.CreatedAt
                   IsDefault = false }
 
             Assert.Equal(expectedVocabulary, actualVocabulary)
@@ -176,8 +176,8 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 { Id = untouchedEntry.Id
                   VocabularyId = untouchedVocabulary.Id
                   EntryText = "untouched word"
-                  CreatedAt = actualEntry.CreatedAt
-                  UpdatedAt = actualEntry.UpdatedAt }
+                  CreatedAt = untouchedEntry.CreatedAt
+                  UpdatedAt = untouchedEntry.CreatedAt }
 
             Assert.Equal(expectedEntry, actualEntry)
         }
@@ -245,8 +245,8 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   UserId = 109
                   Name = "Protected Collection"
                   Description = Some "Protected Description"
-                  CreatedAt = actual.CreatedAt
-                  UpdatedAt = actual.UpdatedAt
+                  CreatedAt = collection.CreatedAt
+                  UpdatedAt = collection.CreatedAt
                   IsSystem = false }
 
             Assert.Equal(expected, actual)
@@ -314,8 +314,8 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   UserId = 110
                   Name = "Owner Collection"
                   Description = Some "Owner Description"
-                  CreatedAt = actualOwnerCollection.CreatedAt
-                  UpdatedAt = actualOwnerCollection.UpdatedAt
+                  CreatedAt = ownerCollection.CreatedAt
+                  UpdatedAt = ownerCollection.CreatedAt
                   IsSystem = false }
 
             let expectedRequesterCollection: Wordfolio.Collection =
@@ -323,8 +323,8 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   UserId = 111
                   Name = "Requester Collection"
                   Description = Some "Requester Description"
-                  CreatedAt = actualRequesterCollection.CreatedAt
-                  UpdatedAt = actualRequesterCollection.UpdatedAt
+                  CreatedAt = requesterCollection.CreatedAt
+                  UpdatedAt = requesterCollection.CreatedAt
                   IsSystem = false }
 
             Assert.Equal(expectedOwnerCollection, actualOwnerCollection)

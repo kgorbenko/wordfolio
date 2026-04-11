@@ -57,8 +57,8 @@ type GetCollectionByIdTests(fixture: WordfolioIdentityTestFixture) =
                 { Id = collection.Id
                   Name = "Test Collection"
                   Description = Some "Test Description"
-                  CreatedAt = actual.CreatedAt
-                  UpdatedAt = actual.CreatedAt }
+                  CreatedAt = collection.CreatedAt
+                  UpdatedAt = collection.CreatedAt }
 
             Assert.Equal(expected, actual)
         }

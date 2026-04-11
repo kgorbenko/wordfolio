@@ -56,13 +56,17 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let createdVocabularyId = result.Id
 
+            let! databaseState = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
+
+            let createdAt = databaseState.Head.CreatedAt
+
             let expectedResult: VocabularyResponse =
                 { Id = createdVocabularyId
                   CollectionId = collection.Id
                   Name = "Test Vocabulary"
                   Description = Some "A test vocabulary"
-                  CreatedAt = result.CreatedAt
-                  UpdatedAt = result.CreatedAt }
+                  CreatedAt = createdAt
+                  UpdatedAt = createdAt }
 
             Assert.Equal(expectedResult, result)
 
@@ -71,11 +75,9 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                     CollectionId = collection.Id
                     Name = "Test Vocabulary"
                     Description = Some "A test vocabulary"
-                    CreatedAt = result.CreatedAt
-                    UpdatedAt = result.CreatedAt
+                    CreatedAt = createdAt
+                    UpdatedAt = createdAt
                     IsDefault = false } ]
-
-            let! databaseState = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
 
             Assert.Equal<Vocabulary list>(expectedDatabaseState, databaseState)
         }

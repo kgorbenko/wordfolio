@@ -70,8 +70,8 @@ type GetCollectionsTests(fixture: WordfolioIdentityTestFixture) =
                 [ { Id = firstUserCollection.Id
                     Name = "First User Collection"
                     Description = Some "Owned by first user"
-                    CreatedAt = actualCollections.Head.CreatedAt
-                    UpdatedAt = actualCollections.Head.CreatedAt } ]
+                    CreatedAt = firstUserCollection.CreatedAt
+                    UpdatedAt = firstUserCollection.CreatedAt } ]
 
             Assert.Equal<CollectionResponse list>(expectedCollections, actualCollections)
         }

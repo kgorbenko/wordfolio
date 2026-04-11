@@ -60,8 +60,8 @@ type GetVocabularyByIdTests(fixture: WordfolioIdentityTestFixture) =
                   CollectionName = "Test Collection"
                   Name = "Test Vocabulary"
                   Description = Some "Test Description"
-                  CreatedAt = actual.CreatedAt
-                  UpdatedAt = actual.CreatedAt }
+                  CreatedAt = vocabulary.CreatedAt
+                  UpdatedAt = vocabulary.CreatedAt }
 
             Assert.Equal(expected, actual)
         }
