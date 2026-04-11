@@ -25,13 +25,13 @@ type CreateTranslationsTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 500
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "serendipity" createdAt None
+                Entities.makeEntry vocabulary "serendipity" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -105,13 +105,13 @@ type CreateTranslationsTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 511
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "serendipity" createdAt None
+                Entities.makeEntry vocabulary "serendipity" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -187,13 +187,13 @@ type CreateTranslationsTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 501
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "test" createdAt None
+                Entities.makeEntry vocabulary "test" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -230,13 +230,13 @@ type CreateTranslationsTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 506
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "test" createdAt None
+                Entities.makeEntry vocabulary "test" createdAt createdAt
 
             let _ =
                 Entities.makeTranslation entry "Translation 1" Translations.TranslationSource.Manual 1

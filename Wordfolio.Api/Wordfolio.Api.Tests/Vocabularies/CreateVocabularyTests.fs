@@ -27,8 +27,11 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(200, "user@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None timestamp timestamp false
 
             do!
                 fixture.WordfolioSeeder
@@ -61,9 +64,11 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   Name = "Test Vocabulary"
                   Description = Some "A test vocabulary"
                   CreatedAt = result.CreatedAt
-                  UpdatedAt = None }
+                  UpdatedAt = result.CreatedAt }
 
             Assert.Equal(expectedResult, result)
+
+            let! databaseState = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
 
             let expectedDatabaseState: Wordfolio.Vocabulary list =
                 [ { Id = createdVocabularyId
@@ -71,10 +76,8 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                     Name = "Test Vocabulary"
                     Description = Some "A test vocabulary"
                     CreatedAt = result.CreatedAt
-                    UpdatedAt = None
+                    UpdatedAt = result.CreatedAt
                     IsDefault = false } ]
-
-            let! databaseState = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
 
             Assert.Equal<Vocabulary list>(expectedDatabaseState, databaseState)
         }
@@ -89,8 +92,11 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! _, wordfolioUser = factory.CreateUserAsync(202, "user@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None timestamp timestamp false
 
             do!
                 fixture.WordfolioSeeder
@@ -129,8 +135,11 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let! requesterIdentityUser, requesterWordfolioUser =
                 factory.CreateUserAsync(207, "requester@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let ownerCollection =
-                Entities.makeCollection ownerWordfolioUser "Owner Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection ownerWordfolioUser "Owner Collection" None timestamp timestamp false
 
             do!
                 fixture.WordfolioSeeder
@@ -166,8 +175,11 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(201, "user@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None timestamp timestamp false
 
             do!
                 fixture.WordfolioSeeder

@@ -24,7 +24,7 @@ export const mapCollectionDetail = (
     name: response.name,
     description: response.description ?? null,
     createdAt: new Date(response.createdAt),
-    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
+    updatedAt: new Date(response.updatedAt),
 });
 
 export const mapCollectionWithVocabularyCount = (
@@ -35,7 +35,7 @@ export const mapCollectionWithVocabularyCount = (
     description: response.description ?? null,
     vocabularyCount: response.vocabularyCount,
     createdAt: new Date(response.createdAt),
-    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
+    updatedAt: new Date(response.updatedAt),
 });
 
 export const mapVocabularyWithEntryCount = (
@@ -46,7 +46,7 @@ export const mapVocabularyWithEntryCount = (
     description: response.description ?? null,
     entryCount: response.entryCount,
     createdAt: new Date(response.createdAt),
-    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
+    updatedAt: new Date(response.updatedAt),
 });
 
 const mapCollectionWithVocabularies = (
@@ -56,7 +56,7 @@ const mapCollectionWithVocabularies = (
     name: response.name,
     description: response.description ?? null,
     createdAt: new Date(response.createdAt),
-    updatedAt: response.updatedAt ? new Date(response.updatedAt) : null,
+    updatedAt: new Date(response.updatedAt),
     vocabularies: response.vocabularies.map((v) =>
         mapVocabularyWithEntryCount(v)
     ),

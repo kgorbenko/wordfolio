@@ -25,11 +25,13 @@ type DeleteVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(208, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "Test Vocabulary" None now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -66,8 +68,10 @@ type DeleteVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(209, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -95,17 +99,19 @@ type DeleteVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(218, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collectionA =
-                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Collection A" None now now false
 
             let collectionB =
-                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Collection B" None now now false
 
             let createdAt =
                 DateTimeOffset(2026, 1, 10, 10, 0, 0, TimeSpan.Zero)
 
             let vocabulary =
-                Entities.makeVocabulary collectionB "Test Vocabulary" None createdAt None false
+                Entities.makeVocabulary collectionB "Test Vocabulary" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder
@@ -134,7 +140,7 @@ type DeleteVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                       Name = "Test Vocabulary"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = false }
 
             Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabaseOption)

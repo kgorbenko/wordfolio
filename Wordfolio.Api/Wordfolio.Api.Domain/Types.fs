@@ -50,7 +50,7 @@ type Collection =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
+      UpdatedAt: DateTimeOffset }
 
 type Vocabulary =
     { Id: VocabularyId
@@ -58,4 +58,4 @@ type Vocabulary =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
+      UpdatedAt: DateTimeOffset }

@@ -16,19 +16,26 @@ type internal EntryRecord =
       VocabularyId: int
       EntryText: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset> }
+      UpdatedAt: DateTimeOffset }
 
 type Entry =
     { Id: int
       VocabularyId: int
       EntryText: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
+      UpdatedAt: DateTimeOffset }
 
 type CreateEntryParameters =
     { VocabularyId: int
       EntryText: string
       CreatedAt: DateTimeOffset }
+
+[<CLIMutable>]
+type internal EntryInsertParameters =
+    { VocabularyId: int
+      EntryText: string
+      CreatedAt: DateTimeOffset
+      UpdatedAt: DateTimeOffset }
 
 type UpdateEntryParameters =
     { Id: int
@@ -46,11 +53,7 @@ let private fromRecord(record: EntryRecord) : Entry =
       VocabularyId = record.VocabularyId
       EntryText = record.EntryText
       CreatedAt = record.CreatedAt
-      UpdatedAt =
-        if record.UpdatedAt.HasValue then
-            Some record.UpdatedAt.Value
-        else
-            None }
+      UpdatedAt = record.UpdatedAt }
 
 let createEntryAsync
     (parameters: CreateEntryParameters)
@@ -60,15 +63,21 @@ let createEntryAsync
     : Task<int> =
     task {
         let entriesInsertTable =
-            table'<CreateEntryParameters> Schema.EntriesTable.Name
+            table'<EntryInsertParameters> Schema.EntriesTable.Name
             |> inSchema Schema.Name
+
+        let insertParameters: EntryInsertParameters =
+            { VocabularyId = parameters.VocabularyId
+              EntryText = parameters.EntryText
+              CreatedAt = parameters.CreatedAt
+              UpdatedAt = parameters.CreatedAt }
 
         let! record =
             insert {
                 into entriesInsertTable
-                values [ parameters ]
+                values [ insertParameters ]
             }
-            |> insertOutputSingleAsync<CreateEntryParameters, EntryRecord> connection transaction cancellationToken
+            |> insertOutputSingleAsync<EntryInsertParameters, EntryRecord> connection transaction cancellationToken
 
         return record.Id
     }
@@ -113,7 +122,7 @@ let updateEntryAsync
             update {
                 for e in entriesTable do
                     setColumn e.EntryText parameters.EntryText
-                    setColumn e.UpdatedAt (Nullable parameters.UpdatedAt)
+                    setColumn e.UpdatedAt parameters.UpdatedAt
                     where(e.Id = parameters.Id)
             }
             |> updateAsync connection transaction cancellationToken
@@ -136,7 +145,7 @@ let moveEntryAsync
             update {
                 for e in entriesTable do
                     setColumn e.VocabularyId parameters.NewVocabularyId
-                    setColumn e.UpdatedAt (Nullable parameters.UpdatedAt)
+                    setColumn e.UpdatedAt parameters.UpdatedAt
 
                     where(
                         e.Id = parameters.Id

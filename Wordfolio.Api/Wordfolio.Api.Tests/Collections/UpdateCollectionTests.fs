@@ -27,23 +27,13 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(105, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection
-                    wordfolioUser
-                    "Original Name"
-                    (Some "Original Description")
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+                Entities.makeCollection wordfolioUser "Original Name" (Some "Original Description") now now false
 
             let untouchedCollection =
-                Entities.makeCollection
-                    wordfolioUser
-                    "Untouched Name"
-                    (Some "Untouched Description")
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+                Entities.makeCollection wordfolioUser "Untouched Name" (Some "Untouched Description") now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -130,8 +120,11 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(106, "user@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection =
-                Entities.makeCollection wordfolioUser "Original Name" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Original Name" None timestamp timestamp false
 
             do!
                 fixture.WordfolioSeeder
@@ -157,8 +150,8 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   UserId = 106
                   Name = "Original Name"
                   Description = None
-                  CreatedAt = actual.CreatedAt
-                  UpdatedAt = actual.UpdatedAt
+                  CreatedAt = collection.CreatedAt
+                  UpdatedAt = collection.UpdatedAt
                   IsSystem = false }
 
             Assert.Equal(expected, actual)
@@ -177,22 +170,18 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let! requesterIdentityUser, requesterWordfolioUser =
                 factory.CreateUserAsync(108, "requester@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let ownerCollection =
-                Entities.makeCollection
-                    ownerWordfolioUser
-                    "Owner Collection"
-                    (Some "Owner Description")
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+                Entities.makeCollection ownerWordfolioUser "Owner Collection" (Some "Owner Description") now now false
 
             let requesterCollection =
                 Entities.makeCollection
                     requesterWordfolioUser
                     "Requester Collection"
                     (Some "Requester Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    now
+                    now
                     false
 
             do!
@@ -253,13 +242,16 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             let! _, wordfolioUser = factory.CreateUserAsync(109, "user@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection =
                 Entities.makeCollection
                     wordfolioUser
                     "Original Name"
                     (Some "Original Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    timestamp
+                    timestamp
                     false
 
             do!
@@ -286,8 +278,8 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   UserId = 109
                   Name = "Original Name"
                   Description = Some "Original Description"
-                  CreatedAt = actual.CreatedAt
-                  UpdatedAt = actual.UpdatedAt
+                  CreatedAt = collection.CreatedAt
+                  UpdatedAt = collection.UpdatedAt
                   IsSystem = false }
 
             Assert.Equal(expected, actual)

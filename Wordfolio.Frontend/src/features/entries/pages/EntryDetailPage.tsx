@@ -192,7 +192,7 @@ export const EntryDetailPage = () => {
                 title={isLoading ? "Loading..." : (entry?.entryText ?? "Entry")}
                 description={
                     entry
-                        ? `Added ${entry.createdAt.toLocaleDateString()}${entry.updatedAt ? ` · Updated ${entry.updatedAt.toLocaleDateString()}` : ""}`
+                        ? `Added ${entry.createdAt.toLocaleDateString()} · Updated ${entry.updatedAt.toLocaleDateString()}`
                         : undefined
                 }
                 actions={

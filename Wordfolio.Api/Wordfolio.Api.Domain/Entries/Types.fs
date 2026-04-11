@@ -40,7 +40,7 @@ type Entry =
       VocabularyId: VocabularyId
       EntryText: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
+      UpdatedAt: DateTimeOffset
       Definitions: Definition list
       Translations: Translation list }
 

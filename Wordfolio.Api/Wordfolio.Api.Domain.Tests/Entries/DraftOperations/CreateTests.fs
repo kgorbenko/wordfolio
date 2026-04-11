@@ -120,19 +120,21 @@ type TestEnv
         member _.CreateDefaultCollection(parameters) = createDefaultCollection parameters
 
 let makeVocabulary id collectionId name =
+    let createdAt = DateTimeOffset.UtcNow
+
     { Id = VocabularyId id
       CollectionId = CollectionId collectionId
       Name = name
       Description = None
-      CreatedAt = DateTimeOffset.UtcNow
-      UpdatedAt = None }
+      CreatedAt = createdAt
+      UpdatedAt = createdAt }
 
 let makeEntry id vocabularyId text createdAt definitions translations =
     { Id = EntryId id
       VocabularyId = VocabularyId vocabularyId
       EntryText = text
       CreatedAt = createdAt
-      UpdatedAt = None
+      UpdatedAt = createdAt
       Definitions = definitions
       Translations = translations }
 
@@ -738,7 +740,7 @@ let ``creates entry when default vocabulary does not exist but default collectio
               Name = "[System] Unsorted"
               Description = None
               CreatedAt = now
-              UpdatedAt = None }
+              UpdatedAt = now }
 
         let env =
             TestEnv(

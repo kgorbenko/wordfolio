@@ -22,10 +22,10 @@ type DeleteVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 202
 
             let collection =
-                Entities.makeCollection user "Collection 3" None createdAt None false
+                Entities.makeCollection user "Collection 3" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary to delete" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary to delete" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -68,10 +68,10 @@ type DeleteVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let defaultVocabulary =
-                Entities.makeVocabulary collection "Default" None createdAt None true
+                Entities.makeVocabulary collection "Default" None createdAt createdAt true
 
             do!
                 fixture.Seeder
@@ -95,7 +95,7 @@ type DeleteVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "Default"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = true }
 
             Assert.Equal(expected, actual)
@@ -112,10 +112,10 @@ type DeleteVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
+                Entities.makeCollection user "Unsorted" None createdAt createdAt true
 
             let vocabulary =
-                Entities.makeVocabulary systemCollection "Vocabulary" None createdAt None false
+                Entities.makeVocabulary systemCollection "Vocabulary" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -139,7 +139,7 @@ type DeleteVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "Vocabulary"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = false }
 
             Assert.Equal(expected, actual)

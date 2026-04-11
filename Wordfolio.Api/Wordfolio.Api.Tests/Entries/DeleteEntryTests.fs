@@ -27,17 +27,19 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(402, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "Test Vocabulary" None now now false
 
             let entry =
-                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+                Entities.makeEntry vocabulary "hello" now now
 
             let unaffectedEntry =
-                Entities.makeEntry vocabulary "remain" DateTimeOffset.UtcNow None
+                Entities.makeEntry vocabulary "remain" now now
 
             do!
                 fixture.WordfolioSeeder
@@ -86,14 +88,16 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             let! _, wordfolioUser = factory.CreateUserAsync(403, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "Test Vocabulary" None now now false
 
             let entry =
-                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+                Entities.makeEntry vocabulary "hello" now now
 
             do!
                 fixture.WordfolioSeeder
@@ -159,23 +163,25 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             let! _, wordfolioUser1 = factory.CreateUserAsync(405, "user1@example.com", "P@ssw0rd!")
             let! identityUser2, wordfolioUser2 = factory.CreateUserAsync(406, "user2@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser1 "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser1 "Test Collection" None now now false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "Test Vocabulary" None now now false
 
             let entry =
-                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+                Entities.makeEntry vocabulary "hello" now now
 
             let requesterCollection =
-                Entities.makeCollection wordfolioUser2 "Requester Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser2 "Requester Collection" None now now false
 
             let requesterVocabulary =
-                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None now now false
 
             let requesterEntry =
-                Entities.makeEntry requesterVocabulary "requester entry" DateTimeOffset.UtcNow None
+                Entities.makeEntry requesterVocabulary "requester entry" now now
 
             do!
                 fixture.WordfolioSeeder
@@ -232,14 +238,16 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(407, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "Test Vocabulary" None now now false
 
             let entry =
-                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+                Entities.makeEntry vocabulary "hello" now now
 
             let definition =
                 Entities.makeDefinition
@@ -306,14 +314,16 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(510, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Test Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "Test Vocabulary" None now now false
 
             let entry =
-                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+                Entities.makeEntry vocabulary "hello" now now
 
             do!
                 fixture.WordfolioSeeder
@@ -340,17 +350,19 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(514, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             let vocabularyA =
-                Entities.makeVocabulary collection "Vocabulary A" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "Vocabulary A" None now now false
 
             let vocabularyB =
-                Entities.makeVocabulary collection "Vocabulary B" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "Vocabulary B" None now now false
 
             let entry =
-                Entities.makeEntry vocabularyA "hello" DateTimeOffset.UtcNow None
+                Entities.makeEntry vocabularyA "hello" now now
 
             do!
                 fixture.WordfolioSeeder
@@ -377,17 +389,19 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(521, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collectionA =
-                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Collection A" None now now false
 
             let collectionB =
-                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Collection B" None now now false
 
             let vocabulary =
-                Entities.makeVocabulary collectionB "Test Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collectionB "Test Vocabulary" None now now false
 
             let entry =
-                Entities.makeEntry vocabulary "hello" DateTimeOffset.UtcNow None
+                Entities.makeEntry vocabulary "hello" now now
 
             do!
                 fixture.WordfolioSeeder

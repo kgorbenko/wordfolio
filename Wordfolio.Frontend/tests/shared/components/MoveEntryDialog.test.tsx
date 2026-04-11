@@ -20,7 +20,7 @@ const createHierarchy = (
             name: "English Collection",
             description: null,
             createdAt: new Date(),
-            updatedAt: null,
+            updatedAt: new Date(),
             vocabularies: [
                 {
                     id: 10,
@@ -28,7 +28,7 @@ const createHierarchy = (
                     description: null,
                     entryCount: 5,
                     createdAt: new Date(),
-                    updatedAt: null,
+                    updatedAt: new Date(),
                 },
             ],
         },
@@ -39,7 +39,7 @@ const createHierarchy = (
         description: null,
         entryCount: 3,
         createdAt: new Date(),
-        updatedAt: null,
+        updatedAt: new Date(),
     },
     ...overrides,
 });
@@ -84,7 +84,7 @@ describe("MoveEntryDialog", () => {
                     description: null,
                     entryCount: 3,
                     createdAt: new Date(),
-                    updatedAt: null,
+                    updatedAt: new Date(),
                 },
             }),
             isLoading: false,

@@ -27,26 +27,17 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(205, "user@example.com", "P@ssw0rd!")
 
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             let vocabulary =
-                Entities.makeVocabulary
-                    collection
-                    "Original Name"
-                    (Some "Original Description")
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+                Entities.makeVocabulary collection "Original Name" (Some "Original Description") now now false
 
             let unaffectedVocabulary =
-                Entities.makeVocabulary
-                    collection
-                    "Unaffected Vocabulary"
-                    (Some "Unaffected Description")
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+                Entities.makeVocabulary collection "Unaffected Vocabulary" (Some "Unaffected Description") now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -76,10 +67,15 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   CollectionId = collection.Id
                   Name = "Updated Name"
                   Description = Some "Updated Description"
-                  CreatedAt = actualResponse.CreatedAt
+                  CreatedAt = vocabulary.CreatedAt
                   UpdatedAt = actualResponse.UpdatedAt }
 
             Assert.Equal(expectedResponse, actualResponse)
+
+            Assert.True(
+                actualResponse.UpdatedAt
+                >= vocabulary.CreatedAt
+            )
 
             let! vocabularies = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
 
@@ -130,8 +126,10 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(206, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -167,17 +165,25 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(217, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collectionA =
-                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Collection A" None now now false
 
             let collectionB =
-                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Collection B" None now now false
 
             let createdAt =
                 DateTimeOffset(2026, 1, 10, 8, 30, 0, TimeSpan.Zero)
 
             let vocabulary =
-                Entities.makeVocabulary collectionB "Original Name" (Some "Original Description") createdAt None false
+                Entities.makeVocabulary
+                    collectionB
+                    "Original Name"
+                    (Some "Original Description")
+                    createdAt
+                    createdAt
+                    false
 
             do!
                 fixture.WordfolioSeeder
@@ -210,7 +216,7 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                       Name = "Original Name"
                       Description = Some "Original Description"
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = false }
 
             Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabaseOption)
@@ -229,34 +235,24 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let! requesterIdentityUser, requesterWordfolioUser =
                 factory.CreateUserAsync(214, "requester@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let ownerCollection =
-                Entities.makeCollection ownerWordfolioUser "Owner Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection ownerWordfolioUser "Owner Collection" None now now false
 
             let ownerVocabulary =
-                Entities.makeVocabulary
-                    ownerCollection
-                    "Owner Vocabulary"
-                    (Some "Owner Description")
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+                Entities.makeVocabulary ownerCollection "Owner Vocabulary" (Some "Owner Description") now now false
 
             let requesterCollection =
-                Entities.makeCollection
-                    requesterWordfolioUser
-                    "Requester Collection"
-                    None
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+                Entities.makeCollection requesterWordfolioUser "Requester Collection" None now now false
 
             let requesterVocabulary =
                 Entities.makeVocabulary
                     requesterCollection
                     "Requester Vocabulary"
                     (Some "Requester Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    now
+                    now
                     false
 
             do!
@@ -328,14 +324,16 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(207, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             let createdAt =
                 DateTimeOffset(2026, 1, 10, 9, 0, 0, TimeSpan.Zero)
 
             let vocabulary =
-                Entities.makeVocabulary collection "Original Name" None createdAt None false
+                Entities.makeVocabulary collection "Original Name" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder
@@ -368,7 +366,7 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                       Name = "Original Name"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = false }
 
             Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabaseOption)
@@ -384,14 +382,22 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! _, wordfolioUser = factory.CreateUserAsync(215, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             let createdAt =
                 DateTimeOffset(2026, 1, 10, 9, 30, 0, TimeSpan.Zero)
 
             let vocabulary =
-                Entities.makeVocabulary collection "Original Name" (Some "Original Description") createdAt None false
+                Entities.makeVocabulary
+                    collection
+                    "Original Name"
+                    (Some "Original Description")
+                    createdAt
+                    createdAt
+                    false
 
             do!
                 fixture.WordfolioSeeder
@@ -424,7 +430,7 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                       Name = "Original Name"
                       Description = Some "Original Description"
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = false }
 
             Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabaseOption)

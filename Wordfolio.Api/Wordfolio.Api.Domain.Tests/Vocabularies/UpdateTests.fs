@@ -53,20 +53,25 @@ type TestEnv
         member this.RunInTransaction(operation) = operation this
 
 let makeCollection id userId =
+    let createdAt = DateTimeOffset.UtcNow
+
     { Id = CollectionId id
       UserId = UserId userId
       Name = "Test Collection"
       Description = None
-      CreatedAt = DateTimeOffset.UtcNow
-      UpdatedAt = None }
+      CreatedAt = createdAt
+      UpdatedAt = createdAt }
 
 let makeVocabulary id collectionId name description =
+    let createdAt =
+        DateTimeOffset.UtcNow.AddDays(-1)
+
     { Id = VocabularyId id
       CollectionId = CollectionId collectionId
       Name = name
       Description = description
-      CreatedAt = DateTimeOffset.UtcNow.AddDays(-1)
-      UpdatedAt = None }
+      CreatedAt = createdAt
+      UpdatedAt = createdAt }
 
 [<Fact>]
 let ``updates vocabulary when collection owned by user``() =
@@ -126,7 +131,7 @@ let ``updates vocabulary when collection owned by user``() =
         | Ok updated ->
             Assert.Equal("New Name", updated.Name)
             Assert.Equal(Some "New Description", updated.Description)
-            Assert.Equal(Some now, updated.UpdatedAt)
+            Assert.Equal(now, updated.UpdatedAt)
         | Error e -> failwith $"Expected Ok, got Error: {e}"
 
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)

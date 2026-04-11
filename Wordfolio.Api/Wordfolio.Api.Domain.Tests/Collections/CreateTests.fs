@@ -45,7 +45,7 @@ let makeCollection id userId name description createdAt =
       Name = name
       Description = description
       CreatedAt = createdAt
-      UpdatedAt = None }
+      UpdatedAt = createdAt }
 
 [<Fact>]
 let ``creates collection with valid name``() =

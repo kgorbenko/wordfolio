@@ -8,7 +8,7 @@ type VocabularyResponse =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
+      UpdatedAt: DateTimeOffset }
 
 type VocabularyDetailResponse =
     { Id: int
@@ -17,7 +17,7 @@ type VocabularyDetailResponse =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
+      UpdatedAt: DateTimeOffset }
 
 type CreateVocabularyRequest =
     { Name: string

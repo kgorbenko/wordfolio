@@ -62,12 +62,14 @@ type TestEnv
             createDefaultCollection parameters
 
 let makeCollection id userId : Collection =
+    let createdAt = DateTimeOffset.UtcNow
+
     { Id = CollectionId id
       UserId = UserId userId
       Name = SystemCollectionName
       Description = None
-      CreatedAt = DateTimeOffset.UtcNow
-      UpdatedAt = None }
+      CreatedAt = createdAt
+      UpdatedAt = createdAt }
 
 let makeVocabulary id collectionId createdAt : Vocabulary =
     { Id = VocabularyId id
@@ -75,7 +77,7 @@ let makeVocabulary id collectionId createdAt : Vocabulary =
       Name = DefaultVocabularyName
       Description = None
       CreatedAt = createdAt
-      UpdatedAt = None }
+      UpdatedAt = createdAt }
 
 [<Fact>]
 let ``returns existing default vocabulary id when it exists``() =

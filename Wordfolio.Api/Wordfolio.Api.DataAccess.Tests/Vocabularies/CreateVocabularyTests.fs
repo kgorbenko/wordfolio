@@ -25,7 +25,7 @@ type CreateVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 200
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -51,7 +51,7 @@ type CreateVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "My Vocabulary"
                       Description = Some "Test vocabulary"
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = false }
 
             Assert.Equivalent(expected, actualVocabulary)
@@ -68,7 +68,7 @@ type CreateVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 203
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -94,7 +94,7 @@ type CreateVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "My Vocabulary"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = false }
 
             Assert.Equivalent(expected, actualVocabulary)

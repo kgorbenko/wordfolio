@@ -28,12 +28,15 @@ type GetCollectionByIdTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(100, "user@example.com", "P@ssw0rd!")
 
             let collection =
+                let createdAt =
+                    DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
                 Entities.makeCollection
                     wordfolioUser
                     "Test Collection"
                     (Some "Test Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             do!
@@ -55,8 +58,8 @@ type GetCollectionByIdTests(fixture: WordfolioIdentityTestFixture) =
                 { Id = collection.Id
                   Name = "Test Collection"
                   Description = Some "Test Description"
-                  CreatedAt = actual.CreatedAt
-                  UpdatedAt = None }
+                  CreatedAt = collection.CreatedAt
+                  UpdatedAt = collection.UpdatedAt }
 
             Assert.Equal(expected, actual)
         }
@@ -97,12 +100,14 @@ type GetCollectionByIdTests(fixture: WordfolioIdentityTestFixture) =
                 factory.CreateUserAsync(106, "requester@example.com", "P@ssw0rd!")
 
             let ownerCollection =
+                let createdAt = DateTimeOffset.UtcNow
+
                 Entities.makeCollection
                     ownerWordfolioUser
                     "Owner Collection"
                     (Some "Owner Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    createdAt
+                    createdAt
                     false
 
             do!

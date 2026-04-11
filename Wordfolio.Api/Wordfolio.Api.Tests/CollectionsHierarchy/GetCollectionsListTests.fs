@@ -37,13 +37,13 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
                 DateTimeOffset(2025, 1, 4, 0, 0, 0, TimeSpan.Zero)
 
             let collection1 =
-                Entities.makeCollection wordfolioUser "Biology" (Some "School words") createdAt (Some updatedAt1) false
+                Entities.makeCollection wordfolioUser "Biology" (Some "School words") createdAt updatedAt1 false
 
             let collection2 =
-                Entities.makeCollection wordfolioUser "Travel" (Some "Bio terms") createdAt (Some updatedAt2) false
+                Entities.makeCollection wordfolioUser "Travel" (Some "Bio terms") createdAt updatedAt2 false
 
             let collection3 =
-                Entities.makeCollection wordfolioUser "Sports" None createdAt None false
+                Entities.makeCollection wordfolioUser "Sports" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder
@@ -66,19 +66,19 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
                     Name = "Travel"
                     Description = Some "Bio terms"
                     CreatedAt = createdAt
-                    UpdatedAt = Some updatedAt2
+                    UpdatedAt = updatedAt2
                     VocabularyCount = 0 }
                   { Id = collection1.Id
                     Name = "Biology"
                     Description = Some "School words"
                     CreatedAt = createdAt
-                    UpdatedAt = Some updatedAt1
+                    UpdatedAt = updatedAt1
                     VocabularyCount = 0 }
                   { Id = collection3.Id
                     Name = "Sports"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     VocabularyCount = 0 } ]
 
             Assert.Equal<CollectionWithVocabularyCountResponse list>(expected, actual)
@@ -100,10 +100,10 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let ownedCollection =
-                Entities.makeCollection wordfolioUser "Owned" None createdAt None false
+                Entities.makeCollection wordfolioUser "Owned" None createdAt createdAt false
 
             let otherCollection =
-                Entities.makeCollection otherUser "Other" None createdAt None false
+                Entities.makeCollection otherUser "Other" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder
@@ -126,7 +126,7 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
                     Name = "Owned"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     VocabularyCount = 0 } ]
 
             Assert.Equal<CollectionWithVocabularyCountResponse list>(expected, actual)
@@ -176,25 +176,25 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let collection =
-                Entities.makeCollection wordfolioUser "Regular" None createdAt None false
+                Entities.makeCollection wordfolioUser "Regular" None createdAt createdAt false
 
             let systemCollection =
-                Entities.makeCollection wordfolioUser "System" None createdAt None true
+                Entities.makeCollection wordfolioUser "System" None createdAt createdAt true
 
             let regularVocabulary =
-                Entities.makeVocabulary collection "Regular Vocab" None createdAt None false
+                Entities.makeVocabulary collection "Regular Vocab" None createdAt createdAt false
 
             let defaultVocabulary =
-                Entities.makeVocabulary collection "Default Vocab" None createdAt None true
+                Entities.makeVocabulary collection "Default Vocab" None createdAt createdAt true
 
             let systemCollectionVocabulary =
-                Entities.makeVocabulary systemCollection "System Vocab" None createdAt None false
+                Entities.makeVocabulary systemCollection "System Vocab" None createdAt createdAt false
 
             let entry1 =
-                Entities.makeEntry regularVocabulary "word1" createdAt None
+                Entities.makeEntry regularVocabulary "word1" createdAt createdAt
 
             let entry2 =
-                Entities.makeEntry regularVocabulary "word2" createdAt None
+                Entities.makeEntry regularVocabulary "word2" createdAt createdAt
 
             do!
                 fixture.WordfolioSeeder
@@ -218,7 +218,7 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
                     Name = "Regular"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     VocabularyCount = 1 } ]
 
             Assert.Equal<CollectionWithVocabularyCountResponse list>(expected, actual)

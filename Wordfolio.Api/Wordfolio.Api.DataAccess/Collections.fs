@@ -16,7 +16,7 @@ type internal CollectionRecord =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset>
+      UpdatedAt: DateTimeOffset
       IsSystem: bool }
 
 type Collection =
@@ -25,7 +25,7 @@ type Collection =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
+      UpdatedAt: DateTimeOffset }
 
 type CreateCollectionParameters =
     { UserId: int
@@ -45,7 +45,7 @@ let private fromRecord(record: CollectionRecord) : Collection =
       Name = record.Name
       Description = record.Description
       CreatedAt = record.CreatedAt
-      UpdatedAt = record.UpdatedAt |> Option.ofNullable }
+      UpdatedAt = record.UpdatedAt }
 
 [<CLIMutable>]
 type internal CollectionInsertParameters =
@@ -53,6 +53,7 @@ type internal CollectionInsertParameters =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
+      UpdatedAt: DateTimeOffset
       IsSystem: bool }
 
 let createCollectionAsync
@@ -71,6 +72,7 @@ let createCollectionAsync
               Name = parameters.Name
               Description = parameters.Description
               CreatedAt = parameters.CreatedAt
+              UpdatedAt = parameters.CreatedAt
               IsSystem = false }
 
         let! record =
@@ -144,7 +146,7 @@ let updateCollectionAsync
                 for c in collectionsTable do
                     setColumn c.Name parameters.Name
                     setColumn c.Description parameters.Description
-                    setColumn c.UpdatedAt (Nullable parameters.UpdatedAt)
+                    setColumn c.UpdatedAt parameters.UpdatedAt
 
                     where(
                         c.Id = parameters.Id
@@ -214,6 +216,7 @@ let createDefaultCollectionAsync
               Name = parameters.Name
               Description = parameters.Description
               CreatedAt = parameters.CreatedAt
+              UpdatedAt = parameters.CreatedAt
               IsSystem = true }
 
         let! record =

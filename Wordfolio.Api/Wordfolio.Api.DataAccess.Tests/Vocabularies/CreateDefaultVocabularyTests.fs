@@ -25,7 +25,7 @@ type CreateDefaultVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Collection" None createdAt None false
+                Entities.makeCollection user "Collection" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -52,7 +52,7 @@ type CreateDefaultVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "Unsorted"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = true }
 
             Assert.Equivalent(expected, actualVocabulary)

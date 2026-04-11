@@ -25,10 +25,16 @@ type UpdateVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 201
 
             let collection =
-                Entities.makeCollection user "Collection 2" None createdAt None false
+                Entities.makeCollection user "Collection 2" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Original Name" (Some "Original Description") createdAt None false
+                Entities.makeVocabulary
+                    collection
+                    "Original Name"
+                    (Some "Original Description")
+                    createdAt
+                    createdAt
+                    false
 
             do!
                 fixture.Seeder
@@ -54,7 +60,7 @@ type UpdateVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "Updated Name"
                       Description = Some "Updated Description"
                       CreatedAt = createdAt
-                      UpdatedAt = Some updatedAt
+                      UpdatedAt = updatedAt
                       IsDefault = false }
 
             Assert.Equal(expected, actual)
@@ -74,10 +80,16 @@ type UpdateVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 204
 
             let collection =
-                Entities.makeCollection user "Collection 4" None createdAt None false
+                Entities.makeCollection user "Collection 4" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary Name" (Some "Original Description") createdAt None false
+                Entities.makeVocabulary
+                    collection
+                    "Vocabulary Name"
+                    (Some "Original Description")
+                    createdAt
+                    createdAt
+                    false
 
             do!
                 fixture.Seeder
@@ -103,7 +115,7 @@ type UpdateVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "Vocabulary Name"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = Some updatedAt
+                      UpdatedAt = updatedAt
                       IsDefault = false }
 
             Assert.Equal(expected, actual)
@@ -142,10 +154,10 @@ type UpdateVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let defaultVocabulary =
-                Entities.makeVocabulary collection "Default" None createdAt None true
+                Entities.makeVocabulary collection "Default" None createdAt createdAt true
 
             do!
                 fixture.Seeder
@@ -173,7 +185,7 @@ type UpdateVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "Default"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = true }
 
             Assert.Equal(expected, actual)
@@ -193,10 +205,10 @@ type UpdateVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
+                Entities.makeCollection user "Unsorted" None createdAt createdAt true
 
             let vocabulary =
-                Entities.makeVocabulary systemCollection "Vocabulary" None createdAt None false
+                Entities.makeVocabulary systemCollection "Vocabulary" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -224,7 +236,7 @@ type UpdateVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "Vocabulary"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = false }
 
             Assert.Equal(expected, actual)

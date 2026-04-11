@@ -42,7 +42,7 @@ export interface Entry {
     readonly vocabularyId: number;
     readonly entryText: string;
     readonly createdAt: Date;
-    readonly updatedAt: Date | null;
+    readonly updatedAt: Date;
     readonly definitions: Definition[];
     readonly translations: Translation[];
 }

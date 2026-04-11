@@ -22,13 +22,13 @@ type GetCollectionsWithVocabularyCountByUserIdTests(fixture: WordfolioTestFixtur
             let user = Entities.makeUser 550
 
             let collection =
-                Entities.makeCollection user "Collection" None createdAt None false
+                Entities.makeCollection user "Collection" None createdAt createdAt false
 
             let vocab1 =
-                Entities.makeVocabulary collection "Vocab 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocab 1" None createdAt createdAt false
 
             let vocab2 =
-                Entities.makeVocabulary collection "Vocab 2" None createdAt None false
+                Entities.makeVocabulary collection "Vocab 2" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -47,7 +47,7 @@ type GetCollectionsWithVocabularyCountByUserIdTests(fixture: WordfolioTestFixtur
                     Name = "Collection"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     VocabularyCount = 2 } ]
 
             Assert.Equal<CollectionsHierarchy.CollectionWithVocabularyCount list>(expected, actual)
@@ -64,10 +64,10 @@ type GetCollectionsWithVocabularyCountByUserIdTests(fixture: WordfolioTestFixtur
             let user = Entities.makeUser 551
 
             let regularCollection =
-                Entities.makeCollection user "Regular" None createdAt None false
+                Entities.makeCollection user "Regular" None createdAt createdAt false
 
             let systemCollection =
-                Entities.makeCollection user "System" None createdAt None true
+                Entities.makeCollection user "System" None createdAt createdAt true
 
             do!
                 fixture.Seeder
@@ -85,7 +85,7 @@ type GetCollectionsWithVocabularyCountByUserIdTests(fixture: WordfolioTestFixtur
                     Name = "Regular"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     VocabularyCount = 0 } ]
 
             Assert.Equal<CollectionsHierarchy.CollectionWithVocabularyCount list>(expected, actual)
@@ -102,13 +102,13 @@ type GetCollectionsWithVocabularyCountByUserIdTests(fixture: WordfolioTestFixtur
             let user = Entities.makeUser 552
 
             let collection =
-                Entities.makeCollection user "Collection" None createdAt None false
+                Entities.makeCollection user "Collection" None createdAt createdAt false
 
             let regularVocabulary =
-                Entities.makeVocabulary collection "Regular Vocab" None createdAt None false
+                Entities.makeVocabulary collection "Regular Vocab" None createdAt createdAt false
 
             let defaultVocabulary =
-                Entities.makeVocabulary collection "Default Vocab" None createdAt None true
+                Entities.makeVocabulary collection "Default Vocab" None createdAt createdAt true
 
             do!
                 fixture.Seeder
@@ -127,7 +127,7 @@ type GetCollectionsWithVocabularyCountByUserIdTests(fixture: WordfolioTestFixtur
                     Name = "Collection"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     VocabularyCount = 1 } ]
 
             Assert.Equal<CollectionsHierarchy.CollectionWithVocabularyCount list>(expected, actual)
@@ -164,10 +164,10 @@ type GetCollectionsWithVocabularyCountByUserIdTests(fixture: WordfolioTestFixtur
             let user2 = Entities.makeUser 555
 
             let user1Collection =
-                Entities.makeCollection user1 "User 1 Collection" None createdAt None false
+                Entities.makeCollection user1 "User 1 Collection" None createdAt createdAt false
 
             let user2Collection =
-                Entities.makeCollection user2 "User 2 Collection" None createdAt None false
+                Entities.makeCollection user2 "User 2 Collection" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -185,7 +185,7 @@ type GetCollectionsWithVocabularyCountByUserIdTests(fixture: WordfolioTestFixtur
                     Name = "User 1 Collection"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     VocabularyCount = 0 } ]
 
             Assert.Equal<CollectionsHierarchy.CollectionWithVocabularyCount list>(expected, actual)
@@ -204,7 +204,7 @@ type GetCollectionsWithVocabularyCountByUserIdTests(fixture: WordfolioTestFixtur
             let user = Entities.makeUser 556
 
             let collection =
-                Entities.makeCollection user "Empty Collection" None createdAt None false
+                Entities.makeCollection user "Empty Collection" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -222,7 +222,7 @@ type GetCollectionsWithVocabularyCountByUserIdTests(fixture: WordfolioTestFixtur
                     Name = "Empty Collection"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     VocabularyCount = 0 } ]
 
             Assert.Equal<CollectionsHierarchy.CollectionWithVocabularyCount list>(expected, actual)
@@ -247,16 +247,16 @@ type GetCollectionsWithVocabularyCountByUserIdTests(fixture: WordfolioTestFixtur
             let user = Entities.makeUser 557
 
             let collectionA =
-                Entities.makeCollection user "A" None createdAt (Some updatedAt1) false
+                Entities.makeCollection user "A" None createdAt updatedAt1 false
 
             let collectionB =
-                Entities.makeCollection user "B" None createdAt (Some updatedAt2) false
+                Entities.makeCollection user "B" None createdAt updatedAt2 false
 
             let collectionC =
-                Entities.makeCollection user "C" None createdAt None false
+                Entities.makeCollection user "C" None createdAt createdAt false
 
             let collectionD =
-                Entities.makeCollection user "D" None createdAt None false
+                Entities.makeCollection user "D" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -274,28 +274,28 @@ type GetCollectionsWithVocabularyCountByUserIdTests(fixture: WordfolioTestFixtur
                     Name = "A"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = Some updatedAt1
+                    UpdatedAt = updatedAt1
                     VocabularyCount = 0 }
                   { Id = collectionB.Id
                     UserId = user.Id
                     Name = "B"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = Some updatedAt2
+                    UpdatedAt = updatedAt2
                     VocabularyCount = 0 }
                   { Id = collectionC.Id
                     UserId = user.Id
                     Name = "C"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     VocabularyCount = 0 }
                   { Id = collectionD.Id
                     UserId = user.Id
                     Name = "D"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     VocabularyCount = 0 } ]
 
             Assert.Equal<CollectionsHierarchy.CollectionWithVocabularyCount list>(expected, actual)

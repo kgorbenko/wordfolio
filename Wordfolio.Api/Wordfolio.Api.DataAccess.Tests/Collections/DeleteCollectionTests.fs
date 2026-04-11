@@ -22,7 +22,7 @@ type DeleteCollectionTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 102
 
             let collection =
-                Entities.makeCollection user "Collection to delete" None createdAt None false
+                Entities.makeCollection user "Collection to delete" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -53,22 +53,22 @@ type DeleteCollectionTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 103
 
             let collectionToDelete =
-                Entities.makeCollection user "Collection to delete" None createdAt None false
+                Entities.makeCollection user "Collection to delete" None createdAt createdAt false
 
             let untouchedCollection =
-                Entities.makeCollection user "Untouched Collection" None createdAt None false
+                Entities.makeCollection user "Untouched Collection" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collectionToDelete "Vocabulary to delete" None createdAt None false
+                Entities.makeVocabulary collectionToDelete "Vocabulary to delete" None createdAt createdAt false
 
             let untouchedVocabulary =
-                Entities.makeVocabulary untouchedCollection "Untouched Vocabulary" None createdAt None false
+                Entities.makeVocabulary untouchedCollection "Untouched Vocabulary" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "word" createdAt None
+                Entities.makeEntry vocabulary "word" createdAt createdAt
 
             let untouchedEntry =
-                Entities.makeEntry untouchedVocabulary "untouched word" createdAt None
+                Entities.makeEntry untouchedVocabulary "untouched word" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -97,7 +97,7 @@ type DeleteCollectionTests(fixture: WordfolioTestFixture) =
                   Name = "Untouched Collection"
                   Description = None
                   CreatedAt = createdAt
-                  UpdatedAt = None
+                  UpdatedAt = createdAt
                   IsSystem = false }
 
             Assert.Equal(expectedCollection, actualCollection)
@@ -115,7 +115,7 @@ type DeleteCollectionTests(fixture: WordfolioTestFixture) =
                   Name = "Untouched Vocabulary"
                   Description = None
                   CreatedAt = createdAt
-                  UpdatedAt = None
+                  UpdatedAt = createdAt
                   IsDefault = false }
 
             Assert.Equal(expectedVocabulary, actualVocabulary)
@@ -132,7 +132,7 @@ type DeleteCollectionTests(fixture: WordfolioTestFixture) =
                   VocabularyId = untouchedVocabulary.Id
                   EntryText = "untouched word"
                   CreatedAt = createdAt
-                  UpdatedAt = None }
+                  UpdatedAt = createdAt }
 
             Assert.Equal(expectedEntry, actualEntry)
         }
@@ -160,7 +160,7 @@ type DeleteCollectionTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
+                Entities.makeCollection user "Unsorted" None createdAt createdAt true
 
             do!
                 fixture.Seeder

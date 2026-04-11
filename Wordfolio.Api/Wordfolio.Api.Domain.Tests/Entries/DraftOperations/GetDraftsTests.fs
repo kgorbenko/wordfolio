@@ -45,20 +45,23 @@ type TestEnv
 
 let private userId = UserId 1
 
+let private timestamp =
+    DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
 let private vocabulary: Vocabulary =
     { Id = VocabularyId 10
       CollectionId = CollectionId 1
       Name = "[Default]"
       Description = None
-      CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-      UpdatedAt = None }
+      CreatedAt = timestamp
+      UpdatedAt = timestamp }
 
 let private entry: Entry =
     { Id = EntryId 100
       VocabularyId = VocabularyId 10
       EntryText = "serendipity"
-      CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
-      UpdatedAt = None
+      CreatedAt = timestamp
+      UpdatedAt = timestamp
       Definitions =
         [ { Id = DefinitionId 1
             DefinitionText = "happy accident"

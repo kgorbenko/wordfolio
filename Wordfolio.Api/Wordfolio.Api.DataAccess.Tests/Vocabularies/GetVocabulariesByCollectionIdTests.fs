@@ -22,19 +22,19 @@ type GetVocabulariesByCollectionIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 200
 
             let collection1 =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let collection2 =
-                Entities.makeCollection user "Collection 2" None createdAt None false
+                Entities.makeCollection user "Collection 2" None createdAt createdAt false
 
             let vocab1 =
-                Entities.makeVocabulary collection1 "Vocab 1" None createdAt None false
+                Entities.makeVocabulary collection1 "Vocab 1" None createdAt createdAt false
 
             let vocab2 =
-                Entities.makeVocabulary collection1 "Vocab 2" None createdAt None false
+                Entities.makeVocabulary collection1 "Vocab 2" None createdAt createdAt false
 
             let _ =
-                Entities.makeVocabulary collection2 "Vocab 3" None createdAt None false
+                Entities.makeVocabulary collection2 "Vocab 3" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -51,13 +51,13 @@ type GetVocabulariesByCollectionIdTests(fixture: WordfolioTestFixture) =
                     Name = "Vocab 1"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None }
+                    UpdatedAt = createdAt }
                   { Id = vocab2.Id
                     CollectionId = collection1.Id
                     Name = "Vocab 2"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None } ]
+                    UpdatedAt = createdAt } ]
 
             Assert.Equivalent(expected, actual)
         }
@@ -73,7 +73,7 @@ type GetVocabulariesByCollectionIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 200
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -98,13 +98,13 @@ type GetVocabulariesByCollectionIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let defaultVocabulary =
-                Entities.makeVocabulary collection "Default" None createdAt None true
+                Entities.makeVocabulary collection "Default" None createdAt createdAt true
 
             let regularVocabulary =
-                Entities.makeVocabulary collection "Regular" None createdAt None false
+                Entities.makeVocabulary collection "Regular" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -123,7 +123,7 @@ type GetVocabulariesByCollectionIdTests(fixture: WordfolioTestFixture) =
                     Name = "Regular"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None } ]
+                    UpdatedAt = createdAt } ]
 
             Assert.Equal<Vocabularies.Vocabulary list>(expected, actual)
         }
@@ -139,10 +139,10 @@ type GetVocabulariesByCollectionIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
+                Entities.makeCollection user "Unsorted" None createdAt createdAt true
 
             let vocabulary =
-                Entities.makeVocabulary systemCollection "Vocabulary" None createdAt None false
+                Entities.makeVocabulary systemCollection "Vocabulary" None createdAt createdAt false
 
             do!
                 fixture.Seeder

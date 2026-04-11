@@ -23,13 +23,13 @@ type GetCollectionsByUserIdTests(fixture: WordfolioTestFixture) =
             let user2 = Entities.makeUser 101
 
             let collection1 =
-                Entities.makeCollection user1 "Collection 1" None createdAt None false
+                Entities.makeCollection user1 "Collection 1" None createdAt createdAt false
 
             let collection2 =
-                Entities.makeCollection user1 "Collection 2" None createdAt None false
+                Entities.makeCollection user1 "Collection 2" None createdAt createdAt false
 
             let _ =
-                Entities.makeCollection user2 "Collection 3" None createdAt None false
+                Entities.makeCollection user2 "Collection 3" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -46,13 +46,13 @@ type GetCollectionsByUserIdTests(fixture: WordfolioTestFixture) =
                     Name = "Collection 1"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None }
+                    UpdatedAt = createdAt }
                   { Id = collection2.Id
                     UserId = user1.Id
                     Name = "Collection 2"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None } ]
+                    UpdatedAt = createdAt } ]
 
             Assert.Equivalent(expected, actual)
         }
@@ -87,10 +87,10 @@ type GetCollectionsByUserIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
+                Entities.makeCollection user "Unsorted" None createdAt createdAt true
 
             let regularCollection =
-                Entities.makeCollection user "Regular Collection" None createdAt None false
+                Entities.makeCollection user "Regular Collection" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -108,7 +108,7 @@ type GetCollectionsByUserIdTests(fixture: WordfolioTestFixture) =
                     Name = "Regular Collection"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None } ]
+                    UpdatedAt = createdAt } ]
 
             Assert.Equal<Collections.Collection list>(expected, actual)
         }

@@ -27,14 +27,16 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(208, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "My Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "My Collection" None now now false
 
             let firstVocabulary =
-                Entities.makeVocabulary collection "Animals" (Some "Animal words") DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "Animals" (Some "Animal words") now now false
 
             let secondVocabulary =
-                Entities.makeVocabulary collection "Travel" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "Travel" None now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -66,13 +68,13 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
                      Name = "Animals"
                      Description = Some "Animal words"
                      CreatedAt = sortedResult[0].CreatedAt
-                     UpdatedAt = None }
+                     UpdatedAt = sortedResult[0].CreatedAt }
                    { Id = secondVocabulary.Id
                      CollectionId = collection.Id
                      Name = "Travel"
                      Description = None
                      CreatedAt = sortedResult[1].CreatedAt
-                     UpdatedAt = None } |]
+                     UpdatedAt = sortedResult[1].CreatedAt } |]
                 |> Array.sortBy _.Id
 
             Assert.Equal<VocabularyResponse>(expected, sortedResult)
@@ -88,8 +90,10 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(202, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -144,23 +148,19 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             let! requesterIdentityUser, requesterWordfolioUser =
                 factory.CreateUserAsync(210, "requester@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let ownerCollection =
-                Entities.makeCollection ownerWordfolioUser "Owner Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection ownerWordfolioUser "Owner Collection" None now now false
 
             let ownerVocabulary =
-                Entities.makeVocabulary ownerCollection "Owner Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary ownerCollection "Owner Vocabulary" None now now false
 
             let requesterCollection =
-                Entities.makeCollection
-                    requesterWordfolioUser
-                    "Requester Collection"
-                    None
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+                Entities.makeCollection requesterWordfolioUser "Requester Collection" None now now false
 
             let requesterVocabulary =
-                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None now now false
 
             do!
                 fixture.WordfolioSeeder

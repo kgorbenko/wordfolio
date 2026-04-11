@@ -67,7 +67,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                   VocabularyId = vocabularies.[0].Id
                   EntryText = "hello"
                   CreatedAt = actual.CreatedAt
-                  UpdatedAt = None
+                  UpdatedAt = actual.CreatedAt
                   Definitions = [ expectedDefinition ]
                   Translations = [] }
 
@@ -104,11 +104,13 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(401, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let systemCollection =
-                Entities.makeCollection wordfolioUser "[System] Unsorted" None DateTimeOffset.UtcNow None true
+                Entities.makeCollection wordfolioUser "[System] Unsorted" None now now true
 
             let defaultVocabulary =
-                Entities.makeVocabulary systemCollection "[Default]" None DateTimeOffset.UtcNow None true
+                Entities.makeVocabulary systemCollection "[Default]" None now now true
 
             do!
                 fixture.WordfolioSeeder
@@ -148,7 +150,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                   VocabularyId = defaultVocabulary.Id
                   EntryText = "hello"
                   CreatedAt = actual.CreatedAt
-                  UpdatedAt = None
+                  UpdatedAt = actual.CreatedAt
                   Definitions = [ expectedDefinition ]
                   Translations = [] }
 
@@ -249,7 +251,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                   VocabularyId = vocabularies.[0].Id
                   EntryText = "hello"
                   CreatedAt = actual.CreatedAt
-                  UpdatedAt = None
+                  UpdatedAt = actual.CreatedAt
                   Definitions = [ expectedDefinition ]
                   Translations = [ expectedTranslation ] }
 
@@ -509,14 +511,16 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(604, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let systemCollection =
-                Entities.makeCollection wordfolioUser "[System] Unsorted" None DateTimeOffset.UtcNow None true
+                Entities.makeCollection wordfolioUser "[System] Unsorted" None now now true
 
             let defaultVocabulary =
-                Entities.makeVocabulary systemCollection "[Default]" None DateTimeOffset.UtcNow None true
+                Entities.makeVocabulary systemCollection "[Default]" None now now true
 
             let existingEntry =
-                Entities.makeEntry defaultVocabulary "hello" DateTimeOffset.UtcNow None
+                Entities.makeEntry defaultVocabulary "hello" now now
 
             do!
                 fixture.WordfolioSeeder
@@ -552,14 +556,16 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(605, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let systemCollection =
-                Entities.makeCollection wordfolioUser "[System] Unsorted" None DateTimeOffset.UtcNow None true
+                Entities.makeCollection wordfolioUser "[System] Unsorted" None now now true
 
             let defaultVocabulary =
-                Entities.makeVocabulary systemCollection "[Default]" None DateTimeOffset.UtcNow None true
+                Entities.makeVocabulary systemCollection "[Default]" None now now true
 
             let existingEntry =
-                Entities.makeEntry defaultVocabulary "hello" DateTimeOffset.UtcNow None
+                Entities.makeEntry defaultVocabulary "hello" now now
 
             do!
                 fixture.WordfolioSeeder
@@ -600,7 +606,7 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
                   VocabularyId = defaultVocabulary.Id
                   EntryText = "hello"
                   CreatedAt = actual.CreatedAt
-                  UpdatedAt = None
+                  UpdatedAt = actual.CreatedAt
                   Definitions = [ expectedDefinition ]
                   Translations = [] }
 

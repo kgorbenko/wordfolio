@@ -36,12 +36,14 @@ type TestEnv(getCollectionById: CollectionId -> Task<Collection option>, deleteC
         member this.RunInTransaction(operation) = operation this
 
 let makeCollection id userId name =
+    let createdAt = DateTimeOffset.UtcNow
+
     { Id = CollectionId id
       UserId = UserId userId
       Name = name
       Description = None
-      CreatedAt = DateTimeOffset.UtcNow
-      UpdatedAt = None }
+      CreatedAt = createdAt
+      UpdatedAt = createdAt }
 
 [<Fact>]
 let ``deletes collection when owned by user``() =

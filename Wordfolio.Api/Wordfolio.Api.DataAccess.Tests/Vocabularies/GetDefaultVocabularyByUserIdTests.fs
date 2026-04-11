@@ -23,13 +23,13 @@ type GetDefaultVocabularyByUserIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Collection" None createdAt None false
+                Entities.makeCollection user "Collection" None createdAt createdAt false
 
             let defaultVocabulary =
-                Entities.makeVocabulary collection "Unsorted" None createdAt None true
+                Entities.makeVocabulary collection "Unsorted" None createdAt createdAt true
 
             let regularVocabulary =
-                Entities.makeVocabulary collection "Regular" None createdAt None false
+                Entities.makeVocabulary collection "Regular" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -49,7 +49,7 @@ type GetDefaultVocabularyByUserIdTests(fixture: WordfolioTestFixture) =
                       Name = "Unsorted"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None }
+                      UpdatedAt = createdAt }
 
             Assert.Equal(expected, actual)
         }
@@ -65,10 +65,10 @@ type GetDefaultVocabularyByUserIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Collection" None createdAt None false
+                Entities.makeCollection user "Collection" None createdAt createdAt false
 
             let regularVocabulary =
-                Entities.makeVocabulary collection "Regular" None createdAt None false
+                Entities.makeVocabulary collection "Regular" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -98,16 +98,16 @@ type GetDefaultVocabularyByUserIdTests(fixture: WordfolioTestFixture) =
             let user2 = Entities.makeUser 101
 
             let collection1 =
-                Entities.makeCollection user1 "Collection 1" None createdAt None false
+                Entities.makeCollection user1 "Collection 1" None createdAt createdAt false
 
             let collection2 =
-                Entities.makeCollection user2 "Collection 2" None createdAt None false
+                Entities.makeCollection user2 "Collection 2" None createdAt createdAt false
 
             let user1DefaultVocabulary =
-                Entities.makeVocabulary collection1 "User 1 Default" None createdAt None true
+                Entities.makeVocabulary collection1 "User 1 Default" None createdAt createdAt true
 
             let _ =
-                Entities.makeVocabulary collection2 "User 2 Default" None createdAt None true
+                Entities.makeVocabulary collection2 "User 2 Default" None createdAt createdAt true
 
             do!
                 fixture.Seeder
@@ -125,7 +125,7 @@ type GetDefaultVocabularyByUserIdTests(fixture: WordfolioTestFixture) =
                       Name = "User 1 Default"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None }
+                      UpdatedAt = createdAt }
 
             Assert.Equal(expected, actual)
         }
@@ -141,13 +141,13 @@ type GetDefaultVocabularyByUserIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let collection =
-                Entities.makeCollection user "Collection" None createdAt None false
+                Entities.makeCollection user "Collection" None createdAt createdAt false
 
             let defaultVocabulary1 =
-                Entities.makeVocabulary collection "Default 1" None createdAt None true
+                Entities.makeVocabulary collection "Default 1" None createdAt createdAt true
 
             let defaultVocabulary2 =
-                Entities.makeVocabulary collection "Default 2" None createdAt None true
+                Entities.makeVocabulary collection "Default 2" None createdAt createdAt true
 
             do!
                 fixture.Seeder

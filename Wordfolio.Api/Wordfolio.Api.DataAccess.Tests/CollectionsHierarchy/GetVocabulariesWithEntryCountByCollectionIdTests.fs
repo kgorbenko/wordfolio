@@ -22,16 +22,16 @@ type CollectionsHierarchyGetVocabulariesWithEntryCountByCollectionIdTests(fixtur
             let user = Entities.makeUser 540
 
             let collection =
-                Entities.makeCollection user "Collection" None createdAt None false
+                Entities.makeCollection user "Collection" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary" None createdAt createdAt false
 
             let entry1 =
-                Entities.makeEntry vocabulary "word1" createdAt None
+                Entities.makeEntry vocabulary "word1" createdAt createdAt
 
             let entry2 =
-                Entities.makeEntry vocabulary "word2" createdAt None
+                Entities.makeEntry vocabulary "word2" createdAt createdAt
 
             do!
                 fixture.Seeder
@@ -50,7 +50,7 @@ type CollectionsHierarchyGetVocabulariesWithEntryCountByCollectionIdTests(fixtur
                     Name = "Vocabulary"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     EntryCount = 2 } ]
 
             Assert.Equal<CollectionsHierarchy.VocabularyWithEntryCount list>(expected, actual)
@@ -67,13 +67,13 @@ type CollectionsHierarchyGetVocabulariesWithEntryCountByCollectionIdTests(fixtur
             let user = Entities.makeUser 547
 
             let collection =
-                Entities.makeCollection user "Collection" None createdAt None false
+                Entities.makeCollection user "Collection" None createdAt createdAt false
 
             let regularVocabulary =
-                Entities.makeVocabulary collection "Regular" None createdAt None false
+                Entities.makeVocabulary collection "Regular" None createdAt createdAt false
 
             let defaultVocabulary =
-                Entities.makeVocabulary collection "Default" None createdAt None true
+                Entities.makeVocabulary collection "Default" None createdAt createdAt true
 
             do!
                 fixture.Seeder
@@ -91,7 +91,7 @@ type CollectionsHierarchyGetVocabulariesWithEntryCountByCollectionIdTests(fixtur
                     Name = "Regular"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     EntryCount = 0 } ]
 
             Assert.Equal<CollectionsHierarchy.VocabularyWithEntryCount list>(expected, actual)
@@ -128,10 +128,10 @@ type CollectionsHierarchyGetVocabulariesWithEntryCountByCollectionIdTests(fixtur
             let user2 = Entities.makeUser 543
 
             let user2Collection =
-                Entities.makeCollection user2 "User2 Collection" None createdAt None false
+                Entities.makeCollection user2 "User2 Collection" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary user2Collection "Vocab" None createdAt None false
+                Entities.makeVocabulary user2Collection "Vocab" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -158,10 +158,10 @@ type CollectionsHierarchyGetVocabulariesWithEntryCountByCollectionIdTests(fixtur
             let user = Entities.makeUser 544
 
             let systemCollection =
-                Entities.makeCollection user "System" None createdAt None true
+                Entities.makeCollection user "System" None createdAt createdAt true
 
             let vocabulary =
-                Entities.makeVocabulary systemCollection "Vocab" None createdAt None false
+                Entities.makeVocabulary systemCollection "Vocab" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -190,7 +190,7 @@ type CollectionsHierarchyGetVocabulariesWithEntryCountByCollectionIdTests(fixtur
             let user = Entities.makeUser 545
 
             let collection =
-                Entities.makeCollection user "Empty Collection" None createdAt None false
+                Entities.makeCollection user "Empty Collection" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -206,7 +206,7 @@ type CollectionsHierarchyGetVocabulariesWithEntryCountByCollectionIdTests(fixtur
         }
 
     [<Fact>]
-    member _.``getVocabulariesWithEntryCountByCollectionIdAsync returns vocabularies sorted by UpdatedAt DESC NULLS LAST then Id``
+    member _.``getVocabulariesWithEntryCountByCollectionIdAsync returns vocabularies sorted by UpdatedAt DESC then Id``
         ()
         =
         task {
@@ -224,16 +224,16 @@ type CollectionsHierarchyGetVocabulariesWithEntryCountByCollectionIdTests(fixtur
             let user = Entities.makeUser 546
 
             let collection =
-                Entities.makeCollection user "Collection" None createdAt None false
+                Entities.makeCollection user "Collection" None createdAt createdAt false
 
             let vocabularyWithLateUpdate =
-                Entities.makeVocabulary collection "Beta" None createdAt (Some updatedAtLater) false
+                Entities.makeVocabulary collection "Beta" None createdAt updatedAtLater false
 
             let vocabularyWithEarlyUpdate =
-                Entities.makeVocabulary collection "Alpha" None createdAt (Some updatedAtEarlier) false
+                Entities.makeVocabulary collection "Alpha" None createdAt updatedAtEarlier false
 
             let vocabularyWithNullUpdate =
-                Entities.makeVocabulary collection "Gamma" None createdAt None false
+                Entities.makeVocabulary collection "Gamma" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -254,19 +254,19 @@ type CollectionsHierarchyGetVocabulariesWithEntryCountByCollectionIdTests(fixtur
                     Name = "Beta"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = Some updatedAtLater
+                    UpdatedAt = updatedAtLater
                     EntryCount = 0 }
                   { Id = vocabularyWithEarlyUpdate.Id
                     Name = "Alpha"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = Some updatedAtEarlier
+                    UpdatedAt = updatedAtEarlier
                     EntryCount = 0 }
                   { Id = vocabularyWithNullUpdate.Id
                     Name = "Gamma"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     EntryCount = 0 } ]
 
             Assert.Equal<CollectionsHierarchy.VocabularyWithEntryCount list>(expected, actual)

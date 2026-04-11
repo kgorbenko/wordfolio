@@ -31,7 +31,7 @@ type private EntryRecord =
       VocabularyId: int
       EntryText: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: Nullable<DateTimeOffset> }
+      UpdatedAt: DateTimeOffset }
 
 [<CLIMutable>]
 type private DefinitionRecord =
@@ -98,7 +98,7 @@ let private assembleEntriesWithHierarchy
               VocabularyId = entryRec.VocabularyId
               EntryText = entryRec.EntryText
               CreatedAt = entryRec.CreatedAt
-              UpdatedAt = entryRec.UpdatedAt |> Option.ofNullable }
+              UpdatedAt = entryRec.UpdatedAt }
 
         let definitionsWithExamples =
             match definitionsByEntry.TryFind(entryRec.Id) with

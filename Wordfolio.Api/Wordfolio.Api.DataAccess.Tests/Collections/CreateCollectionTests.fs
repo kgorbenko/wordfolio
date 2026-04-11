@@ -48,7 +48,7 @@ type CreateCollectionTests(fixture: WordfolioTestFixture) =
                       Name = "My Collection"
                       Description = Some "Test collection"
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsSystem = false }
 
             Assert.Equivalent(expected, actualCollection)
@@ -88,7 +88,7 @@ type CreateCollectionTests(fixture: WordfolioTestFixture) =
                       Name = "My Collection"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsSystem = false }
 
             Assert.Equivalent(expected, actualCollection)

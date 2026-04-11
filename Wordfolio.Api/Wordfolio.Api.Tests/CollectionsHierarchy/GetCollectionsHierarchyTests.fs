@@ -27,38 +27,29 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(300, "user@example.com", "P@ssw0rd!")
 
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection1 =
-                Entities.makeCollection
-                    wordfolioUser
-                    "Collection 1"
-                    (Some "Description 1")
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+                Entities.makeCollection wordfolioUser "Collection 1" (Some "Description 1") now now false
 
             let collection2 =
-                Entities.makeCollection wordfolioUser "Collection 2" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Collection 2" None now now false
 
             let vocabulary1 =
-                Entities.makeVocabulary
-                    collection1
-                    "Vocabulary 1"
-                    (Some "Vocab description")
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+                Entities.makeVocabulary collection1 "Vocabulary 1" (Some "Vocab description") now now false
 
             let vocabulary2 =
-                Entities.makeVocabulary collection1 "Vocabulary 2" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection1 "Vocabulary 2" None now now false
 
             let entry1 =
-                Entities.makeEntry vocabulary1 "entry1" DateTimeOffset.UtcNow None
+                Entities.makeEntry vocabulary1 "entry1" now now
 
             let entry2 =
-                Entities.makeEntry vocabulary1 "entry2" DateTimeOffset.UtcNow None
+                Entities.makeEntry vocabulary1 "entry2" now now
 
             let entry3 =
-                Entities.makeEntry vocabulary2 "entry3" DateTimeOffset.UtcNow None
+                Entities.makeEntry vocabulary2 "entry3" now now
 
             do!
                 fixture.WordfolioSeeder
@@ -91,25 +82,25 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
                         Name = "Collection 1"
                         Description = Some "Description 1"
                         CreatedAt = actualCollection1.CreatedAt
-                        UpdatedAt = None
+                        UpdatedAt = actualCollection1.CreatedAt
                         Vocabularies =
                           [ { Id = vocabulary1.Id
                               Name = "Vocabulary 1"
                               Description = Some "Vocab description"
                               CreatedAt = actualCollection1.Vocabularies[0].CreatedAt
-                              UpdatedAt = None
+                              UpdatedAt = actualCollection1.Vocabularies[0].CreatedAt
                               EntryCount = 2 }
                             { Id = vocabulary2.Id
                               Name = "Vocabulary 2"
                               Description = None
                               CreatedAt = actualCollection1.Vocabularies[1].CreatedAt
-                              UpdatedAt = None
+                              UpdatedAt = actualCollection1.Vocabularies[1].CreatedAt
                               EntryCount = 1 } ] }
                       { Id = collection2.Id
                         Name = "Collection 2"
                         Description = None
                         CreatedAt = actualCollection2.CreatedAt
-                        UpdatedAt = None
+                        UpdatedAt = actualCollection2.CreatedAt
                         Vocabularies = [] } ]
                   DefaultVocabulary = None }
 
@@ -129,47 +120,48 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! _, otherWordfolioUser = factory.CreateUserAsync(307, "other@example.com", "P@ssw0rd!")
 
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let requesterCollection =
+
                 Entities.makeCollection
                     requesterWordfolioUser
                     "Requester Collection"
                     (Some "Requester Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    now
+                    now
                     false
 
             let requesterVocabulary =
+
                 Entities.makeVocabulary
                     requesterCollection
                     "Requester Vocabulary"
                     (Some "Requester Vocab Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    now
+                    now
                     false
 
             let requesterEntry =
-                Entities.makeEntry requesterVocabulary "requester-entry" DateTimeOffset.UtcNow None
+                Entities.makeEntry requesterVocabulary "requester-entry" now now
 
             let otherCollection =
-                Entities.makeCollection
-                    otherWordfolioUser
-                    "Other Collection"
-                    (Some "Other Description")
-                    DateTimeOffset.UtcNow
-                    None
-                    false
+
+                Entities.makeCollection otherWordfolioUser "Other Collection" (Some "Other Description") now now false
 
             let otherVocabulary =
+
                 Entities.makeVocabulary
                     otherCollection
                     "Other Vocabulary"
                     (Some "Other Vocab Description")
-                    DateTimeOffset.UtcNow
-                    None
+                    now
+                    now
                     false
 
             let otherEntry =
-                Entities.makeEntry otherVocabulary "other-entry" DateTimeOffset.UtcNow None
+                Entities.makeEntry otherVocabulary "other-entry" now now
 
             do!
                 fixture.WordfolioSeeder
@@ -200,13 +192,13 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
                         Name = "Requester Collection"
                         Description = Some "Requester Description"
                         CreatedAt = actualCollection.CreatedAt
-                        UpdatedAt = None
+                        UpdatedAt = actualCollection.CreatedAt
                         Vocabularies =
                           [ { Id = requesterVocabulary.Id
                               Name = "Requester Vocabulary"
                               Description = Some "Requester Vocab Description"
                               CreatedAt = actualVocabulary.CreatedAt
-                              UpdatedAt = None
+                              UpdatedAt = actualVocabulary.CreatedAt
                               EntryCount = 1 } ] } ]
                   DefaultVocabulary = None }
 
@@ -223,11 +215,13 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(301, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let regularCollection =
-                Entities.makeCollection wordfolioUser "Regular Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Regular Collection" None now now false
 
             let systemCollection =
-                Entities.makeCollection wordfolioUser "System Collection" None DateTimeOffset.UtcNow None true
+                Entities.makeCollection wordfolioUser "System Collection" None now now true
 
             do!
                 fixture.WordfolioSeeder
@@ -253,7 +247,7 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
                         Name = "Regular Collection"
                         Description = None
                         CreatedAt = actualCollection.CreatedAt
-                        UpdatedAt = None
+                        UpdatedAt = actualCollection.CreatedAt
                         Vocabularies = [] } ]
                   DefaultVocabulary = None }
 
@@ -270,14 +264,16 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(302, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Test Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             let regularVocabulary =
-                Entities.makeVocabulary collection "Regular Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "Regular Vocabulary" None now now false
 
             let defaultVocabulary =
-                Entities.makeVocabulary collection "Default Vocabulary" None DateTimeOffset.UtcNow None true
+                Entities.makeVocabulary collection "Default Vocabulary" None now now true
 
             do!
                 fixture.WordfolioSeeder
@@ -304,13 +300,13 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
                         Name = "Test Collection"
                         Description = None
                         CreatedAt = actualCollection.CreatedAt
-                        UpdatedAt = None
+                        UpdatedAt = actualCollection.CreatedAt
                         Vocabularies =
                           [ { Id = regularVocabulary.Id
                               Name = "Regular Vocabulary"
                               Description = None
                               CreatedAt = actualCollection.Vocabularies[0].CreatedAt
-                              UpdatedAt = None
+                              UpdatedAt = actualCollection.Vocabularies[0].CreatedAt
                               EntryCount = 0 } ] } ]
                   DefaultVocabulary = None }
 
@@ -358,23 +354,20 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(304, "user@example.com", "P@ssw0rd!")
 
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let systemCollection =
-                Entities.makeCollection wordfolioUser "Unsorted" None DateTimeOffset.UtcNow None true
+                Entities.makeCollection wordfolioUser "Unsorted" None now now true
 
             let defaultVocabulary =
-                Entities.makeVocabulary
-                    systemCollection
-                    "My Words"
-                    (Some "Default vocab")
-                    DateTimeOffset.UtcNow
-                    None
-                    true
+                Entities.makeVocabulary systemCollection "My Words" (Some "Default vocab") now now true
 
             let entry1 =
-                Entities.makeEntry defaultVocabulary "word1" DateTimeOffset.UtcNow None
+                Entities.makeEntry defaultVocabulary "word1" now now
 
             let entry2 =
-                Entities.makeEntry defaultVocabulary "word2" DateTimeOffset.UtcNow None
+                Entities.makeEntry defaultVocabulary "word2" now now
 
             do!
                 fixture.WordfolioSeeder
@@ -400,8 +393,8 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
                         { Id = defaultVocabulary.Id
                           Name = "My Words"
                           Description = Some "Default vocab"
-                          CreatedAt = actual.DefaultVocabulary.Value.CreatedAt
-                          UpdatedAt = None
+                          CreatedAt = defaultVocabulary.CreatedAt
+                          UpdatedAt = defaultVocabulary.UpdatedAt
                           EntryCount = 2 } }
 
             Assert.Equal(expected, actual)
@@ -417,11 +410,13 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(305, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let systemCollection =
-                Entities.makeCollection wordfolioUser "Unsorted" None DateTimeOffset.UtcNow None true
+                Entities.makeCollection wordfolioUser "Unsorted" None now now true
 
             let defaultVocabulary =
-                Entities.makeVocabulary systemCollection "My Words" None DateTimeOffset.UtcNow None true
+                Entities.makeVocabulary systemCollection "My Words" None now now true
 
             do!
                 fixture.WordfolioSeeder

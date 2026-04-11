@@ -31,16 +31,16 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let collection =
-                Entities.makeCollection wordfolioUser "Collection" (Some "Description") createdAt None false
+                Entities.makeCollection wordfolioUser "Collection" (Some "Description") createdAt createdAt false
 
             let regularVocabulary =
-                Entities.makeVocabulary collection "Regular" None createdAt None false
+                Entities.makeVocabulary collection "Regular" None createdAt createdAt false
 
             let defaultVocabulary =
-                Entities.makeVocabulary collection "Default" None createdAt None true
+                Entities.makeVocabulary collection "Default" None createdAt createdAt true
 
             let entry =
-                Entities.makeEntry regularVocabulary "word" createdAt None
+                Entities.makeEntry regularVocabulary "word" createdAt createdAt
 
             do!
                 fixture.WordfolioSeeder
@@ -68,7 +68,7 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
                     Name = "Regular"
                     Description = None
                     CreatedAt = createdAt
-                    UpdatedAt = None
+                    UpdatedAt = createdAt
                     EntryCount = 1 } ]
 
             Assert.Equal<VocabularyWithEntryCountResponse list>(expected, actual)
@@ -90,16 +90,16 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let otherUser = Entities.makeUser 314
 
             let requesterCollection =
-                Entities.makeCollection wordfolioUser "Requester Collection" None createdAt None false
+                Entities.makeCollection wordfolioUser "Requester Collection" None createdAt createdAt false
 
             let requesterVocabulary =
-                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None createdAt None false
+                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None createdAt createdAt false
 
             let otherCollection =
-                Entities.makeCollection otherUser "Other Collection" None createdAt None false
+                Entities.makeCollection otherUser "Other Collection" None createdAt createdAt false
 
             let otherVocabulary =
-                Entities.makeVocabulary otherCollection "Other Vocabulary" None createdAt None false
+                Entities.makeVocabulary otherCollection "Other Vocabulary" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder
@@ -135,10 +135,12 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(318, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                Entities.makeCollection wordfolioUser "System Collection" None DateTimeOffset.UtcNow None true
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeCollection wordfolioUser "System Collection" None createdAt createdAt true
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocab" None DateTimeOffset.UtcNow None false
+                let createdAt = DateTimeOffset.UtcNow
+                Entities.makeVocabulary collection "Vocab" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder

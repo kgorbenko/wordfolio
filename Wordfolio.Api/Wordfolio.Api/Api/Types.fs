@@ -64,6 +64,6 @@ type EntryResponse =
       VocabularyId: int
       EntryText: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
+      UpdatedAt: DateTimeOffset
       Definitions: DefinitionResponse list
       Translations: TranslationResponse list }

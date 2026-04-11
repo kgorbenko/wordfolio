@@ -53,12 +53,14 @@ type TestEnv
         member this.RunInTransaction(operation) = operation this
 
 let makeCollection id userId =
+    let createdAt = DateTimeOffset.UtcNow
+
     { Id = CollectionId id
       UserId = UserId userId
       Name = "Test Collection"
       Description = None
-      CreatedAt = DateTimeOffset.UtcNow
-      UpdatedAt = None }
+      CreatedAt = createdAt
+      UpdatedAt = createdAt }
 
 let makeVocabulary id collectionId name description createdAt =
     { Id = VocabularyId id
@@ -66,7 +68,7 @@ let makeVocabulary id collectionId name description createdAt =
       Name = name
       Description = description
       CreatedAt = createdAt
-      UpdatedAt = None }
+      UpdatedAt = createdAt }
 
 [<Fact>]
 let ``creates vocabulary with valid name``() =

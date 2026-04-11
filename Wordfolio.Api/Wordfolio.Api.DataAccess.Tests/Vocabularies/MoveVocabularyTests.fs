@@ -28,13 +28,13 @@ type MoveVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 400
 
             let sourceCollection =
-                Entities.makeCollection user "Source" None createdAt None false
+                Entities.makeCollection user "Source" None createdAt createdAt false
 
             let targetCollection =
-                Entities.makeCollection user "Target" None createdAt None false
+                Entities.makeCollection user "Target" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary sourceCollection "My Vocabulary" None createdAt None false
+                Entities.makeVocabulary sourceCollection "My Vocabulary" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -62,7 +62,7 @@ type MoveVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "My Vocabulary"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = Some updatedAt
+                      UpdatedAt = updatedAt
                       IsDefault = false }
 
             Assert.Equal(expected, actual)
@@ -101,16 +101,16 @@ type MoveVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 401
 
             let sourceCollection =
-                Entities.makeCollection user "Source" None createdAt None false
+                Entities.makeCollection user "Source" None createdAt createdAt false
 
             let targetCollection =
-                Entities.makeCollection user "Target" None createdAt None false
+                Entities.makeCollection user "Target" None createdAt createdAt false
 
             let otherCollection =
-                Entities.makeCollection user "Other" None createdAt None false
+                Entities.makeCollection user "Other" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary sourceCollection "My Vocabulary" None createdAt None false
+                Entities.makeVocabulary sourceCollection "My Vocabulary" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -138,7 +138,7 @@ type MoveVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "My Vocabulary"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = false }
 
             Assert.Equal(expected, actual)
@@ -158,10 +158,10 @@ type MoveVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 402
 
             let sourceCollection =
-                Entities.makeCollection user "Source" None createdAt None false
+                Entities.makeCollection user "Source" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary sourceCollection "My Vocabulary" None createdAt None false
+                Entities.makeVocabulary sourceCollection "My Vocabulary" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -191,7 +191,7 @@ type MoveVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "My Vocabulary"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = false }
 
             Assert.Equal(expected, actual)
@@ -211,13 +211,13 @@ type MoveVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 404
 
             let sourceCollection =
-                Entities.makeCollection user "Source" None createdAt None false
+                Entities.makeCollection user "Source" None createdAt createdAt false
 
             let systemCollection =
-                Entities.makeCollection user "System" None createdAt None true
+                Entities.makeCollection user "System" None createdAt createdAt true
 
             let vocabulary =
-                Entities.makeVocabulary sourceCollection "My Vocabulary" None createdAt None false
+                Entities.makeVocabulary sourceCollection "My Vocabulary" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -245,7 +245,7 @@ type MoveVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "My Vocabulary"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = false }
 
             Assert.Equal(expected, actual)
@@ -265,13 +265,13 @@ type MoveVocabularyTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 403
 
             let sourceCollection =
-                Entities.makeCollection user "Source" None createdAt None false
+                Entities.makeCollection user "Source" None createdAt createdAt false
 
             let targetCollection =
-                Entities.makeCollection user "Target" None createdAt None false
+                Entities.makeCollection user "Target" None createdAt createdAt false
 
             let defaultVocabulary =
-                Entities.makeVocabulary sourceCollection "Default" None createdAt None true
+                Entities.makeVocabulary sourceCollection "Default" None createdAt createdAt true
 
             do!
                 fixture.Seeder
@@ -299,7 +299,7 @@ type MoveVocabularyTests(fixture: WordfolioTestFixture) =
                       Name = "Default"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsDefault = true }
 
             Assert.Equal(expected, actual)

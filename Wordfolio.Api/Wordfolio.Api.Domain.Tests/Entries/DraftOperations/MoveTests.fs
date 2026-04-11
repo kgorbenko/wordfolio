@@ -67,10 +67,10 @@ let ``moves entry when user has access to source and target vocabularies``() =
         let now = DateTimeOffset.UtcNow
 
         let existingEntry =
-            makeEntry 10 100 "hello" now None
+            makeEntry 10 100 "hello" now now
 
         let movedEntry =
-            makeEntry 10 200 "hello" now (Some now)
+            makeEntry 10 200 "hello" now now
 
         let getEntryByIdCallCount = ref 0
 
@@ -148,7 +148,7 @@ let ``returns EntryNotFound when entry does not exist``() =
 let ``returns EntryNotFound when source vocabulary access is denied``() =
     task {
         let existingEntry =
-            makeEntry 10 100 "hello" DateTimeOffset.UtcNow None
+            makeEntry 10 100 "hello" DateTimeOffset.UtcNow DateTimeOffset.UtcNow
 
         let accessCallCount = ref 0
 
@@ -191,7 +191,7 @@ let ``returns EntryNotFound when source vocabulary access is denied``() =
 let ``returns VocabularyNotFoundOrAccessDenied when target vocabulary access is denied``() =
     task {
         let existingEntry =
-            makeEntry 10 100 "hello" DateTimeOffset.UtcNow None
+            makeEntry 10 100 "hello" DateTimeOffset.UtcNow DateTimeOffset.UtcNow
 
         let accessCallCount = ref 0
 
@@ -241,7 +241,7 @@ let ``throws when post-move entry fetch returns None``() =
         let now = DateTimeOffset.UtcNow
 
         let existingEntry =
-            makeEntry 10 100 "hello" now None
+            makeEntry 10 100 "hello" now now
 
         let getEntryByIdCallCount = ref 0
 
@@ -279,10 +279,10 @@ let ``move succeeds without duplicate checks in target vocabulary``() =
         let now = DateTimeOffset.UtcNow
 
         let existingEntry =
-            makeEntry 10 100 "duplicate-text" now None
+            makeEntry 10 100 "duplicate-text" now now
 
         let movedEntry =
-            makeEntry 10 200 "duplicate-text" now (Some now)
+            makeEntry 10 200 "duplicate-text" now now
 
         let getEntryByIdCallCount = ref 0
 

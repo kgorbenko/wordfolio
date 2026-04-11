@@ -27,20 +27,22 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(600, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let createdAt =
                 DateTimeOffset(2026, 1, 10, 10, 0, 0, TimeSpan.Zero)
 
             let sourceCollection =
-                Entities.makeCollection wordfolioUser "Source Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Source Collection" None now now false
 
             let targetCollection =
-                Entities.makeCollection wordfolioUser "Target Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Target Collection" None now now false
 
             let vocabulary =
-                Entities.makeVocabulary sourceCollection "My Vocabulary" None createdAt None false
+                Entities.makeVocabulary sourceCollection "My Vocabulary" None createdAt createdAt false
 
             let unaffectedVocabulary =
-                Entities.makeVocabulary sourceCollection "Stay Here" None createdAt None false
+                Entities.makeVocabulary sourceCollection "Stay Here" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder
@@ -74,7 +76,7 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   UpdatedAt = actual.UpdatedAt }
 
             Assert.Equal(expected, actual)
-            Assert.True(actual.UpdatedAt.IsSome)
+            Assert.True(actual.UpdatedAt >= createdAt)
 
             let! movedVocabulary =
                 fixture.WordfolioSeeder
@@ -137,8 +139,10 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(601, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Collection" None now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -166,11 +170,13 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(602, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                Entities.makeCollection wordfolioUser "Collection" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Collection" None now now false
 
             let vocabulary =
-                Entities.makeVocabulary collection "My Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collection "My Vocabulary" None now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -200,14 +206,16 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(603, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collectionA =
-                Entities.makeCollection wordfolioUser "Collection A" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Collection A" None now now false
 
             let collectionB =
-                Entities.makeCollection wordfolioUser "Collection B" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser "Collection B" None now now false
 
             let vocabulary =
-                Entities.makeVocabulary collectionB "My Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary collectionB "My Vocabulary" None now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -237,7 +245,7 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                       Name = "My Vocabulary"
                       Description = None
                       CreatedAt = vocabularyInDatabase.Value.CreatedAt
-                      UpdatedAt = None
+                      UpdatedAt = vocabularyInDatabase.Value.CreatedAt
                       IsDefault = false }
 
             Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabase)
@@ -254,14 +262,16 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser1, wordfolioUser1 = factory.CreateUserAsync(604, "user1@example.com", "P@ssw0rd!")
             let! _, wordfolioUser2 = factory.CreateUserAsync(605, "user2@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let sourceCollection =
-                Entities.makeCollection wordfolioUser1 "Source" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser1 "Source" None now now false
 
             let vocabulary =
-                Entities.makeVocabulary sourceCollection "My Vocabulary" None DateTimeOffset.UtcNow None false
+                Entities.makeVocabulary sourceCollection "My Vocabulary" None now now false
 
             let foreignCollection =
-                Entities.makeCollection wordfolioUser2 "Foreign" None DateTimeOffset.UtcNow None false
+                Entities.makeCollection wordfolioUser2 "Foreign" None now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -294,7 +304,7 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                       Name = "My Vocabulary"
                       Description = None
                       CreatedAt = vocabularyInDatabase.Value.CreatedAt
-                      UpdatedAt = None
+                      UpdatedAt = vocabularyInDatabase.Value.CreatedAt
                       IsDefault = false }
 
             Assert.Equal(expectedVocabularyInDatabase, vocabularyInDatabase)

@@ -25,13 +25,13 @@ type CreateExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 600
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "ephemeral" createdAt None
+                Entities.makeEntry vocabulary "ephemeral" createdAt createdAt
 
             let definition =
                 Entities.makeDefinition entry "Lasting for a very short time" Definitions.DefinitionSource.Manual 1
@@ -87,13 +87,13 @@ type CreateExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 601
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "serendipity" createdAt None
+                Entities.makeEntry vocabulary "serendipity" createdAt createdAt
 
             let translation =
                 Entities.makeTranslation entry "fortunate chance" Translations.TranslationSource.Manual 1
@@ -201,13 +201,13 @@ type CreateExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 602
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "test" createdAt None
+                Entities.makeEntry vocabulary "test" createdAt createdAt
 
             let definition =
                 Entities.makeDefinition entry "Definition" Definitions.DefinitionSource.Manual 1
@@ -266,13 +266,13 @@ type CreateExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 609
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "test" createdAt None
+                Entities.makeEntry vocabulary "test" createdAt createdAt
 
             let definition =
                 Entities.makeDefinition entry "Definition" Definitions.DefinitionSource.Manual 1
@@ -307,13 +307,13 @@ type CreateExamplesTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 610
 
             let collection =
-                Entities.makeCollection user "Collection 1" None createdAt None false
+                Entities.makeCollection user "Collection 1" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "Vocabulary 1" None createdAt None false
+                Entities.makeVocabulary collection "Vocabulary 1" None createdAt createdAt false
 
             let entry =
-                Entities.makeEntry vocabulary "test" createdAt None
+                Entities.makeEntry vocabulary "test" createdAt createdAt
 
             let translation =
                 Entities.makeTranslation entry "Translation" Translations.TranslationSource.Manual 1

@@ -21,7 +21,7 @@ type Collection =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
+      UpdatedAt: DateTimeOffset
       IsSystem: bool }
 
 type Vocabulary =
@@ -30,7 +30,7 @@ type Vocabulary =
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option
+      UpdatedAt: DateTimeOffset
       IsDefault: bool }
 
 type Entry =
@@ -38,7 +38,7 @@ type Entry =
       VocabularyId: int
       EntryText: string
       CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset option }
+      UpdatedAt: DateTimeOffset }
 
 type Definition =
     { Id: int
@@ -71,7 +71,7 @@ module Entities =
         (name: string)
         (description: string option)
         (createdAt: DateTimeOffset)
-        (updatedAt: DateTimeOffset option)
+        (updatedAt: DateTimeOffset)
         (isSystem: bool)
         : Mapping.Collection =
         let collection: Mapping.Collection =
@@ -80,7 +80,7 @@ module Entities =
               Name = name
               Description = description |> Option.toObj
               CreatedAt = createdAt
-              UpdatedAt = updatedAt |> Option.toNullable
+              UpdatedAt = updatedAt
               IsSystem = isSystem
               User = user
               Vocabularies = ResizeArray() }
@@ -93,7 +93,7 @@ module Entities =
         (name: string)
         (description: string option)
         (createdAt: DateTimeOffset)
-        (updatedAt: DateTimeOffset option)
+        (updatedAt: DateTimeOffset)
         (isDefault: bool)
         : Mapping.Vocabulary =
         let vocabulary: Mapping.Vocabulary =
@@ -102,7 +102,7 @@ module Entities =
               Name = name
               Description = description |> Option.toObj
               CreatedAt = createdAt
-              UpdatedAt = updatedAt |> Option.toNullable
+              UpdatedAt = updatedAt
               IsDefault = isDefault
               Collection = collection
               Entries = ResizeArray() }
@@ -114,14 +114,14 @@ module Entities =
         (vocabulary: Mapping.Vocabulary)
         (entryText: string)
         (createdAt: DateTimeOffset)
-        (updatedAt: DateTimeOffset option)
+        (updatedAt: DateTimeOffset)
         : Mapping.Entry =
         let entry: Mapping.Entry =
             { Id = 0
               VocabularyId = vocabulary.Id
               EntryText = entryText
               CreatedAt = createdAt
-              UpdatedAt = updatedAt |> Option.toNullable
+              UpdatedAt = updatedAt
               Vocabulary = vocabulary
               Definitions = ResizeArray()
               Translations = ResizeArray() }
@@ -215,7 +215,7 @@ module Seeder =
           Name = entity.Name
           Description = Option.ofObj entity.Description
           CreatedAt = entity.CreatedAt
-          UpdatedAt = Option.ofNullable entity.UpdatedAt
+          UpdatedAt = entity.UpdatedAt
           IsSystem = entity.IsSystem }
 
     let private toVocabulary(entity: Mapping.Vocabulary) : Vocabulary =
@@ -224,7 +224,7 @@ module Seeder =
           Name = entity.Name
           Description = Option.ofObj entity.Description
           CreatedAt = entity.CreatedAt
-          UpdatedAt = Option.ofNullable entity.UpdatedAt
+          UpdatedAt = entity.UpdatedAt
           IsDefault = entity.IsDefault }
 
     let private toEntry(entity: Mapping.Entry) : Entry =
@@ -232,7 +232,7 @@ module Seeder =
           VocabularyId = entity.VocabularyId
           EntryText = entity.EntryText
           CreatedAt = entity.CreatedAt
-          UpdatedAt = Option.ofNullable entity.UpdatedAt }
+          UpdatedAt = entity.UpdatedAt }
 
     let private toDefinition(entity: Mapping.Definition) : Definition =
         { Id = entity.Id

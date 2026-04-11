@@ -48,7 +48,7 @@ type CreateDefaultCollectionTests(fixture: WordfolioTestFixture) =
                       Name = "Unsorted"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None
+                      UpdatedAt = createdAt
                       IsSystem = true }
 
             Assert.Equivalent(expected, actualCollection)

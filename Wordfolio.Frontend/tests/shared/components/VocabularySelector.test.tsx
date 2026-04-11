@@ -16,7 +16,7 @@ const createHierarchy = (
             name: "English Collection",
             description: null,
             createdAt: new Date(),
-            updatedAt: null,
+            updatedAt: new Date(),
             vocabularies: [
                 {
                     id: 10,
@@ -24,7 +24,7 @@ const createHierarchy = (
                     description: null,
                     entryCount: 5,
                     createdAt: new Date(),
-                    updatedAt: null,
+                    updatedAt: new Date(),
                 },
                 {
                     id: 11,
@@ -32,7 +32,7 @@ const createHierarchy = (
                     description: null,
                     entryCount: 3,
                     createdAt: new Date(),
-                    updatedAt: null,
+                    updatedAt: new Date(),
                 },
             ],
         },
@@ -41,7 +41,7 @@ const createHierarchy = (
             name: "Spanish Collection",
             description: null,
             createdAt: new Date(),
-            updatedAt: null,
+            updatedAt: new Date(),
             vocabularies: [
                 {
                     id: 20,
@@ -49,7 +49,7 @@ const createHierarchy = (
                     description: null,
                     entryCount: 10,
                     createdAt: new Date(),
-                    updatedAt: null,
+                    updatedAt: new Date(),
                 },
             ],
         },
@@ -128,7 +128,7 @@ describe("VocabularySelector", () => {
                     description: null,
                     entryCount: 0,
                     createdAt: new Date(),
-                    updatedAt: null,
+                    updatedAt: new Date(),
                 },
             }),
         });
@@ -178,7 +178,7 @@ describe("VocabularySelector", () => {
                     description: null,
                     entryCount: 0,
                     createdAt: new Date(),
-                    updatedAt: null,
+                    updatedAt: new Date(),
                 },
             }),
             excludeVocabularyId: 99,

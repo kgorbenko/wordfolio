@@ -23,10 +23,10 @@ type GetDefaultCollectionByUserIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let systemCollection =
-                Entities.makeCollection user "Unsorted" None createdAt None true
+                Entities.makeCollection user "Unsorted" None createdAt createdAt true
 
             let regularCollection =
-                Entities.makeCollection user "Regular" None createdAt None false
+                Entities.makeCollection user "Regular" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -45,7 +45,7 @@ type GetDefaultCollectionByUserIdTests(fixture: WordfolioTestFixture) =
                       Name = "Unsorted"
                       Description = None
                       CreatedAt = createdAt
-                      UpdatedAt = None }
+                      UpdatedAt = createdAt }
 
             Assert.Equal(expected, actual)
         }
@@ -61,7 +61,7 @@ type GetDefaultCollectionByUserIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let regularCollection =
-                Entities.makeCollection user "Regular" None createdAt None false
+                Entities.makeCollection user "Regular" None createdAt createdAt false
 
             do!
                 fixture.Seeder
@@ -87,10 +87,10 @@ type GetDefaultCollectionByUserIdTests(fixture: WordfolioTestFixture) =
             let user = Entities.makeUser 100
 
             let systemCollection1 =
-                Entities.makeCollection user "Unsorted 1" None createdAt None true
+                Entities.makeCollection user "Unsorted 1" None createdAt createdAt true
 
             let systemCollection2 =
-                Entities.makeCollection user "Unsorted 2" None createdAt None true
+                Entities.makeCollection user "Unsorted 2" None createdAt createdAt true
 
             do!
                 fixture.Seeder

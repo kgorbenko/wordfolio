@@ -47,10 +47,10 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let collection =
-                Entities.makeCollection wordfolioUser "Col" None createdAt None false
+                Entities.makeCollection wordfolioUser "Col" None createdAt createdAt false
 
             let vocabulary =
-                Entities.makeVocabulary collection "NotDefault" None createdAt None false
+                Entities.makeVocabulary collection "NotDefault" None createdAt createdAt false
 
             do!
                 fixture.WordfolioSeeder
@@ -80,10 +80,10 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let collection =
-                Entities.makeCollection wordfolioUser "Col" None createdAt None false
+                Entities.makeCollection wordfolioUser "Col" None createdAt createdAt false
 
             let defaultVocab =
-                Entities.makeVocabulary collection "Drafts" (Some "My drafts") createdAt None true
+                Entities.makeVocabulary collection "Drafts" (Some "My drafts") createdAt createdAt true
 
             do!
                 fixture.WordfolioSeeder
@@ -107,7 +107,7 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
                       Name = "Drafts"
                       Description = Some "My drafts"
                       CreatedAt = actual.Vocabulary.CreatedAt
-                      UpdatedAt = None }
+                      UpdatedAt = actual.Vocabulary.CreatedAt }
                   Entries = [] }
 
             Assert.Equal(expected, actual)
@@ -127,13 +127,13 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let collection =
-                Entities.makeCollection wordfolioUser "Col" None createdAt None false
+                Entities.makeCollection wordfolioUser "Col" None createdAt createdAt false
 
             let defaultVocab =
-                Entities.makeVocabulary collection "Drafts" None createdAt None true
+                Entities.makeVocabulary collection "Drafts" None createdAt createdAt true
 
             let entry =
-                Entities.makeEntry defaultVocab "ephemeral" createdAt None
+                Entities.makeEntry defaultVocab "ephemeral" createdAt createdAt
 
             let definition =
                 Entities.makeDefinition
@@ -181,13 +181,13 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
                       Name = "Drafts"
                       Description = None
                       CreatedAt = actual.Vocabulary.CreatedAt
-                      UpdatedAt = None }
+                      UpdatedAt = actual.Vocabulary.CreatedAt }
                   Entries =
                     [ { Id = entry.Id
                         VocabularyId = defaultVocab.Id
                         EntryText = "ephemeral"
                         CreatedAt = actual.Entries.[0].CreatedAt
-                        UpdatedAt = None
+                        UpdatedAt = actual.Entries.[0].CreatedAt
                         Definitions =
                           [ { Id = definition.Id
                               DefinitionText = "lasting for a short time"
@@ -223,22 +223,22 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
                 DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
             let collection1 =
-                Entities.makeCollection wordfolioUser1 "Col1" None createdAt None false
+                Entities.makeCollection wordfolioUser1 "Col1" None createdAt createdAt false
 
             let collection2 =
-                Entities.makeCollection wordfolioUser2 "Col2" None createdAt None false
+                Entities.makeCollection wordfolioUser2 "Col2" None createdAt createdAt false
 
             let vocab1 =
-                Entities.makeVocabulary collection1 "Drafts1" None createdAt None true
+                Entities.makeVocabulary collection1 "Drafts1" None createdAt createdAt true
 
             let vocab2 =
-                Entities.makeVocabulary collection2 "Drafts2" None createdAt None true
+                Entities.makeVocabulary collection2 "Drafts2" None createdAt createdAt true
 
             let entry1 =
-                Entities.makeEntry vocab1 "myword" createdAt None
+                Entities.makeEntry vocab1 "myword" createdAt createdAt
 
             let entry2 =
-                Entities.makeEntry vocab2 "otherword" createdAt None
+                Entities.makeEntry vocab2 "otherword" createdAt createdAt
 
             do!
                 fixture.WordfolioSeeder
@@ -259,13 +259,13 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
                       Name = "Drafts1"
                       Description = None
                       CreatedAt = actual.Vocabulary.CreatedAt
-                      UpdatedAt = None }
+                      UpdatedAt = actual.Vocabulary.CreatedAt }
                   Entries =
                     [ { Id = entry1.Id
                         VocabularyId = vocab1.Id
                         EntryText = "myword"
                         CreatedAt = actual.Entries.[0].CreatedAt
-                        UpdatedAt = None
+                        UpdatedAt = actual.Entries.[0].CreatedAt
                         Definitions = []
                         Translations = [] } ] }
 
