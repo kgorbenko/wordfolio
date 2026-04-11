@@ -27,17 +27,16 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(208, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "My Collection" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "My Collection" None now now false
 
             let firstVocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary collection "Animals" (Some "Animal words") createdAt createdAt false
+                Entities.makeVocabulary collection "Animals" (Some "Animal words") now now false
 
             let secondVocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary collection "Travel" None createdAt createdAt false
+                Entities.makeVocabulary collection "Travel" None now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -91,9 +90,10 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(202, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -148,21 +148,19 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             let! requesterIdentityUser, requesterWordfolioUser =
                 factory.CreateUserAsync(210, "requester@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let ownerCollection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection ownerWordfolioUser "Owner Collection" None createdAt createdAt false
+                Entities.makeCollection ownerWordfolioUser "Owner Collection" None now now false
 
             let ownerVocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary ownerCollection "Owner Vocabulary" None createdAt createdAt false
+                Entities.makeVocabulary ownerCollection "Owner Vocabulary" None now now false
 
             let requesterCollection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection requesterWordfolioUser "Requester Collection" None createdAt createdAt false
+                Entities.makeCollection requesterWordfolioUser "Requester Collection" None now now false
 
             let requesterVocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None createdAt createdAt false
+                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None now now false
 
             do!
                 fixture.WordfolioSeeder

@@ -25,19 +25,19 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(106, "user@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Test Collection" None timestamp timestamp false
 
             let untouchedCollection =
-                let createdAt = DateTimeOffset.UtcNow
-
                 Entities.makeCollection
                     wordfolioUser
                     "Untouched Collection"
                     (Some "Untouched Description")
-                    createdAt
-                    createdAt
+                    timestamp
+                    timestamp
                     false
 
             do!
@@ -66,7 +66,7 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   Name = "Untouched Collection"
                   Description = Some "Untouched Description"
                   CreatedAt = untouchedCollection.CreatedAt
-                  UpdatedAt = untouchedCollection.CreatedAt
+                  UpdatedAt = untouchedCollection.UpdatedAt
                   IsSystem = false }
 
             Assert.Equal(expected, actual)
@@ -82,36 +82,32 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(112, "user@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Collection with content" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Collection with content" None timestamp timestamp false
 
             let untouchedCollection =
-                let createdAt = DateTimeOffset.UtcNow
-
                 Entities.makeCollection
                     wordfolioUser
                     "Untouched Collection"
                     (Some "Untouched Description")
-                    createdAt
-                    createdAt
+                    timestamp
+                    timestamp
                     false
 
             let vocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary collection "Vocabulary" None createdAt createdAt false
+                Entities.makeVocabulary collection "Vocabulary" None timestamp timestamp false
 
             let untouchedVocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary untouchedCollection "Untouched Vocabulary" None createdAt createdAt false
+                Entities.makeVocabulary untouchedCollection "Untouched Vocabulary" None timestamp timestamp false
 
             let entry =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeEntry vocabulary "word" createdAt createdAt
+                Entities.makeEntry vocabulary "word" timestamp timestamp
 
             let untouchedEntry =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeEntry untouchedVocabulary "untouched word" createdAt createdAt
+                Entities.makeEntry untouchedVocabulary "untouched word" timestamp timestamp
 
             do!
                 fixture.WordfolioSeeder
@@ -142,7 +138,7 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   Name = "Untouched Collection"
                   Description = Some "Untouched Description"
                   CreatedAt = untouchedCollection.CreatedAt
-                  UpdatedAt = untouchedCollection.CreatedAt
+                  UpdatedAt = untouchedCollection.UpdatedAt
                   IsSystem = false }
 
             Assert.Equal(expectedCollection, actualCollection)
@@ -160,7 +156,7 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   Name = "Untouched Vocabulary"
                   Description = None
                   CreatedAt = untouchedVocabulary.CreatedAt
-                  UpdatedAt = untouchedVocabulary.CreatedAt
+                  UpdatedAt = untouchedVocabulary.UpdatedAt
                   IsDefault = false }
 
             Assert.Equal(expectedVocabulary, actualVocabulary)
@@ -177,7 +173,7 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   VocabularyId = untouchedVocabulary.Id
                   EntryText = "untouched word"
                   CreatedAt = untouchedEntry.CreatedAt
-                  UpdatedAt = untouchedEntry.CreatedAt }
+                  UpdatedAt = untouchedEntry.UpdatedAt }
 
             Assert.Equal(expectedEntry, actualEntry)
         }
@@ -215,7 +211,8 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let! _, wordfolioUser = factory.CreateUserAsync(109, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
+                let createdAt =
+                    DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
                 Entities.makeCollection
                     wordfolioUser
@@ -246,7 +243,7 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   Name = "Protected Collection"
                   Description = Some "Protected Description"
                   CreatedAt = collection.CreatedAt
-                  UpdatedAt = collection.CreatedAt
+                  UpdatedAt = collection.UpdatedAt
                   IsSystem = false }
 
             Assert.Equal(expected, actual)
@@ -265,26 +262,25 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let! requesterIdentityUser, requesterWordfolioUser =
                 factory.CreateUserAsync(111, "requester@example.com", "P@ssw0rd!")
 
-            let ownerCollection =
-                let createdAt = DateTimeOffset.UtcNow
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
+            let ownerCollection =
                 Entities.makeCollection
                     ownerWordfolioUser
                     "Owner Collection"
                     (Some "Owner Description")
-                    createdAt
-                    createdAt
+                    timestamp
+                    timestamp
                     false
 
             let requesterCollection =
-                let createdAt = DateTimeOffset.UtcNow
-
                 Entities.makeCollection
                     requesterWordfolioUser
                     "Requester Collection"
                     (Some "Requester Description")
-                    createdAt
-                    createdAt
+                    timestamp
+                    timestamp
                     false
 
             do!
@@ -315,7 +311,7 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   Name = "Owner Collection"
                   Description = Some "Owner Description"
                   CreatedAt = ownerCollection.CreatedAt
-                  UpdatedAt = ownerCollection.CreatedAt
+                  UpdatedAt = ownerCollection.UpdatedAt
                   IsSystem = false }
 
             let expectedRequesterCollection: Wordfolio.Collection =
@@ -324,7 +320,7 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
                   Name = "Requester Collection"
                   Description = Some "Requester Description"
                   CreatedAt = requesterCollection.CreatedAt
-                  UpdatedAt = requesterCollection.CreatedAt
+                  UpdatedAt = requesterCollection.UpdatedAt
                   IsSystem = false }
 
             Assert.Equal(expectedOwnerCollection, actualOwnerCollection)

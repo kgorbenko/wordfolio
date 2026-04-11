@@ -47,26 +47,24 @@ type CreateCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             let createdCollectionId = result.Id
 
-            let! databaseState = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
-
-            let createdAt = databaseState.Head.CreatedAt
-
             let expectedResult: CollectionResponse =
                 { Id = createdCollectionId
                   Name = "My Collection"
                   Description = Some "A test collection"
-                  CreatedAt = createdAt
-                  UpdatedAt = createdAt }
+                  CreatedAt = result.CreatedAt
+                  UpdatedAt = result.CreatedAt }
 
             Assert.Equal(expectedResult, result)
+
+            let! databaseState = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
 
             let expectedDatabaseState: Wordfolio.Collection list =
                 [ { Id = createdCollectionId
                     UserId = 100
                     Name = "My Collection"
                     Description = Some "A test collection"
-                    CreatedAt = createdAt
-                    UpdatedAt = createdAt
+                    CreatedAt = result.CreatedAt
+                    UpdatedAt = result.CreatedAt
                     IsSystem = false } ]
 
             Assert.Equal<Collection list>(expectedDatabaseState, databaseState)

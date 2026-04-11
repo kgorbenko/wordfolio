@@ -27,9 +27,11 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(200, "user@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Test Collection" None timestamp timestamp false
 
             do!
                 fixture.WordfolioSeeder
@@ -56,27 +58,25 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let createdVocabularyId = result.Id
 
-            let! databaseState = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
-
-            let createdAt = databaseState.Head.CreatedAt
-
             let expectedResult: VocabularyResponse =
                 { Id = createdVocabularyId
                   CollectionId = collection.Id
                   Name = "Test Vocabulary"
                   Description = Some "A test vocabulary"
-                  CreatedAt = createdAt
-                  UpdatedAt = createdAt }
+                  CreatedAt = result.CreatedAt
+                  UpdatedAt = result.CreatedAt }
 
             Assert.Equal(expectedResult, result)
+
+            let! databaseState = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
 
             let expectedDatabaseState: Wordfolio.Vocabulary list =
                 [ { Id = createdVocabularyId
                     CollectionId = collection.Id
                     Name = "Test Vocabulary"
                     Description = Some "A test vocabulary"
-                    CreatedAt = createdAt
-                    UpdatedAt = createdAt
+                    CreatedAt = result.CreatedAt
+                    UpdatedAt = result.CreatedAt
                     IsDefault = false } ]
 
             Assert.Equal<Vocabulary list>(expectedDatabaseState, databaseState)
@@ -92,9 +92,11 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! _, wordfolioUser = factory.CreateUserAsync(202, "user@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Test Collection" None timestamp timestamp false
 
             do!
                 fixture.WordfolioSeeder
@@ -133,9 +135,11 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let! requesterIdentityUser, requesterWordfolioUser =
                 factory.CreateUserAsync(207, "requester@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let ownerCollection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection ownerWordfolioUser "Owner Collection" None createdAt createdAt false
+                Entities.makeCollection ownerWordfolioUser "Owner Collection" None timestamp timestamp false
 
             do!
                 fixture.WordfolioSeeder
@@ -171,9 +175,11 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(201, "user@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Test Collection" None timestamp timestamp false
 
             do!
                 fixture.WordfolioSeeder

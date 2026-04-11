@@ -27,13 +27,14 @@ type GetVocabularyByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(203, "user@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Test Collection" None timestamp timestamp false
 
             let vocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary collection "Test Vocabulary" (Some "Test Description") createdAt createdAt false
+                Entities.makeVocabulary collection "Test Vocabulary" (Some "Test Description") timestamp timestamp false
 
             do!
                 fixture.WordfolioSeeder
@@ -61,7 +62,7 @@ type GetVocabularyByIdTests(fixture: WordfolioIdentityTestFixture) =
                   Name = "Test Vocabulary"
                   Description = Some "Test Description"
                   CreatedAt = vocabulary.CreatedAt
-                  UpdatedAt = vocabulary.CreatedAt }
+                  UpdatedAt = vocabulary.UpdatedAt }
 
             Assert.Equal(expected, actual)
         }
@@ -76,9 +77,11 @@ type GetVocabularyByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(204, "user@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Test Collection" None timestamp timestamp false
 
             do!
                 fixture.WordfolioSeeder
@@ -106,17 +109,17 @@ type GetVocabularyByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(216, "user@example.com", "P@ssw0rd!")
 
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
             let collectionA =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Collection A" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Collection A" None timestamp timestamp false
 
             let collectionB =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Collection B" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Collection B" None timestamp timestamp false
 
             let vocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary collectionB "Test Vocabulary" None createdAt createdAt false
+                Entities.makeVocabulary collectionB "Test Vocabulary" None timestamp timestamp false
 
             do!
                 fixture.WordfolioSeeder
@@ -148,26 +151,25 @@ type GetVocabularyByIdTests(fixture: WordfolioIdentityTestFixture) =
             let! requesterIdentityUser, requesterWordfolioUser =
                 factory.CreateUserAsync(212, "requester@example.com", "P@ssw0rd!")
 
-            let ownerCollection =
-                let createdAt = DateTimeOffset.UtcNow
+            let timestamp =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
+            let ownerCollection =
                 Entities.makeCollection
                     ownerWordfolioUser
                     "Owner Collection"
                     (Some "Owner Description")
-                    createdAt
-                    createdAt
+                    timestamp
+                    timestamp
                     false
 
             let ownerVocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-
                 Entities.makeVocabulary
                     ownerCollection
                     "Owner Vocabulary"
                     (Some "Owner Vocabulary Description")
-                    createdAt
-                    createdAt
+                    timestamp
+                    timestamp
                     false
 
             do!

@@ -27,21 +27,19 @@ type GetEntriesByVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(308, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             let vocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary collection "Test Vocabulary" None createdAt createdAt false
+                Entities.makeVocabulary collection "Test Vocabulary" None now now false
 
             let entry1 =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeEntry vocabulary "hello" createdAt createdAt
+                Entities.makeEntry vocabulary "hello" now now
 
             let entry2 =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeEntry vocabulary "world" createdAt createdAt
+                Entities.makeEntry vocabulary "world" now now
 
             do!
                 fixture.WordfolioSeeder
@@ -97,13 +95,13 @@ type GetEntriesByVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(309, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             let vocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary collection "Test Vocabulary" None createdAt createdAt false
+                Entities.makeVocabulary collection "Test Vocabulary" None now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -184,25 +182,22 @@ type GetEntriesByVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! _, otherWordfolioUser = factory.CreateUserAsync(312, "other@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let requesterCollection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection requesterWordfolioUser "Requester Collection" None createdAt createdAt false
+                Entities.makeCollection requesterWordfolioUser "Requester Collection" None now now false
 
             let requesterVocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None createdAt createdAt false
+                Entities.makeVocabulary requesterCollection "Requester Vocabulary" None now now false
 
             let otherCollection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection otherWordfolioUser "Other Collection" None createdAt createdAt false
+                Entities.makeCollection otherWordfolioUser "Other Collection" None now now false
 
             let otherVocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary otherCollection "Other Vocabulary" None createdAt createdAt false
+                Entities.makeVocabulary otherCollection "Other Vocabulary" None now now false
 
             let otherEntry =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeEntry otherVocabulary "foreign-entry" createdAt createdAt
+                Entities.makeEntry otherVocabulary "foreign-entry" now now
 
             do!
                 fixture.WordfolioSeeder
@@ -229,13 +224,13 @@ type GetEntriesByVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(506, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Test Collection" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Test Collection" None now now false
 
             let vocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary collection "Test Vocabulary" None createdAt createdAt false
+                Entities.makeVocabulary collection "Test Vocabulary" None now now false
 
             do!
                 fixture.WordfolioSeeder
@@ -261,21 +256,19 @@ type GetEntriesByVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(516, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let collectionA =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Collection A" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Collection A" None now now false
 
             let collectionB =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "Collection B" None createdAt createdAt false
+                Entities.makeCollection wordfolioUser "Collection B" None now now false
 
             let vocabularyA =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary collectionA "Vocabulary A" None createdAt createdAt false
+                Entities.makeVocabulary collectionA "Vocabulary A" None now now false
 
             let vocabularyB =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary collectionB "Vocabulary B" None createdAt createdAt false
+                Entities.makeVocabulary collectionB "Vocabulary B" None now now false
 
             do!
                 fixture.WordfolioSeeder

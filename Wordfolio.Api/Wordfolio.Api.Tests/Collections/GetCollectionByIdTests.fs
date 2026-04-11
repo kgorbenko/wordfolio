@@ -28,7 +28,8 @@ type GetCollectionByIdTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(100, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
+                let createdAt =
+                    DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
                 Entities.makeCollection
                     wordfolioUser
@@ -58,7 +59,7 @@ type GetCollectionByIdTests(fixture: WordfolioIdentityTestFixture) =
                   Name = "Test Collection"
                   Description = Some "Test Description"
                   CreatedAt = collection.CreatedAt
-                  UpdatedAt = collection.CreatedAt }
+                  UpdatedAt = collection.UpdatedAt }
 
             Assert.Equal(expected, actual)
         }

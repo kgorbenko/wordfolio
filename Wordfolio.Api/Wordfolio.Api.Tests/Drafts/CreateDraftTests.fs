@@ -104,13 +104,13 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(401, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let systemCollection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "[System] Unsorted" None createdAt createdAt true
+                Entities.makeCollection wordfolioUser "[System] Unsorted" None now now true
 
             let defaultVocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary systemCollection "[Default]" None createdAt createdAt true
+                Entities.makeVocabulary systemCollection "[Default]" None now now true
 
             do!
                 fixture.WordfolioSeeder
@@ -511,17 +511,16 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(604, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let systemCollection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "[System] Unsorted" None createdAt createdAt true
+                Entities.makeCollection wordfolioUser "[System] Unsorted" None now now true
 
             let defaultVocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary systemCollection "[Default]" None createdAt createdAt true
+                Entities.makeVocabulary systemCollection "[Default]" None now now true
 
             let existingEntry =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeEntry defaultVocabulary "hello" createdAt createdAt
+                Entities.makeEntry defaultVocabulary "hello" now now
 
             do!
                 fixture.WordfolioSeeder
@@ -557,17 +556,16 @@ type CreateDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(605, "user@example.com", "P@ssw0rd!")
 
+            let now = DateTimeOffset.UtcNow
+
             let systemCollection =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeCollection wordfolioUser "[System] Unsorted" None createdAt createdAt true
+                Entities.makeCollection wordfolioUser "[System] Unsorted" None now now true
 
             let defaultVocabulary =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeVocabulary systemCollection "[Default]" None createdAt createdAt true
+                Entities.makeVocabulary systemCollection "[Default]" None now now true
 
             let existingEntry =
-                let createdAt = DateTimeOffset.UtcNow
-                Entities.makeEntry defaultVocabulary "hello" createdAt createdAt
+                Entities.makeEntry defaultVocabulary "hello" now now
 
             do!
                 fixture.WordfolioSeeder
