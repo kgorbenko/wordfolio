@@ -41,7 +41,8 @@ type TestEnv
         member this.RunInTransaction(operation) = operation this
 
 let makeCollection id userId =
-    let createdAt = DateTimeOffset.UtcNow
+    let createdAt =
+        DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
     { Id = CollectionId id
       UserId = UserId userId
@@ -51,7 +52,8 @@ let makeCollection id userId =
       UpdatedAt = createdAt }
 
 let makeVocabulary id collectionId name =
-    let createdAt = DateTimeOffset.UtcNow
+    let createdAt =
+        DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
     { Id = VocabularyId id
       CollectionId = CollectionId collectionId

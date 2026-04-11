@@ -158,7 +158,8 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
             let! requesterIdentityUser, requesterWordfolioUser =
                 factory.CreateUserAsync(521, "requester@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let ownerCollection =
                 Entities.makeCollection ownerWordfolioUser "Owner Collection" None now now false
@@ -212,7 +213,8 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(508, "user@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None now now false
@@ -248,7 +250,8 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(512, "user@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None now now false
@@ -287,7 +290,8 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(518, "user@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None now now false
@@ -323,7 +327,8 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(519, "user@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let collectionA =
                 Entities.makeCollection wordfolioUser "Collection A" None now now false

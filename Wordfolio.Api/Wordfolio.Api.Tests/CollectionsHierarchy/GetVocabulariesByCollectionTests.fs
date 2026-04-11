@@ -135,11 +135,15 @@ type GetVocabulariesByCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser, wordfolioUser = factory.CreateUserAsync(318, "user@example.com", "P@ssw0rd!")
 
             let collection =
-                let createdAt = DateTimeOffset.UtcNow
+                let createdAt =
+                    DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
                 Entities.makeCollection wordfolioUser "System Collection" None createdAt createdAt true
 
             let vocabulary =
-                let createdAt = DateTimeOffset.UtcNow
+                let createdAt =
+                    DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
+
                 Entities.makeVocabulary collection "Vocab" None createdAt createdAt false
 
             do!

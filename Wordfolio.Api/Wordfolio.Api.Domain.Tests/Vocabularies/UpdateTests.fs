@@ -53,7 +53,8 @@ type TestEnv
         member this.RunInTransaction(operation) = operation this
 
 let makeCollection id userId =
-    let createdAt = DateTimeOffset.UtcNow
+    let createdAt =
+        DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
     { Id = CollectionId id
       UserId = UserId userId
@@ -64,7 +65,7 @@ let makeCollection id userId =
 
 let makeVocabulary id collectionId name description =
     let createdAt =
-        DateTimeOffset.UtcNow.AddDays(-1)
+        (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)).AddDays(-1)
 
     { Id = VocabularyId id
       CollectionId = CollectionId collectionId
@@ -76,7 +77,8 @@ let makeVocabulary id collectionId name description =
 [<Fact>]
 let ``updates vocabulary when collection owned by user``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingVocabulary =
             makeVocabulary 1 1 "Old Name" None
@@ -149,7 +151,8 @@ let ``updates vocabulary when collection owned by user``() =
 [<Fact>]
 let ``trims whitespace from name``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingVocabulary =
             makeVocabulary 1 1 "Old Name" None
@@ -212,7 +215,7 @@ let ``returns NotFound when vocabulary does not exist``() =
                   VocabularyId = VocabularyId 1
                   Name = "New Name"
                   Description = None
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateVocabularyError.VocabularyNotFound(VocabularyId 1)), result)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
@@ -241,7 +244,7 @@ let ``returns NotFound when vocabulary belongs to different collection``() =
                   VocabularyId = VocabularyId 1
                   Name = "New Name"
                   Description = None
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateVocabularyError.VocabularyNotFound(VocabularyId 1)), result)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
@@ -272,7 +275,7 @@ let ``returns AccessDenied when collection owned by different user``() =
                   VocabularyId = VocabularyId 1
                   Name = "New Name"
                   Description = None
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateVocabularyError.VocabularyAccessDenied(VocabularyId 1)), result)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
@@ -301,7 +304,7 @@ let ``returns AccessDenied when collection does not exist``() =
                   VocabularyId = VocabularyId 1
                   Name = "New Name"
                   Description = None
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateVocabularyError.VocabularyAccessDenied(VocabularyId 1)), result)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
@@ -332,7 +335,7 @@ let ``returns error when name is empty``() =
                   VocabularyId = VocabularyId 1
                   Name = ""
                   Description = None
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error UpdateVocabularyError.VocabularyNameRequired, result)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
@@ -364,7 +367,7 @@ let ``returns error when name exceeds max length``() =
                   VocabularyId = VocabularyId 1
                   Name = longName
                   Description = None
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateVocabularyError.VocabularyNameTooLong MaxNameLength), result)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
@@ -395,7 +398,7 @@ let ``returns error when name is whitespace only``() =
                   VocabularyId = VocabularyId 1
                   Name = "   "
                   Description = None
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error UpdateVocabularyError.VocabularyNameRequired, result)
         Assert.Equal<VocabularyId list>([ VocabularyId 1 ], env.GetVocabularyByIdCalls)
@@ -406,7 +409,8 @@ let ``returns error when name is whitespace only``() =
 [<Fact>]
 let ``accepts name at exact max length``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingVocabulary =
             makeVocabulary 1 1 "Old Name" None
@@ -454,7 +458,8 @@ let ``accepts name at exact max length``() =
 [<Fact>]
 let ``returns NotFound when update affects no rows``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingVocabulary =
             makeVocabulary 1 1 "Test Vocabulary" None

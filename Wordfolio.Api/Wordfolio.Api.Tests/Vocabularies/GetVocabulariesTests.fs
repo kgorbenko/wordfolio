@@ -27,7 +27,8 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(208, "user@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let collection =
                 Entities.makeCollection wordfolioUser "My Collection" None now now false
@@ -90,7 +91,8 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(202, "user@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None now now false
@@ -148,7 +150,8 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             let! requesterIdentityUser, requesterWordfolioUser =
                 factory.CreateUserAsync(210, "requester@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let ownerCollection =
                 Entities.makeCollection ownerWordfolioUser "Owner Collection" None now now false

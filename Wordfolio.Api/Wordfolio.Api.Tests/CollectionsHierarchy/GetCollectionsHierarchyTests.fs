@@ -215,7 +215,8 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(301, "user@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let regularCollection =
                 Entities.makeCollection wordfolioUser "Regular Collection" None now now false
@@ -264,7 +265,8 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(302, "user@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let collection =
                 Entities.makeCollection wordfolioUser "Test Collection" None now now false
@@ -410,7 +412,8 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(305, "user@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let systemCollection =
                 Entities.makeCollection wordfolioUser "Unsorted" None now now true

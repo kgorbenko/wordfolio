@@ -245,7 +245,8 @@ type MoveDraftTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser1, wordfolioUser1 = factory.CreateUserAsync(718, "user1@example.com", "P@ssw0rd!")
             let! _, wordfolioUser2 = factory.CreateUserAsync(719, "user2@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let collection1 =
                 Entities.makeCollection wordfolioUser1 "Collection 1" None now now false

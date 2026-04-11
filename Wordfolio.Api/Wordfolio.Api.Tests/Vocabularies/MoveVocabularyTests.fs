@@ -27,7 +27,8 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(600, "user@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let createdAt =
                 DateTimeOffset(2026, 1, 10, 10, 0, 0, TimeSpan.Zero)
@@ -139,7 +140,8 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(601, "user@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let collection =
                 Entities.makeCollection wordfolioUser "Collection" None now now false
@@ -170,7 +172,8 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(602, "user@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let collection =
                 Entities.makeCollection wordfolioUser "Collection" None now now false
@@ -206,7 +209,8 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(603, "user@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let collectionA =
                 Entities.makeCollection wordfolioUser "Collection A" None now now false
@@ -262,7 +266,8 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let! identityUser1, wordfolioUser1 = factory.CreateUserAsync(604, "user1@example.com", "P@ssw0rd!")
             let! _, wordfolioUser2 = factory.CreateUserAsync(605, "user2@example.com", "P@ssw0rd!")
 
-            let now = DateTimeOffset.UtcNow
+            let now =
+                DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
             let sourceCollection =
                 Entities.makeCollection wordfolioUser1 "Source" None now now false
