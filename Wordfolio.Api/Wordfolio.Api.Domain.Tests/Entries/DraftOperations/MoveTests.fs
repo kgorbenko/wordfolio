@@ -52,7 +52,7 @@ type TestEnv
     interface ITransactional<TestEnv> with
         member this.RunInTransaction(operation) = operation this
 
-let makeEntry id vocabularyId text createdAt (updatedAt: DateTimeOffset) =
+let makeEntry id vocabularyId text createdAt updatedAt =
     { Id = EntryId id
       VocabularyId = VocabularyId vocabularyId
       EntryText = text

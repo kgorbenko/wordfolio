@@ -35,11 +35,13 @@ type TestEnv(getEntryById: EntryId -> Task<Entry option>, hasVocabularyAccess: H
         member this.RunInTransaction(operation) = operation this
 
 let makeEntry id vocabularyId entryText definitions translations =
+    let timestamp = System.DateTimeOffset.UtcNow
+
     { Id = EntryId id
       VocabularyId = VocabularyId vocabularyId
       EntryText = entryText
-      CreatedAt = System.DateTimeOffset.UnixEpoch
-      UpdatedAt = System.DateTimeOffset.UnixEpoch
+      CreatedAt = timestamp
+      UpdatedAt = timestamp
       Definitions = definitions
       Translations = translations }
 

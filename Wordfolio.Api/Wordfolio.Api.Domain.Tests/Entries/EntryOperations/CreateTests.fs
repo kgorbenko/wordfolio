@@ -76,11 +76,13 @@ type TestEnv
         member this.RunInTransaction(operation) = operation this
 
 let makeEntry id vocabularyId text =
+    let timestamp = DateTimeOffset.UtcNow
+
     { Id = EntryId id
       VocabularyId = VocabularyId vocabularyId
       EntryText = text
-      CreatedAt = DateTimeOffset.UnixEpoch
-      UpdatedAt = DateTimeOffset.UnixEpoch
+      CreatedAt = timestamp
+      UpdatedAt = timestamp
       Definitions = []
       Translations = [] }
 
