@@ -22,6 +22,7 @@ export const PasswordField = (props: PasswordFieldProps) => {
                                 onClick={() => setShowPassword((prev) => !prev)}
                                 onMouseDown={(e) => e.preventDefault()}
                                 edge="end"
+                                tabIndex={-1}
                             >
                                 {showPassword ? (
                                     <VisibilityOff />
