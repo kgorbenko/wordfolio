@@ -56,6 +56,14 @@ describe("PasswordField", () => {
         ).toBeInTheDocument();
     });
 
+    it("should have tabIndex -1 on the toggle button to skip it in tab navigation", () => {
+        render(<PasswordField label="Password" id="password" />);
+
+        expect(
+            screen.getByRole("button", { name: "toggle password visibility" })
+        ).toHaveAttribute("tabindex", "-1");
+    });
+
     it("should call preventDefault on mouse down of the toggle button to preserve input focus", async () => {
         render(<PasswordField label="Password" id="password" />);
         const toggleButton = screen.getByRole("button", {
