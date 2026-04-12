@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="Urls.fs" />
     <Compile Include="Configuration\GroqApi.fs" />
+    <Compile Include="Configuration\SqidsEncoder.fs" />
     <Compile Include="IdentityIntegration.fs" />
     <Compile Include="Infrastructure\ResourceIdEncoder.fs" />
     <Compile Include="Infrastructure\IChatClient.fs" />
@@ -68,8 +69,12 @@
     <OpenApiDocumentsDirectory>$(BaseIntermediateOutputPath)</OpenApiDocumentsDirectory>
   </PropertyGroup>
 
-  <Target Name="PublishOpenApiSpec" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true'">
-    <Copy SourceFiles="$(BaseIntermediateOutputPath)$(MSBuildProjectName).json" DestinationFiles="$(MSBuildProjectDirectory)/../../api/openapi.json" Condition="Exists('$(BaseIntermediateOutputPath)$(MSBuildProjectName).json')" />
+  <Target Name="PublishOpenApiSpec" AfterTargets="Build"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <Copy
+      SourceFiles="$(BaseIntermediateOutputPath)$(MSBuildProjectName).json"
+      DestinationFiles="$(MSBuildProjectDirectory)/../../api/openapi.json"
+      Condition="Exists('$(BaseIntermediateOutputPath)$(MSBuildProjectName).json')" />
   </Target>
 
 </Project>
