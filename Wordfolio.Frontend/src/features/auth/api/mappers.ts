@@ -1,11 +1,4 @@
-import type {
-    LoginRequest,
-    LoginResponse,
-    PasswordRequirements as PasswordRequirementsResponse,
-    RefreshRequest,
-    RegisterRequest,
-    UserInfoResponse,
-} from "./authApi";
+import type { components } from "../../../shared/api/generated/schema";
 import type {
     AuthTokens,
     LoginCredentials,
@@ -14,6 +7,14 @@ import type {
     RegisterCredentials,
     UserInfo,
 } from "../types";
+
+type LoginRequest = components["schemas"]["LoginRequest"];
+type RegisterRequest = components["schemas"]["RegisterRequest"];
+type RefreshRequest = components["schemas"]["RefreshRequest"];
+type AccessTokenResponse = components["schemas"]["AccessTokenResponse"];
+type PasswordRequirementsResponse =
+    components["schemas"]["PasswordRequirementsResponse"];
+type InfoResponse = components["schemas"]["InfoResponse"];
 
 export function mapPasswordRequirements(
     response: PasswordRequirementsResponse
@@ -44,16 +45,16 @@ export function mapRefreshRequest(
     return { refreshToken: credentials.refreshToken };
 }
 
-export function mapAuthTokens(response: LoginResponse): AuthTokens {
+export function mapAuthTokens(response: AccessTokenResponse): AuthTokens {
     return {
-        tokenType: response.tokenType,
+        tokenType: response.tokenType ?? "",
         accessToken: response.accessToken,
         expiresIn: response.expiresIn,
         refreshToken: response.refreshToken,
     };
 }
 
-export function mapUserInfo(response: UserInfoResponse): UserInfo {
+export function mapUserInfo(response: InfoResponse): UserInfo {
     return {
         email: response.email,
         isEmailConfirmed: response.isEmailConfirmed,

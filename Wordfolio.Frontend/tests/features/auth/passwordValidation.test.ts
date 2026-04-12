@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { validatePassword } from "../../../src/features/auth/passwordValidation";
-import { PasswordRequirements } from "../../../src/features/auth/api/authApi";
+import type { PasswordRequirements } from "../../../src/features/auth/types";
 
 describe("validatePassword", () => {
     const defaultRequirements: PasswordRequirements = {

@@ -1,124 +1,69 @@
-import { useAuthStore } from "../../../shared/stores/authStore";
+import { client } from "../../../shared/api/client";
+import type { components } from "../../../shared/api/generated/schema";
 
-export interface RegisterRequest {
-    readonly email: string;
-    readonly password: string;
-}
-
-export interface LoginRequest {
-    readonly email: string;
-    readonly password: string;
-}
-
-export interface LoginResponse {
-    readonly tokenType: string;
-    readonly accessToken: string;
-    readonly expiresIn: number;
-    readonly refreshToken: string;
-}
-
-export interface RefreshRequest {
-    readonly refreshToken: string;
-}
-
-export interface PasswordRequirements {
-    readonly requiredLength: number;
-    readonly requireDigit: boolean;
-    readonly requireLowercase: boolean;
-    readonly requireUppercase: boolean;
-    readonly requireNonAlphanumeric: boolean;
-    readonly requiredUniqueChars: number;
-}
-
-export interface UserInfoResponse {
-    readonly email: string;
-    readonly isEmailConfirmed: boolean;
-}
-
-const API_BASE_URL = "/api";
-
-const getAuthHeaders = (): HeadersInit => {
-    const authTokens = useAuthStore.getState().authTokens;
-    if (!authTokens) {
-        throw new Error("Not authenticated");
-    }
-    return {
-        Authorization: `${authTokens.tokenType} ${authTokens.accessToken}`,
-    };
-};
+type RegisterRequest = components["schemas"]["RegisterRequest"];
+type LoginRequest = components["schemas"]["LoginRequest"];
+type AccessTokenResponse = components["schemas"]["AccessTokenResponse"];
+type RefreshRequest = components["schemas"]["RefreshRequest"];
+type PasswordRequirementsResponse =
+    components["schemas"]["PasswordRequirementsResponse"];
+type InfoResponse = components["schemas"]["InfoResponse"];
 
 export const authApi = {
     register: async (request: RegisterRequest): Promise<void> => {
-        const response = await fetch(`${API_BASE_URL}/auth/register`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(request),
+        const { error } = await client.POST("/auth/register", {
+            body: request,
         });
 
-        if (!response.ok) {
-            throw await response.json();
+        if (error) {
+            throw error;
         }
     },
 
-    login: async (request: LoginRequest): Promise<LoginResponse> => {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(request),
+    login: async (request: LoginRequest): Promise<AccessTokenResponse> => {
+        const { data, error } = await client.POST("/auth/login", {
+            body: request,
         });
 
-        if (!response.ok) {
-            throw await response.json();
+        if (error) {
+            throw error;
         }
 
-        return response.json();
+        return data!;
     },
 
-    getPasswordRequirements: async (): Promise<PasswordRequirements> => {
-        const response = await fetch(
-            `${API_BASE_URL}/auth/password-requirements`,
-            {
-                method: "GET",
+    getPasswordRequirements:
+        async (): Promise<PasswordRequirementsResponse> => {
+            const { data, error } = await client.GET(
+                "/auth/password-requirements"
+            );
+
+            if (error) {
+                throw error;
             }
-        );
 
-        if (!response.ok) {
-            throw await response.json();
-        }
+            return data!;
+        },
 
-        return response.json();
-    },
-
-    refresh: async (request: RefreshRequest): Promise<LoginResponse> => {
-        const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(request),
+    refresh: async (request: RefreshRequest): Promise<AccessTokenResponse> => {
+        const { data, error } = await client.POST("/auth/refresh", {
+            body: request,
         });
 
-        if (!response.ok) {
-            throw await response.json();
+        if (error) {
+            throw error;
         }
 
-        return response.json();
+        return data!;
     },
 
-    getUserInfo: async (): Promise<UserInfoResponse> => {
-        const response = await fetch(`${API_BASE_URL}/auth/manage/info`, {
-            method: "GET",
-            headers: getAuthHeaders(),
-        });
+    getUserInfo: async (): Promise<InfoResponse> => {
+        const { data, error } = await client.GET("/auth/manage/info");
 
-        if (!response.ok) {
-            throw await response.json();
+        if (error) {
+            throw error;
         }
 
-        return response.json();
+        return data!;
     },
 };
