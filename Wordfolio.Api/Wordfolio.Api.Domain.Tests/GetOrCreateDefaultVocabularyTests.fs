@@ -62,7 +62,8 @@ type TestEnv
             createDefaultCollection parameters
 
 let makeCollection id userId : Collection =
-    let createdAt = DateTimeOffset.UtcNow
+    let createdAt =
+        DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
     { Id = CollectionId id
       UserId = UserId userId
@@ -82,7 +83,8 @@ let makeVocabulary id collectionId createdAt : Vocabulary =
 [<Fact>]
 let ``returns existing default vocabulary id when it exists``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingVocabulary =
             makeVocabulary 1 1 now
@@ -107,7 +109,9 @@ let ``returns existing default vocabulary id when it exists``() =
 [<Fact>]
 let ``creates vocabulary when collection exists but vocabulary does not``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
         let collection = makeCollection 1 1
 
         let expectedVocabularyParams: CreateDefaultVocabularyParameters =
@@ -141,7 +145,8 @@ let ``creates vocabulary when collection exists but vocabulary does not``() =
 [<Fact>]
 let ``creates both collection and vocabulary when neither exists``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let expectedCollectionParams: CreateDefaultCollectionParameters =
             { UserId = UserId 1

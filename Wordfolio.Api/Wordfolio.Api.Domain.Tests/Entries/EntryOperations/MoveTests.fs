@@ -125,7 +125,8 @@ let makeEntry id vocabularyId text createdAt updatedAt =
       Translations = [] }
 
 let makeCollection id userId : Collection =
-    let createdAt = DateTimeOffset.UtcNow
+    let createdAt =
+        DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
     { Id = CollectionId id
       UserId = UserId userId
@@ -145,7 +146,8 @@ let makeVocabulary id collectionId createdAt : Vocabulary =
 [<Fact>]
 let ``moves entry when explicit target vocabulary is accessible``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 10 100 "hello" now now
@@ -222,7 +224,8 @@ let ``moves entry when explicit target vocabulary is accessible``() =
 [<Fact>]
 let ``moves entry to existing default vocabulary when target vocabulary id is None``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 10 100 "hello" now now
@@ -297,7 +300,8 @@ let ``moves entry to existing default vocabulary when target vocabulary id is No
 [<Fact>]
 let ``creates default vocabulary when target vocabulary id is None and default collection exists``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 10 100 "hello" now now
@@ -381,7 +385,8 @@ let ``creates default vocabulary when target vocabulary id is None and default c
 [<Fact>]
 let ``creates default collection and vocabulary when target vocabulary id is None and neither exists``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 10 100 "hello" now now
@@ -492,7 +497,7 @@ let ``returns VocabularyNotFoundOrAccessDenied when source vocabulary is not in 
                   VocabularyId = VocabularyId 100
                   EntryId = EntryId 10
                   TargetVocabularyId = Some(VocabularyId 200)
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(MoveEntryError.VocabularyNotFoundOrAccessDenied(VocabularyId 100)), result)
         Assert.Empty(env.GetEntryByIdCalls)
@@ -527,7 +532,7 @@ let ``returns EntryNotFound when entry does not exist``() =
                   VocabularyId = VocabularyId 100
                   EntryId = EntryId 99
                   TargetVocabularyId = Some(VocabularyId 200)
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(MoveEntryError.EntryNotFound(EntryId 99)), result)
         Assert.Equal<EntryId list>([ EntryId 99 ], env.GetEntryByIdCalls)
@@ -542,7 +547,8 @@ let ``returns EntryNotFound when entry does not exist``() =
 [<Fact>]
 let ``returns EntryNotFound when entry belongs to different vocabulary``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let entry = makeEntry 10 999 "hello" now now
 
@@ -581,7 +587,8 @@ let ``returns EntryNotFound when entry belongs to different vocabulary``() =
 [<Fact>]
 let ``returns VocabularyNotFoundOrAccessDenied when explicit target vocabulary access is denied``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 10 100 "hello" now now
@@ -628,7 +635,8 @@ let ``returns VocabularyNotFoundOrAccessDenied when explicit target vocabulary a
 [<Fact>]
 let ``throws when post-move entry fetch returns None``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 10 100 "hello" now now
@@ -673,7 +681,8 @@ let ``throws when post-move entry fetch returns None``() =
 [<Fact>]
 let ``move succeeds without duplicate checks in explicit target vocabulary``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 10 100 "duplicate-text" now now

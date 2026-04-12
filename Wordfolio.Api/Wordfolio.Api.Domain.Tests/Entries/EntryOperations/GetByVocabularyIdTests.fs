@@ -1,5 +1,6 @@
 module Wordfolio.Api.Domain.Tests.Entries.EntryOperations.GetByVocabularyIdTests
 
+open System
 open System.Threading.Tasks
 
 open Xunit
@@ -41,7 +42,8 @@ type TestEnv
         member this.RunInTransaction(operation) = operation this
 
 let makeEntry id vocabularyId text =
-    let timestamp = System.DateTimeOffset.UtcNow
+    let timestamp =
+        DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
     { Id = EntryId id
       VocabularyId = VocabularyId vocabularyId

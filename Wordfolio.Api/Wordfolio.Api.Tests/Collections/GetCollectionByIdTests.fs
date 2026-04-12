@@ -100,7 +100,8 @@ type GetCollectionByIdTests(fixture: WordfolioIdentityTestFixture) =
                 factory.CreateUserAsync(106, "requester@example.com", "P@ssw0rd!")
 
             let ownerCollection =
-                let createdAt = DateTimeOffset.UtcNow
+                let createdAt =
+                    DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero)
 
                 Entities.makeCollection
                     ownerWordfolioUser

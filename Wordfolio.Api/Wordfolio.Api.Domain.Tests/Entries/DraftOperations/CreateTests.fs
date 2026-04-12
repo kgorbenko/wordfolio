@@ -120,7 +120,8 @@ type TestEnv
         member _.CreateDefaultCollection(parameters) = createDefaultCollection parameters
 
 let makeVocabulary id collectionId name =
-    let createdAt = DateTimeOffset.UtcNow
+    let createdAt =
+        DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
     { Id = VocabularyId id
       CollectionId = CollectionId collectionId
@@ -183,7 +184,8 @@ let defaultVocabulary =
 [<Fact>]
 let ``creates entry with definitions only``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let definitionInputs =
             [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]
@@ -225,7 +227,8 @@ let ``creates entry with definitions only``() =
 [<Fact>]
 let ``creates entry with translations only``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let translationInputs =
             [ makeTranslationInput "test translation" TranslationSource.Manual [] ]
@@ -267,7 +270,8 @@ let ``creates entry with translations only``() =
 [<Fact>]
 let ``creates entry with both definitions and translations``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let definitionInputs =
             [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]
@@ -316,7 +320,8 @@ let ``creates entry with both definitions and translations``() =
 [<Fact>]
 let ``trims whitespace from entry text``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let definitionInputs =
             [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]
@@ -380,7 +385,7 @@ let ``returns error when entry text is empty``() =
                     ""
                     [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
                     []
-                    DateTimeOffset.UtcNow)
+                    (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)))
 
         Assert.Equal(Error CreateDraftEntryError.EntryTextRequired, result)
         Assert.Empty(env.CreateEntryCalls)
@@ -412,7 +417,7 @@ let ``returns error when entry text is whitespace only``() =
                     "   "
                     [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
                     []
-                    DateTimeOffset.UtcNow)
+                    (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)))
 
         Assert.Equal(Error CreateDraftEntryError.EntryTextRequired, result)
     }
@@ -445,7 +450,7 @@ let ``returns error when entry text exceeds max length``() =
                     longText
                     [ makeDefinitionInput "test" DefinitionSource.Manual [] ]
                     []
-                    DateTimeOffset.UtcNow)
+                    (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)))
 
         Assert.Equal(Error(CreateDraftEntryError.EntryTextTooLong MaxEntryTextLength), result)
     }
@@ -468,7 +473,10 @@ let ``returns error when both definitions and translations are empty``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" [] [] DateTimeOffset.UtcNow)
+        let! result =
+            create
+                env
+                (makeCreateParams (UserId 1) "test word" [] [] (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)))
 
         Assert.Equal(Error CreateDraftEntryError.NoDefinitionsOrTranslations, result)
     }
@@ -476,7 +484,8 @@ let ``returns error when both definitions and translations are empty``() =
 [<Fact>]
 let ``returns error when duplicate entry exists``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingDefinition =
             makeDefinition 1 "existing definition" DefinitionSource.Manual 0 []
@@ -515,7 +524,8 @@ let ``returns error when duplicate entry exists``() =
 [<Fact>]
 let ``creates entry when duplicate exists and AllowDuplicate is true``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 1 1 "test word" now [] []
@@ -583,7 +593,15 @@ let ``returns error when example text is too long``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
+        let! result =
+            create
+                env
+                (makeCreateParams
+                    (UserId 1)
+                    "test word"
+                    definitionInputs
+                    []
+                    (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)))
 
         Assert.Equal(Error(CreateDraftEntryError.ExampleTextTooLong MaxExampleTextLength), result)
     }
@@ -613,7 +631,15 @@ let ``returns error when too many examples in definition``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" definitionInputs [] DateTimeOffset.UtcNow)
+        let! result =
+            create
+                env
+                (makeCreateParams
+                    (UserId 1)
+                    "test word"
+                    definitionInputs
+                    []
+                    (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)))
 
         Assert.Equal(Error(CreateDraftEntryError.TooManyExamples MaxExamplesPerItem), result)
     }
@@ -643,7 +669,15 @@ let ``returns error when too many examples in translation``() =
                 createDefaultCollection = (fun _ -> failwith "Should not be called")
             )
 
-        let! result = create env (makeCreateParams (UserId 1) "test word" [] translationInputs DateTimeOffset.UtcNow)
+        let! result =
+            create
+                env
+                (makeCreateParams
+                    (UserId 1)
+                    "test word"
+                    []
+                    translationInputs
+                    (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)))
 
         Assert.Equal(Error(CreateDraftEntryError.TooManyExamples MaxExamplesPerItem), result)
     }
@@ -651,7 +685,8 @@ let ``returns error when too many examples in translation``() =
 [<Fact>]
 let ``proceeds when duplicate text match finds a stale record``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let staleEntry =
             makeEntry 99 1 "test word" now [] []
@@ -693,7 +728,8 @@ let ``proceeds when duplicate text match finds a stale record``() =
 [<Fact>]
 let ``throws when post-create entry fetch returns None``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let definitionInputs =
             [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]
@@ -723,7 +759,8 @@ let ``throws when post-create entry fetch returns None``() =
 [<Fact>]
 let ``creates entry when default vocabulary does not exist but default collection does``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let definitionInputs =
             [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]
@@ -765,7 +802,8 @@ let ``creates entry when default vocabulary does not exist but default collectio
 [<Fact>]
 let ``creates entry when neither default vocabulary nor default collection exists``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let definitionInputs =
             [ makeDefinitionInput "A test definition" DefinitionSource.Manual [] ]

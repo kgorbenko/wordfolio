@@ -38,7 +38,7 @@ type TestEnv
 
 let makeCollection id userId name description =
     let createdAt =
-        DateTimeOffset.UtcNow.AddDays(-1)
+        (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)).AddDays(-1)
 
     { Id = CollectionId id
       UserId = UserId userId
@@ -50,7 +50,8 @@ let makeCollection id userId name description =
 [<Fact>]
 let ``updates collection when owned by user``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingCollection =
             makeCollection 1 1 "Old Name" None
@@ -120,7 +121,8 @@ let ``updates collection when owned by user``() =
 [<Fact>]
 let ``trims whitespace from name``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingCollection =
             makeCollection 1 1 "Old Name" None
@@ -161,7 +163,8 @@ let ``trims whitespace from name``() =
 [<Fact>]
 let ``clears description when updated to None``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingCollection =
             makeCollection 1 1 "Test Collection" (Some "old description")
@@ -218,7 +221,7 @@ let ``returns NotFound when collection does not exist``() =
                   CollectionId = CollectionId 1
                   Name = "New Name"
                   Description = None
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateCollectionError.CollectionNotFound(CollectionId 1)), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -249,7 +252,7 @@ let ``returns AccessDenied when collection owned by different user``() =
                   CollectionId = CollectionId 1
                   Name = "New Name"
                   Description = None
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateCollectionError.CollectionAccessDenied(CollectionId 1)), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -275,7 +278,7 @@ let ``returns error when name is empty``() =
                   CollectionId = CollectionId 1
                   Name = ""
                   Description = None
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error UpdateCollectionError.CollectionNameRequired, result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -303,7 +306,7 @@ let ``returns error when name exceeds max length``() =
                   CollectionId = CollectionId 1
                   Name = longName
                   Description = None
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateCollectionError.CollectionNameTooLong MaxNameLength), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -329,7 +332,7 @@ let ``returns error when name is whitespace only``() =
                   CollectionId = CollectionId 1
                   Name = "   "
                   Description = None
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error UpdateCollectionError.CollectionNameRequired, result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -339,7 +342,8 @@ let ``returns error when name is whitespace only``() =
 [<Fact>]
 let ``accepts name at exact max length``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingCollection =
             makeCollection 1 1 "Old Name" None
@@ -383,7 +387,8 @@ let ``accepts name at exact max length``() =
 [<Fact>]
 let ``returns NotFound when update affects no rows``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingCollection =
             makeCollection 1 1 "Test Collection" None

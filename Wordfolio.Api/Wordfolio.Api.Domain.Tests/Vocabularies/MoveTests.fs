@@ -54,7 +54,8 @@ type TestEnv
         member this.RunInTransaction(operation) = operation this
 
 let makeCollection id userId =
-    let createdAt = DateTimeOffset.UtcNow
+    let createdAt =
+        DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
     { Id = CollectionId id
       UserId = UserId userId
@@ -64,7 +65,8 @@ let makeCollection id userId =
       UpdatedAt = createdAt }
 
 let makeVocabulary id collectionId name =
-    let createdAt = DateTimeOffset.UtcNow
+    let createdAt =
+        DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
     { Id = VocabularyId id
       CollectionId = CollectionId collectionId
@@ -76,7 +78,8 @@ let makeVocabulary id collectionId name =
 [<Fact>]
 let ``moves vocabulary when both collections are owned and vocabulary is in source``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let sourceCollection = makeCollection 10 1
         let targetCollection = makeCollection 20 1
@@ -159,7 +162,7 @@ let ``returns CollectionNotFoundOrAccessDenied when source collection belongs to
                   CollectionId = CollectionId 10
                   VocabularyId = VocabularyId 5
                   TargetCollectionId = CollectionId 20
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(MoveVocabularyError.CollectionNotFoundOrAccessDenied(CollectionId 10)), result)
 
@@ -185,7 +188,7 @@ let ``returns CollectionNotFoundOrAccessDenied when source collection does not e
                   CollectionId = CollectionId 10
                   VocabularyId = VocabularyId 5
                   TargetCollectionId = CollectionId 20
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(MoveVocabularyError.CollectionNotFoundOrAccessDenied(CollectionId 10)), result)
 
@@ -216,7 +219,7 @@ let ``returns VocabularyNotFound when vocabulary is not in source collection``()
                   CollectionId = CollectionId 10
                   VocabularyId = VocabularyId 5
                   TargetCollectionId = CollectionId 20
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(MoveVocabularyError.VocabularyNotFound(VocabularyId 5)), result)
 
@@ -255,7 +258,7 @@ let ``returns CollectionNotFoundOrAccessDenied when target collection belongs to
                   CollectionId = CollectionId 10
                   VocabularyId = VocabularyId 5
                   TargetCollectionId = CollectionId 20
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(MoveVocabularyError.CollectionNotFoundOrAccessDenied(CollectionId 20)), result)
 
@@ -291,7 +294,7 @@ let ``returns CollectionNotFoundOrAccessDenied when target collection does not e
                   CollectionId = CollectionId 10
                   VocabularyId = VocabularyId 5
                   TargetCollectionId = CollectionId 20
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(MoveVocabularyError.CollectionNotFoundOrAccessDenied(CollectionId 20)), result)
 
@@ -303,7 +306,8 @@ let ``returns CollectionNotFoundOrAccessDenied when target collection does not e
 [<Fact>]
 let ``returns VocabularyNotFound when move capability returns Error``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let sourceCollection = makeCollection 10 1
         let targetCollection = makeCollection 20 1
