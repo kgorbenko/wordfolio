@@ -10,13 +10,13 @@ import {
     Typography,
 } from "@mui/material";
 
+import { useLoginMutation } from "../../../shared/api/mutations/auth";
 import { useAuthStore } from "../../../shared/stores/authStore";
 import { PasswordField } from "../../../shared/components/PasswordField";
 import { useNotificationContext } from "../../../shared/contexts/NotificationContext";
 import { getSafeRedirectPath } from "../../../shared/utils/redirectUtils";
 import { SignalApertureAuthBackground } from "../components/SignalApertureAuthBackground";
 import { SignalApertureDialogPaper } from "../components/SignalApertureDialogPaper";
-import { useLoginMutation } from "../hooks/useLoginMutation";
 import { createLoginSchema, type LoginFormData } from "../schemas/authSchemas";
 import { loginRouteApi, homePath, registerPath } from "../routes";
 

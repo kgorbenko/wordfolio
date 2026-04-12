@@ -1,4 +1,4 @@
-import { PasswordRequirements } from "./types";
+import type { PasswordRequirements } from "../../shared/api/types/auth";
 
 export interface PasswordValidationResult {
     readonly isValid: boolean;

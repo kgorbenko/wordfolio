@@ -1,18 +1,16 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface AuthTokens {
-    readonly tokenType: string;
-    readonly accessToken: string;
-    readonly expiresIn: number;
-    readonly refreshToken: string;
+import type { AuthTokens } from "../api/types/auth";
+
+interface StoredAuthTokens extends AuthTokens {
     readonly setAt: number;
 }
 
 interface AuthState {
-    readonly authTokens: AuthTokens | null;
+    readonly authTokens: StoredAuthTokens | null;
     readonly isAuthenticated: boolean;
-    setTokens: (tokens: Omit<AuthTokens, "setAt">) => void;
+    setTokens: (tokens: AuthTokens) => void;
     clearAuth: () => void;
 }
 
@@ -21,7 +19,7 @@ export const useAuthStore = create<AuthState>()(
         (set) => ({
             authTokens: null,
             isAuthenticated: false,
-            setTokens: (tokens: Omit<AuthTokens, "setAt">) =>
+            setTokens: (tokens: AuthTokens) =>
                 set({
                     authTokens: {
                         ...tokens,

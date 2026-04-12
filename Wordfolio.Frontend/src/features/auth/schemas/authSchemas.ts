@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { PasswordRequirements } from "../types";
+import type { PasswordRequirements } from "../../../shared/api/types/auth";
 import { validatePassword } from "../passwordValidation";
 
 export const createLoginSchema = () => {
