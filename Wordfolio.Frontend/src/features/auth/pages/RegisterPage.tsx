@@ -10,6 +10,7 @@ import {
     Typography,
 } from "@mui/material";
 
+import { useAuthStore } from "../../../shared/stores/authStore";
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { PasswordField } from "../../../shared/components/PasswordField";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
@@ -18,7 +19,7 @@ import { SignalApertureDialogPaper } from "../components/SignalApertureDialogPap
 import { useRegisterMutation } from "../hooks/useRegisterMutation";
 import { usePasswordRequirementsQuery } from "../hooks/usePasswordRequirementsQuery";
 import { parseApiError } from "../errorHandling";
-import { loginPath, registerRouteApi } from "../routes";
+import { loginPath, homePath, registerRouteApi } from "../routes";
 import { getSafeRedirectPath } from "../../../shared/utils/redirectUtils";
 import {
     createRegisterSchema,
@@ -34,6 +35,7 @@ export const RegisterPage = () => {
     const loginNavigation = safeRedirect
         ? loginPath({ redirect: safeRedirect })
         : loginPath();
+    const setTokens = useAuthStore((state) => state.setTokens);
     const {
         data: passwordRequirements,
         isLoading: isLoadingRequirements,
@@ -53,11 +55,13 @@ export const RegisterPage = () => {
     });
 
     const registerMutation = useRegisterMutation({
-        onSuccess: async () => {
-            await navigate({
-                ...loginNavigation,
-                replace: true,
-            });
+        onSuccess: async (data) => {
+            setTokens(data);
+            const destination = getSafeRedirectPath(
+                safeRedirect,
+                homePath().to
+            );
+            await navigate({ to: destination, replace: true });
         },
         onError: (error) => {
             const errorMessages = parseApiError(error);
