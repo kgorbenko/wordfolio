@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
+import { useRefreshMutation } from "../../../shared/api/mutations/auth";
 import { useAuthStore } from "../../../shared/stores/authStore";
-import { useRefreshMutation } from "./useRefreshMutation";
 import { loginPath } from "../routes";
 
 const REFRESH_BUFFER_MS = 5 * 60 * 1000;

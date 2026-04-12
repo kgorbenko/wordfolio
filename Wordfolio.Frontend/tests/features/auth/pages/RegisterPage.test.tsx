@@ -57,7 +57,7 @@ vi.mock("@tanstack/react-router", () => ({
     ),
 }));
 
-vi.mock("../../../../src/features/auth/hooks/useRegisterMutation", () => ({
+vi.mock("../../../../src/shared/api/mutations/auth", () => ({
     useRegisterMutation: (options?: {
         onSuccess?: (data: typeof mockTokens) => Promise<void>;
     }) => {
@@ -69,17 +69,14 @@ vi.mock("../../../../src/features/auth/hooks/useRegisterMutation", () => ({
     },
 }));
 
-vi.mock(
-    "../../../../src/features/auth/hooks/usePasswordRequirementsQuery",
-    () => ({
-        usePasswordRequirementsQuery: () => ({
-            data: mockPasswordRequirements,
-            isLoading: false,
-            isError: false,
-            refetch: vi.fn(),
-        }),
-    })
-);
+vi.mock("../../../../src/shared/api/queries/auth", () => ({
+    usePasswordRequirementsQuery: () => ({
+        data: mockPasswordRequirements,
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+    }),
+}));
 
 vi.mock("../../../../src/shared/stores/authStore", () => ({
     useAuthStore: vi.fn(

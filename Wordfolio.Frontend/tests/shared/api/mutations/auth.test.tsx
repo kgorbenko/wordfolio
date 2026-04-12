@@ -1,14 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { useRegisterMutation } from "../../../../src/features/auth/hooks/useRegisterMutation";
-import * as authApi from "../../../../src/features/auth/api/authApi";
+import { useRegisterMutation } from "../../../../src/shared/api/mutations/auth";
 
-vi.mock("@tanstack/react-router", () => ({
-    useNavigate: () => vi.fn(),
-    getRouteApi: () => ({}),
+const { mockPost } = vi.hoisted(() => ({
+    mockPost: vi.fn(),
+}));
+
+vi.mock("../../../../src/shared/api/client", () => ({
+    client: {
+        POST: mockPost,
+    },
 }));
 
 const createWrapper = () => {
@@ -48,12 +52,12 @@ describe("useRegisterMutation", () => {
     });
 
     it("calls register then login on success and returns tokens", async () => {
-        const registerSpy = vi
-            .spyOn(authApi.authApi, "register")
-            .mockResolvedValue(undefined);
-        const loginSpy = vi
-            .spyOn(authApi.authApi, "login")
-            .mockResolvedValue(mockLoginResponse);
+        mockPost
+            .mockResolvedValueOnce({ error: undefined })
+            .mockResolvedValueOnce({
+                data: mockLoginResponse,
+                error: undefined,
+            });
 
         const onSuccess = vi.fn().mockResolvedValue(undefined);
 
@@ -70,13 +74,11 @@ describe("useRegisterMutation", () => {
             expect(result.current.isSuccess).toBe(true);
         });
 
-        expect(registerSpy).toHaveBeenCalledWith({
-            email: credentials.email,
-            password: credentials.password,
+        expect(mockPost).toHaveBeenNthCalledWith(1, "/auth/register", {
+            body: credentials,
         });
-        expect(loginSpy).toHaveBeenCalledWith({
-            email: credentials.email,
-            password: credentials.password,
+        expect(mockPost).toHaveBeenNthCalledWith(2, "/auth/login", {
+            body: credentials,
         });
         expect(onSuccess).toHaveBeenCalledWith(expectedTokens);
         expect(result.current.data).toEqual(expectedTokens);
@@ -84,8 +86,7 @@ describe("useRegisterMutation", () => {
 
     it("propagates register failure and does not call login", async () => {
         const registerError = { status: 400, errors: ["Email already taken"] };
-        vi.spyOn(authApi.authApi, "register").mockRejectedValue(registerError);
-        const loginSpy = vi.spyOn(authApi.authApi, "login");
+        mockPost.mockResolvedValueOnce({ error: registerError });
 
         const onError = vi.fn();
 
@@ -101,14 +102,16 @@ describe("useRegisterMutation", () => {
             expect(result.current.isError).toBe(true);
         });
 
-        expect(loginSpy).not.toHaveBeenCalled();
+        expect(mockPost).toHaveBeenCalledTimes(1);
         expect(onError.mock.calls[0][0]).toEqual(registerError);
     });
 
     it("propagates login failure after successful register", async () => {
-        vi.spyOn(authApi.authApi, "register").mockResolvedValue(undefined);
         const loginError = { status: 401, errors: ["Unauthorized"] };
-        vi.spyOn(authApi.authApi, "login").mockRejectedValue(loginError);
+
+        mockPost
+            .mockResolvedValueOnce({ error: undefined })
+            .mockResolvedValueOnce({ error: loginError });
 
         const onSuccess = vi.fn();
         const onError = vi.fn();
@@ -126,6 +129,7 @@ describe("useRegisterMutation", () => {
             expect(result.current.isError).toBe(true);
         });
 
+        expect(mockPost).toHaveBeenCalledTimes(2);
         expect(onSuccess).not.toHaveBeenCalled();
         expect(onError.mock.calls[0][0]).toEqual(loginError);
     });

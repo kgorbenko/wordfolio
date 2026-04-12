@@ -11,13 +11,13 @@ import {
 } from "@mui/material";
 
 import { useAuthStore } from "../../../shared/stores/authStore";
+import { useRegisterMutation } from "../../../shared/api/mutations/auth";
+import { usePasswordRequirementsQuery } from "../../../shared/api/queries/auth";
 import { ContentSkeleton } from "../../../shared/components/ContentSkeleton";
 import { PasswordField } from "../../../shared/components/PasswordField";
 import { RetryOnError } from "../../../shared/components/RetryOnError";
 import { SignalApertureAuthBackground } from "../components/SignalApertureAuthBackground";
 import { SignalApertureDialogPaper } from "../components/SignalApertureDialogPaper";
-import { useRegisterMutation } from "../hooks/useRegisterMutation";
-import { usePasswordRequirementsQuery } from "../hooks/usePasswordRequirementsQuery";
 import { parseApiError } from "../errorHandling";
 import { loginPath, homePath, registerRouteApi } from "../routes";
 import { getSafeRedirectPath } from "../../../shared/utils/redirectUtils";

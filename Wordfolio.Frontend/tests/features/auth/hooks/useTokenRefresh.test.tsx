@@ -5,11 +5,24 @@ import { ReactNode } from "react";
 
 import { useTokenRefresh } from "../../../../src/features/auth/hooks/useTokenRefresh";
 import { useAuthStore } from "../../../../src/shared/stores/authStore";
-import * as authApi from "../../../../src/features/auth/api/authApi";
+
+const mockRefreshMutate = vi.fn();
+let mockRefreshIsPending = false;
+let mockRefreshOnError: (() => void) | undefined;
 
 vi.mock("@tanstack/react-router", () => ({
     useNavigate: () => vi.fn(),
     getRouteApi: () => ({}),
+}));
+
+vi.mock("../../../../src/shared/api/mutations/auth", () => ({
+    useRefreshMutation: (options?: { onError?: () => void }) => {
+        mockRefreshOnError = options?.onError;
+        return {
+            mutate: mockRefreshMutate,
+            isPending: mockRefreshIsPending,
+        };
+    },
 }));
 
 const createWrapper = () => {
@@ -30,6 +43,8 @@ const createWrapper = () => {
 describe("useTokenRefresh", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockRefreshIsPending = false;
+        mockRefreshOnError = undefined;
         act(() => {
             useAuthStore.setState({
                 authTokens: null,
@@ -69,23 +84,12 @@ describe("useTokenRefresh", () => {
             setAt: Date.now(),
         };
 
-        const mockRefreshResponse = {
-            tokenType: "Bearer",
-            accessToken: "new-token",
-            expiresIn: 3600,
-            refreshToken: "new-refresh-token",
-        };
-
         act(() => {
             useAuthStore.setState({
                 authTokens: mockTokens,
                 isAuthenticated: true,
             });
         });
-
-        const refreshSpy = vi
-            .spyOn(authApi.authApi, "refresh")
-            .mockResolvedValue(mockRefreshResponse);
 
         await act(async () => {
             renderHook(() => useTokenRefresh(), {
@@ -96,7 +100,7 @@ describe("useTokenRefresh", () => {
         await act(async () => {
             await vi.waitFor(
                 () => {
-                    expect(refreshSpy).toHaveBeenCalledWith({
+                    expect(mockRefreshMutate).toHaveBeenCalledWith({
                         refreshToken: "refresh-token",
                     });
                 },
@@ -114,23 +118,12 @@ describe("useTokenRefresh", () => {
             setAt: Date.now(),
         };
 
-        const mockRefreshResponse = {
-            tokenType: "Bearer",
-            accessToken: "new-token",
-            expiresIn: 3600,
-            refreshToken: "new-refresh-token",
-        };
-
         act(() => {
             useAuthStore.setState({
                 authTokens: mockTokens,
                 isAuthenticated: true,
             });
         });
-
-        const refreshSpy = vi
-            .spyOn(authApi.authApi, "refresh")
-            .mockResolvedValue(mockRefreshResponse);
 
         await act(async () => {
             renderHook(() => useTokenRefresh(), {
@@ -141,7 +134,7 @@ describe("useTokenRefresh", () => {
         await act(async () => {
             await vi.waitFor(
                 () => {
-                    expect(refreshSpy).toHaveBeenCalledWith({
+                    expect(mockRefreshMutate).toHaveBeenCalledWith({
                         refreshToken: "refresh-token",
                     });
                 },
@@ -150,7 +143,7 @@ describe("useTokenRefresh", () => {
         });
 
         // Verify refresh was called exactly once
-        expect(refreshSpy).toHaveBeenCalledTimes(1);
+        expect(mockRefreshMutate).toHaveBeenCalledTimes(1);
     });
 
     it("should clear auth state when refresh fails", async () => {
@@ -169,10 +162,6 @@ describe("useTokenRefresh", () => {
             });
         });
 
-        vi.spyOn(authApi.authApi, "refresh").mockRejectedValue(
-            new Error("Unauthorized")
-        );
-
         const hookResult = await act(async () => {
             return renderHook(() => useTokenRefresh(), {
                 wrapper: createWrapper(),
@@ -180,15 +169,15 @@ describe("useTokenRefresh", () => {
         });
 
         await act(async () => {
-            await vi.waitFor(
-                () => {
-                    expect(hookResult.result.current.isInitializing).toBe(
-                        false
-                    );
-                },
-                { timeout: 100 }
-            );
+            mockRefreshOnError?.();
         });
+
+        await vi.waitFor(
+            () => {
+                expect(hookResult.result.current.isInitializing).toBe(false);
+            },
+            { timeout: 100 }
+        );
 
         const state = useAuthStore.getState();
         expect(state.authTokens).toBeNull();
