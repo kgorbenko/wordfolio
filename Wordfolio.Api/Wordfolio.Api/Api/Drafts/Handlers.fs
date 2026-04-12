@@ -19,11 +19,12 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
 open Wordfolio.Api.Domain.Entries.DraftOperations
 open Wordfolio.Api.Infrastructure.Environment
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 
 module UrlTokens = Wordfolio.Api.Urls
 module Urls = Wordfolio.Api.Urls.Drafts
 
-let private toCreateErrorResponse(error: CreateDraftEntryError) : IResult =
+let private toCreateErrorResponse (encoder: IResourceIdEncoder) (error: CreateDraftEntryError) : IResult =
     match error with
     | CreateDraftEntryError.EntryTextRequired -> Results.BadRequest({| error = "Entry text is required" |})
     | CreateDraftEntryError.EntryTextTooLong maxLength ->
@@ -31,7 +32,7 @@ let private toCreateErrorResponse(error: CreateDraftEntryError) : IResult =
     | CreateDraftEntryError.DuplicateEntry existingEntry ->
         Results.Conflict(
             {| error = "A matching entry already exists in this vocabulary"
-               existingEntry = toEntryResponse existingEntry |}
+               existingEntry = toEntryResponse encoder existingEntry |}
         )
     | CreateDraftEntryError.NoDefinitionsOrTranslations ->
         Results.BadRequest({| error = "At least one definition or translation required" |})
@@ -70,23 +71,24 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
     group
         .MapGet(
             Urls.All,
-            Func<ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun user dataSource cancellationToken ->
-                task {
-                    match getUserId user with
-                    | None -> return Results.Unauthorized()
-                    | Some userId ->
-                        let env =
-                            TransactionalEnv(dataSource, cancellationToken)
+            Func<ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun user encoder dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result = getDrafts env { UserId = UserId userId }
+                            let! result = getDrafts env { UserId = UserId userId }
 
-                        let drafts = okOrFail result
+                            let drafts = okOrFail result
 
-                        return
-                            match drafts with
-                            | None -> Results.NotFound()
-                            | Some data -> Results.Ok(toDraftsVocabularyDataResponse data)
-                })
+                            return
+                                match drafts with
+                                | None -> Results.NotFound()
+                                | Some data -> Results.Ok(toDraftsVocabularyDataResponse encoder data)
+                    })
         )
         .RequireAuthorization()
         .Produces<DraftsVocabularyDataResponse>(StatusCodes.Status200OK)
@@ -97,8 +99,8 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
     group
         .MapPost(
             UrlTokens.Root,
-            Func<CreateDraftRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun request user dataSource cancellationToken ->
+            Func<CreateDraftRequest, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun request user encoder dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized()
@@ -125,8 +127,10 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                             return
                                 match result with
                                 | Ok entry ->
-                                    Results.Created(Urls.draftById(EntryId.value entry.Id), toEntryResponse entry)
-                                | Error error -> toCreateErrorResponse error
+                                    let response = toEntryResponse encoder entry
+
+                                    Results.Created(Urls.draftById response.Id, response)
+                                | Error error -> toCreateErrorResponse encoder error
                     })
         )
         .RequireAuthorization()
@@ -139,12 +143,13 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
     group
         .MapGet(
             UrlTokens.ById,
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id user dataSource cancellationToken ->
+            Func<string, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun id user encoder dataSource cancellationToken ->
                     task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
+                        match getUserId user, encoder.Decode(id) with
+                        | None, _ -> return Results.Unauthorized()
+                        | _, None -> return Results.NotFound()
+                        | Some userId, Some id ->
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
@@ -156,7 +161,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
 
                             return
                                 match result with
-                                | Ok entry -> Results.Ok(toEntryResponse entry)
+                                | Ok entry -> Results.Ok(toEntryResponse encoder entry)
                                 | Error error -> toGetByIdErrorResponse error
                     })
         )
@@ -169,12 +174,13 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
     group
         .MapPut(
             UrlTokens.ById,
-            Func<int, UpdateEntryRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id request user dataSource cancellationToken ->
+            Func<string, UpdateEntryRequest, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun id request user encoder dataSource cancellationToken ->
                     task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
+                        match getUserId user, encoder.Decode(id) with
+                        | None, _ -> return Results.Unauthorized()
+                        | _, None -> return Results.NotFound()
+                        | Some userId, Some id ->
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
@@ -198,7 +204,7 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
 
                             return
                                 match result with
-                                | Ok entry -> Results.Ok(toEntryResponse entry)
+                                | Ok entry -> Results.Ok(toEntryResponse encoder entry)
                                 | Error error -> toUpdateErrorResponse error
                     })
         )
@@ -212,12 +218,13 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
     group
         .MapDelete(
             UrlTokens.ById,
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id user dataSource cancellationToken ->
+            Func<string, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun id user encoder dataSource cancellationToken ->
                     task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
+                        match getUserId user, encoder.Decode(id) with
+                        | None, _ -> return Results.Unauthorized()
+                        | _, None -> return Results.NotFound()
+                        | Some userId, Some id ->
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
@@ -242,12 +249,14 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
     group
         .MapPost(
             UrlTokens.ById + Urls.Move,
-            Func<int, MoveDraftRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id request user dataSource cancellationToken ->
+            Func<string, MoveDraftRequest, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun id request user encoder dataSource cancellationToken ->
                     task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
+                        match getUserId user, encoder.Decode(id), encoder.Decode(request.VocabularyId) with
+                        | None, _, _ -> return Results.Unauthorized()
+                        | _, None, _
+                        | _, _, None -> return Results.NotFound()
+                        | Some userId, Some id, Some targetVocabularyId ->
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
@@ -256,12 +265,12 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
                                     env
                                     { UserId = UserId userId
                                       EntryId = EntryId id
-                                      TargetVocabularyId = VocabularyId request.VocabularyId
+                                      TargetVocabularyId = VocabularyId targetVocabularyId
                                       UpdatedAt = DateTimeOffset.UtcNow }
 
                             return
                                 match result with
-                                | Ok entry -> Results.Ok(toEntryResponse entry)
+                                | Ok entry -> Results.Ok(toEntryResponse encoder entry)
                                 | Error error -> toMoveErrorResponse error
                     })
         )

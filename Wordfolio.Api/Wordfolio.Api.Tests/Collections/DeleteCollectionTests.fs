@@ -3,9 +3,11 @@ namespace Wordfolio.Api.Tests.Collections
 open System
 open System.Net
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -22,6 +24,8 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(106, "user@example.com", "P@ssw0rd!")
 
@@ -48,7 +52,7 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.DeleteAsync(Urls.Collections.collectionById collection.Id)
+            let! response = client.DeleteAsync(Urls.Collections.collectionById(encoder.Encode collection.Id))
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
@@ -79,6 +83,8 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(112, "user@example.com", "P@ssw0rd!")
 
@@ -119,7 +125,7 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.DeleteAsync(Urls.Collections.collectionById collection.Id)
+            let! response = client.DeleteAsync(Urls.Collections.collectionById(encoder.Encode collection.Id))
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
@@ -186,6 +192,8 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(106, "user@example.com", "P@ssw0rd!")
 
             do!
@@ -195,7 +203,7 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.DeleteAsync(Urls.Collections.collectionById 999999)
+            let! response = client.DeleteAsync(Urls.Collections.collectionById(encoder.Encode 999999))
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -207,6 +215,8 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! _, wordfolioUser = factory.CreateUserAsync(109, "user@example.com", "P@ssw0rd!")
 
@@ -230,7 +240,7 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let! response = client.DeleteAsync(Urls.Collections.collectionById collection.Id)
+            let! response = client.DeleteAsync(Urls.Collections.collectionById(encoder.Encode collection.Id))
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
 
@@ -256,6 +266,8 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! _, ownerWordfolioUser = factory.CreateUserAsync(110, "owner@example.com", "P@ssw0rd!")
 
@@ -291,7 +303,7 @@ type DeleteCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(requesterIdentityUser)
 
-            let! response = client.DeleteAsync(Urls.Collections.collectionById ownerCollection.Id)
+            let! response = client.DeleteAsync(Urls.Collections.collectionById(encoder.Encode ownerCollection.Id))
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode)
 

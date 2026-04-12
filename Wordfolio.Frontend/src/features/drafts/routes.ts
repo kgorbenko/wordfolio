@@ -22,14 +22,14 @@ export function draftsCreatePath() {
     return { to: "/drafts/new" as const };
 }
 
-export function draftsEntryDetailPath(entryId: number) {
+export function draftsEntryDetailPath(entryId: string) {
     return {
         to: "/drafts/entries/$entryId" as const,
         params: { entryId },
     };
 }
 
-export function draftsEntryEditPath(entryId: number) {
+export function draftsEntryEditPath(entryId: string) {
     return {
         to: "/drafts/entries/$entryId/edit" as const,
         params: { entryId },

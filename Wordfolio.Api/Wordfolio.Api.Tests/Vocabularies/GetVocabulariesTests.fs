@@ -4,10 +4,12 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Vocabularies.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -24,6 +26,8 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(208, "user@example.com", "P@ssw0rd!")
 
@@ -49,7 +53,7 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                Urls.Vocabularies.vocabulariesByCollection collection.Id
+                Urls.Vocabularies.vocabulariesByCollection(encoder.Encode collection.Id)
 
             let! response = client.GetAsync(url)
             let! body = response.Content.ReadAsStringAsync()
@@ -64,14 +68,14 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
                 result |> Array.sortBy _.Id
 
             let expected: VocabularyResponse[] =
-                [| { Id = firstVocabulary.Id
-                     CollectionId = collection.Id
+                [| { Id = encoder.Encode firstVocabulary.Id
+                     CollectionId = encoder.Encode collection.Id
                      Name = "Animals"
                      Description = Some "Animal words"
                      CreatedAt = sortedResult[0].CreatedAt
                      UpdatedAt = sortedResult[0].CreatedAt }
-                   { Id = secondVocabulary.Id
-                     CollectionId = collection.Id
+                   { Id = encoder.Encode secondVocabulary.Id
+                     CollectionId = encoder.Encode collection.Id
                      Name = "Travel"
                      Description = None
                      CreatedAt = sortedResult[1].CreatedAt
@@ -88,6 +92,8 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(202, "user@example.com", "P@ssw0rd!")
 
@@ -106,7 +112,7 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                Urls.Vocabularies.vocabulariesByCollection collection.Id
+                Urls.Vocabularies.vocabulariesByCollection(encoder.Encode collection.Id)
 
             let! response = client.GetAsync(url)
             let! body = response.Content.ReadAsStringAsync()
@@ -127,10 +133,12 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             use client = factory.CreateClient()
 
             let url =
-                Urls.Vocabularies.vocabulariesByCollection 1
+                Urls.Vocabularies.vocabulariesByCollection(encoder.Encode 1)
 
             let! response = client.GetAsync(url)
 
@@ -144,6 +152,8 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! _, ownerWordfolioUser = factory.CreateUserAsync(209, "owner@example.com", "P@ssw0rd!")
 
@@ -175,7 +185,7 @@ type GetVocabulariesTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(requesterIdentityUser)
 
             let url =
-                Urls.Vocabularies.vocabulariesByCollection ownerCollection.Id
+                Urls.Vocabularies.vocabulariesByCollection(encoder.Encode ownerCollection.Id)
 
             let! response = client.GetAsync(url)
 

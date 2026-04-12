@@ -4,16 +4,20 @@ open Wordfolio.Api.Api.Drafts.Types
 open Wordfolio.Api.Api.Mappers
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 
-let private toVocabularyResponse(vocabulary: Vocabulary) : VocabularyResponse =
-    { Id = VocabularyId.value vocabulary.Id
+let private toVocabularyResponse (encoder: IResourceIdEncoder) (vocabulary: Vocabulary) : VocabularyResponse =
+    { Id = encoder.Encode(VocabularyId.value vocabulary.Id)
       Name = vocabulary.Name
       Description = vocabulary.Description
       CreatedAt = vocabulary.CreatedAt
       UpdatedAt = vocabulary.UpdatedAt }
 
-let toDraftsVocabularyDataResponse(drafts: DraftsVocabularyData) : DraftsVocabularyDataResponse =
-    { Vocabulary = toVocabularyResponse drafts.Vocabulary
+let toDraftsVocabularyDataResponse
+    (encoder: IResourceIdEncoder)
+    (drafts: DraftsVocabularyData)
+    : DraftsVocabularyDataResponse =
+    { Vocabulary = toVocabularyResponse encoder drafts.Vocabulary
       Entries =
         drafts.Entries
-        |> List.map toEntryResponse }
+        |> List.map(toEntryResponse encoder) }

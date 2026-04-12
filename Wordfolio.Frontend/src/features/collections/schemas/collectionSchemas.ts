@@ -13,7 +13,7 @@ export const collectionSchema = z.object({
 });
 
 export const collectionIdRouteParamsSchema = z.object({
-    collectionId: z.coerce.number().int().positive(),
+    collectionId: z.string().min(1),
 });
 
 export type CollectionFormInput = z.input<typeof collectionSchema>;

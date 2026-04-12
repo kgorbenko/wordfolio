@@ -14,14 +14,14 @@ import { ResponsiveDialog } from "./ResponsiveDialog";
 import { useCollectionsHierarchyQuery } from "../api/queries/collections";
 
 export interface MoveEntrySelectionResult {
-    readonly vocabularyId: number | undefined;
+    readonly vocabularyId: string | undefined;
     readonly isDefault: boolean;
-    readonly collectionId: number | null;
+    readonly collectionId: string | null;
 }
 
 interface MoveEntryDialogProps {
     readonly isOpen: boolean;
-    readonly currentVocabularyId: number;
+    readonly currentVocabularyId: string;
     readonly onCancel: () => void;
     readonly onConfirm: (value: MoveEntrySelectionResult) => void;
 }
@@ -33,7 +33,7 @@ export const MoveEntryDialog = ({
     onConfirm,
 }: MoveEntryDialogProps) => {
     const [selectedVocabularyId, setSelectedVocabularyId] = useState<
-        number | undefined
+        string | undefined
     >(undefined);
 
     const {
@@ -78,7 +78,7 @@ export const MoveEntryDialog = ({
     }, [currentVocabularyId, hierarchy]);
 
     const resolveSelection = useCallback(
-        (vocabularyId: number): MoveEntrySelectionResult | undefined => {
+        (vocabularyId: string): MoveEntrySelectionResult | undefined => {
             if (!hierarchy) {
                 return undefined;
             }
@@ -109,7 +109,7 @@ export const MoveEntryDialog = ({
         [hierarchy]
     );
 
-    const handleTargetChange = useCallback((value: number) => {
+    const handleTargetChange = useCallback((value: string) => {
         setSelectedVocabularyId(value);
     }, []);
 

@@ -13,6 +13,7 @@ open Microsoft.Extensions.Hosting
 
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 
 type WebApplicationFactory(fixture: WordfolioIdentityTestFixture, ?configureServices: IServiceCollection -> unit) =
     inherit WebApplicationFactory<Program.Program>()
@@ -46,6 +47,9 @@ type WebApplicationFactory(fixture: WordfolioIdentityTestFixture, ?configureServ
             client.DefaultRequestHeaders.Authorization <- AuthenticationHeaderValue("Bearer", token)
             return client
         }
+
+    member this.Encoder: IResourceIdEncoder =
+        this.Services.GetRequiredService<IResourceIdEncoder>()
 
     member this.CreateUserAsync
         (

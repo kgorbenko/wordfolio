@@ -12,14 +12,14 @@ const createHierarchy = (
 ): CollectionsHierarchy => ({
     collections: [
         {
-            id: 1,
+            id: "1",
             name: "English Collection",
             description: null,
             createdAt: new Date(),
             updatedAt: new Date(),
             vocabularies: [
                 {
-                    id: 10,
+                    id: "10",
                     name: "Idioms",
                     description: null,
                     entryCount: 5,
@@ -27,7 +27,7 @@ const createHierarchy = (
                     updatedAt: new Date(),
                 },
                 {
-                    id: 11,
+                    id: "11",
                     name: "Phrasal Verbs",
                     description: null,
                     entryCount: 3,
@@ -37,14 +37,14 @@ const createHierarchy = (
             ],
         },
         {
-            id: 2,
+            id: "2",
             name: "Spanish Collection",
             description: null,
             createdAt: new Date(),
             updatedAt: new Date(),
             vocabularies: [
                 {
-                    id: 20,
+                    id: "20",
                     name: "Basic Words",
                     description: null,
                     entryCount: 10,
@@ -63,9 +63,9 @@ const renderVocabularySelector = (
 ) => {
     const defaultProps = {
         hierarchy: createHierarchy(),
-        value: undefined as number | undefined,
+        value: undefined as string | undefined,
         label: "Target vocabulary",
-        onChange: vi.fn() as (value: number) => void,
+        onChange: vi.fn() as (value: string) => void,
         ...props,
     };
 
@@ -123,7 +123,7 @@ describe("VocabularySelector", () => {
         renderVocabularySelector({
             hierarchy: createHierarchy({
                 defaultVocabulary: {
-                    id: 99,
+                    id: "99",
                     name: "Default Vocab",
                     description: null,
                     entryCount: 0,
@@ -143,7 +143,7 @@ describe("VocabularySelector", () => {
 
     it("should exclude specified vocabulary id", async () => {
         const user = userEvent.setup();
-        renderVocabularySelector({ excludeVocabularyId: 10 });
+        renderVocabularySelector({ excludeVocabularyId: "10" });
 
         await user.click(screen.getByRole("combobox"));
 
@@ -155,7 +155,7 @@ describe("VocabularySelector", () => {
 
     it("should exclude entire collection when all its vocabularies are excluded", async () => {
         const user = userEvent.setup();
-        renderVocabularySelector({ excludeVocabularyId: 20 });
+        renderVocabularySelector({ excludeVocabularyId: "20" });
 
         await user.click(screen.getByRole("combobox"));
 
@@ -173,7 +173,7 @@ describe("VocabularySelector", () => {
         renderVocabularySelector({
             hierarchy: createHierarchy({
                 defaultVocabulary: {
-                    id: 99,
+                    id: "99",
                     name: "Default Vocab",
                     description: null,
                     entryCount: 0,
@@ -181,7 +181,7 @@ describe("VocabularySelector", () => {
                     updatedAt: new Date(),
                 },
             }),
-            excludeVocabularyId: 99,
+            excludeVocabularyId: "99",
         });
 
         await user.click(screen.getByRole("combobox"));
@@ -202,14 +202,14 @@ describe("VocabularySelector", () => {
         const listbox = screen.getByRole("listbox");
         await user.click(within(listbox).getByText("Phrasal Verbs"));
 
-        expect(onChange).toHaveBeenCalledWith(11);
+        expect(onChange).toHaveBeenCalledWith("11");
     });
 
     it("should call onChange with draftsValue when the Drafts option is selected", async () => {
         const user = userEvent.setup();
         const onChange = vi.fn();
         renderVocabularySelector({
-            value: 11,
+            value: "11",
             onChange,
         });
 

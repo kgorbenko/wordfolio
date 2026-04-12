@@ -178,7 +178,7 @@ export const VocabularyDetailPage = () => {
     ]);
 
     const handleEntryClick = useCallback(
-        (entryId: number) => {
+        (entryId: string) => {
             void navigate(entryDetailPath(collectionId, vocabularyId, entryId));
         },
         [navigate, collectionId, vocabularyId]

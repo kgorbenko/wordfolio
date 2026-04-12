@@ -18,6 +18,7 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.CollectionsHierarchy
 open Wordfolio.Api.Domain.CollectionsHierarchy.Operations
 open Wordfolio.Api.Infrastructure.Environment
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 
 module UrlTokens = Wordfolio.Api.Urls
 module Urls = Wordfolio.Api.Urls.CollectionsHierarchy
@@ -26,28 +27,29 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
     group
         .MapGet(
             UrlTokens.Root,
-            Func<ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun user dataSource cancellationToken ->
-                task {
-                    match getUserId user with
-                    | None -> return Results.Unauthorized()
-                    | Some userId ->
-                        let env =
-                            TransactionalEnv(dataSource, cancellationToken)
+            Func<ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun user encoder dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result = getByUserId env { UserId = UserId userId }
+                            let! result = getByUserId env { UserId = UserId userId }
 
-                        let hierarchyResult = okOrFail result
+                            let hierarchyResult = okOrFail result
 
-                        let response: CollectionsHierarchyResultResponse =
-                            { Collections =
-                                hierarchyResult.Collections
-                                |> List.map toCollectionWithVocabulariesResponse
-                              DefaultVocabulary =
-                                hierarchyResult.DefaultVocabulary
-                                |> Option.map toVocabularyWithEntryCountResponse }
+                            let response: CollectionsHierarchyResultResponse =
+                                { Collections =
+                                    hierarchyResult.Collections
+                                    |> List.map(toCollectionWithVocabulariesResponse encoder)
+                                  DefaultVocabulary =
+                                    hierarchyResult.DefaultVocabulary
+                                    |> Option.map(toVocabularyWithEntryCountResponse encoder) }
 
-                        return Results.Ok(response)
-                })
+                            return Results.Ok(response)
+                    })
         )
         .Produces<CollectionsHierarchyResultResponse>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -56,23 +58,24 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
     group
         .MapGet(
             Urls.CollectionsPath,
-            Func<ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun user dataSource cancellationToken ->
-                task {
-                    match getUserId user with
-                    | None -> return Results.Unauthorized()
-                    | Some userId ->
-                        let env =
-                            TransactionalEnv(dataSource, cancellationToken)
+            Func<ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun user encoder dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result = getCollectionsWithVocabularyCount env (UserId userId)
+                            let! result = getCollectionsWithVocabularyCount env (UserId userId)
 
-                        let collections = okOrFail result
+                            let collections = okOrFail result
 
-                        return
-                            collections
-                            |> List.map toCollectionWithVocabularyCountResponse
-                            |> Results.Ok
-                })
+                            return
+                                collections
+                                |> List.map(toCollectionWithVocabularyCountResponse encoder)
+                                |> Results.Ok
+                    })
         )
         .Produces<CollectionWithVocabularyCountResponse list>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -81,12 +84,13 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
     group
         .MapGet(
             Urls.VocabulariesByCollectionPath,
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun collectionId user dataSource cancellationToken ->
+            Func<string, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId user encoder dataSource cancellationToken ->
                     task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
+                        match getUserId user, encoder.Decode(collectionId) with
+                        | None, _ -> return Results.Unauthorized()
+                        | _, None -> return Results.NotFound()
+                        | Some userId, Some collectionId ->
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
@@ -100,7 +104,7 @@ let mapCollectionsHierarchyEndpoints(group: IEndpointRouteBuilder) =
 
                             return
                                 vocabularies
-                                |> List.map toVocabularyWithEntryCountResponse
+                                |> List.map(toVocabularyWithEntryCountResponse encoder)
                                 |> Results.Ok
                     })
         )

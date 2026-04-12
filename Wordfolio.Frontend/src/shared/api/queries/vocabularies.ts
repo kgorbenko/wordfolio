@@ -11,8 +11,8 @@ import type {
 } from "../types/vocabularies";
 
 export const useVocabularyDetailQuery = (
-    collectionId: number,
-    vocabularyId: number,
+    collectionId: string,
+    vocabularyId: string,
     options?: Partial<UseQueryOptions<VocabularyDetail>>
 ) =>
     useQuery({
@@ -29,7 +29,7 @@ export const useVocabularyDetailQuery = (
     });
 
 export const useVocabularyCollectionQuery = (
-    collectionId: number,
+    collectionId: string,
     options?: Partial<UseQueryOptions<VocabularyCollectionContext>>
 ) =>
     useQuery({

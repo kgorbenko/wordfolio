@@ -8,4 +8,4 @@ type CreateEntryRequest =
       Translations: TranslationRequest list
       AllowDuplicate: bool option }
 
-type MoveEntryRequest = { VocabularyId: int option }
+type MoveEntryRequest = { VocabularyId: string option }

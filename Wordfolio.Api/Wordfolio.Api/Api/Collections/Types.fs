@@ -3,7 +3,7 @@ module Wordfolio.Api.Api.Collections.Types
 open System
 
 type CollectionResponse =
-    { Id: int
+    { Id: string
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset

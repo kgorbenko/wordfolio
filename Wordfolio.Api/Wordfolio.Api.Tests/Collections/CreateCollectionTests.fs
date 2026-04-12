@@ -3,10 +3,12 @@ namespace Wordfolio.Api.Tests.Collections
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Collections.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -23,6 +25,8 @@ type CreateCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(100, "user@example.com", "P@ssw0rd!")
 
@@ -47,6 +51,11 @@ type CreateCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             let createdCollectionId = result.Id
 
+            let createdCollectionDatabaseId =
+                createdCollectionId
+                |> encoder.Decode
+                |> Option.get
+
             let expectedResult: CollectionResponse =
                 { Id = createdCollectionId
                   Name = "My Collection"
@@ -59,7 +68,7 @@ type CreateCollectionTests(fixture: WordfolioIdentityTestFixture) =
             let! databaseState = Seeder.getAllCollectionsAsync fixture.WordfolioSeeder
 
             let expectedDatabaseState: Wordfolio.Collection list =
-                [ { Id = createdCollectionId
+                [ { Id = createdCollectionDatabaseId
                     UserId = 100
                     Name = "My Collection"
                     Description = Some "A test collection"
@@ -77,6 +86,8 @@ type CreateCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             use client = factory.CreateClient()
 
@@ -100,6 +111,8 @@ type CreateCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(100, "user@example.com", "P@ssw0rd!")
 

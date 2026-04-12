@@ -11,8 +11,8 @@ export const vocabularyEditRouteApi = getRouteApi(vocabularyRouteIds.edit);
 export const vocabularyCreateRouteApi = getRouteApi(vocabularyRouteIds.create);
 
 export function vocabularyDetailPath(
-    collectionId: number,
-    vocabularyId: number
+    collectionId: string,
+    vocabularyId: string
 ) {
     return {
         to: "/collections/$collectionId/vocabularies/$vocabularyId" as const,
@@ -23,7 +23,7 @@ export function vocabularyDetailPath(
     };
 }
 
-export function vocabularyEditPath(collectionId: number, vocabularyId: number) {
+export function vocabularyEditPath(collectionId: string, vocabularyId: string) {
     return {
         to: "/collections/$collectionId/vocabularies/$vocabularyId/edit" as const,
         params: {
@@ -33,7 +33,7 @@ export function vocabularyEditPath(collectionId: number, vocabularyId: number) {
     };
 }
 
-export function vocabularyCreatePath(collectionId: number) {
+export function vocabularyCreatePath(collectionId: string) {
     return {
         to: "/collections/$collectionId/vocabularies/new" as const,
         params: { collectionId },

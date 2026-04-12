@@ -6,11 +6,13 @@ open System.Net.Http
 open System.Net.Http.Json
 open System.Text
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Entries.Types
 open Wordfolio.Api.Api.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -27,6 +29,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(500, "user@example.com", "P@ssw0rd!")
 
@@ -59,10 +63,14 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = Some targetVocabulary.Id }
+                { VocabularyId = Some(encoder.Encode targetVocabulary.Id) }
 
             let url =
-                Urls.Entries.moveEntryById(collection.Id, sourceVocabulary.Id, entry.Id)
+                Urls.Entries.moveEntryById(
+                    encoder.Encode collection.Id,
+                    encoder.Encode sourceVocabulary.Id,
+                    encoder.Encode entry.Id
+                )
 
             let! response = client.PostAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -75,8 +83,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(actual.UpdatedAt >= entry.CreatedAt)
 
             let expected: EntryResponse =
-                { Id = entry.Id
-                  VocabularyId = targetVocabulary.Id
+                { Id = encoder.Encode entry.Id
+                  VocabularyId = encoder.Encode targetVocabulary.Id
                   EntryText = "hello"
                   CreatedAt = entry.CreatedAt
                   UpdatedAt = actual.UpdatedAt
@@ -127,6 +135,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! _, wordfolioUser = factory.CreateUserAsync(526, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -155,11 +165,15 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use client = factory.CreateClient()
 
             let request: MoveEntryRequest =
-                { VocabularyId = Some targetVocabulary.Id }
+                { VocabularyId = Some(encoder.Encode targetVocabulary.Id) }
 
             let! response =
                 client.PostAsJsonAsync(
-                    Urls.Entries.moveEntryById(collection.Id, sourceVocabulary.Id, entry.Id),
+                    Urls.Entries.moveEntryById(
+                        encoder.Encode collection.Id,
+                        encoder.Encode sourceVocabulary.Id,
+                        encoder.Encode entry.Id
+                    ),
                     request
                 )
 
@@ -184,6 +198,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(501, "user@example.com", "P@ssw0rd!")
 
             do!
@@ -194,9 +210,13 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = Some 999 }
+                { VocabularyId = Some(encoder.Encode 999) }
 
-            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById(1, 1, 999999), request)
+            let! response =
+                client.PostAsJsonAsync(
+                    Urls.Entries.moveEntryById(encoder.Encode 1, encoder.Encode 1, encoder.Encode 999999),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -208,6 +228,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(502, "user@example.com", "P@ssw0rd!")
 
@@ -234,11 +256,15 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = Some 999999 }
+                { VocabularyId = Some(encoder.Encode 999999) }
 
             let! response =
                 client.PostAsJsonAsync(
-                    Urls.Entries.moveEntryById(collection.Id, sourceVocabulary.Id, entry.Id),
+                    Urls.Entries.moveEntryById(
+                        encoder.Encode collection.Id,
+                        encoder.Encode sourceVocabulary.Id,
+                        encoder.Encode entry.Id
+                    ),
                     request
                 )
 
@@ -252,6 +278,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser1, wordfolioUser1 = factory.CreateUserAsync(503, "user1@example.com", "P@ssw0rd!")
             let! _, wordfolioUser2 = factory.CreateUserAsync(504, "user2@example.com", "P@ssw0rd!")
@@ -294,11 +322,15 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser1)
 
             let request: MoveEntryRequest =
-                { VocabularyId = Some foreignTargetVocabulary.Id }
+                { VocabularyId = Some(encoder.Encode foreignTargetVocabulary.Id) }
 
             let! response =
                 client.PostAsJsonAsync(
-                    Urls.Entries.moveEntryById(collection1.Id, sourceVocabulary.Id, entry.Id),
+                    Urls.Entries.moveEntryById(
+                        encoder.Encode collection1.Id,
+                        encoder.Encode sourceVocabulary.Id,
+                        encoder.Encode entry.Id
+                    ),
                     request
                 )
 
@@ -340,6 +372,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(505, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -371,11 +405,15 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = Some defaultVocabulary.Id }
+                { VocabularyId = Some(encoder.Encode defaultVocabulary.Id) }
 
             let! response =
                 client.PostAsJsonAsync(
-                    Urls.Entries.moveEntryById(regularCollection.Id, regularVocabulary.Id, entry.Id),
+                    Urls.Entries.moveEntryById(
+                        encoder.Encode regularCollection.Id,
+                        encoder.Encode regularVocabulary.Id,
+                        encoder.Encode entry.Id
+                    ),
                     request
                 )
 
@@ -389,8 +427,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(actual.UpdatedAt >= entry.CreatedAt)
 
             let expected: EntryResponse =
-                { Id = entry.Id
-                  VocabularyId = defaultVocabulary.Id
+                { Id = encoder.Encode entry.Id
+                  VocabularyId = encoder.Encode defaultVocabulary.Id
                   EntryText = "hello"
                   CreatedAt = entry.CreatedAt
                   UpdatedAt = actual.UpdatedAt
@@ -475,6 +513,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(506, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -507,7 +547,11 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             let! response =
                 client.PostAsync(
-                    Urls.Entries.moveEntryById(regularCollection.Id, regularVocabulary.Id, entry.Id),
+                    Urls.Entries.moveEntryById(
+                        encoder.Encode regularCollection.Id,
+                        encoder.Encode regularVocabulary.Id,
+                        encoder.Encode entry.Id
+                    ),
                     new StringContent("{}", Encoding.UTF8, "application/json")
                 )
 
@@ -521,8 +565,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(actual.UpdatedAt >= entry.CreatedAt)
 
             let expected: EntryResponse =
-                { Id = entry.Id
-                  VocabularyId = defaultVocabulary.Id
+                { Id = encoder.Encode entry.Id
+                  VocabularyId = encoder.Encode defaultVocabulary.Id
                   EntryText = "hello"
                   CreatedAt = entry.CreatedAt
                   UpdatedAt = actual.UpdatedAt
@@ -620,6 +664,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(507, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -646,7 +692,11 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             let! response =
                 client.PostAsync(
-                    Urls.Entries.moveEntryById(regularCollection.Id, regularVocabulary.Id, entry.Id),
+                    Urls.Entries.moveEntryById(
+                        encoder.Encode regularCollection.Id,
+                        encoder.Encode regularVocabulary.Id,
+                        encoder.Encode entry.Id
+                    ),
                     new StringContent("{}", Encoding.UTF8, "application/json")
                 )
 
@@ -691,8 +741,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(actual.UpdatedAt >= entry.CreatedAt)
 
             let expectedResponse: EntryResponse =
-                { Id = entry.Id
-                  VocabularyId = createdDefaultVocabulary.Id
+                { Id = encoder.Encode entry.Id
+                  VocabularyId = encoder.Encode createdDefaultVocabulary.Id
                   EntryText = "hello"
                   CreatedAt = entry.CreatedAt
                   UpdatedAt = actual.UpdatedAt
@@ -724,6 +774,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(508, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -753,7 +805,11 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             let! response =
                 client.PostAsync(
-                    Urls.Entries.moveEntryById(regularCollection.Id, regularVocabulary.Id, entry.Id),
+                    Urls.Entries.moveEntryById(
+                        encoder.Encode regularCollection.Id,
+                        encoder.Encode regularVocabulary.Id,
+                        encoder.Encode entry.Id
+                    ),
                     new StringContent("{}", Encoding.UTF8, "application/json")
                 )
 
@@ -818,8 +874,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(actual.UpdatedAt >= entry.CreatedAt)
 
             let expectedResponse: EntryResponse =
-                { Id = entry.Id
-                  VocabularyId = createdDefaultVocabulary.Id
+                { Id = encoder.Encode entry.Id
+                  VocabularyId = encoder.Encode createdDefaultVocabulary.Id
                   EntryText = "hello"
                   CreatedAt = entry.CreatedAt
                   UpdatedAt = actual.UpdatedAt
@@ -849,6 +905,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(511, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -874,9 +932,17 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = Some vocabulary.Id }
+                { VocabularyId = Some(encoder.Encode vocabulary.Id) }
 
-            let! response = client.PostAsJsonAsync(Urls.Entries.moveEntryById(999999, vocabulary.Id, entry.Id), request)
+            let! response =
+                client.PostAsJsonAsync(
+                    Urls.Entries.moveEntryById(
+                        encoder.Encode 999999,
+                        encoder.Encode vocabulary.Id,
+                        encoder.Encode entry.Id
+                    ),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -888,6 +954,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(515, "user@example.com", "P@ssw0rd!")
 
@@ -917,10 +985,17 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = Some vocabularyA.Id }
+                { VocabularyId = Some(encoder.Encode vocabularyA.Id) }
 
             let! response =
-                client.PostAsJsonAsync(Urls.Entries.moveEntryById(collection.Id, vocabularyB.Id, entry.Id), request)
+                client.PostAsJsonAsync(
+                    Urls.Entries.moveEntryById(
+                        encoder.Encode collection.Id,
+                        encoder.Encode vocabularyB.Id,
+                        encoder.Encode entry.Id
+                    ),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -932,6 +1007,8 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(522, "user@example.com", "P@ssw0rd!")
 
@@ -961,10 +1038,17 @@ type MoveEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveEntryRequest =
-                { VocabularyId = Some vocabulary.Id }
+                { VocabularyId = Some(encoder.Encode vocabulary.Id) }
 
             let! response =
-                client.PostAsJsonAsync(Urls.Entries.moveEntryById(collectionA.Id, vocabulary.Id, entry.Id), request)
+                client.PostAsJsonAsync(
+                    Urls.Entries.moveEntryById(
+                        encoder.Encode collectionA.Id,
+                        encoder.Encode vocabulary.Id,
+                        encoder.Encode entry.Id
+                    ),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }

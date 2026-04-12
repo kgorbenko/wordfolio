@@ -25,7 +25,7 @@ export const useDraftsQuery = (
     });
 
 export const useDraftEntryQuery = (
-    entryId: number,
+    entryId: string,
     options?: Partial<UseQueryOptions<Entry>>
 ) =>
     useQuery({

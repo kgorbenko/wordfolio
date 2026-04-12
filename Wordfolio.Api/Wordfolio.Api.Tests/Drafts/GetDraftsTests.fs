@@ -4,11 +4,13 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Drafts.Types
 open Wordfolio.Api.Api.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -26,6 +28,8 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             use client = factory.CreateClient()
 
             let! response = client.GetAsync(Urls.Drafts.allDrafts())
@@ -40,6 +44,8 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(100, "user@example.com", "P@ssw0rd!")
 
@@ -74,6 +80,8 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(100, "user@example.com", "P@ssw0rd!")
 
             let createdAt =
@@ -103,7 +111,7 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
 
             let expected: DraftsVocabularyDataResponse =
                 { Vocabulary =
-                    { Id = defaultVocab.Id
+                    { Id = encoder.Encode defaultVocab.Id
                       Name = "Drafts"
                       Description = Some "My drafts"
                       CreatedAt = actual.Vocabulary.CreatedAt
@@ -120,6 +128,8 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(100, "user@example.com", "P@ssw0rd!")
 
@@ -177,28 +187,28 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
 
             let expected: DraftsVocabularyDataResponse =
                 { Vocabulary =
-                    { Id = defaultVocab.Id
+                    { Id = encoder.Encode defaultVocab.Id
                       Name = "Drafts"
                       Description = None
                       CreatedAt = actual.Vocabulary.CreatedAt
                       UpdatedAt = actual.Vocabulary.CreatedAt }
                   Entries =
-                    [ { Id = entry.Id
-                        VocabularyId = defaultVocab.Id
+                    [ { Id = encoder.Encode entry.Id
+                        VocabularyId = encoder.Encode defaultVocab.Id
                         EntryText = "ephemeral"
                         CreatedAt = actual.Entries.[0].CreatedAt
                         UpdatedAt = actual.Entries.[0].CreatedAt
                         Definitions =
-                          [ { Id = definition.Id
+                          [ { Id = encoder.Encode definition.Id
                               DefinitionText = "lasting for a short time"
                               Source = DefinitionSource.Api
                               DisplayOrder = 1
                               Examples =
-                                [ { Id = example.Id
+                                [ { Id = encoder.Encode example.Id
                                     ExampleText = "ephemeral pleasures"
                                     Source = ExampleSource.Custom } ] } ]
                         Translations =
-                          [ { Id = translation.Id
+                          [ { Id = encoder.Encode translation.Id
                               TranslationText = "эфемерный"
                               Source = TranslationSource.Manual
                               DisplayOrder = 1
@@ -214,6 +224,8 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser1, wordfolioUser1 = factory.CreateUserAsync(100, "user1@example.com", "P@ssw0rd!")
 
@@ -255,14 +267,14 @@ type GetDraftsTests(fixture: WordfolioIdentityTestFixture) =
 
             let expected: DraftsVocabularyDataResponse =
                 { Vocabulary =
-                    { Id = vocab1.Id
+                    { Id = encoder.Encode vocab1.Id
                       Name = "Drafts1"
                       Description = None
                       CreatedAt = actual.Vocabulary.CreatedAt
                       UpdatedAt = actual.Vocabulary.CreatedAt }
                   Entries =
-                    [ { Id = entry1.Id
-                        VocabularyId = vocab1.Id
+                    [ { Id = encoder.Encode entry1.Id
+                        VocabularyId = encoder.Encode vocab1.Id
                         EntryText = "myword"
                         CreatedAt = actual.Entries.[0].CreatedAt
                         UpdatedAt = actual.Entries.[0].CreatedAt

@@ -10,7 +10,7 @@ interface VocabularyInput {
 }
 
 interface CreateVocabularyMutationVariables {
-    collectionId: number;
+    collectionId: string;
     data: VocabularyInput;
 }
 
@@ -51,8 +51,8 @@ export const useCreateVocabularyMutation = (
 };
 
 interface UpdateVocabularyMutationVariables {
-    collectionId: number;
-    vocabularyId: number;
+    collectionId: string;
+    vocabularyId: string;
     data: VocabularyInput;
 }
 
@@ -96,8 +96,8 @@ export const useUpdateVocabularyMutation = (
 };
 
 interface DeleteVocabularyMutationVariables {
-    collectionId: number;
-    vocabularyId: number;
+    collectionId: string;
+    vocabularyId: string;
 }
 
 interface UseDeleteVocabularyMutationOptions {
@@ -134,9 +134,9 @@ export const useDeleteVocabularyMutation = (
 };
 
 interface MoveVocabularyParams {
-    readonly sourceCollectionId: number;
-    readonly vocabularyId: number;
-    readonly targetCollectionId: number;
+    readonly sourceCollectionId: string;
+    readonly vocabularyId: string;
+    readonly targetCollectionId: string;
 }
 
 interface UseMoveVocabularyMutationOptions {

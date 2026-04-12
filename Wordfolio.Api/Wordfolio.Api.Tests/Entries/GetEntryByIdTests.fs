@@ -4,10 +4,12 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -24,6 +26,8 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(306, "user@example.com", "P@ssw0rd!")
 
@@ -75,7 +79,11 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
+                Urls.Entries.entryById(
+                    encoder.Encode collection.Id,
+                    encoder.Encode vocabulary.Id,
+                    encoder.Encode entry.Id
+                )
 
             let! response = client.GetAsync(url)
             let! body = response.Content.ReadAsStringAsync()
@@ -109,8 +117,8 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
                   Examples = [ expectedTranslationExample ] }
 
             let expected: EntryResponse =
-                { Id = entry.Id
-                  VocabularyId = vocabulary.Id
+                { Id = encoder.Encode entry.Id
+                  VocabularyId = encoder.Encode vocabulary.Id
                   EntryText = "hello"
                   CreatedAt = entry.CreatedAt
                   UpdatedAt = entry.UpdatedAt
@@ -128,6 +136,8 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(307, "user@example.com", "P@ssw0rd!")
 
             do!
@@ -138,7 +148,7 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                Urls.Entries.entryById(1, 1, 999999)
+                Urls.Entries.entryById(encoder.Encode 1, encoder.Encode 1, encoder.Encode 999999)
 
             let! response = client.GetAsync(url)
 
@@ -152,6 +162,8 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! _, ownerWordfolioUser = factory.CreateUserAsync(520, "owner@example.com", "P@ssw0rd!")
 
@@ -181,7 +193,13 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(requesterIdentityUser)
 
             let! response =
-                client.GetAsync(Urls.Entries.entryById(ownerCollection.Id, ownerVocabulary.Id, ownerEntry.Id))
+                client.GetAsync(
+                    Urls.Entries.entryById(
+                        encoder.Encode ownerCollection.Id,
+                        encoder.Encode ownerVocabulary.Id,
+                        encoder.Encode ownerEntry.Id
+                    )
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -194,9 +212,12 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             use client = factory.CreateClient()
 
-            let url = Urls.Entries.entryById(1, 1, 1)
+            let url =
+                Urls.Entries.entryById(encoder.Encode 1, encoder.Encode 1, encoder.Encode 1)
 
             let! response = client.GetAsync(url)
 
@@ -210,6 +231,8 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(508, "user@example.com", "P@ssw0rd!")
 
@@ -235,7 +258,10 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.GetAsync(Urls.Entries.entryById(999999, vocabulary.Id, entry.Id))
+            let! response =
+                client.GetAsync(
+                    Urls.Entries.entryById(encoder.Encode 999999, encoder.Encode vocabulary.Id, encoder.Encode entry.Id)
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -247,6 +273,8 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(512, "user@example.com", "P@ssw0rd!")
 
@@ -275,7 +303,14 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.GetAsync(Urls.Entries.entryById(collection.Id, vocabularyB.Id, entry.Id))
+            let! response =
+                client.GetAsync(
+                    Urls.Entries.entryById(
+                        encoder.Encode collection.Id,
+                        encoder.Encode vocabularyB.Id,
+                        encoder.Encode entry.Id
+                    )
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -287,6 +322,8 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(518, "user@example.com", "P@ssw0rd!")
 
@@ -312,7 +349,10 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.GetAsync(Urls.Entries.entryById(collection.Id, 999999, entry.Id))
+            let! response =
+                client.GetAsync(
+                    Urls.Entries.entryById(encoder.Encode collection.Id, encoder.Encode 999999, encoder.Encode entry.Id)
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -324,6 +364,8 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(519, "user@example.com", "P@ssw0rd!")
 
@@ -352,7 +394,14 @@ type GetEntryByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.GetAsync(Urls.Entries.entryById(collectionA.Id, vocabulary.Id, entry.Id))
+            let! response =
+                client.GetAsync(
+                    Urls.Entries.entryById(
+                        encoder.Encode collectionA.Id,
+                        encoder.Encode vocabulary.Id,
+                        encoder.Encode entry.Id
+                    )
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }

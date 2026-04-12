@@ -14,12 +14,12 @@ import styles from "./EntryLookupForm.module.scss";
 type EntryLookupFormVariant = "modal" | "page";
 
 export interface VocabularyContext {
-    readonly collectionId: number;
-    readonly vocabularyId: number;
+    readonly collectionId: string;
+    readonly vocabularyId: string;
 }
 
 interface EntryLookupFormProps {
-    readonly vocabularyId?: number;
+    readonly vocabularyId?: string;
     readonly showVocabularySelector?: boolean;
     readonly isSaving: boolean;
     readonly onSave: (
@@ -42,7 +42,7 @@ export const EntryLookupForm = ({
     autoFocus = false,
     variant = "modal",
 }: EntryLookupFormProps) => {
-    const [selectedVocabularyId, setSelectedVocabularyId] = useState<number>(
+    const [selectedVocabularyId, setSelectedVocabularyId] = useState<string>(
         vocabularyId ?? draftsValue
     );
 

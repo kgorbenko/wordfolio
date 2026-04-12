@@ -7,7 +7,7 @@ import {
 } from "../components/MoveEntryDialog";
 
 export interface RaiseMoveEntryDialogOptions {
-    readonly currentVocabularyId: number;
+    readonly currentVocabularyId: string;
 }
 
 interface MoveEntryDialogState {

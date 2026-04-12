@@ -1,6 +1,6 @@
 export interface Vocabulary {
-    readonly id: number;
-    readonly collectionId: number;
+    readonly id: string;
+    readonly collectionId: string;
     readonly name: string;
     readonly description: string | null;
     readonly createdAt: Date;
@@ -8,8 +8,8 @@ export interface Vocabulary {
 }
 
 export interface VocabularyDetail {
-    readonly id: number;
-    readonly collectionId: number;
+    readonly id: string;
+    readonly collectionId: string;
     readonly collectionName: string;
     readonly name: string;
     readonly description: string | null;
@@ -18,6 +18,6 @@ export interface VocabularyDetail {
 }
 
 export interface VocabularyCollectionContext {
-    readonly id: number;
+    readonly id: string;
     readonly name: string;
 }

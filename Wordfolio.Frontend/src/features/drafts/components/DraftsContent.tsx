@@ -6,7 +6,7 @@ import { Entry } from "../../../shared/api/types/entries";
 
 interface DraftsContentProps {
     readonly entries: Entry[];
-    readonly onEntryClick: (id: number) => void;
+    readonly onEntryClick: (id: string) => void;
     readonly onAddDraftClick: () => void;
     readonly sortModel: GridSortModel;
     readonly onSortModelChange: (model: GridSortModel) => void;

@@ -38,13 +38,13 @@ type UpdateEntryRequest =
       Translations: TranslationRequest list }
 
 type ExampleResponse =
-    { Id: int
+    { Id: string
       ExampleText: string
       [<JsonConverter(typeof<JsonStringEnumConverter>)>]
       Source: ExampleSource }
 
 type DefinitionResponse =
-    { Id: int
+    { Id: string
       DefinitionText: string
       [<JsonConverter(typeof<JsonStringEnumConverter>)>]
       Source: DefinitionSource
@@ -52,7 +52,7 @@ type DefinitionResponse =
       Examples: ExampleResponse list }
 
 type TranslationResponse =
-    { Id: int
+    { Id: string
       TranslationText: string
       [<JsonConverter(typeof<JsonStringEnumConverter>)>]
       Source: TranslationSource
@@ -60,8 +60,8 @@ type TranslationResponse =
       Examples: ExampleResponse list }
 
 type EntryResponse =
-    { Id: int
-      VocabularyId: int
+    { Id: string
+      VocabularyId: string
       EntryText: string
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset

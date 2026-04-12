@@ -4,10 +4,12 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -24,6 +26,8 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(311, "user@example.com", "P@ssw0rd!")
 
@@ -98,7 +102,11 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                               Source = ExampleSource.Custom } ] } ] }
 
             let url =
-                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
+                Urls.Entries.entryById(
+                    encoder.Encode collection.Id,
+                    encoder.Encode vocabulary.Id,
+                    encoder.Encode entry.Id
+                )
 
             let! response = client.PutAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -135,8 +143,8 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(actual.UpdatedAt >= entry.CreatedAt)
 
             let expected: EntryResponse =
-                { Id = entry.Id
-                  VocabularyId = vocabulary.Id
+                { Id = encoder.Encode entry.Id
+                  VocabularyId = encoder.Encode vocabulary.Id
                   EntryText = "hello updated"
                   CreatedAt = entry.CreatedAt
                   UpdatedAt = actual.UpdatedAt
@@ -257,6 +265,8 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! _, wordfolioUser = factory.CreateUserAsync(323, "auth@example.com", "P@ssw0rd!")
 
             let now =
@@ -306,7 +316,11 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = [] }
 
             let url =
-                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
+                Urls.Entries.entryById(
+                    encoder.Encode collection.Id,
+                    encoder.Encode vocabulary.Id,
+                    encoder.Encode entry.Id
+                )
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -354,6 +368,8 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(312, "user@example.com", "P@ssw0rd!")
 
@@ -404,7 +420,11 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = [] }
 
             let url =
-                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
+                Urls.Entries.entryById(
+                    encoder.Encode collection.Id,
+                    encoder.Encode vocabulary.Id,
+                    encoder.Encode entry.Id
+                )
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -453,6 +473,8 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(313, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -491,7 +513,11 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = [] }
 
             let url =
-                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
+                Urls.Entries.entryById(
+                    encoder.Encode collection.Id,
+                    encoder.Encode vocabulary.Id,
+                    encoder.Encode entry.Id
+                )
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -532,6 +558,8 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(314, "user@example.com", "P@ssw0rd!")
 
             do!
@@ -550,7 +578,7 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = [] }
 
             let url =
-                Urls.Entries.entryById(1, 1, 999999)
+                Urls.Entries.entryById(encoder.Encode 1, encoder.Encode 1, encoder.Encode 999999)
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -564,6 +592,8 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(316, "user@example.com", "P@ssw0rd!")
 
@@ -598,7 +628,11 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = [] }
 
             let url =
-                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
+                Urls.Entries.entryById(
+                    encoder.Encode collection.Id,
+                    encoder.Encode vocabulary.Id,
+                    encoder.Encode entry.Id
+                )
 
             let! response = client.PutAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -618,8 +652,8 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(actual.UpdatedAt >= entry.CreatedAt)
 
             let expected: EntryResponse =
-                { Id = entry.Id
-                  VocabularyId = vocabulary.Id
+                { Id = encoder.Encode entry.Id
+                  VocabularyId = encoder.Encode vocabulary.Id
                   EntryText = "hello"
                   CreatedAt = entry.CreatedAt
                   UpdatedAt = actual.UpdatedAt
@@ -662,6 +696,8 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser1, wordfolioUser1 = factory.CreateUserAsync(317, "user1@example.com", "P@ssw0rd!")
             let! identityUser2, wordfolioUser2 = factory.CreateUserAsync(318, "user2@example.com", "P@ssw0rd!")
@@ -736,7 +772,11 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = [] }
 
             let url =
-                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
+                Urls.Entries.entryById(
+                    encoder.Encode collection.Id,
+                    encoder.Encode vocabulary.Id,
+                    encoder.Encode entry.Id
+                )
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -843,6 +883,8 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(509, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -875,7 +917,11 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                         Examples = [] } ]
                   Translations = [] }
 
-            let! response = client.PutAsJsonAsync(Urls.Entries.entryById(999999, vocabulary.Id, entry.Id), request)
+            let! response =
+                client.PutAsJsonAsync(
+                    Urls.Entries.entryById(encoder.Encode 999999, encoder.Encode vocabulary.Id, encoder.Encode entry.Id),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -887,6 +933,8 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(513, "user@example.com", "P@ssw0rd!")
 
@@ -924,7 +972,14 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = [] }
 
             let! response =
-                client.PutAsJsonAsync(Urls.Entries.entryById(collection.Id, vocabularyB.Id, entry.Id), request)
+                client.PutAsJsonAsync(
+                    Urls.Entries.entryById(
+                        encoder.Encode collection.Id,
+                        encoder.Encode vocabularyB.Id,
+                        encoder.Encode entry.Id
+                    ),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -936,6 +991,8 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(520, "user@example.com", "P@ssw0rd!")
 
@@ -973,7 +1030,14 @@ type UpdateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = [] }
 
             let! response =
-                client.PutAsJsonAsync(Urls.Entries.entryById(collectionA.Id, vocabulary.Id, entry.Id), request)
+                client.PutAsJsonAsync(
+                    Urls.Entries.entryById(
+                        encoder.Encode collectionA.Id,
+                        encoder.Encode vocabulary.Id,
+                        encoder.Encode entry.Id
+                    ),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }

@@ -3,9 +3,11 @@ namespace Wordfolio.Api.Tests.Drafts
 open System
 open System.Net
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -22,6 +24,8 @@ type DeleteDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(706, "user@example.com", "P@ssw0rd!")
 
@@ -50,7 +54,8 @@ type DeleteDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url = Urls.Drafts.draftById entry.Id
+            let url =
+                Urls.Drafts.draftById(encoder.Encode entry.Id)
 
             let! response = client.DeleteAsync(url)
 
@@ -84,6 +89,8 @@ type DeleteDraftTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! _, wordfolioUser = factory.CreateUserAsync(707, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -108,7 +115,8 @@ type DeleteDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use client = factory.CreateClient()
 
-            let url = Urls.Drafts.draftById entry.Id
+            let url =
+                Urls.Drafts.draftById(encoder.Encode entry.Id)
 
             let! response = client.DeleteAsync(url)
 
@@ -133,6 +141,8 @@ type DeleteDraftTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(708, "user@example.com", "P@ssw0rd!")
 
             do!
@@ -142,7 +152,8 @@ type DeleteDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url = Urls.Drafts.draftById 999999
+            let url =
+                Urls.Drafts.draftById(encoder.Encode 999999)
 
             let! response = client.DeleteAsync(url)
 
@@ -156,6 +167,8 @@ type DeleteDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! _, wordfolioUser1 = factory.CreateUserAsync(715, "user1@example.com", "P@ssw0rd!")
             let! identityUser2, wordfolioUser2 = factory.CreateUserAsync(716, "user2@example.com", "P@ssw0rd!")
@@ -191,7 +204,8 @@ type DeleteDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser2)
 
-            let url = Urls.Drafts.draftById entry.Id
+            let url =
+                Urls.Drafts.draftById(encoder.Encode entry.Id)
 
             let! response = client.DeleteAsync(url)
 
@@ -232,6 +246,8 @@ type DeleteDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(717, "user@example.com", "P@ssw0rd!")
 
@@ -282,7 +298,8 @@ type DeleteDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url = Urls.Drafts.draftById entry.Id
+            let url =
+                Urls.Drafts.draftById(encoder.Encode entry.Id)
 
             let! response = client.DeleteAsync(url)
 

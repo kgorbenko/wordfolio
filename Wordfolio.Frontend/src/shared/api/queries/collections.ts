@@ -30,7 +30,7 @@ export const useCollectionsQuery = (
     });
 
 export const useCollectionQuery = (
-    id: number,
+    id: string,
     options?: Partial<UseQueryOptions<Collection>>
 ) =>
     useQuery({
@@ -59,7 +59,7 @@ export const useCollectionsHierarchyQuery = (
     });
 
 export const useCollectionVocabulariesQuery = (
-    collectionId: number,
+    collectionId: string,
     options?: Partial<UseQueryOptions<VocabularyWithEntryCount[]>>
 ) =>
     useQuery({

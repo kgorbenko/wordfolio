@@ -65,7 +65,7 @@ export function useCreateDraftMutation(
 }
 
 interface UpdateDraftEntryParams {
-    readonly entryId: number;
+    readonly entryId: string;
     readonly data: CreateEntryData;
 }
 
@@ -97,7 +97,7 @@ export function useUpdateDraftEntryMutation(
 }
 
 interface DeleteDraftEntryParams {
-    readonly entryId: number;
+    readonly entryId: string;
 }
 
 interface UseDeleteDraftEntryMutationOptions {
@@ -126,8 +126,8 @@ export function useDeleteDraftEntryMutation(
 }
 
 interface MoveDraftEntryParams {
-    readonly entryId: number;
-    readonly targetVocabularyId: number;
+    readonly entryId: string;
+    readonly targetVocabularyId: string;
 }
 
 interface UseMoveDraftEntryMutationOptions {

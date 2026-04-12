@@ -13,12 +13,12 @@ export const vocabularySchema = z.object({
 });
 
 export const vocabularyCreateRouteParamsSchema = z.object({
-    collectionId: z.coerce.number().int().positive(),
+    collectionId: z.string().min(1),
 });
 
 export const vocabularyRouteParamsSchema = z.object({
-    collectionId: z.coerce.number().int().positive(),
-    vocabularyId: z.coerce.number().int().positive(),
+    collectionId: z.string().min(1),
+    vocabularyId: z.string().min(1),
 });
 
 export type VocabularyFormInput = z.input<typeof vocabularySchema>;
