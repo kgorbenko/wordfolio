@@ -50,7 +50,8 @@ let makeCollection id userId name description createdAt =
 [<Fact>]
 let ``creates collection with valid name``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let createdCollection =
             makeCollection 1 1 "Test Collection" None now
@@ -105,7 +106,9 @@ let ``creates collection with valid name``() =
 [<Fact>]
 let ``creates collection with description``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
         let description = Some "A test description"
 
         let createdCollection =
@@ -147,7 +150,8 @@ let ``creates collection with description``() =
 [<Fact>]
 let ``trims whitespace from name``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let createdCollection =
             makeCollection 1 1 "Test Collection" None now
@@ -200,7 +204,7 @@ let ``returns error when name is empty``() =
                 { UserId = UserId 1
                   Name = ""
                   Description = None
-                  CreatedAt = DateTimeOffset.UtcNow }
+                  CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error CreateCollectionError.CollectionNameRequired, result)
         Assert.Empty(env.CreateCollectionCalls)
@@ -222,7 +226,7 @@ let ``returns error when name is whitespace only``() =
                 { UserId = UserId 1
                   Name = "   "
                   Description = None
-                  CreatedAt = DateTimeOffset.UtcNow }
+                  CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error CreateCollectionError.CollectionNameRequired, result)
         Assert.Empty(env.CreateCollectionCalls)
@@ -246,7 +250,7 @@ let ``returns error when name exceeds max length``() =
                 { UserId = UserId 1
                   Name = longName
                   Description = None
-                  CreatedAt = DateTimeOffset.UtcNow }
+                  CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(CreateCollectionError.CollectionNameTooLong MaxNameLength), result)
         Assert.Empty(env.CreateCollectionCalls)
@@ -256,7 +260,8 @@ let ``returns error when name exceeds max length``() =
 [<Fact>]
 let ``accepts name at exact max length``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let maxLengthName =
             String.replicate MaxNameLength "a"
@@ -300,7 +305,8 @@ let ``accepts name at exact max length``() =
 [<Fact>]
 let ``throws when post-creation collection fetch returns None``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let env =
             TestEnv(

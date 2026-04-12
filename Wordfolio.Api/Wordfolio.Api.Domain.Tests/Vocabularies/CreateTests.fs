@@ -53,7 +53,8 @@ type TestEnv
         member this.RunInTransaction(operation) = operation this
 
 let makeCollection id userId =
-    let createdAt = DateTimeOffset.UtcNow
+    let createdAt =
+        DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
     { Id = CollectionId id
       UserId = UserId userId
@@ -73,7 +74,9 @@ let makeVocabulary id collectionId name description createdAt =
 [<Fact>]
 let ``creates vocabulary with valid name``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
         let collection = makeCollection 1 1
 
         let createdVocabulary =
@@ -136,7 +139,9 @@ let ``creates vocabulary with valid name``() =
 [<Fact>]
 let ``creates vocabulary with description``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
         let collection = makeCollection 1 1
         let description = Some "A test description"
 
@@ -181,7 +186,9 @@ let ``creates vocabulary with description``() =
 [<Fact>]
 let ``trims whitespace from name``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
         let collection = makeCollection 1 1
 
         let createdVocabulary =
@@ -241,7 +248,7 @@ let ``returns CollectionNotFound when collection does not exist``() =
                   CollectionId = CollectionId 1
                   Name = "Test Vocabulary"
                   Description = None
-                  CreatedAt = DateTimeOffset.UtcNow }
+                  CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(CreateVocabularyError.VocabularyCollectionNotFound(CollectionId 1)), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -268,7 +275,7 @@ let ``returns CollectionNotFound when collection owned by different user``() =
                   CollectionId = CollectionId 1
                   Name = "Test Vocabulary"
                   Description = None
-                  CreatedAt = DateTimeOffset.UtcNow }
+                  CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(CreateVocabularyError.VocabularyCollectionNotFound(CollectionId 1)), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -295,7 +302,7 @@ let ``returns error when name is empty``() =
                   CollectionId = CollectionId 1
                   Name = ""
                   Description = None
-                  CreatedAt = DateTimeOffset.UtcNow }
+                  CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error CreateVocabularyError.VocabularyNameRequired, result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -322,7 +329,7 @@ let ``returns error when name is whitespace only``() =
                   CollectionId = CollectionId 1
                   Name = "   "
                   Description = None
-                  CreatedAt = DateTimeOffset.UtcNow }
+                  CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error CreateVocabularyError.VocabularyNameRequired, result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -350,7 +357,7 @@ let ``returns error when name exceeds max length``() =
                   CollectionId = CollectionId 1
                   Name = longName
                   Description = None
-                  CreatedAt = DateTimeOffset.UtcNow }
+                  CreatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(CreateVocabularyError.VocabularyNameTooLong MaxNameLength), result)
         Assert.Equal<CollectionId list>([ CollectionId 1 ], env.GetCollectionByIdCalls)
@@ -361,7 +368,9 @@ let ``returns error when name exceeds max length``() =
 [<Fact>]
 let ``accepts name at exact max length``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
         let collection = makeCollection 1 1
 
         let maxLengthName =
@@ -408,7 +417,9 @@ let ``accepts name at exact max length``() =
 [<Fact>]
 let ``throws when post-creation vocabulary fetch returns None``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
         let collection = makeCollection 1 1
 
         let env =

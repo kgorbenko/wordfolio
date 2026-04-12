@@ -64,7 +64,8 @@ let makeEntry id vocabularyId text createdAt updatedAt =
 [<Fact>]
 let ``moves entry when user has access to source and target vocabularies``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 10 100 "hello" now now
@@ -137,7 +138,7 @@ let ``returns EntryNotFound when entry does not exist``() =
                 { UserId = UserId 1
                   EntryId = EntryId 99
                   TargetVocabularyId = VocabularyId 200
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(MoveDraftEntryError.EntryNotFound(EntryId 99)), result)
         Assert.Empty(env.HasVocabularyAccessCalls)
@@ -148,7 +149,12 @@ let ``returns EntryNotFound when entry does not exist``() =
 let ``returns EntryNotFound when source vocabulary access is denied``() =
     task {
         let existingEntry =
-            makeEntry 10 100 "hello" DateTimeOffset.UtcNow DateTimeOffset.UtcNow
+            makeEntry
+                10
+                100
+                "hello"
+                (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
+                (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
 
         let accessCallCount = ref 0
 
@@ -173,7 +179,7 @@ let ``returns EntryNotFound when source vocabulary access is denied``() =
                 { UserId = UserId 1
                   EntryId = EntryId 10
                   TargetVocabularyId = VocabularyId 200
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(MoveDraftEntryError.EntryNotFound(EntryId 10)), result)
 
@@ -191,7 +197,12 @@ let ``returns EntryNotFound when source vocabulary access is denied``() =
 let ``returns VocabularyNotFoundOrAccessDenied when target vocabulary access is denied``() =
     task {
         let existingEntry =
-            makeEntry 10 100 "hello" DateTimeOffset.UtcNow DateTimeOffset.UtcNow
+            makeEntry
+                10
+                100
+                "hello"
+                (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
+                (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
 
         let accessCallCount = ref 0
 
@@ -218,7 +229,7 @@ let ``returns VocabularyNotFoundOrAccessDenied when target vocabulary access is 
                 { UserId = UserId 1
                   EntryId = EntryId 10
                   TargetVocabularyId = VocabularyId 200
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(MoveDraftEntryError.VocabularyNotFoundOrAccessDenied(VocabularyId 200)), result)
 
@@ -238,7 +249,8 @@ let ``returns VocabularyNotFoundOrAccessDenied when target vocabulary access is 
 [<Fact>]
 let ``throws when post-move entry fetch returns None``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 10 100 "hello" now now
@@ -276,7 +288,8 @@ let ``throws when post-move entry fetch returns None``() =
 [<Fact>]
 let ``move succeeds without duplicate checks in target vocabulary``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 10 100 "duplicate-text" now now

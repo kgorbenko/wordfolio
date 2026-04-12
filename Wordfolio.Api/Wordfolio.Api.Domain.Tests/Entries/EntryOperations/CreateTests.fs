@@ -76,7 +76,8 @@ type TestEnv
         member this.RunInTransaction(operation) = operation this
 
 let makeEntry id vocabularyId text =
-    let timestamp = DateTimeOffset.UtcNow
+    let timestamp =
+        DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
     { Id = EntryId id
       VocabularyId = VocabularyId vocabularyId
@@ -133,7 +134,9 @@ let makeTranslation id text source displayOrder examples =
 [<Fact>]
 let ``creates entry when vocabulary is in collection``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
         let createdEntry = makeEntry 1 10 "hello"
 
         let definitions =
@@ -198,7 +201,7 @@ let ``returns VocabularyNotFoundOrAccessDenied when vocabulary is not in collect
             [ makeDefinitionInput "a greeting" DefinitionSource.Manual [] ]
 
         let parameters =
-            makeParameters 1 10 "hello" definitions [] false DateTimeOffset.UtcNow
+            makeParameters 1 10 "hello" definitions [] false (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
 
         let env =
             TestEnv(
@@ -241,7 +244,9 @@ let ``returns VocabularyNotFoundOrAccessDenied when vocabulary is not in collect
 [<Fact>]
 let ``returns DuplicateEntry when entry text already exists in vocabulary``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
         let duplicateEntry = makeEntry 99 10 "hello"
 
         let definitions =
@@ -302,7 +307,9 @@ let ``returns DuplicateEntry when entry text already exists in vocabulary``() =
 [<Fact>]
 let ``creates entry when AllowDuplicate is true even if duplicate exists``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
         let createdEntry = makeEntry 2 10 "hello"
 
         let definitions =
@@ -358,7 +365,7 @@ let ``creates entry when AllowDuplicate is true even if duplicate exists``() =
 let ``returns NoDefinitionsOrTranslations when both lists are empty``() =
     task {
         let parameters =
-            makeParameters 1 10 "hello" [] [] false DateTimeOffset.UtcNow
+            makeParameters 1 10 "hello" [] [] false (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
 
         let env =
             TestEnv(
@@ -397,7 +404,7 @@ let ``returns EntryTextRequired when entry text is empty``() =
             [ makeDefinitionInput "a greeting" DefinitionSource.Manual [] ]
 
         let parameters =
-            makeParameters 1 10 "" definitions [] false DateTimeOffset.UtcNow
+            makeParameters 1 10 "" definitions [] false (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
 
         let env =
             TestEnv(
@@ -439,7 +446,7 @@ let ``returns EntryTextTooLong when entry text exceeds max length``() =
             [ makeDefinitionInput "a greeting" DefinitionSource.Manual [] ]
 
         let parameters =
-            makeParameters 1 10 longText definitions [] false DateTimeOffset.UtcNow
+            makeParameters 1 10 longText definitions [] false (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
 
         let env =
             TestEnv(
@@ -484,7 +491,7 @@ let ``returns ExampleTextTooLong when definition example text exceeds max length
                   [ makeExampleInput longExample ExampleSource.Custom ] ]
 
         let parameters =
-            makeParameters 1 10 "hello" definitions [] false DateTimeOffset.UtcNow
+            makeParameters 1 10 "hello" definitions [] false (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
 
         let env =
             TestEnv(
@@ -519,7 +526,8 @@ let ``returns ExampleTextTooLong when definition example text exceeds max length
 [<Fact>]
 let ``creates entry with translations only``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let expectedTranslation =
             makeTranslation 1 "hello in spanish" TranslationSource.Manual 0 []
@@ -580,7 +588,8 @@ let ``creates entry with translations only``() =
 [<Fact>]
 let ``creates entry with both definitions and translations``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let expectedDefinition =
             makeDefinition 10 "a greeting" DefinitionSource.Manual 0 []
@@ -647,7 +656,9 @@ let ``creates entry with both definitions and translations``() =
 [<Fact>]
 let ``trims whitespace from entry text``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
         let createdEntry = makeEntry 1 10 "hello"
 
         let definitions =
@@ -715,7 +726,7 @@ let ``returns EntryTextRequired when entry text is whitespace only``() =
             [ makeDefinitionInput "a greeting" DefinitionSource.Manual [] ]
 
         let parameters =
-            makeParameters 1 10 "   " definitions [] false DateTimeOffset.UtcNow
+            makeParameters 1 10 "   " definitions [] false (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
 
         let env =
             TestEnv(
@@ -758,7 +769,7 @@ let ``returns TooManyExamples when definition has too many examples``() =
             [ makeDefinitionInput "a greeting" DefinitionSource.Manual examples ]
 
         let parameters =
-            makeParameters 1 10 "hello" definitions [] false DateTimeOffset.UtcNow
+            makeParameters 1 10 "hello" definitions [] false (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
 
         let env =
             TestEnv(
@@ -801,7 +812,7 @@ let ``returns TooManyExamples when translation has too many examples``() =
             [ makeTranslationInput "hola" TranslationSource.Manual examples ]
 
         let parameters =
-            makeParameters 1 10 "hello" [] translations false DateTimeOffset.UtcNow
+            makeParameters 1 10 "hello" [] translations false (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
 
         let env =
             TestEnv(
@@ -836,7 +847,9 @@ let ``returns TooManyExamples when translation has too many examples``() =
 [<Fact>]
 let ``proceeds when duplicate text match finds a stale record``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
+
         let staleEntry = makeEntry 99 10 "hello"
         let createdEntry = makeEntry 1 10 "hello"
 
@@ -898,7 +911,8 @@ let ``proceeds when duplicate text match finds a stale record``() =
 [<Fact>]
 let ``throws when post-create entry fetch returns None``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let definitions =
             [ makeDefinitionInput "a greeting" DefinitionSource.Manual [] ]

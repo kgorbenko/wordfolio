@@ -158,7 +158,8 @@ let makeExampleInput text source = { ExampleText = text; Source = source }
 [<Fact>]
 let ``updates entry with new definitions and translations``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 1 10 "old" [] [] now now
@@ -310,7 +311,7 @@ let ``returns EntryNotFound when entry does not exist``() =
                   EntryText = "text"
                   Definitions = definitions
                   Translations = []
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateDraftEntryError.EntryNotFound(EntryId 99)), result)
         Assert.Equal<EntryId list>([ EntryId 99 ], env.GetEntryByIdCalls)
@@ -321,7 +322,14 @@ let ``returns EntryNotFound when entry does not exist``() =
 let ``returns EntryNotFound when user has no access``() =
     task {
         let entry =
-            makeEntry 1 10 "text" [] [] DateTimeOffset.UtcNow DateTimeOffset.UtcNow
+            makeEntry
+                1
+                10
+                "text"
+                []
+                []
+                (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
+                (DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
 
         let env =
             TestEnv(
@@ -346,7 +354,7 @@ let ``returns EntryNotFound when user has no access``() =
                   EntryText = "text"
                   Definitions = definitions
                   Translations = []
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateDraftEntryError.EntryNotFound(EntryId 1)), result)
         Assert.Equal<EntryId list>([ EntryId 1 ], env.GetEntryByIdCalls)
@@ -384,7 +392,7 @@ let ``returns error when no definitions or translations``() =
                   EntryText = "text"
                   Definitions = []
                   Translations = []
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error UpdateDraftEntryError.NoDefinitionsOrTranslations, result)
         Assert.Empty(env.UpdateEntryCalls)
@@ -422,7 +430,7 @@ let ``returns error when example text is too long``() =
                   EntryText = "text"
                   Definitions = definitions
                   Translations = []
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateDraftEntryError.ExampleTextTooLong MaxExampleTextLength), result)
         Assert.Empty(env.UpdateEntryCalls)
@@ -458,7 +466,7 @@ let ``returns error when too many examples``() =
                   EntryText = "text"
                   Definitions = definitions
                   Translations = []
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateDraftEntryError.TooManyExamples MaxExamplesPerItem), result)
         Assert.Empty(env.UpdateEntryCalls)
@@ -490,7 +498,7 @@ let ``returns error when entry text is empty``() =
                   EntryText = ""
                   Definitions = definitions
                   Translations = []
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error UpdateDraftEntryError.EntryTextRequired, result)
         Assert.Empty(env.GetEntryByIdCalls)
@@ -522,7 +530,7 @@ let ``returns error when entry text is whitespace only``() =
                   EntryText = "   "
                   Definitions = definitions
                   Translations = []
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error UpdateDraftEntryError.EntryTextRequired, result)
         Assert.Empty(env.GetEntryByIdCalls)
@@ -557,7 +565,7 @@ let ``returns error when entry text exceeds max length``() =
                   EntryText = longText
                   Definitions = definitions
                   Translations = []
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateDraftEntryError.EntryTextTooLong MaxEntryTextLength), result)
         Assert.Empty(env.GetEntryByIdCalls)
@@ -595,7 +603,7 @@ let ``returns error when translation example text is too long``() =
                   EntryText = "text"
                   Definitions = []
                   Translations = translations
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateDraftEntryError.ExampleTextTooLong MaxExampleTextLength), result)
         Assert.Empty(env.UpdateEntryCalls)
@@ -631,7 +639,7 @@ let ``returns error when too many examples in translation``() =
                   EntryText = "text"
                   Definitions = []
                   Translations = translations
-                  UpdatedAt = DateTimeOffset.UtcNow }
+                  UpdatedAt = DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero) }
 
         Assert.Equal(Error(UpdateDraftEntryError.TooManyExamples MaxExamplesPerItem), result)
         Assert.Empty(env.UpdateEntryCalls)
@@ -640,7 +648,8 @@ let ``returns error when too many examples in translation``() =
 [<Fact>]
 let ``updates entry with definitions only``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 1 10 "word" [] [] now now
@@ -706,7 +715,8 @@ let ``updates entry with definitions only``() =
 [<Fact>]
 let ``updates entry with translations only``() =
     task {
-        let now = DateTimeOffset.UtcNow
+        let now =
+            DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
         let existingEntry =
             makeEntry 1 10 "word" [] [] now now

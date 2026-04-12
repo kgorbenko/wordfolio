@@ -25,7 +25,8 @@ type TestEnv(getCollectionById: CollectionId -> Task<Collection option>) =
         member this.RunInTransaction(operation) = operation this
 
 let makeCollection id userId name =
-    let createdAt = DateTimeOffset.UtcNow
+    let createdAt =
+        DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero)
 
     { Id = CollectionId id
       UserId = UserId userId
