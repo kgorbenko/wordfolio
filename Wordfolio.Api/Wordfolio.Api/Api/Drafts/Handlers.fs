@@ -252,26 +252,27 @@ let mapDraftsEndpoints(group: RouteGroupBuilder) =
             Func<string, MoveDraftRequest, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
                 (fun id request user encoder dataSource cancellationToken ->
                     task {
-                        match getUserId user, encoder.Decode(id), encoder.Decode(request.VocabularyId) with
-                        | None, _, _ -> return Results.Unauthorized()
-                        | _, None, _
-                        | _, _, None -> return Results.NotFound()
-                        | Some userId, Some id, Some targetVocabularyId ->
-                            let env =
-                                TransactionalEnv(dataSource, cancellationToken)
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            match ResourceIdsHelper.Decode(encoder, id, request.VocabularyId) with
+                            | None -> return Results.NotFound()
+                            | Some(id, targetVocabularyId) ->
+                                let env =
+                                    TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result =
-                                move
-                                    env
-                                    { UserId = UserId userId
-                                      EntryId = EntryId id
-                                      TargetVocabularyId = VocabularyId targetVocabularyId
-                                      UpdatedAt = DateTimeOffset.UtcNow }
+                                let! result =
+                                    move
+                                        env
+                                        { UserId = UserId userId
+                                          EntryId = EntryId id
+                                          TargetVocabularyId = VocabularyId targetVocabularyId
+                                          UpdatedAt = DateTimeOffset.UtcNow }
 
-                            return
-                                match result with
-                                | Ok entry -> Results.Ok(toEntryResponse encoder entry)
-                                | Error error -> toMoveErrorResponse error
+                                return
+                                    match result with
+                                    | Ok entry -> Results.Ok(toEntryResponse encoder entry)
+                                    | Error error -> toMoveErrorResponse error
                     })
         )
         .RequireAuthorization()
