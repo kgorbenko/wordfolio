@@ -4,11 +4,13 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Types
 open Wordfolio.Api.Api.Entries.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -25,6 +27,8 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(300, "user@example.com", "P@ssw0rd!")
 
@@ -63,7 +67,7 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   AllowDuplicate = None }
 
             let url =
-                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
+                Urls.Entries.entriesByVocabulary(encoder.Encode collection.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -99,7 +103,7 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             let expected: EntryResponse =
                 { Id = actual.Id
-                  VocabularyId = vocabulary.Id
+                  VocabularyId = encoder.Encode vocabulary.Id
                   EntryText = "hello"
                   CreatedAt = actual.CreatedAt
                   UpdatedAt = actual.CreatedAt
@@ -162,6 +166,8 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! _, wordfolioUser = factory.CreateUserAsync(320, "auth-required@example.com", "P@ssw0rd!")
 
             let now =
@@ -192,7 +198,7 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   AllowDuplicate = None }
 
             let url =
-                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
+                Urls.Entries.entriesByVocabulary(encoder.Encode collection.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -218,6 +224,8 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(301, "user@example.com", "P@ssw0rd!")
 
@@ -249,7 +257,7 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   AllowDuplicate = None }
 
             let url =
-                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
+                Urls.Entries.entriesByVocabulary(encoder.Encode collection.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -275,6 +283,8 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! requesterIdentityUser, requesterWordfolioUser =
                 factory.CreateUserAsync(321, "requester@example.com", "P@ssw0rd!")
@@ -314,7 +324,10 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             let! response =
                 client.PostAsJsonAsync(
-                    Urls.Entries.entriesByVocabulary(ownerCollection.Id, ownerVocabulary.Id),
+                    Urls.Entries.entriesByVocabulary(
+                        encoder.Encode ownerCollection.Id,
+                        encoder.Encode ownerVocabulary.Id
+                    ),
                     request
                 )
 
@@ -347,6 +360,8 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(302, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -374,7 +389,7 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   AllowDuplicate = None }
 
             let url =
-                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
+                Urls.Entries.entriesByVocabulary(encoder.Encode collection.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -388,6 +403,8 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(303, "user@example.com", "P@ssw0rd!")
 
@@ -431,7 +448,7 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   AllowDuplicate = None }
 
             let url =
-                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
+                Urls.Entries.entriesByVocabulary(encoder.Encode collection.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -445,6 +462,8 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(304, "user@example.com", "P@ssw0rd!")
 
@@ -480,7 +499,7 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   AllowDuplicate = None }
 
             let url =
-                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
+                Urls.Entries.entriesByVocabulary(encoder.Encode collection.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -494,6 +513,8 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(319, "user@example.com", "P@ssw0rd!")
 
@@ -529,7 +550,7 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   AllowDuplicate = Some true }
 
             let url =
-                Urls.Entries.entriesByVocabulary(collection.Id, vocabulary.Id)
+                Urls.Entries.entriesByVocabulary(encoder.Encode collection.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -548,7 +569,7 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             let expected: EntryResponse =
                 { Id = actual.Id
-                  VocabularyId = vocabulary.Id
+                  VocabularyId = encoder.Encode vocabulary.Id
                   EntryText = "hello"
                   CreatedAt = actual.CreatedAt
                   UpdatedAt = actual.CreatedAt
@@ -581,6 +602,8 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(305, "user@example.com", "P@ssw0rd!")
 
             do!
@@ -600,7 +623,7 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   AllowDuplicate = None }
 
             let url =
-                Urls.Entries.entriesByVocabulary(1, 999999)
+                Urls.Entries.entriesByVocabulary(encoder.Encode 1, encoder.Encode 999999)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -614,6 +637,8 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(507, "user@example.com", "P@ssw0rd!")
 
@@ -644,7 +669,11 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   Translations = []
                   AllowDuplicate = None }
 
-            let! response = client.PostAsJsonAsync(Urls.Entries.entriesByVocabulary(999999, vocabulary.Id), request)
+            let! response =
+                client.PostAsJsonAsync(
+                    Urls.Entries.entriesByVocabulary(encoder.Encode 999999, encoder.Encode vocabulary.Id),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -656,6 +685,8 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(517, "user@example.com", "P@ssw0rd!")
 
@@ -693,7 +724,10 @@ type CreateEntryTests(fixture: WordfolioIdentityTestFixture) =
                   AllowDuplicate = None }
 
             let! response =
-                client.PostAsJsonAsync(Urls.Entries.entriesByVocabulary(collectionA.Id, vocabularyB.Id), request)
+                client.PostAsJsonAsync(
+                    Urls.Entries.entriesByVocabulary(encoder.Encode collectionA.Id, encoder.Encode vocabularyB.Id),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }

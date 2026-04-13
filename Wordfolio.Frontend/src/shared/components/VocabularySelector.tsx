@@ -9,14 +9,14 @@ import {
 import type { CollectionsHierarchy } from "../api/types/collections";
 import styles from "./VocabularySelector.module.scss";
 
-export const draftsValue = 0;
+export const draftsValue = "drafts";
 
 interface VocabularySelectorProps {
     readonly hierarchy: CollectionsHierarchy | undefined;
-    readonly value: number | undefined;
+    readonly value: string | undefined;
     readonly label: string;
-    readonly onChange: (value: number) => void;
-    readonly excludeVocabularyId?: number;
+    readonly onChange: (value: string) => void;
+    readonly excludeVocabularyId?: string;
     readonly fullWidth?: boolean;
     readonly className?: string;
 }
@@ -25,7 +25,7 @@ const DRAFTS_LABEL = "Drafts — organize later";
 
 const buildGroupedItems = (
     hierarchy: CollectionsHierarchy,
-    excludeVocabularyId: number | undefined
+    excludeVocabularyId: string | undefined
 ) => {
     const showDrafts =
         excludeVocabularyId === undefined ||
@@ -83,8 +83,8 @@ export const VocabularySelector = ({
     );
 
     const handleChange = useCallback(
-        (event: SelectChangeEvent<number | string>) => {
-            onChange(Number(event.target.value));
+        (event: SelectChangeEvent<string>) => {
+            onChange(event.target.value);
         },
         [onChange]
     );

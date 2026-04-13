@@ -47,7 +47,7 @@ interface UseUpdateCollectionMutationOptions {
 }
 
 export function useUpdateCollectionMutation(
-    id: number,
+    id: string,
     options?: UseUpdateCollectionMutationOptions
 ) {
     const queryClient = useQueryClient();
@@ -86,7 +86,7 @@ export function useDeleteCollectionMutation(
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (id: number) => {
+        mutationFn: async (id: string) => {
             const { error } = await client.DELETE("/collections/{id}", {
                 params: { path: { id } },
             });

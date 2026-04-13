@@ -69,40 +69,40 @@ const stubDraftCount = 3;
 
 const stubCollectionData = [
     {
-        id: 1,
+        id: "1",
         name: "English Vocabulary",
         entryCount: 4,
         children: [
-            { id: 6, name: "Common Words", entryCount: 156 },
-            { id: 7, name: "Academic Terms", entryCount: 89 },
-            { id: 8, name: "Idioms & Phrases", entryCount: 42 },
+            { id: "6", name: "Common Words", entryCount: 156 },
+            { id: "7", name: "Academic Terms", entryCount: 89 },
+            { id: "8", name: "Idioms & Phrases", entryCount: 42 },
         ],
     },
     {
-        id: 2,
+        id: "2",
         name: "Spanish Basics",
         entryCount: 3,
         children: [
-            { id: 9, name: "Greetings", entryCount: 24 },
-            { id: 10, name: "Travel Phrases", entryCount: 37 },
+            { id: "9", name: "Greetings", entryCount: 24 },
+            { id: "10", name: "Travel Phrases", entryCount: 37 },
         ],
     },
-    { id: 3, name: "Academic Writing", entryCount: 0 },
+    { id: "3", name: "Academic Writing", entryCount: 0 },
     {
-        id: 4,
+        id: "4",
         name: "Japanese",
         entryCount: 2,
         children: [
-            { id: 11, name: "Hiragana", entryCount: 46 },
-            { id: 12, name: "Katakana", entryCount: 46 },
-            { id: 13, name: "JLPT N5 Kanji", entryCount: 103 },
+            { id: "11", name: "Hiragana", entryCount: 46 },
+            { id: "12", name: "Katakana", entryCount: 46 },
+            { id: "13", name: "JLPT N5 Kanji", entryCount: 103 },
         ],
     },
     {
-        id: 5,
+        id: "5",
         name: "French Literature",
         entryCount: 1,
-        children: [{ id: 14, name: "Romantic Era", entryCount: 28 }],
+        children: [{ id: "14", name: "Romantic Era", entryCount: 28 }],
     },
 ];
 
@@ -223,19 +223,19 @@ const ColorSwatch = ({ hex, role }: { hex: string; role: string }) => (
 );
 
 export const DesignSystemPage = () => {
-    const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set([1]));
+    const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(["1"]));
     const [selectedCollectionId, setSelectedCollectionId] = useState<
-        number | null
+        string | null
     >(null);
     const [selectedVocabularyId, setSelectedVocabularyId] = useState<
-        number | null
-    >(6);
+        string | null
+    >("6");
     const [gridSortModel, setGridSortModel] = useState<GridSortModel>([
         { field: "updated", sort: "desc" },
     ]);
     const [gridFilter, setGridFilter] = useState("");
 
-    const toggleCollection = (id: number) => {
+    const toggleCollection = (id: string) => {
         setExpandedIds((prev) => {
             const next = new Set(prev);
             if (next.has(id)) next.delete(id);
@@ -244,12 +244,12 @@ export const DesignSystemPage = () => {
         });
     };
 
-    const selectCollection = (id: number) => {
+    const selectCollection = (id: string) => {
         setSelectedCollectionId(id);
         setSelectedVocabularyId(null);
     };
 
-    const selectVocabulary = (childId: number) => {
+    const selectVocabulary = (childId: string) => {
         setSelectedVocabularyId(childId);
         setSelectedCollectionId(null);
     };

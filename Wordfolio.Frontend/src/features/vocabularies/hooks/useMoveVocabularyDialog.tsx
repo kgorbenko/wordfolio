@@ -7,7 +7,7 @@ import {
 } from "../components/MoveVocabularyDialog";
 
 export interface RaiseMoveVocabularyDialogOptions {
-    readonly currentCollectionId: number;
+    readonly currentCollectionId: string;
 }
 
 interface MoveVocabularyDialogState {

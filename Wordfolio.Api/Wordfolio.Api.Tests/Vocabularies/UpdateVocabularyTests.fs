@@ -4,10 +4,12 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Vocabularies.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -24,6 +26,8 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(205, "user@example.com", "P@ssw0rd!")
 
@@ -53,7 +57,7 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "Updated Description" }
 
             let url =
-                Urls.Vocabularies.vocabularyById(collection.Id, vocabulary.Id)
+                Urls.Vocabularies.vocabularyById(encoder.Encode collection.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.PutAsJsonAsync(url, updateRequest)
             let! body = response.Content.ReadAsStringAsync()
@@ -63,8 +67,8 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let! actualResponse = response.Content.ReadFromJsonAsync<VocabularyResponse>()
 
             let expectedResponse: VocabularyResponse =
-                { Id = vocabulary.Id
-                  CollectionId = collection.Id
+                { Id = encoder.Encode vocabulary.Id
+                  CollectionId = encoder.Encode collection.Id
                   Name = "Updated Name"
                   Description = Some "Updated Description"
                   CreatedAt = vocabulary.CreatedAt
@@ -124,6 +128,8 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(206, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -145,7 +151,7 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "Updated Description" }
 
             let url =
-                Urls.Vocabularies.vocabularyById(collection.Id, 999999)
+                Urls.Vocabularies.vocabularyById(encoder.Encode collection.Id, encoder.Encode 999999)
 
             let! response = client.PutAsJsonAsync(url, updateRequest)
 
@@ -163,6 +169,8 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(217, "user@example.com", "P@ssw0rd!")
 
@@ -201,7 +209,7 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "Updated Description" }
 
             let url =
-                Urls.Vocabularies.vocabularyById(collectionA.Id, vocabulary.Id)
+                Urls.Vocabularies.vocabularyById(encoder.Encode collectionA.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.PutAsJsonAsync(url, updateRequest)
 
@@ -231,6 +239,8 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! _, ownerWordfolioUser = factory.CreateUserAsync(213, "owner@example.com", "P@ssw0rd!")
 
@@ -272,7 +282,7 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "Should not be persisted" }
 
             let url =
-                Urls.Vocabularies.vocabularyById(ownerCollection.Id, ownerVocabulary.Id)
+                Urls.Vocabularies.vocabularyById(encoder.Encode ownerCollection.Id, encoder.Encode ownerVocabulary.Id)
 
             let! response = client.PutAsJsonAsync(url, updateRequest)
 
@@ -325,6 +335,8 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(207, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -353,7 +365,7 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "Updated Description" }
 
             let url =
-                Urls.Vocabularies.vocabularyById(collection.Id, vocabulary.Id)
+                Urls.Vocabularies.vocabularyById(encoder.Encode collection.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.PutAsJsonAsync(url, updateRequest)
 
@@ -383,6 +395,8 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! _, wordfolioUser = factory.CreateUserAsync(215, "user@example.com", "P@ssw0rd!")
 
@@ -418,7 +432,7 @@ type UpdateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "Updated Description" }
 
             let url =
-                Urls.Vocabularies.vocabularyById(collection.Id, vocabulary.Id)
+                Urls.Vocabularies.vocabularyById(encoder.Encode collection.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.PutAsJsonAsync(url, updateRequest)
 

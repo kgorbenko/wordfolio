@@ -6,7 +6,7 @@ import type { VocabularyWithEntryCount } from "../../../shared/api/types/collect
 
 interface CollectionDetailContentProps {
     readonly vocabularies: VocabularyWithEntryCount[];
-    readonly onVocabularyClick: (id: number) => void;
+    readonly onVocabularyClick: (id: string) => void;
     readonly onCreateVocabularyClick: () => void;
     readonly sortModel: GridSortModel;
     readonly onSortModelChange: (model: GridSortModel) => void;

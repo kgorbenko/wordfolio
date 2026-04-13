@@ -24,20 +24,20 @@ import styles from "./AppSidebar.module.scss";
 import { WordfolioBrand } from "./WordfolioBrand";
 
 export interface NavCollection {
-    readonly id: number;
+    readonly id: string;
     readonly name: string;
     readonly entryCount: number;
     readonly active?: boolean;
     readonly expanded?: boolean;
-    readonly activeChildId?: number;
+    readonly activeChildId?: string;
     readonly children?: {
-        readonly id: number;
+        readonly id: string;
         readonly name: string;
         readonly entryCount: number;
     }[];
     readonly onClick?: () => void;
     readonly onExpand?: () => void;
-    readonly onChildClick?: (id: number) => void;
+    readonly onChildClick?: (id: string) => void;
 }
 
 export interface NavUser {

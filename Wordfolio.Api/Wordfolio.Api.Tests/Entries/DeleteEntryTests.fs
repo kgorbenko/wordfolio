@@ -4,10 +4,12 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -24,6 +26,8 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(402, "user@example.com", "P@ssw0rd!")
 
@@ -53,7 +57,11 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
+                Urls.Entries.entryById(
+                    encoder.Encode collection.Id,
+                    encoder.Encode vocabulary.Id,
+                    encoder.Encode entry.Id
+                )
 
             let! response = client.DeleteAsync(url)
 
@@ -87,6 +95,8 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! _, wordfolioUser = factory.CreateUserAsync(403, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -112,7 +122,11 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             use client = factory.CreateClient()
 
             let url =
-                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
+                Urls.Entries.entryById(
+                    encoder.Encode collection.Id,
+                    encoder.Encode vocabulary.Id,
+                    encoder.Encode entry.Id
+                )
 
             let! response = client.DeleteAsync(url)
 
@@ -137,6 +151,8 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(404, "user@example.com", "P@ssw0rd!")
 
             do!
@@ -147,7 +163,7 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                Urls.Entries.entryById(1, 1, 999999)
+                Urls.Entries.entryById(encoder.Encode 1, encoder.Encode 1, encoder.Encode 999999)
 
             let! response = client.DeleteAsync(url)
 
@@ -161,6 +177,8 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! _, wordfolioUser1 = factory.CreateUserAsync(405, "user1@example.com", "P@ssw0rd!")
             let! identityUser2, wordfolioUser2 = factory.CreateUserAsync(406, "user2@example.com", "P@ssw0rd!")
@@ -197,7 +215,11 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser2)
 
             let url =
-                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
+                Urls.Entries.entryById(
+                    encoder.Encode collection.Id,
+                    encoder.Encode vocabulary.Id,
+                    encoder.Encode entry.Id
+                )
 
             let! response = client.DeleteAsync(url)
 
@@ -238,6 +260,8 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(407, "user@example.com", "P@ssw0rd!")
 
@@ -289,7 +313,11 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                Urls.Entries.entryById(collection.Id, vocabulary.Id, entry.Id)
+                Urls.Entries.entryById(
+                    encoder.Encode collection.Id,
+                    encoder.Encode vocabulary.Id,
+                    encoder.Encode entry.Id
+                )
 
             let! response = client.DeleteAsync(url)
 
@@ -316,6 +344,8 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(510, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -340,7 +370,10 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.DeleteAsync(Urls.Entries.entryById(999999, vocabulary.Id, entry.Id))
+            let! response =
+                client.DeleteAsync(
+                    Urls.Entries.entryById(encoder.Encode 999999, encoder.Encode vocabulary.Id, encoder.Encode entry.Id)
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -352,6 +385,8 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(514, "user@example.com", "P@ssw0rd!")
 
@@ -380,7 +415,14 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.DeleteAsync(Urls.Entries.entryById(collection.Id, vocabularyB.Id, entry.Id))
+            let! response =
+                client.DeleteAsync(
+                    Urls.Entries.entryById(
+                        encoder.Encode collection.Id,
+                        encoder.Encode vocabularyB.Id,
+                        encoder.Encode entry.Id
+                    )
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -392,6 +434,8 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(521, "user@example.com", "P@ssw0rd!")
 
@@ -420,7 +464,14 @@ type DeleteEntryTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let! response = client.DeleteAsync(Urls.Entries.entryById(collectionA.Id, vocabulary.Id, entry.Id))
+            let! response =
+                client.DeleteAsync(
+                    Urls.Entries.entryById(
+                        encoder.Encode collectionA.Id,
+                        encoder.Encode vocabulary.Id,
+                        encoder.Encode entry.Id
+                    )
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }

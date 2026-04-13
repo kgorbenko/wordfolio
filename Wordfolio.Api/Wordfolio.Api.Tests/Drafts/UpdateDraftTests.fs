@@ -4,10 +4,12 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -24,6 +26,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(702, "user@example.com", "P@ssw0rd!")
 
@@ -110,7 +114,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
                           [ { ExampleText = "Hola ahi!"
                               Source = ExampleSource.Custom } ] } ] }
 
-            let url = Urls.Drafts.draftById entry.Id
+            let url =
+                Urls.Drafts.draftById(encoder.Encode entry.Id)
 
             let! response = client.PutAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -147,8 +152,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(actual.UpdatedAt >= entry.CreatedAt)
 
             let expected: EntryResponse =
-                { Id = entry.Id
-                  VocabularyId = vocabulary.Id
+                { Id = encoder.Encode entry.Id
+                  VocabularyId = encoder.Encode vocabulary.Id
                   EntryText = "hello updated"
                   CreatedAt = entry.CreatedAt
                   UpdatedAt = actual.UpdatedAt
@@ -240,6 +245,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! _, wordfolioUser = factory.CreateUserAsync(715, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -295,7 +302,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
                         Examples = [] } ]
                   Translations = [] }
 
-            let url = Urls.Drafts.draftById entry.Id
+            let url =
+                Urls.Drafts.draftById(encoder.Encode entry.Id)
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -319,6 +327,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(703, "user@example.com", "P@ssw0rd!")
 
@@ -357,7 +367,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
                         Examples = [] } ]
                   Translations = [] }
 
-            let url = Urls.Drafts.draftById entry.Id
+            let url =
+                Urls.Drafts.draftById(encoder.Encode entry.Id)
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -381,6 +392,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(704, "user@example.com", "P@ssw0rd!")
 
@@ -416,7 +429,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
                   Definitions = []
                   Translations = [] }
 
-            let url = Urls.Drafts.draftById entry.Id
+            let url =
+                Urls.Drafts.draftById(encoder.Encode entry.Id)
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -441,6 +455,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(705, "user@example.com", "P@ssw0rd!")
 
             do!
@@ -458,7 +474,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
                         Examples = [] } ]
                   Translations = [] }
 
-            let url = Urls.Drafts.draftById 999999
+            let url =
+                Urls.Drafts.draftById(encoder.Encode 999999)
 
             let! response = client.PutAsJsonAsync(url, request)
 
@@ -472,6 +489,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(712, "user@example.com", "P@ssw0rd!")
 
@@ -505,7 +524,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
                         Examples = [] } ]
                   Translations = [] }
 
-            let url = Urls.Drafts.draftById entry.Id
+            let url =
+                Urls.Drafts.draftById(encoder.Encode entry.Id)
 
             let! response = client.PutAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -525,8 +545,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
             Assert.True(actual.UpdatedAt >= entry.CreatedAt)
 
             let expected: EntryResponse =
-                { Id = entry.Id
-                  VocabularyId = vocabulary.Id
+                { Id = encoder.Encode entry.Id
+                  VocabularyId = encoder.Encode vocabulary.Id
                   EntryText = "hello"
                   CreatedAt = entry.CreatedAt
                   UpdatedAt = actual.UpdatedAt
@@ -569,6 +589,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! _, wordfolioUser1 = factory.CreateUserAsync(713, "user1@example.com", "P@ssw0rd!")
             let! identityUser2, wordfolioUser2 = factory.CreateUserAsync(714, "user2@example.com", "P@ssw0rd!")
@@ -624,7 +646,8 @@ type UpdateDraftTests(fixture: WordfolioIdentityTestFixture) =
                         Examples = [] } ]
                   Translations = [] }
 
-            let url = Urls.Drafts.draftById entry.Id
+            let url =
+                Urls.Drafts.draftById(encoder.Encode entry.Id)
 
             let! response = client.PutAsJsonAsync(url, request)
 

@@ -16,14 +16,14 @@ const createHierarchy = (
 ): CollectionsHierarchy => ({
     collections: [
         {
-            id: 1,
+            id: "1",
             name: "English Collection",
             description: null,
             createdAt: new Date(),
             updatedAt: new Date(),
             vocabularies: [
                 {
-                    id: 10,
+                    id: "10",
                     name: "Idioms",
                     description: null,
                     entryCount: 5,
@@ -34,7 +34,7 @@ const createHierarchy = (
         },
     ],
     defaultVocabulary: {
-        id: 99,
+        id: "99",
         name: "Drafts",
         description: null,
         entryCount: 3,
@@ -44,7 +44,7 @@ const createHierarchy = (
     ...overrides,
 });
 
-const renderMoveEntryDialog = (currentVocabularyId: number) =>
+const renderMoveEntryDialog = (currentVocabularyId: string) =>
     render(
         <MoveEntryDialog
             isOpen={true}
@@ -67,7 +67,7 @@ describe("MoveEntryDialog", () => {
             refetch: vi.fn(),
         });
 
-        renderMoveEntryDialog(10);
+        renderMoveEntryDialog("10");
 
         expect(screen.getByRole("combobox")).toHaveTextContent(
             "Drafts — organize later"
@@ -79,7 +79,7 @@ describe("MoveEntryDialog", () => {
         useCollectionsHierarchyQueryMock.mockReturnValue({
             data: createHierarchy({
                 defaultVocabulary: {
-                    id: 10,
+                    id: "10",
                     name: "Drafts",
                     description: null,
                     entryCount: 3,
@@ -92,7 +92,7 @@ describe("MoveEntryDialog", () => {
             refetch: vi.fn(),
         });
 
-        renderMoveEntryDialog(10);
+        renderMoveEntryDialog("10");
 
         expect(screen.getByRole("combobox")).not.toHaveTextContent(
             "Drafts — organize later"
@@ -113,7 +113,7 @@ describe("MoveEntryDialog", () => {
         render(
             <MoveEntryDialog
                 isOpen={true}
-                currentVocabularyId={10}
+                currentVocabularyId="10"
                 onCancel={vi.fn()}
                 onConfirm={onConfirm}
             />
@@ -127,6 +127,6 @@ describe("MoveEntryDialog", () => {
             collectionId: null,
         });
         expect(useCollectionsHierarchyQueryMock).toHaveBeenCalled();
-        expect(draftsValue).toBe(0);
+        expect(draftsValue).toBe("drafts");
     });
 });

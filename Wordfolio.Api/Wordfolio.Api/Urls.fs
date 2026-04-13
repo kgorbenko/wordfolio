@@ -4,13 +4,13 @@ module Wordfolio.Api.Urls
 let Root = "/"
 
 [<Literal>]
-let ById = "/{id:int}"
+let ById = "/{id}"
 
 module Collections =
     [<Literal>]
     let Path = "/collections"
 
-    let collectionById(id: int) = $"{Path}/{id}"
+    let collectionById(id: string) = $"{Path}/{id}"
 
 module CollectionsHierarchy =
     [<Literal>]
@@ -21,38 +21,37 @@ module CollectionsHierarchy =
 
     [<Literal>]
     let VocabulariesByCollectionPath =
-        "/collections/{collectionId:int}/vocabularies"
+        "/collections/{collectionId}/vocabularies"
 
     let collections() = $"{Path}{CollectionsPath}"
 
-    let vocabulariesByCollection(collectionId: int) =
+    let vocabulariesByCollection(collectionId: string) =
         $"{collections()}/{collectionId}/vocabularies"
 
 module Vocabularies =
     [<Literal>]
-    let Path =
-        "/{collectionId:int}/vocabularies"
+    let Path = "/{collectionId}/vocabularies"
 
-    let vocabulariesByCollection(collectionId: int) =
+    let vocabulariesByCollection(collectionId: string) =
         $"/collections/{collectionId}/vocabularies"
 
-    let vocabularyById(collectionId: int, vocabularyId: int) =
+    let vocabularyById(collectionId: string, vocabularyId: string) =
         $"{vocabulariesByCollection collectionId}/{vocabularyId}"
 
-    let moveVocabularyById(collectionId: int, vocabularyId: int) =
+    let moveVocabularyById(collectionId: string, vocabularyId: string) =
         $"{vocabularyById(collectionId, vocabularyId)}/move"
 
 module Entries =
     [<Literal>]
-    let Path = "/{vocabularyId:int}/entries"
+    let Path = "/{vocabularyId}/entries"
 
-    let entriesByVocabulary(collectionId: int, vocabularyId: int) =
+    let entriesByVocabulary(collectionId: string, vocabularyId: string) =
         $"/collections/{collectionId}/vocabularies/{vocabularyId}/entries"
 
-    let entryById(collectionId: int, vocabularyId: int, id: int) =
+    let entryById(collectionId: string, vocabularyId: string, id: string) =
         $"{entriesByVocabulary(collectionId, vocabularyId)}/{id}"
 
-    let moveEntryById(collectionId: int, vocabularyId: int, id: int) =
+    let moveEntryById(collectionId: string, vocabularyId: string, id: string) =
         $"{entryById(collectionId, vocabularyId, id)}/move"
 
 module Drafts =
@@ -66,8 +65,8 @@ module Drafts =
     let Move = "/move"
 
     let allDrafts() = $"{Path}{All}"
-    let draftById(id: int) = $"{Path}/{id}"
-    let moveDraftById(id: int) = $"{draftById id}{Move}"
+    let draftById(id: string) = $"{Path}/{id}"
+    let moveDraftById(id: string) = $"{draftById id}{Move}"
 
 module Auth =
     [<Literal>]

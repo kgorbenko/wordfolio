@@ -4,10 +4,12 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -24,6 +26,8 @@ type GetDraftByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(700, "user@example.com", "P@ssw0rd!")
 
@@ -74,7 +78,8 @@ type GetDraftByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url = Urls.Drafts.draftById entry.Id
+            let url =
+                Urls.Drafts.draftById(encoder.Encode entry.Id)
 
             let! response = client.GetAsync(url)
             let! body = response.Content.ReadAsStringAsync()
@@ -108,8 +113,8 @@ type GetDraftByIdTests(fixture: WordfolioIdentityTestFixture) =
                   Examples = [ expectedTranslationExample ] }
 
             let expected: EntryResponse =
-                { Id = entry.Id
-                  VocabularyId = vocabulary.Id
+                { Id = encoder.Encode entry.Id
+                  VocabularyId = encoder.Encode vocabulary.Id
                   EntryText = "hello"
                   CreatedAt = entry.CreatedAt
                   UpdatedAt = entry.UpdatedAt
@@ -127,6 +132,8 @@ type GetDraftByIdTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(701, "user@example.com", "P@ssw0rd!")
 
             do!
@@ -136,7 +143,8 @@ type GetDraftByIdTests(fixture: WordfolioIdentityTestFixture) =
 
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
-            let url = Urls.Drafts.draftById 999999
+            let url =
+                Urls.Drafts.draftById(encoder.Encode 999999)
 
             let! response = client.GetAsync(url)
 
@@ -151,9 +159,12 @@ type GetDraftByIdTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             use client = factory.CreateClient()
 
-            let url = Urls.Drafts.draftById 1
+            let url =
+                Urls.Drafts.draftById(encoder.Encode 1)
 
             let! response = client.GetAsync(url)
 

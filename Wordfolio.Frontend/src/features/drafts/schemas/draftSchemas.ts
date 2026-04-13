@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const draftEntryRouteParamsSchema = z.object({
-    entryId: z.coerce.number().int().positive(),
+    entryId: z.string().min(1),
 });
 
 export const draftsListSearchParamsSchema = z.object({

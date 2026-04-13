@@ -4,10 +4,12 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.CollectionsHierarchy.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -24,6 +26,8 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(306, "user@example.com", "P@ssw0rd!")
 
@@ -62,19 +66,19 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
             let! actual = response.Content.ReadFromJsonAsync<CollectionWithVocabularyCountResponse list>()
 
             let expected: CollectionWithVocabularyCountResponse list =
-                [ { Id = collection2.Id
+                [ { Id = encoder.Encode collection2.Id
                     Name = "Travel"
                     Description = Some "Bio terms"
                     CreatedAt = createdAt
                     UpdatedAt = updatedAt2
                     VocabularyCount = 0 }
-                  { Id = collection1.Id
+                  { Id = encoder.Encode collection1.Id
                     Name = "Biology"
                     Description = Some "School words"
                     CreatedAt = createdAt
                     UpdatedAt = updatedAt1
                     VocabularyCount = 0 }
-                  { Id = collection3.Id
+                  { Id = encoder.Encode collection3.Id
                     Name = "Sports"
                     Description = None
                     CreatedAt = createdAt
@@ -91,6 +95,8 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(310, "user@example.com", "P@ssw0rd!")
 
@@ -122,7 +128,7 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
             let! actual = response.Content.ReadFromJsonAsync<CollectionWithVocabularyCountResponse list>()
 
             let expected: CollectionWithVocabularyCountResponse list =
-                [ { Id = ownedCollection.Id
+                [ { Id = encoder.Encode ownedCollection.Id
                     Name = "Owned"
                     Description = None
                     CreatedAt = createdAt
@@ -139,6 +145,8 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(319, "user@example.com", "P@ssw0rd!")
 
@@ -169,6 +177,8 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(317, "user@example.com", "P@ssw0rd!")
 
@@ -214,7 +224,7 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
             let! actual = response.Content.ReadFromJsonAsync<CollectionWithVocabularyCountResponse list>()
 
             let expected: CollectionWithVocabularyCountResponse list =
-                [ { Id = collection.Id
+                [ { Id = encoder.Encode collection.Id
                     Name = "Regular"
                     Description = None
                     CreatedAt = createdAt
@@ -231,6 +241,8 @@ type GetCollectionsListTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             use client = factory.CreateClient()
 

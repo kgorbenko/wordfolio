@@ -1,7 +1,7 @@
 import type { Entry } from "./entries";
 
 export interface DraftsVocabulary {
-    readonly id: number;
+    readonly id: string;
     readonly name: string;
     readonly description: string | null;
     readonly createdAt: Date;

@@ -15,7 +15,7 @@ import styles from "./WordEntrySheet.module.scss";
 
 interface WordEntrySheetProps {
     readonly open: boolean;
-    readonly initialVocabularyId?: number;
+    readonly initialVocabularyId?: string;
     readonly isSaving: boolean;
     readonly onClose: () => void;
     readonly onSave: (

@@ -54,19 +54,15 @@ export const AuthenticatedLayout = () => {
         refetch: refetchUserInfo,
     } = useUserInfoQuery();
 
-    const activeCollectionId = params.collectionId
-        ? Number(params.collectionId)
-        : undefined;
-    const activeVocabularyId = params.vocabularyId
-        ? Number(params.vocabularyId)
-        : undefined;
+    const activeCollectionId = params.collectionId ?? undefined;
+    const activeVocabularyId = params.vocabularyId ?? undefined;
 
-    const [expandedCollections, setExpandedCollections] = useState<Set<number>>(
+    const [expandedCollections, setExpandedCollections] = useState<Set<string>>(
         () => new Set(activeCollectionId ? [activeCollectionId] : [])
     );
     const pendingRequestRef = useRef<PendingEntry | null>(null);
 
-    const toggleCollection = (id: number) => {
+    const toggleCollection = (id: string) => {
         setExpandedCollections((prev) => {
             const next = new Set(prev);
             if (next.has(id)) next.delete(id);

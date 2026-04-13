@@ -11,7 +11,9 @@
   <ItemGroup>
     <Compile Include="Urls.fs" />
     <Compile Include="Configuration\GroqApi.fs" />
+    <Compile Include="Configuration\SqidsEncoder.fs" />
     <Compile Include="IdentityIntegration.fs" />
+    <Compile Include="Infrastructure\ResourceIdEncoder.fs" />
     <Compile Include="Infrastructure\IChatClient.fs" />
     <Compile Include="Infrastructure\DelimitedStreamProcessor.fs" />
     <Compile Include="Infrastructure\GroqChatClient.fs" />
@@ -59,6 +61,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Sqids" Version="3.2.1" />
   </ItemGroup>
 
   <PropertyGroup>

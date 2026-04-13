@@ -5,8 +5,8 @@ import { mapEntry } from "../mappers/entries";
 import type { Entry } from "../types/entries";
 
 export const useVocabularyEntriesQuery = (
-    collectionId: number,
-    vocabularyId: number,
+    collectionId: string,
+    vocabularyId: string,
     options?: Partial<UseQueryOptions<Entry[]>>
 ) =>
     useQuery({
@@ -23,9 +23,9 @@ export const useVocabularyEntriesQuery = (
     });
 
 export const useEntryQuery = (
-    collectionId: number,
-    vocabularyId: number,
-    entryId: number,
+    collectionId: string,
+    vocabularyId: string,
+    entryId: string,
     options?: Partial<UseQueryOptions<Entry>>
 ) =>
     useQuery({

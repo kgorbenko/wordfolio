@@ -16,14 +16,14 @@ export function collectionsPath() {
     return { to: "/collections" as const };
 }
 
-export function collectionDetailPath(collectionId: number) {
+export function collectionDetailPath(collectionId: string) {
     return {
         to: "/collections/$collectionId" as const,
         params: { collectionId },
     };
 }
 
-export function collectionEditPath(collectionId: number) {
+export function collectionEditPath(collectionId: string) {
     return {
         to: "/collections/$collectionId/edit" as const,
         params: { collectionId },

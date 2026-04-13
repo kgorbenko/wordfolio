@@ -3,6 +3,7 @@ module Wordfolio.Api.Api.Mappers
 open Wordfolio.Api.Api.Types
 open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Entries
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 
 module ApiTypes = Wordfolio.Api.Api.Types
 
@@ -57,38 +58,38 @@ let toTranslationInput(request: TranslationRequest) : TranslationInput =
         request.Examples
         |> List.map toExampleInput }
 
-let private toExampleResponse(example: Example) : ExampleResponse =
-    { Id = ExampleId.value example.Id
+let private toExampleResponse (encoder: IResourceIdEncoder) (example: Example) : ExampleResponse =
+    { Id = encoder.Encode(ExampleId.value example.Id)
       ExampleText = example.ExampleText
       Source = toExampleSourceDto example.Source }
 
-let private toDefinitionResponse(definition: Definition) : DefinitionResponse =
-    { Id = DefinitionId.value definition.Id
+let private toDefinitionResponse (encoder: IResourceIdEncoder) (definition: Definition) : DefinitionResponse =
+    { Id = encoder.Encode(DefinitionId.value definition.Id)
       DefinitionText = definition.DefinitionText
       Source = toDefinitionSourceDto definition.Source
       DisplayOrder = definition.DisplayOrder
       Examples =
         definition.Examples
-        |> List.map toExampleResponse }
+        |> List.map(toExampleResponse encoder) }
 
-let private toTranslationResponse(translation: Translation) : TranslationResponse =
-    { Id = TranslationId.value translation.Id
+let private toTranslationResponse (encoder: IResourceIdEncoder) (translation: Translation) : TranslationResponse =
+    { Id = encoder.Encode(TranslationId.value translation.Id)
       TranslationText = translation.TranslationText
       Source = toTranslationSourceDto translation.Source
       DisplayOrder = translation.DisplayOrder
       Examples =
         translation.Examples
-        |> List.map toExampleResponse }
+        |> List.map(toExampleResponse encoder) }
 
-let toEntryResponse(entry: Entry) : EntryResponse =
-    { Id = EntryId.value entry.Id
-      VocabularyId = VocabularyId.value entry.VocabularyId
+let toEntryResponse (encoder: IResourceIdEncoder) (entry: Entry) : EntryResponse =
+    { Id = encoder.Encode(EntryId.value entry.Id)
+      VocabularyId = encoder.Encode(VocabularyId.value entry.VocabularyId)
       EntryText = entry.EntryText
       CreatedAt = entry.CreatedAt
       UpdatedAt = entry.UpdatedAt
       Definitions =
         entry.Definitions
-        |> List.map toDefinitionResponse
+        |> List.map(toDefinitionResponse encoder)
       Translations =
         entry.Translations
-        |> List.map toTranslationResponse }
+        |> List.map(toTranslationResponse encoder) }

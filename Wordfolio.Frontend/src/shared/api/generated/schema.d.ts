@@ -130,7 +130,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    id: number;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -173,7 +173,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    id: number;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -228,7 +228,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    id: number;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -281,7 +281,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    collectionId: number;
+                    collectionId: string;
                 };
                 cookie?: never;
             };
@@ -318,7 +318,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    collectionId: number;
+                    collectionId: string;
                 };
                 cookie?: never;
             };
@@ -378,8 +378,8 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    collectionId: number;
-                    id: number;
+                    collectionId: string;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -422,8 +422,8 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    collectionId: number;
-                    id: number;
+                    collectionId: string;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -478,8 +478,8 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    collectionId: number;
-                    id: number;
+                    collectionId: string;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -534,8 +534,8 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    collectionId: number;
-                    id: number;
+                    collectionId: string;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -588,8 +588,8 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    collectionId: number;
-                    vocabularyId: number;
+                    collectionId: string;
+                    vocabularyId: string;
                 };
                 cookie?: never;
             };
@@ -626,8 +626,8 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    collectionId: number;
-                    vocabularyId: number;
+                    collectionId: string;
+                    vocabularyId: string;
                 };
                 cookie?: never;
             };
@@ -694,9 +694,9 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    collectionId: number;
-                    vocabularyId: number;
-                    id: number;
+                    collectionId: string;
+                    vocabularyId: string;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -732,9 +732,9 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    collectionId: number;
-                    vocabularyId: number;
-                    id: number;
+                    collectionId: string;
+                    vocabularyId: string;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -782,9 +782,9 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    collectionId: number;
-                    vocabularyId: number;
-                    id: number;
+                    collectionId: string;
+                    vocabularyId: string;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -832,9 +832,9 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    collectionId: number;
-                    vocabularyId: number;
-                    id: number;
+                    collectionId: string;
+                    vocabularyId: string;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -971,7 +971,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    collectionId: number;
+                    collectionId: string;
                 };
                 cookie?: never;
             };
@@ -1124,7 +1124,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    id: number;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -1160,7 +1160,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    id: number;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -1208,7 +1208,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    id: number;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -1256,7 +1256,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    id: number;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -1810,8 +1810,7 @@ export interface components {
             environment: string;
         };
         CollectionResponse: {
-            /** Format: int32 */
-            id: number;
+            id: string;
             name: string;
             description?: null | string;
             /** Format: date-time */
@@ -1824,8 +1823,7 @@ export interface components {
             defaultVocabulary?: null | components["schemas"]["VocabularyWithEntryCountResponse"];
         };
         CollectionWithVocabulariesResponse: {
-            /** Format: int32 */
-            id: number;
+            id: string;
             name: string;
             description?: null | string;
             /** Format: date-time */
@@ -1835,8 +1833,7 @@ export interface components {
             vocabularies: components["schemas"]["VocabularyWithEntryCountResponse"][];
         };
         CollectionWithVocabularyCountResponse: {
-            /** Format: int32 */
-            id: number;
+            id: string;
             name: string;
             description?: null | string;
             /** Format: date-time */
@@ -1872,8 +1869,7 @@ export interface components {
             examples: components["schemas"]["ExampleRequest"][];
         };
         DefinitionResponse: {
-            /** Format: int32 */
-            id: number;
+            id: string;
             definitionText: string;
             source: components["schemas"]["DefinitionSource"];
             /** Format: int32 */
@@ -1887,10 +1883,8 @@ export interface components {
             entries: components["schemas"]["EntryResponse"][];
         };
         EntryResponse: {
-            /** Format: int32 */
-            id: number;
-            /** Format: int32 */
-            vocabularyId: number;
+            id: string;
+            vocabularyId: string;
             entryText: string;
             /** Format: date-time */
             createdAt: string;
@@ -1904,8 +1898,7 @@ export interface components {
             source: components["schemas"]["ExampleSource"];
         };
         ExampleResponse: {
-            /** Format: int32 */
-            id: number;
+            id: string;
             exampleText: string;
             source: components["schemas"]["ExampleSource"];
         };
@@ -1941,15 +1934,13 @@ export interface components {
             twoFactorRecoveryCode?: null | string;
         };
         MoveDraftRequest: {
-            /** Format: int32 */
-            vocabularyId: number;
+            vocabularyId: string;
         };
         MoveEntryRequest: {
-            vocabularyId?: null | number;
+            vocabularyId?: null | string;
         };
         MoveVocabularyRequest: {
-            /** Format: int32 */
-            collectionId: number;
+            collectionId: string;
         };
         PasswordRequirementsResponse: {
             /** Format: int32 */
@@ -1982,8 +1973,7 @@ export interface components {
             examples: components["schemas"]["ExampleRequest"][];
         };
         TranslationResponse: {
-            /** Format: int32 */
-            id: number;
+            id: string;
             translationText: string;
             source: components["schemas"]["TranslationSource"];
             /** Format: int32 */
@@ -2021,10 +2011,8 @@ export interface components {
             description?: null | string;
         };
         VocabularyDetailResponse: {
-            /** Format: int32 */
-            id: number;
-            /** Format: int32 */
-            collectionId: number;
+            id: string;
+            collectionId: string;
             collectionName: string;
             name: string;
             description?: null | string;
@@ -2034,10 +2022,8 @@ export interface components {
             updatedAt: string;
         };
         VocabularyResponse: {
-            /** Format: int32 */
-            id: number;
-            /** Format: int32 */
-            collectionId: number;
+            id: string;
+            collectionId: string;
             name: string;
             description?: null | string;
             /** Format: date-time */
@@ -2046,8 +2032,7 @@ export interface components {
             updatedAt: string;
         };
         VocabularyWithEntryCountResponse: {
-            /** Format: int32 */
-            id: number;
+            id: string;
             name: string;
             description?: null | string;
             /** Format: date-time */

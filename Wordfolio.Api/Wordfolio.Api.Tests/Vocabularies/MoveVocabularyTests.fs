@@ -4,10 +4,12 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Vocabularies.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -24,6 +26,8 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(600, "user@example.com", "P@ssw0rd!")
 
@@ -55,10 +59,10 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveVocabularyRequest =
-                { CollectionId = targetCollection.Id }
+                { CollectionId = encoder.Encode targetCollection.Id }
 
             let url =
-                Urls.Vocabularies.moveVocabularyById(sourceCollection.Id, vocabulary.Id)
+                Urls.Vocabularies.moveVocabularyById(encoder.Encode sourceCollection.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -69,8 +73,8 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let! actual = response.Content.ReadFromJsonAsync<VocabularyResponse>()
 
             let expected: VocabularyResponse =
-                { Id = vocabulary.Id
-                  CollectionId = targetCollection.Id
+                { Id = encoder.Encode vocabulary.Id
+                  CollectionId = encoder.Encode targetCollection.Id
                   Name = "My Vocabulary"
                   Description = None
                   CreatedAt = createdAt
@@ -120,12 +124,18 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             use client = factory.CreateClient()
 
             let request: MoveVocabularyRequest =
-                { CollectionId = 999 }
+                { CollectionId = encoder.Encode 999 }
 
-            let! response = client.PostAsJsonAsync(Urls.Vocabularies.moveVocabularyById(1, 1), request)
+            let! response =
+                client.PostAsJsonAsync(
+                    Urls.Vocabularies.moveVocabularyById(encoder.Encode 1, encoder.Encode 1),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
         }
@@ -137,6 +147,8 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(601, "user@example.com", "P@ssw0rd!")
 
@@ -155,9 +167,13 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveVocabularyRequest =
-                { CollectionId = collection.Id }
+                { CollectionId = encoder.Encode collection.Id }
 
-            let! response = client.PostAsJsonAsync(Urls.Vocabularies.moveVocabularyById(collection.Id, 999999), request)
+            let! response =
+                client.PostAsJsonAsync(
+                    Urls.Vocabularies.moveVocabularyById(encoder.Encode collection.Id, encoder.Encode 999999),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -169,6 +185,8 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(602, "user@example.com", "P@ssw0rd!")
 
@@ -191,10 +209,13 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveVocabularyRequest =
-                { CollectionId = 999999 }
+                { CollectionId = encoder.Encode 999999 }
 
             let! response =
-                client.PostAsJsonAsync(Urls.Vocabularies.moveVocabularyById(collection.Id, vocabulary.Id), request)
+                client.PostAsJsonAsync(
+                    Urls.Vocabularies.moveVocabularyById(encoder.Encode collection.Id, encoder.Encode vocabulary.Id),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -206,6 +227,8 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(603, "user@example.com", "P@ssw0rd!")
 
@@ -231,10 +254,13 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let request: MoveVocabularyRequest =
-                { CollectionId = collectionA.Id }
+                { CollectionId = encoder.Encode collectionA.Id }
 
             let! response =
-                client.PostAsJsonAsync(Urls.Vocabularies.moveVocabularyById(collectionA.Id, vocabulary.Id), request)
+                client.PostAsJsonAsync(
+                    Urls.Vocabularies.moveVocabularyById(encoder.Encode collectionA.Id, encoder.Encode vocabulary.Id),
+                    request
+                )
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
 
@@ -263,6 +289,8 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser1, wordfolioUser1 = factory.CreateUserAsync(604, "user1@example.com", "P@ssw0rd!")
             let! _, wordfolioUser2 = factory.CreateUserAsync(605, "user2@example.com", "P@ssw0rd!")
 
@@ -288,11 +316,14 @@ type MoveVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser1)
 
             let request: MoveVocabularyRequest =
-                { CollectionId = foreignCollection.Id }
+                { CollectionId = encoder.Encode foreignCollection.Id }
 
             let! response =
                 client.PostAsJsonAsync(
-                    Urls.Vocabularies.moveVocabularyById(sourceCollection.Id, vocabulary.Id),
+                    Urls.Vocabularies.moveVocabularyById(
+                        encoder.Encode sourceCollection.Id,
+                        encoder.Encode vocabulary.Id
+                    ),
                     request
                 )
 

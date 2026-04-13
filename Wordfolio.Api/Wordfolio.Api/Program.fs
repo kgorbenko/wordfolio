@@ -6,6 +6,7 @@ open Microsoft.Extensions.Hosting
 
 open Wordfolio.Api
 open Wordfolio.Api.Configuration.GroqApi
+open Wordfolio.Api.Configuration.SqidsEncoder
 open Wordfolio.Api.DataAccess
 open Wordfolio.Api.Api.Auth.Handlers
 open Wordfolio.Api.Api.Collections.Handlers
@@ -17,6 +18,7 @@ open Wordfolio.Api.Api.Vocabularies.Handlers
 open Wordfolio.Api.IdentityIntegration
 open Wordfolio.Api.Infrastructure.ChatClient
 open Wordfolio.Api.Infrastructure.GroqChatClient
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.ServiceDefaults.Builder
 open Wordfolio.ServiceDefaults.HealthCheck
 open Wordfolio.ServiceDefaults.OpenApi
@@ -69,6 +71,14 @@ let main args =
     builder.AddNpgsqlDataSource("wordfoliodb")
 
     builder.Services.AddOptions<GroqApiConfiguration>().BindConfiguration("GroqApi")
+    |> ignore
+
+    builder.Services
+        .AddOptions<SqidsEncoderConfiguration>()
+        .BindConfiguration("SqidsEncoder")
+    |> ignore
+
+    builder.Services.AddSingleton<IResourceIdEncoder, ResourceIdEncoder>()
     |> ignore
 
     builder.Services.AddSingleton<IChatClient, GroqChatClient>()

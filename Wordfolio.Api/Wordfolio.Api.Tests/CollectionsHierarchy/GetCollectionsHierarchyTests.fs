@@ -4,10 +4,12 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.CollectionsHierarchy.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -24,6 +26,8 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(300, "user@example.com", "P@ssw0rd!")
 
@@ -70,33 +74,33 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             let actualCollection1 =
                 actual.Collections
-                |> List.find(fun c -> c.Id = collection1.Id)
+                |> List.find(fun c -> c.Id = encoder.Encode collection1.Id)
 
             let actualCollection2 =
                 actual.Collections
-                |> List.find(fun c -> c.Id = collection2.Id)
+                |> List.find(fun c -> c.Id = encoder.Encode collection2.Id)
 
             let expected: CollectionsHierarchyResultResponse =
                 { Collections =
-                    [ { Id = collection1.Id
+                    [ { Id = encoder.Encode collection1.Id
                         Name = "Collection 1"
                         Description = Some "Description 1"
                         CreatedAt = actualCollection1.CreatedAt
                         UpdatedAt = actualCollection1.CreatedAt
                         Vocabularies =
-                          [ { Id = vocabulary1.Id
+                          [ { Id = encoder.Encode vocabulary1.Id
                               Name = "Vocabulary 1"
                               Description = Some "Vocab description"
                               CreatedAt = actualCollection1.Vocabularies[0].CreatedAt
                               UpdatedAt = actualCollection1.Vocabularies[0].CreatedAt
                               EntryCount = 2 }
-                            { Id = vocabulary2.Id
+                            { Id = encoder.Encode vocabulary2.Id
                               Name = "Vocabulary 2"
                               Description = None
                               CreatedAt = actualCollection1.Vocabularies[1].CreatedAt
                               UpdatedAt = actualCollection1.Vocabularies[1].CreatedAt
                               EntryCount = 1 } ] }
-                      { Id = collection2.Id
+                      { Id = encoder.Encode collection2.Id
                         Name = "Collection 2"
                         Description = None
                         CreatedAt = actualCollection2.CreatedAt
@@ -114,6 +118,8 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! requesterIdentityUser, requesterWordfolioUser =
                 factory.CreateUserAsync(306, "requester@example.com", "P@ssw0rd!")
@@ -188,13 +194,13 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             let expected: CollectionsHierarchyResultResponse =
                 { Collections =
-                    [ { Id = requesterCollection.Id
+                    [ { Id = encoder.Encode requesterCollection.Id
                         Name = "Requester Collection"
                         Description = Some "Requester Description"
                         CreatedAt = actualCollection.CreatedAt
                         UpdatedAt = actualCollection.CreatedAt
                         Vocabularies =
-                          [ { Id = requesterVocabulary.Id
+                          [ { Id = encoder.Encode requesterVocabulary.Id
                               Name = "Requester Vocabulary"
                               Description = Some "Requester Vocab Description"
                               CreatedAt = actualVocabulary.CreatedAt
@@ -212,6 +218,8 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(301, "user@example.com", "P@ssw0rd!")
 
@@ -244,7 +252,7 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             let expected: CollectionsHierarchyResultResponse =
                 { Collections =
-                    [ { Id = regularCollection.Id
+                    [ { Id = encoder.Encode regularCollection.Id
                         Name = "Regular Collection"
                         Description = None
                         CreatedAt = actualCollection.CreatedAt
@@ -262,6 +270,8 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(302, "user@example.com", "P@ssw0rd!")
 
@@ -298,13 +308,13 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             let expected: CollectionsHierarchyResultResponse =
                 { Collections =
-                    [ { Id = collection.Id
+                    [ { Id = encoder.Encode collection.Id
                         Name = "Test Collection"
                         Description = None
                         CreatedAt = actualCollection.CreatedAt
                         UpdatedAt = actualCollection.CreatedAt
                         Vocabularies =
-                          [ { Id = regularVocabulary.Id
+                          [ { Id = encoder.Encode regularVocabulary.Id
                               Name = "Regular Vocabulary"
                               Description = None
                               CreatedAt = actualCollection.Vocabularies[0].CreatedAt
@@ -322,6 +332,8 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(303, "user@example.com", "P@ssw0rd!")
 
@@ -353,6 +365,8 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(304, "user@example.com", "P@ssw0rd!")
 
@@ -392,7 +406,7 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
                 { Collections = []
                   DefaultVocabulary =
                     Some
-                        { Id = defaultVocabulary.Id
+                        { Id = encoder.Encode defaultVocabulary.Id
                           Name = "My Words"
                           Description = Some "Default vocab"
                           CreatedAt = defaultVocabulary.CreatedAt
@@ -409,6 +423,8 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(305, "user@example.com", "P@ssw0rd!")
 
@@ -451,6 +467,8 @@ type GetCollectionsHierarchyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             use client = factory.CreateClient()
 

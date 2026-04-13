@@ -16,8 +16,8 @@ import { isDuplicateEntryError } from "../types/entries";
 import type { components } from "../generated/schema";
 
 interface CreateEntryParams {
-    readonly collectionId: number;
-    readonly vocabularyId: number;
+    readonly collectionId: string;
+    readonly vocabularyId: string;
     readonly input: CreateEntryData;
     readonly allowDuplicate?: boolean;
 }
@@ -76,9 +76,9 @@ export function useCreateEntryMutation(
 }
 
 interface UpdateEntryParams {
-    readonly collectionId: number;
-    readonly vocabularyId: number;
-    readonly entryId: number;
+    readonly collectionId: string;
+    readonly vocabularyId: string;
+    readonly entryId: string;
     readonly data: CreateEntryData;
 }
 
@@ -120,9 +120,9 @@ export function useUpdateEntryMutation(
 }
 
 interface DeleteEntryParams {
-    readonly collectionId: number;
-    readonly vocabularyId: number;
-    readonly entryId: number;
+    readonly collectionId: string;
+    readonly vocabularyId: string;
+    readonly entryId: string;
 }
 
 interface UseDeleteEntryMutationOptions {
@@ -160,10 +160,10 @@ export function useDeleteEntryMutation(
 }
 
 interface MoveEntryParams {
-    readonly collectionId: number;
-    readonly entryId: number;
-    readonly sourceVocabularyId: number;
-    readonly targetVocabularyId: number | undefined;
+    readonly collectionId: string;
+    readonly entryId: string;
+    readonly sourceVocabularyId: string;
+    readonly targetVocabularyId: string | undefined;
 }
 
 interface UseMoveEntryMutationOptions {

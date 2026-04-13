@@ -18,6 +18,7 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Vocabularies
 open Wordfolio.Api.Domain.Vocabularies.Operations
 open Wordfolio.Api.Infrastructure.Environment
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 
 module UrlTokens = Wordfolio.Api.Urls
 module Urls = Wordfolio.Api.Urls.Vocabularies
@@ -63,12 +64,13 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
     group
         .MapGet(
             UrlTokens.Root,
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun collectionId user dataSource cancellationToken ->
+            Func<string, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId user encoder dataSource cancellationToken ->
                     task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
+                        match getUserId user, encoder.Decode(collectionId) with
+                        | None, _ -> return Results.Unauthorized()
+                        | _, None -> return Results.NotFound()
+                        | Some userId, Some collectionId ->
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
@@ -83,7 +85,7 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                                 | Ok vocabularies ->
                                     let response =
                                         vocabularies
-                                        |> List.map toVocabularyResponse
+                                        |> List.map(toVocabularyResponse encoder)
 
                                     Results.Ok(response)
                                 | Error error -> toGetByCollectionIdErrorResponse error
@@ -97,12 +99,13 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
     group
         .MapPost(
             UrlTokens.Root,
-            Func<int, CreateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun collectionId request user dataSource cancellationToken ->
+            Func<string, CreateVocabularyRequest, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId request user encoder dataSource cancellationToken ->
                     task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
+                        match getUserId user, encoder.Decode(collectionId) with
+                        | None, _ -> return Results.Unauthorized()
+                        | _, None -> return Results.NotFound()
+                        | Some userId, Some collectionId ->
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
@@ -118,10 +121,10 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
                             return
                                 match result with
                                 | Ok vocabulary ->
-                                    Results.Created(
-                                        Urls.vocabularyById(collectionId, VocabularyId.value vocabulary.Id),
-                                        toVocabularyResponse vocabulary
-                                    )
+                                    let response =
+                                        toVocabularyResponse encoder vocabulary
+
+                                    Results.Created(Urls.vocabularyById(response.CollectionId, response.Id), response)
                                 | Error error -> toCreateErrorResponse error
                     })
         )
@@ -134,26 +137,29 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
     group
         .MapGet(
             UrlTokens.ById,
-            Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun collectionId id user dataSource cancellationToken ->
+            Func<string, string, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId id user encoder dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized()
                         | Some userId ->
-                            let env =
-                                TransactionalEnv(dataSource, cancellationToken)
+                            match ResourceIdsHelper.Decode(encoder, collectionId, id) with
+                            | None -> return Results.NotFound()
+                            | Some(collectionId, id) ->
+                                let env =
+                                    TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result =
-                                getById
-                                    env
-                                    { UserId = UserId userId
-                                      CollectionId = CollectionId collectionId
-                                      VocabularyId = VocabularyId id }
+                                let! result =
+                                    getById
+                                        env
+                                        { UserId = UserId userId
+                                          CollectionId = CollectionId collectionId
+                                          VocabularyId = VocabularyId id }
 
-                            return
-                                match result with
-                                | Ok detail -> Results.Ok(toVocabularyDetailResponse detail)
-                                | Error error -> toGetByIdErrorResponse error
+                                return
+                                    match result with
+                                    | Ok detail -> Results.Ok(toVocabularyDetailResponse encoder detail)
+                                    | Error error -> toGetByIdErrorResponse error
                     })
         )
         .Produces<VocabularyDetailResponse>(StatusCodes.Status200OK)
@@ -165,29 +171,32 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
     group
         .MapPut(
             UrlTokens.ById,
-            Func<int, int, UpdateVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun collectionId id request user dataSource cancellationToken ->
+            Func<string, string, UpdateVocabularyRequest, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId id request user encoder dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized()
                         | Some userId ->
-                            let env =
-                                TransactionalEnv(dataSource, cancellationToken)
+                            match ResourceIdsHelper.Decode(encoder, collectionId, id) with
+                            | None -> return Results.NotFound()
+                            | Some(collectionId, id) ->
+                                let env =
+                                    TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result =
-                                update
-                                    env
-                                    { UserId = UserId userId
-                                      CollectionId = CollectionId collectionId
-                                      VocabularyId = VocabularyId id
-                                      Name = request.Name
-                                      Description = request.Description
-                                      UpdatedAt = DateTimeOffset.UtcNow }
+                                let! result =
+                                    update
+                                        env
+                                        { UserId = UserId userId
+                                          CollectionId = CollectionId collectionId
+                                          VocabularyId = VocabularyId id
+                                          Name = request.Name
+                                          Description = request.Description
+                                          UpdatedAt = DateTimeOffset.UtcNow }
 
-                            return
-                                match result with
-                                | Ok vocabulary -> Results.Ok(toVocabularyResponse vocabulary)
-                                | Error error -> toUpdateErrorResponse error
+                                return
+                                    match result with
+                                    | Ok vocabulary -> Results.Ok(toVocabularyResponse encoder vocabulary)
+                                    | Error error -> toUpdateErrorResponse error
                     })
         )
         .Produces<VocabularyResponse>(StatusCodes.Status200OK)
@@ -200,26 +209,29 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
     group
         .MapDelete(
             UrlTokens.ById,
-            Func<int, int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun collectionId id user dataSource cancellationToken ->
+            Func<string, string, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId id user encoder dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized()
                         | Some userId ->
-                            let env =
-                                TransactionalEnv(dataSource, cancellationToken)
+                            match ResourceIdsHelper.Decode(encoder, collectionId, id) with
+                            | None -> return Results.NotFound()
+                            | Some(collectionId, id) ->
+                                let env =
+                                    TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result =
-                                delete
-                                    env
-                                    { UserId = UserId userId
-                                      CollectionId = CollectionId collectionId
-                                      VocabularyId = VocabularyId id }
+                                let! result =
+                                    delete
+                                        env
+                                        { UserId = UserId userId
+                                          CollectionId = CollectionId collectionId
+                                          VocabularyId = VocabularyId id }
 
-                            return
-                                match result with
-                                | Ok() -> Results.NoContent()
-                                | Error error -> toDeleteErrorResponse error
+                                return
+                                    match result with
+                                    | Ok() -> Results.NoContent()
+                                    | Error error -> toDeleteErrorResponse error
                     })
         )
         .Produces(StatusCodes.Status204NoContent)
@@ -231,28 +243,31 @@ let mapVocabulariesEndpoints(group: RouteGroupBuilder) =
     group
         .MapPost(
             UrlTokens.ById + "/move",
-            Func<int, int, MoveVocabularyRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun collectionId id request user dataSource cancellationToken ->
+            Func<string, string, MoveVocabularyRequest, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun collectionId id request user encoder dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized()
                         | Some userId ->
-                            let env =
-                                TransactionalEnv(dataSource, cancellationToken)
+                            match ResourceIdsHelper.Decode(encoder, collectionId, id, request.CollectionId) with
+                            | None -> return Results.NotFound()
+                            | Some(collectionId, id, targetCollectionId) ->
+                                let env =
+                                    TransactionalEnv(dataSource, cancellationToken)
 
-                            let! result =
-                                move
-                                    env
-                                    { UserId = UserId userId
-                                      CollectionId = CollectionId collectionId
-                                      VocabularyId = VocabularyId id
-                                      TargetCollectionId = CollectionId request.CollectionId
-                                      UpdatedAt = DateTimeOffset.UtcNow }
+                                let! result =
+                                    move
+                                        env
+                                        { UserId = UserId userId
+                                          CollectionId = CollectionId collectionId
+                                          VocabularyId = VocabularyId id
+                                          TargetCollectionId = CollectionId targetCollectionId
+                                          UpdatedAt = DateTimeOffset.UtcNow }
 
-                            return
-                                match result with
-                                | Ok vocabulary -> Results.Ok(toVocabularyResponse vocabulary)
-                                | Error error -> toMoveErrorResponse error
+                                return
+                                    match result with
+                                    | Ok vocabulary -> Results.Ok(toVocabularyResponse encoder vocabulary)
+                                    | Error error -> toMoveErrorResponse error
                     })
         )
         .Produces<VocabularyResponse>(StatusCodes.Status200OK)

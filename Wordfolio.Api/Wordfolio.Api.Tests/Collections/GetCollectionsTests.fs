@@ -4,10 +4,12 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Collections.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -24,6 +26,8 @@ type GetCollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! firstIdentityUser, firstWordfolioUser = factory.CreateUserAsync(100, "user1@example.com", "P@ssw0rd!")
 
@@ -66,7 +70,7 @@ type GetCollectionsTests(fixture: WordfolioIdentityTestFixture) =
             let! actualCollections = response.Content.ReadFromJsonAsync<CollectionResponse list>()
 
             let expectedCollections: CollectionResponse list =
-                [ { Id = firstUserCollection.Id
+                [ { Id = encoder.Encode firstUserCollection.Id
                     Name = "First User Collection"
                     Description = Some "Owned by first user"
                     CreatedAt = firstUserCollection.CreatedAt
@@ -82,6 +86,8 @@ type GetCollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(100, "user@example.com", "P@ssw0rd!")
 
@@ -110,6 +116,8 @@ type GetCollectionsTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             use client = factory.CreateClient()
 

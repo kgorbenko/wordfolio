@@ -6,7 +6,7 @@ import { Entry } from "../../../shared/api/types/entries";
 
 interface VocabularyDetailContentProps {
     readonly entries: Entry[];
-    readonly onEntryClick: (id: number) => void;
+    readonly onEntryClick: (id: string) => void;
     readonly onAddWordClick: () => void;
     readonly sortModel: GridSortModel;
     readonly onSortModelChange: (model: GridSortModel) => void;

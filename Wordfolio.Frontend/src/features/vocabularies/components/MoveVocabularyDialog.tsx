@@ -16,12 +16,12 @@ import { ResponsiveDialog } from "../../../shared/components/ResponsiveDialog";
 import { useCollectionsHierarchyQuery } from "../../../shared/api/queries/collections";
 
 export interface MoveVocabularySelectionResult {
-    readonly collectionId: number;
+    readonly collectionId: string;
 }
 
 interface MoveVocabularyDialogProps {
     readonly isOpen: boolean;
-    readonly currentCollectionId: number;
+    readonly currentCollectionId: string;
     readonly onCancel: () => void;
     readonly onConfirm: (value: MoveVocabularySelectionResult) => void;
 }
@@ -33,7 +33,7 @@ export const MoveVocabularyDialog = ({
     onConfirm,
 }: MoveVocabularyDialogProps) => {
     const [selectedCollectionId, setSelectedCollectionId] = useState<
-        number | undefined
+        string | undefined
     >(undefined);
 
     const {
@@ -61,8 +61,8 @@ export const MoveVocabularyDialog = ({
 
     const handleTargetChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement>) => {
-            const value = Number(event.target.value);
-            setSelectedCollectionId(Number.isNaN(value) ? undefined : value);
+            const value = event.target.value;
+            setSelectedCollectionId(value);
         },
         []
     );

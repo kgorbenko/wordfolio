@@ -18,6 +18,7 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Collections
 open Wordfolio.Api.Domain.Collections.Operations
 open Wordfolio.Api.Infrastructure.Environment
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 
 module UrlTokens = Wordfolio.Api.Urls
 module Urls = Wordfolio.Api.Urls.Collections
@@ -50,24 +51,25 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
     group
         .MapGet(
             UrlTokens.Root,
-            Func<ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>(fun user dataSource cancellationToken ->
-                task {
-                    match getUserId user with
-                    | None -> return Results.Unauthorized()
-                    | Some userId ->
-                        let env =
-                            TransactionalEnv(dataSource, cancellationToken)
+            Func<ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun user encoder dataSource cancellationToken ->
+                    task {
+                        match getUserId user with
+                        | None -> return Results.Unauthorized()
+                        | Some userId ->
+                            let env =
+                                TransactionalEnv(dataSource, cancellationToken)
 
-                        let! result = getByUserId env { UserId = UserId userId }
+                            let! result = getByUserId env { UserId = UserId userId }
 
-                        let collections = okOrFail result
+                            let collections = okOrFail result
 
-                        return
-                            Results.Ok(
-                                collections
-                                |> List.map toCollectionResponse
-                            )
-                })
+                            return
+                                Results.Ok(
+                                    collections
+                                    |> List.map(toCollectionResponse encoder)
+                                )
+                    })
         )
         .Produces<CollectionResponse list>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -76,12 +78,13 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
     group
         .MapGet(
             UrlTokens.ById,
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id user dataSource cancellationToken ->
+            Func<string, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun id user encoder dataSource cancellationToken ->
                     task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
+                        match getUserId user, encoder.Decode(id) with
+                        | None, _ -> return Results.Unauthorized()
+                        | _, None -> return Results.NotFound()
+                        | Some userId, Some collectionId ->
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
@@ -89,11 +92,11 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
                                 getById
                                     env
                                     { UserId = UserId userId
-                                      CollectionId = CollectionId id }
+                                      CollectionId = CollectionId collectionId }
 
                             return
                                 match result with
-                                | Ok collection -> Results.Ok(toCollectionResponse collection)
+                                | Ok collection -> Results.Ok(toCollectionResponse encoder collection)
                                 | Error error -> toGetByIdErrorResponse error
                     })
         )
@@ -106,8 +109,8 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
     group
         .MapPost(
             UrlTokens.Root,
-            Func<CreateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun request user dataSource cancellationToken ->
+            Func<CreateCollectionRequest, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun request user encoder dataSource cancellationToken ->
                     task {
                         match getUserId user with
                         | None -> return Results.Unauthorized()
@@ -126,10 +129,10 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
                             return
                                 match result with
                                 | Ok collection ->
-                                    Results.Created(
-                                        Urls.collectionById(CollectionId.value collection.Id),
-                                        toCollectionResponse collection
-                                    )
+                                    let response =
+                                        toCollectionResponse encoder collection
+
+                                    Results.Created(Urls.collectionById response.Id, response)
                                 | Error error -> toCreateErrorResponse error
                     })
         )
@@ -141,12 +144,13 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
     group
         .MapPut(
             UrlTokens.ById,
-            Func<int, UpdateCollectionRequest, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id request user dataSource cancellationToken ->
+            Func<string, UpdateCollectionRequest, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun id request user encoder dataSource cancellationToken ->
                     task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
+                        match getUserId user, encoder.Decode(id) with
+                        | None, _ -> return Results.Unauthorized()
+                        | _, None -> return Results.NotFound()
+                        | Some userId, Some collectionId ->
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
@@ -154,14 +158,14 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
                                 update
                                     env
                                     { UserId = UserId userId
-                                      CollectionId = CollectionId id
+                                      CollectionId = CollectionId collectionId
                                       Name = request.Name
                                       Description = request.Description
                                       UpdatedAt = DateTimeOffset.UtcNow }
 
                             return
                                 match result with
-                                | Ok collection -> Results.Ok(toCollectionResponse collection)
+                                | Ok collection -> Results.Ok(toCollectionResponse encoder collection)
                                 | Error error -> toUpdateErrorResponse error
                     })
         )
@@ -175,12 +179,13 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
     group
         .MapDelete(
             UrlTokens.ById,
-            Func<int, ClaimsPrincipal, NpgsqlDataSource, CancellationToken, _>
-                (fun id user dataSource cancellationToken ->
+            Func<string, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
+                (fun id user encoder dataSource cancellationToken ->
                     task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
+                        match getUserId user, encoder.Decode(id) with
+                        | None, _ -> return Results.Unauthorized()
+                        | _, None -> return Results.NotFound()
+                        | Some userId, Some collectionId ->
                             let env =
                                 TransactionalEnv(dataSource, cancellationToken)
 
@@ -188,7 +193,7 @@ let mapCollectionsEndpoints(group: RouteGroupBuilder) =
                                 delete
                                     env
                                     { UserId = UserId userId
-                                      CollectionId = CollectionId id }
+                                      CollectionId = CollectionId collectionId }
 
                             return
                                 match result with

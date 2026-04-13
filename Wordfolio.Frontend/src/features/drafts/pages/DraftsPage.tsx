@@ -67,7 +67,7 @@ export const DraftsPage = () => {
     const { data, isLoading, isError, refetch } = useDraftsQuery();
 
     const handleEntryClick = useCallback(
-        (entryId: number) => {
+        (entryId: string) => {
             void navigate(draftsEntryDetailPath(entryId));
         },
         [navigate]

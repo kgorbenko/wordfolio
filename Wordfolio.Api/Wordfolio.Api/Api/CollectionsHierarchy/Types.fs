@@ -3,7 +3,7 @@ module Wordfolio.Api.Api.CollectionsHierarchy.Types
 open System
 
 type VocabularyWithEntryCountResponse =
-    { Id: int
+    { Id: string
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
@@ -11,7 +11,7 @@ type VocabularyWithEntryCountResponse =
       EntryCount: int }
 
 type CollectionWithVocabulariesResponse =
-    { Id: int
+    { Id: string
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
@@ -19,7 +19,7 @@ type CollectionWithVocabulariesResponse =
       Vocabularies: VocabularyWithEntryCountResponse list }
 
 type CollectionWithVocabularyCountResponse =
-    { Id: int
+    { Id: string
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset

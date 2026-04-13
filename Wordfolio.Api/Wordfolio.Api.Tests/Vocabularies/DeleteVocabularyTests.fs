@@ -3,9 +3,11 @@ namespace Wordfolio.Api.Tests.Vocabularies
 open System
 open System.Net
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -22,6 +24,8 @@ type DeleteVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(208, "user@example.com", "P@ssw0rd!")
 
@@ -44,7 +48,7 @@ type DeleteVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                Urls.Vocabularies.vocabularyById(collection.Id, vocabulary.Id)
+                Urls.Vocabularies.vocabularyById(encoder.Encode collection.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.DeleteAsync(url)
             let! body = response.Content.ReadAsStringAsync()
@@ -67,6 +71,8 @@ type DeleteVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(209, "user@example.com", "P@ssw0rd!")
 
             let now =
@@ -84,7 +90,7 @@ type DeleteVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                Urls.Vocabularies.vocabularyById(collection.Id, 999999)
+                Urls.Vocabularies.vocabularyById(encoder.Encode collection.Id, encoder.Encode 999999)
 
             let! response = client.DeleteAsync(url)
 
@@ -98,6 +104,8 @@ type DeleteVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(218, "user@example.com", "P@ssw0rd!")
 
@@ -126,7 +134,7 @@ type DeleteVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use! client = factory.CreateAuthenticatedClientAsync(identityUser)
 
             let url =
-                Urls.Vocabularies.vocabularyById(collectionA.Id, vocabulary.Id)
+                Urls.Vocabularies.vocabularyById(encoder.Encode collectionA.Id, encoder.Encode vocabulary.Id)
 
             let! response = client.DeleteAsync(url)
 
@@ -157,10 +165,12 @@ type DeleteVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             use client = factory.CreateClient()
 
             let url =
-                Urls.Vocabularies.vocabularyById(1, 1)
+                Urls.Vocabularies.vocabularyById(encoder.Encode 1, encoder.Encode 1)
 
             let! response = client.DeleteAsync(url)
 

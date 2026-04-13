@@ -122,7 +122,7 @@ export const CollectionDetailPage = () => {
     };
 
     const handleVocabularyClick = useCallback(
-        (vocabId: number) => {
+        (vocabId: string) => {
             void navigate(vocabularyDetailPath(collectionId, vocabId));
         },
         [navigate, collectionId]

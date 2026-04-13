@@ -56,7 +56,7 @@ describe("AppSidebar", () => {
     it("does not render the empty state when collections is non-empty", () => {
         const collections: NavCollection[] = [
             {
-                id: 1,
+                id: "1",
                 name: "My Collection",
                 entryCount: 5,
             },

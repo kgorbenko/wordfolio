@@ -4,10 +4,12 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Vocabularies.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -24,6 +26,8 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(200, "user@example.com", "P@ssw0rd!")
 
@@ -46,7 +50,7 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "A test vocabulary" }
 
             let url =
-                Urls.Vocabularies.vocabulariesByCollection collection.Id
+                Urls.Vocabularies.vocabulariesByCollection(encoder.Encode collection.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
             let! body = response.Content.ReadAsStringAsync()
@@ -58,9 +62,14 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             let createdVocabularyId = result.Id
 
+            let createdVocabularyDatabaseId =
+                createdVocabularyId
+                |> encoder.Decode
+                |> Option.get
+
             let expectedResult: VocabularyResponse =
                 { Id = createdVocabularyId
-                  CollectionId = collection.Id
+                  CollectionId = encoder.Encode collection.Id
                   Name = "Test Vocabulary"
                   Description = Some "A test vocabulary"
                   CreatedAt = result.CreatedAt
@@ -71,7 +80,7 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
             let! databaseState = Seeder.getAllVocabulariesAsync fixture.WordfolioSeeder
 
             let expectedDatabaseState: Wordfolio.Vocabulary list =
-                [ { Id = createdVocabularyId
+                [ { Id = createdVocabularyDatabaseId
                     CollectionId = collection.Id
                     Name = "Test Vocabulary"
                     Description = Some "A test vocabulary"
@@ -89,6 +98,8 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! _, wordfolioUser = factory.CreateUserAsync(202, "user@example.com", "P@ssw0rd!")
 
@@ -111,7 +122,7 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "A test vocabulary" }
 
             let url =
-                Urls.Vocabularies.vocabulariesByCollection collection.Id
+                Urls.Vocabularies.vocabulariesByCollection(encoder.Encode collection.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -129,6 +140,8 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! _, ownerWordfolioUser = factory.CreateUserAsync(206, "owner@example.com", "P@ssw0rd!")
 
@@ -154,7 +167,7 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "Should not be created" }
 
             let url =
-                Urls.Vocabularies.vocabulariesByCollection ownerCollection.Id
+                Urls.Vocabularies.vocabulariesByCollection(encoder.Encode ownerCollection.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
 
@@ -172,6 +185,8 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(201, "user@example.com", "P@ssw0rd!")
 
@@ -194,7 +209,7 @@ type CreateVocabularyTests(fixture: WordfolioIdentityTestFixture) =
                   Description = Some "A test vocabulary" }
 
             let url =
-                Urls.Vocabularies.vocabulariesByCollection collection.Id
+                Urls.Vocabularies.vocabulariesByCollection(encoder.Encode collection.Id)
 
             let! response = client.PostAsJsonAsync(url, request)
 

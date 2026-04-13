@@ -4,10 +4,12 @@ open System
 open System.Net
 open System.Net.Http.Json
 open System.Threading.Tasks
+open Microsoft.Extensions.DependencyInjection
 
 open Xunit
 
 open Wordfolio.Api.Api.Collections.Types
+open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.Api.Tests
 open Wordfolio.Api.Tests.Utils
 open Wordfolio.Api.Tests.Utils.Wordfolio
@@ -24,6 +26,8 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(105, "user@example.com", "P@ssw0rd!")
 
@@ -48,7 +52,9 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = "Updated Name"
                   Description = Some "Updated Description" }
 
-            let! response = client.PutAsJsonAsync(Urls.Collections.collectionById collection.Id, updateRequest)
+            let! response =
+                client.PutAsJsonAsync(Urls.Collections.collectionById(encoder.Encode collection.Id), updateRequest)
+
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
@@ -93,6 +99,8 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! identityUser, wordfolioUser = factory.CreateUserAsync(106, "user@example.com", "P@ssw0rd!")
 
             do!
@@ -106,7 +114,7 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = "Updated Name"
                   Description = Some "Updated Description" }
 
-            let! response = client.PutAsJsonAsync(Urls.Collections.collectionById 999999, updateRequest)
+            let! response = client.PutAsJsonAsync(Urls.Collections.collectionById(encoder.Encode 999999), updateRequest)
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode)
         }
@@ -118,6 +126,8 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! identityUser, wordfolioUser = factory.CreateUserAsync(106, "user@example.com", "P@ssw0rd!")
 
@@ -139,7 +149,8 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = ""
                   Description = Some "Updated Description" }
 
-            let! response = client.PutAsJsonAsync(Urls.Collections.collectionById collection.Id, updateRequest)
+            let! response =
+                client.PutAsJsonAsync(Urls.Collections.collectionById(encoder.Encode collection.Id), updateRequest)
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)
 
@@ -165,6 +176,8 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
 
             use factory =
                 new WebApplicationFactory(fixture)
+
+            let encoder = factory.Encoder
 
             let! _, ownerWordfolioUser = factory.CreateUserAsync(107, "owner@example.com", "P@ssw0rd!")
 
@@ -198,7 +211,8 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = "Updated Name"
                   Description = Some "Updated Description" }
 
-            let! response = client.PutAsJsonAsync(Urls.Collections.collectionById ownerCollection.Id, updateRequest)
+            let! response =
+                client.PutAsJsonAsync(Urls.Collections.collectionById(encoder.Encode ownerCollection.Id), updateRequest)
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode)
 
@@ -242,6 +256,8 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
             use factory =
                 new WebApplicationFactory(fixture)
 
+            let encoder = factory.Encoder
+
             let! _, wordfolioUser = factory.CreateUserAsync(109, "user@example.com", "P@ssw0rd!")
 
             let timestamp =
@@ -268,7 +284,8 @@ type UpdateCollectionTests(fixture: WordfolioIdentityTestFixture) =
                 { Name = "Updated Name"
                   Description = Some "Updated Description" }
 
-            let! response = client.PutAsJsonAsync(Urls.Collections.collectionById collection.Id, updateRequest)
+            let! response =
+                client.PutAsJsonAsync(Urls.Collections.collectionById(encoder.Encode collection.Id), updateRequest)
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode)
 

@@ -16,13 +16,13 @@ export enum ExampleSource {
 }
 
 export interface Example {
-    readonly id: number;
+    readonly id: string;
     readonly exampleText: string;
     readonly source: ExampleSource;
 }
 
 export interface Definition {
-    readonly id: number;
+    readonly id: string;
     readonly definitionText: string;
     readonly source: DefinitionSource;
     readonly displayOrder: number;
@@ -30,7 +30,7 @@ export interface Definition {
 }
 
 export interface Translation {
-    readonly id: number;
+    readonly id: string;
     readonly translationText: string;
     readonly source: TranslationSource;
     readonly displayOrder: number;
@@ -38,8 +38,8 @@ export interface Translation {
 }
 
 export interface Entry {
-    readonly id: number;
-    readonly vocabularyId: number;
+    readonly id: string;
+    readonly vocabularyId: string;
     readonly entryText: string;
     readonly createdAt: Date;
     readonly updatedAt: Date;

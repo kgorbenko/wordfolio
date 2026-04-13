@@ -46,7 +46,7 @@ interface ContentDataGridProps<R extends GridValidRowModel> {
     readonly rows: R[];
     readonly desktopColumns: GridColDef<R>[];
     readonly mobileColumns: GridColDef<R>[];
-    readonly onRowClick: (id: number) => void;
+    readonly onRowClick: (id: string) => void;
     readonly actionLabel: string;
     readonly onAction: () => void;
     readonly searchPlaceholder?: string;

@@ -71,7 +71,7 @@ export const CollectionsPage = () => {
     } = useCollectionsQuery();
 
     const handleCollectionClick = useCallback(
-        (id: number) => {
+        (id: string) => {
             void navigate(collectionDetailPath(id));
         },
         [navigate]

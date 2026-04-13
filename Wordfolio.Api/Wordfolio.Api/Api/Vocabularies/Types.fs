@@ -3,16 +3,16 @@ module Wordfolio.Api.Api.Vocabularies.Types
 open System
 
 type VocabularyResponse =
-    { Id: int
-      CollectionId: int
+    { Id: string
+      CollectionId: string
       Name: string
       Description: string option
       CreatedAt: DateTimeOffset
       UpdatedAt: DateTimeOffset }
 
 type VocabularyDetailResponse =
-    { Id: int
-      CollectionId: int
+    { Id: string
+      CollectionId: string
       CollectionName: string
       Name: string
       Description: string option
@@ -27,4 +27,4 @@ type UpdateVocabularyRequest =
     { Name: string
       Description: string option }
 
-type MoveVocabularyRequest = { CollectionId: int }
+type MoveVocabularyRequest = { CollectionId: string }
