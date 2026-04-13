@@ -301,8 +301,7 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
 
                             match ResourceIdsHelper.Decode(encoder, collectionId, vocabularyId, id) with
                             | None -> return Results.NotFound()
-                            | Some(collectionId, vocabularyId, id) when not targetVocabularyIdValid ->
-                                return Results.NotFound()
+                            | _ when not targetVocabularyIdValid -> return Results.NotFound()
                             | Some(collectionId, vocabularyId, id) ->
                                 let env =
                                     TransactionalEnv(dataSource, cancellationToken)

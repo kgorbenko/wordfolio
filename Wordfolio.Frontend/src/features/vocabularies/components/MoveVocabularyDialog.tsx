@@ -62,7 +62,7 @@ export const MoveVocabularyDialog = ({
     const handleTargetChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement>) => {
             const value = event.target.value;
-            setSelectedCollectionId(value || undefined);
+            setSelectedCollectionId(value);
         },
         []
     );
