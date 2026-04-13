@@ -458,7 +458,10 @@ export const DesignSystemPage = () => {
                                     input: {
                                         endAdornment: (
                                             <InputAdornment position="end">
-                                                <IconButton edge="end">
+                                                <IconButton
+                                                    edge="end"
+                                                    tabIndex={-1}
+                                                >
                                                     <Visibility />
                                                 </IconButton>
                                             </InputAdornment>
@@ -499,7 +502,10 @@ export const DesignSystemPage = () => {
                                     input: {
                                         endAdornment: (
                                             <InputAdornment position="end">
-                                                <IconButton edge="end">
+                                                <IconButton
+                                                    edge="end"
+                                                    tabIndex={-1}
+                                                >
                                                     <Visibility />
                                                 </IconButton>
                                             </InputAdornment>
