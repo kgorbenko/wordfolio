@@ -430,3 +430,6 @@ FodyWeavers.xsd
 
 # opencode settings
 opencode.json
+
+# Playwright MCP artifacts
+.playwright-mcp/

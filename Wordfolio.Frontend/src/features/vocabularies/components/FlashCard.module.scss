@@ -1,0 +1,39 @@
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: 32px;
+    border-radius: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.24);
+    }
+
+    &:focus-visible {
+        outline: 2px solid;
+        outline-offset: 2px;
+    }
+}
+
+.front {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+}
+
+.back {
+    width: 100%;
+    overflow-y: auto;
+    max-height: 60vh;
+}
+
+.hint {
+    margin-top: 8px;
+}

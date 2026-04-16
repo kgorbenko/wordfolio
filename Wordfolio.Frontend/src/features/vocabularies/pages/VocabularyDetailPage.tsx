@@ -5,6 +5,7 @@ import {
     vocabularyDetailPath,
     vocabularyDetailRouteApi,
     vocabularyEditPath,
+    vocabularyPracticePath,
 } from "../routes";
 import type { EntrySortField } from "../schemas/vocabularySchemas";
 import {
@@ -134,6 +135,10 @@ export const VocabularyDetailPage = () => {
         void navigate(vocabularyEditPath(collectionId, vocabularyId));
     }, [navigate, collectionId, vocabularyId]);
 
+    const handlePracticeClick = useCallback(() => {
+        void navigate(vocabularyPracticePath(collectionId, vocabularyId));
+    }, [navigate, collectionId, vocabularyId]);
+
     const handleMoveClick = useCallback(async () => {
         const selection = await raiseMoveVocabularyDialogAsync({
             currentCollectionId: collectionId,
@@ -244,6 +249,11 @@ export const VocabularyDetailPage = () => {
                 actions={
                     <PageHeaderActions
                         actions={[
+                            {
+                                label: "Practice",
+                                onClick: handlePracticeClick,
+                                disabled: isLoading || !entries?.length,
+                            },
                             {
                                 label: "Move",
                                 onClick: handleMoveClick,
