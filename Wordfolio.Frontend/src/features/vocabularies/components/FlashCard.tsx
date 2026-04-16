@@ -29,14 +29,6 @@ export const FlashCard = ({ entry, isFlipped, onFlip }: FlashCardProps) => {
             aria-label={isFlipped ? "Card back" : "Card front — tap to reveal"}
             elevation={2}
             sx={(theme) => ({
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: 300,
-                padding: 4,
-                cursor: "pointer",
-                userSelect: "none",
                 "&:hover": {
                     boxShadow: theme.shadows[4],
                 },
