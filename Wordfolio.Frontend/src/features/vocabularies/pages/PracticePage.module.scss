@@ -1,61 +1,37 @@
-.page {
+.practicePage {
     display: flex;
     flex-direction: column;
     min-height: 70vh;
     gap: 24px;
-}
 
-.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-}
+    .cardArea {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
 
-.headerTitle {
-    flex: 1;
-}
+    .ratingRow {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
 
-.headerMeta {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 4px;
-}
+    .completionArea {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        text-align: center;
 
-.progress {
-    color: var(--mui-palette-text-secondary);
-    white-space: nowrap;
-}
-
-.cardArea {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.ratingRow {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.completionArea {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
-    text-align: center;
-}
-
-.completionActions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
+        .completionActions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
 }

@@ -21,13 +21,30 @@ export const FlashCard = ({ entry, isFlipped, onFlip }: FlashCardProps) => {
 
     return (
         <Paper
-            className={styles.card}
+            className={styles.flashCard}
             onClick={onFlip}
             onKeyDown={handleKeyDown}
             role="button"
             tabIndex={0}
             aria-label={isFlipped ? "Card back" : "Card front — tap to reveal"}
             elevation={2}
+            sx={(theme) => ({
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 300,
+                padding: 4,
+                cursor: "pointer",
+                userSelect: "none",
+                "&:hover": {
+                    boxShadow: theme.shadows[4],
+                },
+                "&:focus-visible": {
+                    outline: `2px solid ${theme.palette.primary.main}`,
+                    outlineOffset: 2,
+                },
+            })}
         >
             {isFlipped ? (
                 <Box className={styles.back}>
