@@ -186,7 +186,7 @@ describe("RegisterPage", () => {
         });
     });
 
-    it("shows password requirements error title when requirements fail to load", () => {
+    it("shows generic registration error title when requirements fail to load", () => {
         mockPasswordRequirementsQuery = {
             data: undefined,
             isLoading: false,
@@ -197,7 +197,7 @@ describe("RegisterPage", () => {
         render(<RegisterPage />, { wrapper: createWrapper() });
 
         expect(
-            screen.getByText("Failed to Load Password Requirements")
+            screen.getByText("Failed to Load Registration")
         ).toBeInTheDocument();
     });
 });
