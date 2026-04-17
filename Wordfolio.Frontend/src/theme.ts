@@ -1110,6 +1110,13 @@ export const theme = createTheme({
                 action: {
                     padding: 0,
                     paddingLeft: 16,
+                    "& .MuiButton-root": {
+                        height: "auto",
+                        minHeight: 0,
+                        minWidth: "auto",
+                        padding: "0 8px",
+                        lineHeight: "inherit",
+                    },
                 },
             },
         },
