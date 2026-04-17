@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+    Alert,
     Box,
     Button,
     Chip,
@@ -8,6 +9,7 @@ import {
     InputAdornment,
     Link,
     MenuItem,
+    SnackbarContent,
     TextField,
     Typography,
 } from "@mui/material";
@@ -739,6 +741,177 @@ export const DesignSystemPage = () => {
                             >
                                 <Chip label="Tag" />
                                 <Button variant="outlined">Action</Button>
+                            </Box>
+                        </Box>
+                    </Box>
+
+                    <Box className={styles.section}>
+                        <Typography
+                            variant="h2"
+                            className={styles.sectionTitle}
+                        >
+                            Alerts
+                        </Typography>
+                        <Divider className={styles.sectionDivider} />
+                        <Box className={styles.typographyStack}>
+                            {(
+                                [
+                                    "standard",
+                                    "filled",
+                                    "outlined",
+                                ] as const
+                            ).map((variant) => (
+                                <Box key={variant}>
+                                    <Typography
+                                        variant="overline"
+                                        display="block"
+                                        mb={1}
+                                    >
+                                        {variant.charAt(0).toUpperCase() +
+                                            variant.slice(1)}
+                                    </Typography>
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            gap: 1,
+                                        }}
+                                    >
+                                        {(
+                                            [
+                                                "error",
+                                                "warning",
+                                                "info",
+                                                "success",
+                                            ] as const
+                                        ).map((severity) => (
+                                            <Alert
+                                                key={severity}
+                                                variant={variant}
+                                                severity={severity}
+                                            >
+                                                {severity
+                                                    .charAt(0)
+                                                    .toUpperCase() +
+                                                    severity.slice(1)}{" "}
+                                                — This is a {severity} message.
+                                            </Alert>
+                                        ))}
+                                    </Box>
+                                </Box>
+                            ))}
+                            <Box>
+                                <Typography
+                                    variant="overline"
+                                    display="block"
+                                    mb={1}
+                                >
+                                    With Close Action
+                                </Typography>
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        gap: 1,
+                                    }}
+                                >
+                                    {(
+                                        [
+                                            "error",
+                                            "warning",
+                                            "info",
+                                            "success",
+                                        ] as const
+                                    ).map((severity) => (
+                                        <Alert
+                                            key={severity}
+                                            severity={severity}
+                                            onClose={() => {}}
+                                        >
+                                            {severity.charAt(0).toUpperCase() +
+                                                severity.slice(1)}{" "}
+                                            — Dismissible alert.
+                                        </Alert>
+                                    ))}
+                                </Box>
+                            </Box>
+                        </Box>
+                    </Box>
+
+                    <Box className={styles.section}>
+                        <Typography
+                            variant="h2"
+                            className={styles.sectionTitle}
+                        >
+                            Snackbar
+                        </Typography>
+                        <Divider className={styles.sectionDivider} />
+                        <Box className={styles.typographyStack}>
+                            <Box>
+                                <Typography
+                                    variant="overline"
+                                    display="block"
+                                    mb={1}
+                                >
+                                    Neutral SnackbarContent
+                                </Typography>
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        gap: 1,
+                                        maxWidth: 600,
+                                    }}
+                                >
+                                    <SnackbarContent message="This is a neutral snackbar message." />
+                                    <SnackbarContent
+                                        message="Neutral snackbar with an action button."
+                                        action={
+                                            <Button
+                                                color="secondary"
+                                                size="small"
+                                            >
+                                                Undo
+                                            </Button>
+                                        }
+                                    />
+                                </Box>
+                            </Box>
+                            <Box>
+                                <Typography
+                                    variant="overline"
+                                    display="block"
+                                    mb={1}
+                                >
+                                    Notification-style (Alert in Snackbar)
+                                </Typography>
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        gap: 1,
+                                        maxWidth: 600,
+                                    }}
+                                >
+                                    {(
+                                        [
+                                            "success",
+                                            "error",
+                                            "warning",
+                                            "info",
+                                        ] as const
+                                    ).map((severity) => (
+                                        <Alert
+                                            key={severity}
+                                            severity={severity}
+                                            onClose={() => {}}
+                                        >
+                                            {severity.charAt(0).toUpperCase() +
+                                                severity.slice(1)}{" "}
+                                            — Operation completed successfully.
+                                        </Alert>
+                                    ))}
+                                </Box>
                             </Box>
                         </Box>
                     </Box>

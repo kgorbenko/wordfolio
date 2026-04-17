@@ -70,6 +70,10 @@ const inputBorderFocus = "#16DB93";
 const overlayListSelected = "rgba(50, 50, 50, 0.7)";
 const overlayErrorHover = "rgba(217, 85, 85, 0.08)";
 
+const severitySuccess = accentSecondary;
+const severityInfo = "#5B8EE6";
+const severityWarning = "#C9883A";
+
 const defaultBorder = `2px solid ${border}`;
 
 export const theme = createTheme({
@@ -102,6 +106,15 @@ export const theme = createTheme({
         },
         error: {
             main: error,
+        },
+        success: {
+            main: severitySuccess,
+        },
+        info: {
+            main: severityInfo,
+        },
+        warning: {
+            main: severityWarning,
         },
         divider: border,
         action: {
@@ -979,6 +992,126 @@ export const theme = createTheme({
                 },
                 overlay: {
                     backgroundColor: bg,
+                },
+            },
+        },
+        MuiAlert: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 14,
+                    boxShadow: "none",
+                    padding: "10px 16px",
+                    alignItems: "flex-start",
+                    fontSize: 13,
+                    "@media (min-width: 900px)": {
+                        fontSize: 14,
+                    },
+                },
+                icon: {
+                    padding: 0,
+                    paddingTop: 2,
+                    fontSize: 20,
+                    marginRight: 10,
+                },
+                message: {
+                    padding: 0,
+                },
+                action: {
+                    padding: 0,
+                    paddingTop: 2,
+                    marginLeft: "auto",
+                },
+                standardSuccess: {
+                    backgroundColor: "rgba(22, 219, 147, 0.08)",
+                    border: "2px solid rgba(22, 219, 147, 0.35)",
+                    color: textPrimary,
+                    "& .MuiAlert-icon": { color: severitySuccess },
+                },
+                standardError: {
+                    backgroundColor: "rgba(217, 85, 85, 0.08)",
+                    border: "2px solid rgba(217, 85, 85, 0.40)",
+                    color: textPrimary,
+                    "& .MuiAlert-icon": { color: error },
+                },
+                standardInfo: {
+                    backgroundColor: "rgba(91, 142, 230, 0.08)",
+                    border: "2px solid rgba(91, 142, 230, 0.40)",
+                    color: textPrimary,
+                    "& .MuiAlert-icon": { color: severityInfo },
+                },
+                standardWarning: {
+                    backgroundColor: "rgba(201, 136, 58, 0.08)",
+                    border: "2px solid rgba(201, 136, 58, 0.40)",
+                    color: textPrimary,
+                    "& .MuiAlert-icon": { color: severityWarning },
+                },
+                filledSuccess: {
+                    backgroundColor: severitySuccess,
+                    border: `2px solid ${severitySuccess}`,
+                    color: "rgba(0, 0, 0, 0.85)",
+                },
+                filledError: {
+                    backgroundColor: error,
+                    border: `2px solid ${error}`,
+                    color: "#FFFFFF",
+                },
+                filledInfo: {
+                    backgroundColor: severityInfo,
+                    border: `2px solid ${severityInfo}`,
+                    color: "#FFFFFF",
+                },
+                filledWarning: {
+                    backgroundColor: severityWarning,
+                    border: `2px solid ${severityWarning}`,
+                    color: "#FFFFFF",
+                },
+                outlinedSuccess: {
+                    backgroundColor: "rgba(22, 219, 147, 0.04)",
+                    border: "2px solid rgba(22, 219, 147, 0.55)",
+                    color: severitySuccess,
+                    "& .MuiAlert-icon": { color: severitySuccess },
+                },
+                outlinedError: {
+                    backgroundColor: "rgba(217, 85, 85, 0.04)",
+                    border: "2px solid rgba(217, 85, 85, 0.65)",
+                    color: error,
+                    "& .MuiAlert-icon": { color: error },
+                },
+                outlinedInfo: {
+                    backgroundColor: "rgba(91, 142, 230, 0.04)",
+                    border: "2px solid rgba(91, 142, 230, 0.60)",
+                    color: severityInfo,
+                    "& .MuiAlert-icon": { color: severityInfo },
+                },
+                outlinedWarning: {
+                    backgroundColor: "rgba(201, 136, 58, 0.04)",
+                    border: "2px solid rgba(201, 136, 58, 0.60)",
+                    color: severityWarning,
+                    "& .MuiAlert-icon": { color: severityWarning },
+                },
+            },
+        },
+        MuiSnackbarContent: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: surfaceAlt,
+                    border: defaultBorder,
+                    borderRadius: 14,
+                    color: textPrimary,
+                    boxShadow: "none",
+                    fontSize: 13,
+                    "@media (min-width: 900px)": {
+                        fontSize: 14,
+                    },
+                    padding: "10px 16px",
+                    minWidth: "unset",
+                },
+                message: {
+                    padding: 0,
+                },
+                action: {
+                    padding: 0,
+                    paddingLeft: 16,
                 },
             },
         },
