@@ -754,52 +754,49 @@ export const DesignSystemPage = () => {
                         </Typography>
                         <Divider className={styles.sectionDivider} />
                         <Box className={styles.typographyStack}>
-                            {(
-                                [
-                                    "standard",
-                                    "filled",
-                                    "outlined",
-                                ] as const
-                            ).map((variant) => (
-                                <Box key={variant}>
-                                    <Typography
-                                        variant="overline"
-                                        display="block"
-                                        mb={1}
-                                    >
-                                        {variant.charAt(0).toUpperCase() +
-                                            variant.slice(1)}
-                                    </Typography>
-                                    <Box
-                                        sx={{
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            gap: 1,
-                                        }}
-                                    >
-                                        {(
-                                            [
-                                                "error",
-                                                "warning",
-                                                "info",
-                                                "success",
-                                            ] as const
-                                        ).map((severity) => (
-                                            <Alert
-                                                key={severity}
-                                                variant={variant}
-                                                severity={severity}
-                                            >
-                                                {severity
-                                                    .charAt(0)
-                                                    .toUpperCase() +
-                                                    severity.slice(1)}{" "}
-                                                — This is a {severity} message.
-                                            </Alert>
-                                        ))}
+                            {(["standard", "filled", "outlined"] as const).map(
+                                (variant) => (
+                                    <Box key={variant}>
+                                        <Typography
+                                            variant="overline"
+                                            display="block"
+                                            mb={1}
+                                        >
+                                            {variant.charAt(0).toUpperCase() +
+                                                variant.slice(1)}
+                                        </Typography>
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: 1,
+                                            }}
+                                        >
+                                            {(
+                                                [
+                                                    "error",
+                                                    "warning",
+                                                    "info",
+                                                    "success",
+                                                ] as const
+                                            ).map((severity) => (
+                                                <Alert
+                                                    key={severity}
+                                                    variant={variant}
+                                                    severity={severity}
+                                                >
+                                                    {severity
+                                                        .charAt(0)
+                                                        .toUpperCase() +
+                                                        severity.slice(1)}{" "}
+                                                    — This is a {severity}{" "}
+                                                    message.
+                                                </Alert>
+                                            ))}
+                                        </Box>
                                     </Box>
-                                </Box>
-                            ))}
+                                )
+                            )}
                             <Box>
                                 <Typography
                                     variant="overline"
