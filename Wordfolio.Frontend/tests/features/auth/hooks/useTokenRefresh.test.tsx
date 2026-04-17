@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode } from "react";
@@ -261,6 +261,204 @@ describe("useTokenRefresh", () => {
                 message: "Your session has expired. Please log in again.",
             },
             replace: true,
+        });
+    });
+
+    describe("timer scheduling", () => {
+        beforeEach(() => {
+            vi.useFakeTimers();
+        });
+
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it("should not refresh immediately for short TTL tokens (no tight-loop)", async () => {
+            const now = 1_000_000_000_000;
+            vi.setSystemTime(now);
+
+            const { result } = renderHook(() => useTokenRefresh(), {
+                wrapper: createWrapper(),
+            });
+
+            expect(result.current.isInitializing).toBe(false);
+
+            act(() => {
+                useAuthStore.setState({
+                    authTokens: {
+                        tokenType: "Bearer",
+                        accessToken: "access-token",
+                        expiresIn: 10,
+                        refreshToken: "refresh-token",
+                        setAt: now,
+                    },
+                    isAuthenticated: true,
+                });
+            });
+
+            act(() => {
+                vi.advanceTimersByTime(4999);
+            });
+            expect(mockRefreshMutate).not.toHaveBeenCalled();
+
+            act(() => {
+                vi.advanceTimersByTime(1);
+            });
+            expect(mockRefreshMutate).toHaveBeenCalledTimes(1);
+        });
+
+        it("should refresh 5 minutes before expiry for normal TTL tokens", async () => {
+            const now = 1_000_000_000_000;
+            vi.setSystemTime(now);
+
+            const { result } = renderHook(() => useTokenRefresh(), {
+                wrapper: createWrapper(),
+            });
+
+            expect(result.current.isInitializing).toBe(false);
+
+            act(() => {
+                useAuthStore.setState({
+                    authTokens: {
+                        tokenType: "Bearer",
+                        accessToken: "access-token",
+                        expiresIn: 3600,
+                        refreshToken: "refresh-token",
+                        setAt: now,
+                    },
+                    isAuthenticated: true,
+                });
+            });
+
+            act(() => {
+                vi.advanceTimersByTime(3_299_999);
+            });
+            expect(mockRefreshMutate).not.toHaveBeenCalled();
+
+            act(() => {
+                vi.advanceTimersByTime(1);
+            });
+            expect(mockRefreshMutate).toHaveBeenCalledTimes(1);
+        });
+
+        it("should use remaining lifetime for persisted tokens based on setAt", async () => {
+            const now = 1_000_000_000_000;
+            vi.setSystemTime(now);
+
+            const { result } = renderHook(() => useTokenRefresh(), {
+                wrapper: createWrapper(),
+            });
+
+            expect(result.current.isInitializing).toBe(false);
+
+            act(() => {
+                useAuthStore.setState({
+                    authTokens: {
+                        tokenType: "Bearer",
+                        accessToken: "access-token",
+                        expiresIn: 3600,
+                        refreshToken: "refresh-token",
+                        setAt: now - 30 * 60 * 1000,
+                    },
+                    isAuthenticated: true,
+                });
+            });
+
+            act(() => {
+                vi.advanceTimersByTime(1_499_999);
+            });
+            expect(mockRefreshMutate).not.toHaveBeenCalled();
+
+            act(() => {
+                vi.advanceTimersByTime(1);
+            });
+            expect(mockRefreshMutate).toHaveBeenCalledTimes(1);
+        });
+
+        it("should enforce minimum 1000ms delay for expired tokens to prevent tight-loop", async () => {
+            const now = 1_000_000_000_000;
+            vi.setSystemTime(now);
+
+            const { result } = renderHook(() => useTokenRefresh(), {
+                wrapper: createWrapper(),
+            });
+
+            expect(result.current.isInitializing).toBe(false);
+
+            act(() => {
+                useAuthStore.setState({
+                    authTokens: {
+                        tokenType: "Bearer",
+                        accessToken: "access-token",
+                        expiresIn: 5,
+                        refreshToken: "refresh-token",
+                        setAt: now - 10_000,
+                    },
+                    isAuthenticated: true,
+                });
+            });
+
+            act(() => {
+                vi.advanceTimersByTime(999);
+            });
+            expect(mockRefreshMutate).not.toHaveBeenCalled();
+
+            act(() => {
+                vi.advanceTimersByTime(1);
+            });
+            expect(mockRefreshMutate).toHaveBeenCalledTimes(1);
+
+            act(() => {
+                vi.setSystemTime(now + 1000);
+                useAuthStore.setState({
+                    authTokens: {
+                        tokenType: "Bearer",
+                        accessToken: "new-access-token",
+                        expiresIn: 5,
+                        refreshToken: "new-refresh-token",
+                        setAt: now + 1000,
+                    },
+                    isAuthenticated: true,
+                });
+            });
+
+            vi.clearAllMocks();
+
+            act(() => {
+                vi.advanceTimersByTime(999);
+            });
+            expect(mockRefreshMutate).not.toHaveBeenCalled();
+        });
+
+        it("should clear pending timer on unmount", async () => {
+            const now = 1_000_000_000_000;
+            vi.setSystemTime(now);
+
+            const { result, unmount } = renderHook(() => useTokenRefresh(), {
+                wrapper: createWrapper(),
+            });
+
+            expect(result.current.isInitializing).toBe(false);
+
+            act(() => {
+                useAuthStore.setState({
+                    authTokens: {
+                        tokenType: "Bearer",
+                        accessToken: "access-token",
+                        expiresIn: 3600,
+                        refreshToken: "refresh-token",
+                        setAt: now,
+                    },
+                    isAuthenticated: true,
+                });
+            });
+
+            unmount();
+
+            act(() => {
+                vi.advanceTimersByTime(3_300_000);
+            });
+            expect(mockRefreshMutate).not.toHaveBeenCalled();
         });
     });
 });
