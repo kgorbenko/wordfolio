@@ -1102,14 +1102,24 @@ export const theme = createTheme({
                         fontSize: 14,
                     },
                     padding: "10px 16px",
+                    "@media (max-width: 374px)": {
+                        padding: "10px 8px",
+                        fontSize: 11,
+                    },
                     minWidth: "unset",
+                    flexWrap: "nowrap",
                 },
                 message: {
                     padding: 0,
+                    flex: "1 1 auto",
+                    minWidth: 0,
                 },
                 action: {
                     padding: 0,
                     paddingLeft: 16,
+                    "@media (max-width: 374px)": {
+                        paddingLeft: 4,
+                    },
                     "& .MuiButton-root": {
                         height: "auto",
                         minHeight: 0,
@@ -1117,6 +1127,9 @@ export const theme = createTheme({
                         padding: "0 8px",
                         fontSize: "0.75rem",
                         lineHeight: 1.4,
+                        "@media (max-width: 374px)": {
+                            padding: "0 4px",
+                        },
                     },
                 },
             },
