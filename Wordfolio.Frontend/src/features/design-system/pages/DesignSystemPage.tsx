@@ -832,6 +832,45 @@ export const DesignSystemPage = () => {
                                     ))}
                                 </Box>
                             </Box>
+                            <Box>
+                                <Typography
+                                    variant="overline"
+                                    display="block"
+                                    mb={1}
+                                >
+                                    Multiline
+                                </Typography>
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        gap: 1,
+                                    }}
+                                >
+                                    {(
+                                        [
+                                            "error",
+                                            "warning",
+                                            "info",
+                                            "success",
+                                        ] as const
+                                    ).map((severity) => (
+                                        <Alert
+                                            key={severity}
+                                            severity={severity}
+                                            onClose={() => {}}
+                                        >
+                                            {severity.charAt(0).toUpperCase() +
+                                                severity.slice(1)}{" "}
+                                            — This is a longer alert message
+                                            that wraps onto multiple lines to
+                                            verify that the layout remains
+                                            correct with extended content and a
+                                            close button.
+                                        </Alert>
+                                    ))}
+                                </Box>
+                            </Box>
                         </Box>
                     </Box>
 
