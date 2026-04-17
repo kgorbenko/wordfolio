@@ -1018,6 +1018,8 @@ export const theme = createTheme({
                 action: {
                     padding: 0,
                     marginLeft: "auto",
+                    marginTop: -6,
+                    marginBottom: -6,
                 },
                 standardSuccess: {
                     backgroundColor: "rgba(22, 219, 147, 0.20)",
