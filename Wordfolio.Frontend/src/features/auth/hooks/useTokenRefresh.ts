@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 
 import { useRefreshMutation } from "../../../shared/api/mutations/auth";
 import { useAuthStore } from "../../../shared/stores/authStore";
-import { loginPath } from "../routes";
+import { getSafeRedirectPath } from "../../../shared/utils/redirectUtils";
 
 const REFRESH_BUFFER_MS = 5 * 60 * 1000;
 
@@ -22,10 +22,16 @@ export const useTokenRefresh = () => {
         onError: () => {
             clearAuth();
             setIsInitializing(false);
+            const currentPath =
+                window.location.pathname + window.location.search;
+            const safeRedirect = getSafeRedirectPath(currentPath);
             navigate({
-                ...loginPath(),
+                to: "/login",
                 search: {
                     message: "Your session has expired. Please log in again.",
+                    ...(safeRedirect !== undefined && {
+                        redirect: safeRedirect,
+                    }),
                 },
                 replace: true,
             });

@@ -6,12 +6,13 @@ import { ReactNode } from "react";
 import { useTokenRefresh } from "../../../../src/features/auth/hooks/useTokenRefresh";
 import { useAuthStore } from "../../../../src/shared/stores/authStore";
 
+const mockNavigate = vi.fn();
 const mockRefreshMutate = vi.fn();
 let mockRefreshIsPending = false;
 let mockRefreshOnError: (() => void) | undefined;
 
 vi.mock("@tanstack/react-router", () => ({
-    useNavigate: () => vi.fn(),
+    useNavigate: () => mockNavigate,
     getRouteApi: () => ({}),
 }));
 
@@ -43,6 +44,7 @@ const createWrapper = () => {
 describe("useTokenRefresh", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.unstubAllGlobals();
         mockRefreshIsPending = false;
         mockRefreshOnError = undefined;
         act(() => {
@@ -182,5 +184,80 @@ describe("useTokenRefresh", () => {
         const state = useAuthStore.getState();
         expect(state.authTokens).toBeNull();
         expect(state.isAuthenticated).toBe(false);
+    });
+
+    it("should navigate to login with redirect when refresh fails on a protected page", async () => {
+        vi.stubGlobal("location", { pathname: "/dashboard", search: "" });
+
+        const mockTokens = {
+            tokenType: "Bearer",
+            accessToken: "old-token",
+            expiresIn: 3600,
+            refreshToken: "invalid-token",
+            setAt: Date.now(),
+        };
+
+        act(() => {
+            useAuthStore.setState({
+                authTokens: mockTokens,
+                isAuthenticated: true,
+            });
+        });
+
+        await act(async () => {
+            renderHook(() => useTokenRefresh(), {
+                wrapper: createWrapper(),
+            });
+        });
+
+        await act(async () => {
+            mockRefreshOnError?.();
+        });
+
+        expect(mockNavigate).toHaveBeenCalledWith({
+            to: "/login",
+            search: {
+                message: "Your session has expired. Please log in again.",
+                redirect: "/dashboard",
+            },
+            replace: true,
+        });
+    });
+
+    it("should navigate to login without redirect when refresh fails on the login page", async () => {
+        vi.stubGlobal("location", { pathname: "/login", search: "" });
+
+        const mockTokens = {
+            tokenType: "Bearer",
+            accessToken: "old-token",
+            expiresIn: 3600,
+            refreshToken: "invalid-token",
+            setAt: Date.now(),
+        };
+
+        act(() => {
+            useAuthStore.setState({
+                authTokens: mockTokens,
+                isAuthenticated: true,
+            });
+        });
+
+        await act(async () => {
+            renderHook(() => useTokenRefresh(), {
+                wrapper: createWrapper(),
+            });
+        });
+
+        await act(async () => {
+            mockRefreshOnError?.();
+        });
+
+        expect(mockNavigate).toHaveBeenCalledWith({
+            to: "/login",
+            search: {
+                message: "Your session has expired. Please log in again.",
+            },
+            replace: true,
+        });
     });
 });
