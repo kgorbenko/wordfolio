@@ -10,9 +10,11 @@ const mockNavigate = vi.fn();
 const mockRefreshMutate = vi.fn();
 let mockRefreshIsPending = false;
 let mockRefreshOnError: (() => void) | undefined;
+let mockRouterHref = "/";
 
 vi.mock("@tanstack/react-router", () => ({
     useNavigate: () => mockNavigate,
+    useRouter: () => ({ state: { location: { href: mockRouterHref } } }),
     getRouteApi: () => ({}),
 }));
 
@@ -47,6 +49,7 @@ describe("useTokenRefresh", () => {
         vi.unstubAllGlobals();
         mockRefreshIsPending = false;
         mockRefreshOnError = undefined;
+        mockRouterHref = "/";
         act(() => {
             useAuthStore.setState({
                 authTokens: null,
@@ -187,7 +190,7 @@ describe("useTokenRefresh", () => {
     });
 
     it("should navigate to login with redirect when refresh fails on a protected page", async () => {
-        vi.stubGlobal("location", { pathname: "/dashboard", search: "" });
+        mockRouterHref = "/dashboard";
 
         const mockTokens = {
             tokenType: "Bearer",
@@ -225,7 +228,7 @@ describe("useTokenRefresh", () => {
     });
 
     it("should navigate to login without redirect when refresh fails on the login page", async () => {
-        vi.stubGlobal("location", { pathname: "/login", search: "" });
+        mockRouterHref = "/login";
 
         const mockTokens = {
             tokenType: "Bearer",
