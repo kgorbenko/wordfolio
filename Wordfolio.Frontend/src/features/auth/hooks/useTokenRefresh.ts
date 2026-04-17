@@ -41,25 +41,32 @@ export const useTokenRefresh = () => {
     });
 
     const scheduleTokenRefresh = useCallback(
-        (expiresIn: number) => {
+        (expiresIn: number, setAt: number) => {
             if (refreshTimeoutRef.current !== null) {
                 clearTimeout(refreshTimeoutRef.current);
             }
 
-            const refreshInMs = Math.max(
-                expiresIn * 1000 - REFRESH_BUFFER_MS,
+            const tokenLifetimeMs = expiresIn * 1000;
+            const remainingMs = Math.max(
+                setAt + tokenLifetimeMs - Date.now(),
                 0
             );
+            const effectiveBufferMs = Math.min(
+                REFRESH_BUFFER_MS,
+                Math.floor(tokenLifetimeMs / 2)
+            );
+            const delayMs = Math.max(remainingMs - effectiveBufferMs, 1000);
 
             refreshTimeoutRef.current = window.setTimeout(() => {
-                if (authTokens?.refreshToken) {
+                const currentTokens = useAuthStore.getState().authTokens;
+                if (currentTokens?.refreshToken) {
                     refreshMutation.mutate({
-                        refreshToken: authTokens.refreshToken,
+                        refreshToken: currentTokens.refreshToken,
                     });
                 }
-            }, refreshInMs);
+            }, delayMs);
         },
-        [authTokens, refreshMutation]
+        [refreshMutation]
     );
 
     useEffect(() => {
@@ -79,7 +86,7 @@ export const useTokenRefresh = () => {
 
     useEffect(() => {
         if (authTokens && !isInitializing) {
-            scheduleTokenRefresh(authTokens.expiresIn);
+            scheduleTokenRefresh(authTokens.expiresIn, authTokens.setAt);
         }
 
         return () => {
