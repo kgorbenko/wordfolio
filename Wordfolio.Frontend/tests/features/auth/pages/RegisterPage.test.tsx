@@ -186,7 +186,7 @@ describe("RegisterPage", () => {
         });
     });
 
-    it("shows generic registration error title when requirements fail to load", () => {
+    it("uses the default retry error copy when requirements fail to load", () => {
         mockPasswordRequirementsQuery = {
             data: undefined,
             isLoading: false,
@@ -196,8 +196,11 @@ describe("RegisterPage", () => {
 
         render(<RegisterPage />, { wrapper: createWrapper() });
 
+        expect(screen.getByText("Something went wrong")).toBeInTheDocument();
         expect(
-            screen.getByText("Failed to Load Registration")
+            screen.getByText(
+                "We had trouble loading this content. Please try again."
+            )
         ).toBeInTheDocument();
     });
 });
