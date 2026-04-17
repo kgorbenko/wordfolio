@@ -1001,7 +1001,7 @@ export const theme = createTheme({
                     borderRadius: 14,
                     boxShadow: "none",
                     padding: "10px 16px",
-                    alignItems: "flex-start",
+                    alignItems: "center",
                     fontSize: 13,
                     "@media (min-width: 900px)": {
                         fontSize: 14,
@@ -1009,7 +1009,6 @@ export const theme = createTheme({
                 },
                 icon: {
                     padding: 0,
-                    paddingTop: 2,
                     fontSize: 20,
                     marginRight: 10,
                 },
@@ -1018,29 +1017,28 @@ export const theme = createTheme({
                 },
                 action: {
                     padding: 0,
-                    paddingTop: 2,
                     marginLeft: "auto",
                 },
                 standardSuccess: {
-                    backgroundColor: "rgba(22, 219, 147, 0.08)",
+                    backgroundColor: "rgba(22, 219, 147, 0.20)",
                     border: "2px solid rgba(22, 219, 147, 0.35)",
                     color: textPrimary,
                     "& .MuiAlert-icon": { color: severitySuccess },
                 },
                 standardError: {
-                    backgroundColor: "rgba(217, 85, 85, 0.08)",
+                    backgroundColor: "rgba(217, 85, 85, 0.20)",
                     border: "2px solid rgba(217, 85, 85, 0.40)",
                     color: textPrimary,
                     "& .MuiAlert-icon": { color: error },
                 },
                 standardInfo: {
-                    backgroundColor: "rgba(91, 142, 230, 0.08)",
+                    backgroundColor: "rgba(91, 142, 230, 0.20)",
                     border: "2px solid rgba(91, 142, 230, 0.40)",
                     color: textPrimary,
                     "& .MuiAlert-icon": { color: severityInfo },
                 },
                 standardWarning: {
-                    backgroundColor: "rgba(201, 136, 58, 0.08)",
+                    backgroundColor: "rgba(201, 136, 58, 0.20)",
                     border: "2px solid rgba(201, 136, 58, 0.40)",
                     color: textPrimary,
                     "& .MuiAlert-icon": { color: severityWarning },
