@@ -196,26 +196,30 @@ export const EntryDetailPage = () => {
                         : undefined
                 }
                 actions={
-                    <PageHeaderActions
-                        actions={[
-                            {
-                                label: "Move",
-                                onClick: handleMoveClick,
-                                disabled: isLoading || moveMutation.isPending,
-                            },
-                            {
-                                label: "Edit",
-                                onClick: handleEditClick,
-                                disabled: isLoading,
-                            },
-                            {
-                                label: "Delete",
-                                onClick: handleDeleteClick,
-                                color: "error",
-                                disabled: isLoading || deleteMutation.isPending,
-                            },
-                        ]}
-                    />
+                    isError ? undefined : (
+                        <PageHeaderActions
+                            actions={[
+                                {
+                                    label: "Move",
+                                    onClick: handleMoveClick,
+                                    disabled:
+                                        isLoading || moveMutation.isPending,
+                                },
+                                {
+                                    label: "Edit",
+                                    onClick: handleEditClick,
+                                    disabled: isLoading,
+                                },
+                                {
+                                    label: "Delete",
+                                    onClick: handleDeleteClick,
+                                    color: "error",
+                                    disabled:
+                                        isLoading || deleteMutation.isPending,
+                                },
+                            ]}
+                        />
+                    )
                 }
             />
             {renderContent()}

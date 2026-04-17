@@ -101,6 +101,8 @@ export const RegisterPage = () => {
             return (
                 <div className={styles.stateBlock}>
                     <RetryOnError
+                        title="Failed to Load Password Requirements"
+                        description="Something went wrong while loading password requirements. Please try again."
                         onRetry={() => void refetchPasswordRequirements()}
                     />
                 </div>

@@ -207,8 +207,8 @@ export const VocabularyDetailPage = () => {
 
             return (
                 <RetryOnError
-                    title="Failed to Load Data"
-                    description="Something went wrong while loading the data. Please try again."
+                    title="Failed to Load Vocabulary"
+                    description="Something went wrong while loading this vocabulary. Please try again."
                     onRetry={handleRetry}
                 />
             );
@@ -247,31 +247,35 @@ export const VocabularyDetailPage = () => {
                 }
                 description={vocabulary?.description ?? undefined}
                 actions={
-                    <PageHeaderActions
-                        actions={[
-                            {
-                                label: "Practice",
-                                onClick: handlePracticeClick,
-                                disabled: isLoading || !entries?.length,
-                            },
-                            {
-                                label: "Move",
-                                onClick: handleMoveClick,
-                                disabled: isLoading || moveMutation.isPending,
-                            },
-                            {
-                                label: "Edit",
-                                onClick: handleEditClick,
-                                disabled: isLoading,
-                            },
-                            {
-                                label: "Delete",
-                                onClick: handleDeleteClick,
-                                color: "error",
-                                disabled: isLoading || deleteMutation.isPending,
-                            },
-                        ]}
-                    />
+                    isError ? undefined : (
+                        <PageHeaderActions
+                            actions={[
+                                {
+                                    label: "Practice",
+                                    onClick: handlePracticeClick,
+                                    disabled: isLoading || !entries?.length,
+                                },
+                                {
+                                    label: "Move",
+                                    onClick: handleMoveClick,
+                                    disabled:
+                                        isLoading || moveMutation.isPending,
+                                },
+                                {
+                                    label: "Edit",
+                                    onClick: handleEditClick,
+                                    disabled: isLoading,
+                                },
+                                {
+                                    label: "Delete",
+                                    onClick: handleDeleteClick,
+                                    color: "error",
+                                    disabled:
+                                        isLoading || deleteMutation.isPending,
+                                },
+                            ]}
+                        />
+                    )
                 }
             />
             {renderContent()}

@@ -69,13 +69,17 @@ vi.mock("../../../../src/shared/api/mutations/auth", () => ({
     },
 }));
 
+let mockPasswordRequirementsQuery = {
+    data: mockPasswordRequirements as
+        | typeof mockPasswordRequirements
+        | undefined,
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+};
+
 vi.mock("../../../../src/shared/api/queries/auth", () => ({
-    usePasswordRequirementsQuery: () => ({
-        data: mockPasswordRequirements,
-        isLoading: false,
-        isError: false,
-        refetch: vi.fn(),
-    }),
+    usePasswordRequirementsQuery: () => mockPasswordRequirementsQuery,
 }));
 
 vi.mock("../../../../src/shared/stores/authStore", () => ({
@@ -106,6 +110,12 @@ describe("RegisterPage", () => {
         mockRegisterMutate = vi.fn();
         mockRegisterIsPending = false;
         mockRegisterOnSuccess = undefined;
+        mockPasswordRequirementsQuery = {
+            data: mockPasswordRequirements,
+            isLoading: false,
+            isError: false,
+            refetch: vi.fn(),
+        };
     });
 
     it("stores tokens and navigates home when no redirect is present", async () => {
@@ -174,5 +184,20 @@ describe("RegisterPage", () => {
             email: "test@example.com",
             password: "password123",
         });
+    });
+
+    it("shows password requirements error title when requirements fail to load", () => {
+        mockPasswordRequirementsQuery = {
+            data: undefined,
+            isLoading: false,
+            isError: true,
+            refetch: vi.fn(),
+        };
+
+        render(<RegisterPage />, { wrapper: createWrapper() });
+
+        expect(
+            screen.getByText("Failed to Load Password Requirements")
+        ).toBeInTheDocument();
     });
 });
