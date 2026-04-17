@@ -181,21 +181,24 @@ export const CollectionDetailPage = () => {
                 }
                 description={collection?.description ?? undefined}
                 actions={
-                    <PageHeaderActions
-                        actions={[
-                            {
-                                label: "Edit",
-                                onClick: handleEditClick,
-                                disabled: isLoading,
-                            },
-                            {
-                                label: "Delete",
-                                onClick: handleDelete,
-                                color: "error",
-                                disabled: isLoading || deleteMutation.isPending,
-                            },
-                        ]}
-                    />
+                    isError ? undefined : (
+                        <PageHeaderActions
+                            actions={[
+                                {
+                                    label: "Edit",
+                                    onClick: handleEditClick,
+                                    disabled: isLoading,
+                                },
+                                {
+                                    label: "Delete",
+                                    onClick: handleDelete,
+                                    color: "error",
+                                    disabled:
+                                        isLoading || deleteMutation.isPending,
+                                },
+                            ]}
+                        />
+                    )
                 }
             />
             {renderContent()}
