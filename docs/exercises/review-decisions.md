@@ -15,7 +15,7 @@ This file is the decision log for the design review. One section per reviewed po
 - ~~`GET /exercises/sessions/{id}/entries/{entryId}/prompt` reads and returns the stored payload verbatim.~~ **Superseded by Decision 16.**
 - ~~`POST .../attempts` evaluates correctness against the stored `PromptData`, not a freshly generated prompt.~~ **Superseded by Decision 15** — correctness is evaluated client-side; the server accepts `IsCorrect` from the client.
 
-**Rationale:** Without a stored payload, two requests to the same endpoint could receive different prompts if the underlying entry or knowledge data changed between the requests (e.g. another session updated hit counters). This would make correctness evaluation non-deterministic and break idempotency. Storing the payload once removes this class of bug entirely and simplifies the submit path: `Operations.submitAttempt` reads `PromptData` from a single DB row rather than reloading and re-running prompt generation.
+**Rationale:** Without a stored payload, two requests to the same endpoint could receive different prompts if the underlying entry or knowledge data changed between the requests (e.g. another session updated hit counters). This would make correctness evaluation non-deterministic and break idempotency. Storing the payload once removes this class of bug entirely. Because correctness is evaluated client-side (see Decision 15), ~~the submit path does not read `PromptData`~~ (**⚠ superseded by Decision 18** — the submit path does read `PromptData`, but only to copy it into `ExerciseAttempts`, not to evaluate correctness); the stored snapshot exists to give the client everything it needs at session-creation time and to support session resume (see Decision 16).
 
 ---
 
@@ -64,6 +64,8 @@ Idempotency comparison uses `RawAnswer` (not only `IsCorrect`). Two submissions 
 2. `LastAttemptedAt ASC NULLS FIRST`
 3. `EntryId ASC` (stable tiebreak)
 
+> **⚠ Partially superseded by Decision 20 (Round 3).** The hit-rate computation above (using `CorrectAttempts / TotalAttempts` from `EntryKnowledge`) is replaced by a windowed CTE over the last `KnowledgeWindowSize = 10` `ExerciseAttempts` rows. The scope, cold-entry inclusion, and ordering columns are unchanged; only the source of the hit rate value changes. See Decision 20 for the authoritative query shape.
+
 **Rationale:** Without a LEFT JOIN, entries that have never been attempted are excluded from `WorstKnown` results. This defeats the purpose of the selector for new users or new vocabulary additions — the most important entries to practice are precisely those never seen before. COALESCE to `0.0` ensures cold entries rank at the bottom of the hit-rate ordering (i.e. they come first, as the worst-known). `UserId` in the selector payload was an inconsistency because all other selectors are scoped by the auth context user; removing it unifies the pattern.
 
 ---
@@ -108,6 +110,8 @@ Failures surface as `SelectorError` (e.g. `VocabularyNotOwnedByUser`, `Collectio
 ---
 
 ## 9. Entry deletion
+
+> **⚠ Superseded by Decision 13.** The no-FK policy stated below is reversed. `ExerciseSessionEntries.EntryId`, `ExerciseAttempts.EntryId`, and `EntryKnowledge.EntryId` carry hard FKs with `ON DELETE CASCADE`. `ExerciseAttempts.SessionId` remaining a plain indexed `int` is retained. See Decision 13 for the authoritative `EntryId` FK policy.
 
 **Decision:** Accept.
 
@@ -241,6 +245,78 @@ The domain model keeps the F# DU. The data access layer maps `ExerciseType → i
 - `docs/exercises/README.md` — updated key decisions 3 and 10; added decisions 13 and 14.
 - `docs/exercises/schema.md` — changed `ExerciseType` columns from `varchar(64)` to `smallint`; added numeric mapping section; added `EntryId FK → Entries.Id ON DELETE CASCADE` to `ExerciseSessionEntries`, `ExerciseAttempts`, and `EntryKnowledge`; replaced no-EntryId-FK rationale with EntryId FK policy section; updated `EntryKnowledge` description; noted `IsCorrect` is client-provided.
 - `docs/exercises/data-flows.md` — Flow 1 returns full session bundle; Flow 2 replaced with resume/reload (`GET /exercises/sessions/{id}`); Flow 3 adds `isCorrect` to request body and removes `Dispatch.evaluate` step; updated transaction boundaries.
-- `docs/exercises/module-structure.md` — added `SessionBundle` and `SessionBundleEntry` types; noted `ExerciseType` maps to `int16`; updated `ICreateExerciseSession` to return `SessionBundle`; replaced `IGetExerciseSessionEntry` with `IGetSessionBundle`; updated `Operations` signatures and descriptions; replaced `GetPromptHandler` with `GetSessionHandler`; removed `Dispatch.evaluate` from dispatch module; updated `AppEnv` interface implementations.
+- `docs/exercises/module-structure.md` — added `SessionBundle` and `SessionBundleEntry` types; noted `ExerciseType` maps to `int16`; updated `ICreateExerciseSession` to return `SessionBundle`; added `IGetSessionBundle` (`IGetExerciseSessionEntry` is retained alongside it for use by `submitAttempt`); updated `Operations` signatures and descriptions; replaced `GetPromptHandler` with `GetSessionHandler`; removed `Dispatch.evaluate` from dispatch module; updated `AppEnv` interface implementations.
 - `docs/exercises/retention-policy.md` — updated tier-2 `ExerciseSessionEntries` rationale; rewrote "Why purging sessions does not corrupt..." section to reflect EntryId FK cascade policy.
 - `docs/exercises/review-decisions.md` — added Round 2 sections 13–17 (this entry).
+
+---
+
+## Round 3 revisions
+
+The following decisions were made in a third design review. Where a Round 3 decision conflicts with a prior round, the Round 3 decision is authoritative.
+
+---
+
+### 18. PromptData denormalized onto ExerciseAttempts
+
+**Decision:** Accept.
+
+**Change:** Add `PromptData text NOT NULL` to `ExerciseAttempts`. At attempt-submit time, `PromptData` is copied from the corresponding `ExerciseSessionEntries.PromptData` row and persisted directly onto the attempt record.
+
+No separate durable prompt table is introduced.
+
+**Rationale:** After `ExerciseSessions` and `ExerciseSessionEntries` are purged (30-day TTL), `ExerciseAttempts` rows would otherwise lose all prompt context. By denormalising `PromptData` onto each attempt row at submit time, every attempt is fully self-describing. This preserves the original prompt for analytics, debugging, and any future re-evaluation without adding a new table or query join. The cost is a modest increase in row size, which is acceptable given that `ExerciseAttempts` already stores `RawAnswer` as a variable-length text column.
+
+The submit path reads `PromptData` from the `ExerciseSessionEntry` already loaded during the session-membership check (no additional DB call). `SubmitAttemptParameters` gains a `PromptData: string` field to carry it into `ICommitAttempt`.
+
+**Note:** Decision 1 (Prompt determinism) stated that "the submit path does not read `PromptData`". This decision reverses that specific sentence; the submit path now does read `PromptData` — not to evaluate correctness, but to copy it into the attempt record.
+
+---
+
+### 19. Remove CorrectAttempts from EntryKnowledge
+
+**Decision:** Accept.
+
+**Change:** Remove the `CorrectAttempts int NOT NULL` column from `EntryKnowledge`. The table retains only `TotalAttempts` and `LastAttemptedAt` alongside the composite PK `(UserId, EntryId)`.
+
+The `EntryKnowledge` UPSERT in `upsertEntryKnowledgeAsync` no longer accepts an `isCorrect` parameter. It increments `TotalAttempts` and sets `LastAttemptedAt` only.
+
+**Rationale:** A running `CorrectAttempts` counter represents the full lifetime of attempts. For `WorstKnown` selection — the primary consumer of knowledge scores — lifetime hit rate is a poor signal for a user who was once weak at an entry but has recently improved (or vice versa). Removing `CorrectAttempts` from `EntryKnowledge` forces all hit-rate queries to derive the score from recent attempt history (see Decision 20), which is more actionable. It also simplifies the UPSERT and removes a column that could become stale if attempt rows are ever deleted for a single entry.
+
+---
+
+### 20. Windowed hit rate and WorstKnown CTE
+
+**Decision:** Accept.
+
+**Change:** Hit rate (knowledge score) is computed at query time from the last `KnowledgeWindowSize = 10` `ExerciseAttempts` rows for each `(UserId, EntryId)` pair. This constant is named `KnowledgeWindowSize` in the codebase.
+
+`getWorstKnownEntriesAsync` is rewritten to use a two-CTE windowed query:
+
+1. `ranked_attempts` — `ROW_NUMBER() OVER (PARTITION BY EntryId ORDER BY AttemptedAt DESC)` for all candidate entries.
+2. `windowed_scores` — aggregate the top `KnowledgeWindowSize` rows per entry to compute `hit_rate`.
+3. LEFT JOIN the scoped entry set against `windowed_scores` (for windowed hit rate) and `EntryKnowledge` (for `LastAttemptedAt` tie-breaking).
+
+Ordering remains:
+1. `COALESCE(windowed_hit_rate, 0.0) ASC` — cold entries (no attempts) rank first.
+2. `EntryKnowledge.LastAttemptedAt ASC NULLS FIRST` — least recently attempted breaks ties; entries with no `EntryKnowledge` row rank before any attempted entry at the same hit rate.
+3. `EntryId ASC` — stable tiebreak.
+
+The scope, cold-entry inclusion (LEFT JOIN), and deterministic ordering from Decision 5 are preserved unchanged.
+
+The index `IX_ExerciseAttempts_UserId_EntryId_AttemptedAt` on `(UserId, EntryId, AttemptedAt DESC)` replaces the former `IX_ExerciseAttempts_UserId_EntryId` to support the windowed ordering efficiently.
+
+**Rationale:** A window of the last 10 attempts reflects recent performance rather than historical accumulation. A user who struggled with an entry early on but has answered it correctly in the last 10 attempts should not appear in `WorstKnown` results; a trailing lifetime average would keep them there. The window size of 10 is large enough to be statistically meaningful but small enough to respond to recent improvement quickly.
+
+---
+
+### 21. Documents updated (Round 3)
+
+**Files changed:**
+- `docs/exercises/README.md` — updated key decision 3 (PromptData copy on submit); updated key decision 9 (removed `CorrectAttempts`, windowed scoring).
+- `docs/exercises/schema.md` — added `PromptData text NOT NULL` to `ExerciseAttempts`; updated index from `IX_ExerciseAttempts_UserId_EntryId` to `IX_ExerciseAttempts_UserId_EntryId_AttemptedAt DESC`; removed `CorrectAttempts` from `EntryKnowledge`; rewrote `EntryKnowledge` derived-values section to describe windowed scoring; replaced `WorstKnown` LEFT-JOIN description with full windowed-CTE SQL sketch.
+- `docs/exercises/data-flows.md` — updated Flow 1 WorstKnown description; updated Flow 3 INSERT to include `PromptData`; updated `EntryKnowledge` UPSERT to `TotalAttempts + 1` and `LastAttemptedAt` only (no `CorrectAttempts` delta).
+- `docs/exercises/module-structure.md` — removed `CorrectAttempts` from `EntryKnowledge` type; added `PromptData: string` to `SubmitAttemptParameters`; updated `ExerciseAttemptRow` comment; removed `isCorrect` param from `upsertEntryKnowledgeAsync`; rewrote `getWorstKnownEntriesAsync` description to cover windowed CTE; updated `AppEnv.ICommitAttempt` comment; added `PromptDataColumn` to `ExerciseAttemptsTable` in Schema.fs additions.
+- `docs/exercises/retention-policy.md` — updated Tier 1 rationale for `ExerciseAttempts` (PromptData durability) and `EntryKnowledge` (no `CorrectAttempts`, windowed scoring); added PromptData bullet to "Why purging sessions does not corrupt…" section.
+- `docs/exercises/diagrams.md` — removed `CorrectAttempts` from `EntryKnowledge` ER entity; added `PromptData` to `ExerciseAttempts` ER entity; updated key-rules note; updated selector-resolution diagram WorstKnown label; added `PromptData` copy note to submit-flow sequence; updated UPSERT label in submit-flow and idempotency-tree diagrams; updated lifecycle state diagram attempt-insertion label.
+- `docs/exercises/review-decisions.md` — added Round 3 sections 18–21 (this entry).
