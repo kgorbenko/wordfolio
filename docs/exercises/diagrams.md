@@ -1,291 +1,375 @@
-# Exercise Feature – Visual Diagrams
+# Exercise Feature – Diagrams
+
+Visual reference for the exercise feature design. All diagrams use Mermaid; they render inline on GitHub and in any Mermaid-aware previewer.
 
 ---
 
-## 1. Database Schema (ER Diagram)
+## 1. Entity-relationship model
+
+Shows the three tables, their columns, and — crucially — which relationships are hard FKs (with cascade) versus plain indexed columns. The retention tier of each table is noted in the entity label.
 
 ```mermaid
 erDiagram
-    Users {
-        int Id PK
-    }
+    Users ||--o{ ExerciseSessions : "owns"
+    Users ||--o{ ExerciseAttempts : "owns"
+
+    Entries ||--o{ ExerciseSessionEntries : "FK cascade"
+    Entries ||--o{ ExerciseAttempts : "FK cascade"
+
+    ExerciseSessions ||--o{ ExerciseSessionEntries : "FK cascade"
+    ExerciseSessions }o..o{ ExerciseAttempts : "SessionId nullable, NO FK"
 
     ExerciseSessions {
         int Id PK
-        int UserId FK
-        smallint ExerciseType
-        datetimeoffset CreatedAt
+        int UserId FK "no cascade"
+        smallint ExerciseType "0=MC, 1=Translation"
+        datetimeoffset CreatedAt "TTL anchor (30d)"
     }
 
     ExerciseSessionEntries {
         int Id PK
-        int SessionId FK
-        int EntryId "FK → Entries.Id CASCADE"
+        int SessionId FK "cascade from ExerciseSessions"
+        int EntryId FK "cascade from Entries"
         int DisplayOrder
-        text PromptData
+        text PromptData "JSON snapshot"
+        smallint PromptSchemaVersion
     }
 
     ExerciseAttempts {
         int Id PK
-        int UserId FK
-        int SessionId "plain int — no FK"
-        int EntryId "FK → Entries.Id CASCADE"
-        smallint ExerciseType
-        text RawAnswer
-        bool IsCorrect
-        datetimeoffset AttemptedAt
+        int UserId FK "no cascade"
+        int SessionId "nullable; nulled on purge, NO FK"
+        int EntryId FK "cascade from Entries"
+        smallint ExerciseType "denormalised"
+        text PromptData "copied from session entry at submit"
+        smallint PromptSchemaVersion "copied at submit"
+        text RawAnswer "used for idempotency"
+        bool IsCorrect "server-evaluated"
+        datetimeoffset AttemptedAt "server-generated"
     }
-
-    EntryKnowledge {
-        int UserId PK
-        int EntryId PK "FK → Entries.Id CASCADE"
-        int TotalAttempts
-        int CorrectAttempts
-        datetimeoffset LastAttemptedAt
-    }
-
-    Entries {
-        int Id PK
-    }
-
-    Users ||--o{ ExerciseSessions : "owns"
-    ExerciseSessions ||--o{ ExerciseSessionEntries : "CASCADE DELETE"
-    Entries ||--o{ ExerciseSessionEntries : "CASCADE DELETE"
-    Entries ||--o{ ExerciseAttempts : "CASCADE DELETE"
-    Entries ||--o{ EntryKnowledge : "CASCADE DELETE"
-    Users ||--o{ ExerciseAttempts : "owns (durable)"
-    Users ||--o{ EntryKnowledge : "owns (durable)"
 ```
 
-> **FK notes:** `ExerciseAttempts.SessionId` is a plain indexed `int` with no FK to `ExerciseSessions` — session purge does not cascade-delete attempt history. `ExerciseSessionEntries.EntryId`, `ExerciseAttempts.EntryId`, and `EntryKnowledge.EntryId` carry hard FKs to `Entries.Id ON DELETE CASCADE` — deleting an entry removes all associated session context, attempt history, and knowledge counters.
+Key rules encoded above:
+
+- `EntryId` cascades everywhere — deleting an entry wipes all related history (this is the user’s intent).
+- `ExerciseAttempts.SessionId` is **nullable** and carries **no FK**. The purge job nulls it before deleting the session row so attempt history survives.
+- `ExerciseAttempts.PromptData` is copied from `ExerciseSessionEntries` at submit time — prompt context survives session purge without a separate durable table.
+- `ExerciseAttempts.IsCorrect` is server-evaluated; the client does not supply it.
+- `ExerciseAttempts.AttemptedAt` is server-generated; the client does not supply it.
+- No `EntryKnowledge` table; all knowledge metrics are derived from `ExerciseAttempts` at query time.
+- No `Status` / `CompletedAt` on `ExerciseSessions`: sessions are age-purged scaffolding.
 
 ---
 
-## 2. Data Retention Tiers
+## 2. Retention tiers
+
+Two retention tiers with opposite policies. The diagram highlights why the FK graph is shaped the way it is.
 
 ```mermaid
-graph TD
-    subgraph Tier1["Tier 1 — Durable History (keep indefinitely)"]
-        EA[ExerciseAttempts]
-        EK[EntryKnowledge]
+flowchart TB
+    subgraph Tier2["Tier 2 — Purgeable scaffolding (30-day TTL)"]
+        direction LR
+        Sessions[ExerciseSessions]
+        SessionEntries[ExerciseSessionEntries]
+        Sessions -->|ON DELETE CASCADE| SessionEntries
     end
 
-    subgraph Tier2["Tier 2 — Purgeable Scaffolding (purge after 30 days)"]
-        ES[ExerciseSessions]
-        ESE[ExerciseSessionEntries]
+    subgraph Tier1["Tier 1 — Durable learning history (kept indefinitely)"]
+        direction LR
+        Attempts[ExerciseAttempts]
     end
 
-    Entries[Entries]
+    PurgeJob[["Background purge job<br/>WHERE CreatedAt &lt; NOW() - 30d"]]
+    PurgeJob -->|"1. SET SessionId = NULL on attempts"| Attempts
+    PurgeJob -->|"2. DELETE sessions"| Sessions
 
-    ES -- "ON DELETE CASCADE" --> ESE
-    ES -. "SessionId = plain int (no FK)" .-> EA
-    Entries -- "EntryId CASCADE" --> ESE
-    Entries -- "EntryId CASCADE" --> EA
-    Entries -- "EntryId CASCADE" --> EK
+    Sessions -. "SessionId nullable, no FK<br/>purge nulls SessionId then deletes session" .-> Attempts
 
-    Purge["Background job:\nDELETE WHERE CreatedAt < NOW() - 30 days"] --> ES
+    classDef tier2 fill:#fff2cc,stroke:#d6b656
+    classDef tier1 fill:#d5e8d4,stroke:#82b366
+    class Sessions,SessionEntries tier2
+    class Attempts tier1
 ```
 
 ---
 
-## 3. Layered Architecture
+## 3. Layered architecture and dispatch
+
+The module layering follows the project-wide pattern (Handlers → Operations → Capabilities → AppEnv → DataAccess). `Dispatch.fs` is a pure DU pattern-match used by `Operations.createSession` (for `generatePrompt`) and by `Operations.submitAttempt` (for `evaluate`).
 
 ```mermaid
-graph TD
-    HTTP["HTTP Request"]
+flowchart TB
+    HTTP[/HTTP request/]
 
-    subgraph Handlers["Handlers — Api/Exercises/"]
-        CH[CreateSessionHandler]
-        GSH[GetSessionHandler]
-        SAH[SubmitAttemptHandler]
+    subgraph API["Wordfolio.Api / Api / Exercises/"]
+        CreateH[CreateSessionHandler.fs]
+        GetH[GetSessionHandler.fs]
+        SubmitH[SubmitAttemptHandler.fs]
     end
 
-    subgraph Domain["Domain — Domain/Exercises/"]
-        OPS["Operations.fs\n(createSession · getSession · submitAttempt)"]
-        CAPS["Capabilities.fs\n(IResolveEntrySelector · ICreateExerciseSession\nIGetExerciseSession · IGetSessionBundle\nICommitAttempt · IGetEntryKnowledge)"]
-        DISP["Dispatch.fs\n(generatePrompt)"]
-        MC["MultipleChoice module"]
-        TR["Translation module"]
+    subgraph Domain["Wordfolio.Api.Domain / Exercises"]
+        Ops[Operations.fs<br/>createSession · getSession · submitAttempt]
+        Caps[Capabilities.fs<br/>IResolveEntrySelector · ICreateExerciseSession ·<br/>IGetExerciseSession · IGetSessionBundle ·<br/>IGetExerciseSessionEntry · ICommitAttempt]
+        Dispatch[Dispatch.fs<br/>generatePrompt · evaluate]
+        Types[ExerciseTypes.fs<br/>MultipleChoice · Translation]
     end
 
-    subgraph AppEnv["AppEnv — Infrastructure/Environment.fs"]
-        ENV["Interface implementations\n(thin mapping layer, no business logic)"]
+    subgraph Infra["Wordfolio.Api / Infrastructure"]
+        AppEnv[Environment.fs / AppEnv<br/>thin mapping only]
     end
 
-    subgraph DataAccess["DataAccess"]
-        ESDA["ExerciseSessions.fs"]
-        EADA["ExerciseAttempts.fs"]
-        EKDA["EntryKnowledge.fs"]
+    subgraph DA["Wordfolio.Api.DataAccess"]
+        Sessions[ExerciseSessions.fs]
+        Attempts[ExerciseAttempts.fs]
     end
 
-    PG[(PostgreSQL)]
+    DB[(PostgreSQL)]
 
-    HTTP --> Handlers
-    Handlers --> OPS
-    OPS --> CAPS
-    OPS --> DISP
-    DISP --> MC
-    DISP --> TR
-    CAPS --> ENV
-    ENV --> ESDA
-    ENV --> EADA
-    ENV --> EKDA
-    ESDA --> PG
-    EADA --> PG
-    EKDA --> PG
+    HTTP --> API
+    API --> Ops
+    Ops --> Caps
+    Ops --> Dispatch
+    Dispatch --> Types
+    Caps -. implemented by .-> AppEnv
+    AppEnv --> DA
+    DA --> DB
+
+    classDef handler fill:#dae8fc,stroke:#6c8ebf
+    classDef domain fill:#d5e8d4,stroke:#82b366
+    classDef infra fill:#ffe6cc,stroke:#d79b00
+    classDef da fill:#f8cecc,stroke:#b85450
+    class CreateH,GetH,SubmitH handler
+    class Ops,Caps,Dispatch,Types domain
+    class AppEnv infra
+    class Sessions,Attempts da
 ```
 
 ---
 
-## 4. Flow 1 — Create Session
+## 4. Selector resolution
+
+Selectors express **intent**, not entry IDs. Resolution happens once at session creation, with oversize selectors rejected at the handler (pre-DB `400 Bad Request` for `ExplicitEntries` > `MaxSessionEntries` or `WorstKnown count` > `MaxSessionEntries`), ownership validated for requests that pass size validation, and the resulting list (capped at `MaxSessionEntries = 10`) is frozen into `ExerciseSessionEntries`.
+
+```mermaid
+flowchart LR
+    Req["Client request<br/>(selector + auth context UserId)"]
+
+    subgraph Selector["EntrySelector DU"]
+        direction TB
+        V[VocabularyScope v]
+        C[CollectionScope c]
+        W[WorstKnown scope, count]
+        E[ExplicitEntries ids]
+    end
+
+    SizeCheck{{"Pre-DB size validation<br/>ExplicitEntries length &gt; MaxSessionEntries = 10<br/>or WorstKnown count &gt; MaxSessionEntries = 10"}}
+    BadReq[[400 Bad Request]]
+
+    Own{{"Ownership validation<br/>(UserId from auth, NEVER from payload)"}}
+
+    subgraph Resolved["Resolved EntryId list (capped at MaxSessionEntries = 10)"]
+        R1[Vocabulary entries]
+        R2[Collection entries]
+        R3["Worst-known entries<br/>windowed CTE over last @knowledgeWindowSize ExerciseAttempts<br/>per (UserId, EntryId) — no EntryKnowledge table<br/>LEFT JOIN so cold entries included<br/>COALESCE hit rate → 0.0<br/>tie-break: LastAttemptedAt from ExerciseAttempts ASC NULLS FIRST<br/>stable tiebreak: EntryId ASC"]
+        R4[Client-supplied IDs<br/>all verified owned]
+    end
+
+    Frozen[(ExerciseSessionEntries rows<br/>with PromptData + PromptSchemaVersion snapshot)]
+    Err[[SelectorError → 403 Forbidden]]
+
+    Req --> Selector
+    V & C & W & E --> SizeCheck
+    SizeCheck -- oversized --> BadReq
+    SizeCheck -- ok --> Own
+    Own -- ok --> R1 & R2 & R3 & R4
+    Own -- fail --> Err
+    R1 & R2 & R3 & R4 --> Frozen
+```
+
+---
+
+## 5. Flow — Create session
+
+`POST /exercises/sessions`. Returns the **full session bundle** with `attempt = null` for each entry.
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant Handler as CreateSessionHandler
-    participant Ops as Operations.createSession
-    participant Sel as IResolveEntrySelector (AppEnv)
-    participant DA_ES as ExerciseSessions DA
-    participant Dispatch as Dispatch.generatePrompt
-    participant PG as PostgreSQL
+    autonumber
+    participant C as Client
+    participant H as CreateSessionHandler
+    participant O as Operations.createSession
+    participant E as AppEnv
+    participant DA as DataAccess
+    participant D as Dispatch
 
-    Client->>Handler: POST /exercises/sessions { exerciseType, selector }
-    Handler->>Ops: createSession env params (userId from auth)
+    C->>H: POST /exercises/sessions {exerciseType, selector}
+    H->>H: Pre-DB size validation (400 if oversized)
+    H->>O: createSession env params (UserId from auth)
 
-    Ops->>Sel: ResolveEntrySelector userId selector
-    Sel->>PG: validate ownership + fetch EntryId list
-    PG-->>Sel: EntryId list (or error)
-    Sel-->>Ops: Ok (EntryId list) | Error SelectorError
+    O->>E: resolveEntrySelector userId selector
+    E->>DA: SELECT entries + ownership check
+    DA-->>E: EntryId list
+    E-->>O: Ok entryIds  /  Error SelectorError
 
-    Ops->>Ops: validate list is non-empty
+    Note over O: Validate non-empty; cap at MaxSessionEntries = 10
 
-    loop for each EntryId
-        Ops->>Dispatch: generatePrompt exerciseType entry entryKnowledge
-        Dispatch-->>Ops: PromptData (serialised JSON)
+    O->>DA: batch load all Entries WHERE Id IN (...)
+    DA-->>O: Entry list
+
+    loop for each entry
+        O->>D: Dispatch.generatePrompt exerciseType entry
+        D-->>O: GeneratedPrompt { PromptData; PromptSchemaVersion }
     end
 
-    Ops->>DA_ES: createSessionWithEntriesAsync (single transaction)
-    DA_ES->>PG: INSERT ExerciseSessions → SessionId
-    DA_ES->>PG: INSERT ExerciseSessionEntries (one row per entry, with PromptData)
-    PG-->>DA_ES: done
-    DA_ES-->>Ops: ExerciseSessionId
+    O->>E: createExerciseSession (CreateExerciseSessionData { ... })
+    E->>DA: BEGIN TX
+    E->>DA: INSERT ExerciseSessions → SessionId
+    E->>DA: INSERT ExerciseSessionEntries (batch, with PromptData + PromptSchemaVersion)
+    E->>DA: COMMIT
+    E-->>O: SessionBundle (all attempts = None)
 
-    Ops-->>Handler: Ok SessionBundle
-    Handler-->>Client: 201 Created { sessionId, exerciseType, entries: [{ entryId, displayOrder, promptData }, ...] }
+    O-->>H: Ok SessionBundle
+    H-->>C: 201 Created + full bundle<br/>(sessionId, exerciseType, entries[] with attempt=null)
 ```
 
 ---
 
-## 5. Flow 2 — Resume Session
+## 6. Flow — Resume / reload session
+
+`GET /exercises/sessions/{id}`. Returns the bundle with per-entry `attempt` metadata populated.
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant Handler as GetSessionHandler
-    participant Ops as Operations.getSession
-    participant DA as ExerciseSessions DA
-    participant PG as PostgreSQL
+    autonumber
+    participant C as Client
+    participant H as GetSessionHandler
+    participant O as Operations.getSession
+    participant E as AppEnv
+    participant DA as DataAccess
 
-    Client->>Handler: GET /exercises/sessions/{sessionId}
-    Handler->>Ops: getSession env userId sessionId
+    C->>H: GET /exercises/sessions/{id}
+    H->>O: getSession env userId sessionId
 
-    Ops->>DA: getSessionAsync sessionId
-    DA->>PG: SELECT ExerciseSessions WHERE Id = sessionId
-    PG-->>DA: ExerciseSession option
-    DA-->>Ops: ExerciseSession option
-    Ops->>Ops: verify session exists + UserId matches
+    O->>E: getSessionBundle userId sessionId
+    E->>DA: SELECT ExerciseSessions WHERE Id=? (verify owner)
+    E->>DA: SELECT ExerciseSessionEntries WHERE SessionId=? ORDER BY DisplayOrder
+    E->>DA: SELECT ExerciseAttempts WHERE SessionId=? AND UserId=?
+    E-->>O: SessionBundle option (Attempt populated per entry)
 
-    Ops->>DA: getSessionEntriesAsync sessionId
-    DA->>PG: SELECT ExerciseSessionEntries WHERE SessionId = ? ORDER BY DisplayOrder
-    PG-->>DA: ExerciseSessionEntry list (includes PromptData)
-    DA-->>Ops: ExerciseSessionEntry list
-
-    Ops-->>Handler: Ok SessionBundle (stored JSON — no re-generation)
-    Handler-->>Client: 200 OK { sessionId, exerciseType, entries: [{ entryId, displayOrder, promptData }, ...] }
+    alt owned & exists
+        O-->>H: Ok SessionBundle
+        H-->>C: 200 OK + bundle (attempt={rawAnswer,isCorrect,attemptedAt} or null per entry)
+    else not owned / not found
+        O-->>H: Error NotFound
+        H-->>C: 404 Not Found
+    end
 ```
 
 ---
 
-## 6. Flow 3 — Submit Attempt (with idempotency)
+## 7. Flow — Submit attempt (server-side evaluation)
+
+`POST /exercises/sessions/{id}/entries/{entryId}/attempts`. The client sends only `rawAnswer`; the server evaluates correctness using `Dispatch.evaluate` and returns `isCorrect` in the response.
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant Handler as SubmitAttemptHandler
-    participant Ops as Operations.submitAttempt
-    participant DA_Att as ExerciseAttempts DA
-    participant DA_EK as EntryKnowledge DA
-    participant PG as PostgreSQL
+    autonumber
+    participant C as Client
+    participant H as SubmitAttemptHandler
+    participant O as Operations.submitAttempt
+    participant E as AppEnv
+    participant DA as DataAccess
+    participant D as Dispatch
 
-    Client->>Handler: POST /exercises/sessions/{sessionId}/entries/{entryId}/attempts { answer, isCorrect }
-    Handler->>Ops: submitAttempt env userId sessionId entryId rawAnswer isCorrect now
+    C->>H: POST .../attempts {rawAnswer}
+    H->>O: submitAttempt env userId sessionId entryId rawAnswer now
 
-    Ops->>PG: getSessionAsync → verify ownership
-    Ops->>PG: getSessionEntryAsync → verify entry is in session
+    O->>E: getExerciseSession sessionId
+    E->>DA: SELECT ExerciseSessions WHERE Id=?
+    E-->>O: ExerciseSession (or 404)
 
-    Ops->>DA_Att: commitAttemptAsync params (single transaction)
+    O->>E: getExerciseSessionEntry sessionId entryId
+    E->>DA: SELECT ExerciseSessionEntries WHERE SessionId=? AND EntryId=?
+    E-->>O: ExerciseSessionEntry with PromptData + PromptSchemaVersion (or 404)
 
-    DA_Att->>PG: INSERT ExerciseAttempts ON CONFLICT (SessionId,EntryId) DO NOTHING RETURNING Id
+    O->>D: Dispatch.evaluate exerciseType promptSchemaVersion promptData rawAnswer
+    D-->>O: Result<bool, EvaluateError>
 
-    alt New row inserted (Id returned)
-        PG-->>DA_Att: Id
-        DA_Att->>DA_EK: upsertEntryKnowledgeAsync
-        DA_EK->>PG: INSERT EntryKnowledge ON CONFLICT DO UPDATE (TotalAttempts++, etc.)
-        PG-->>DA_EK: done
-        DA_Att-->>Ops: Inserted attemptId
-        Ops-->>Handler: Ok AttemptInserted
-        Handler-->>Client: 201 Created
-    else Conflict (no Id returned)
-        PG-->>DA_Att: no row
-        DA_Att->>PG: SELECT RawAnswer WHERE SessionId=? AND EntryId=?
-        PG-->>DA_Att: existing RawAnswer
+    alt Ok isCorrect
+        O->>E: commitAttempt (CommitAttemptData with server-computed IsCorrect + AttemptedAt=now)
+        E->>DA: BEGIN TX
+        E->>DA: INSERT ExerciseAttempts ... ON CONFLICT (SessionId, EntryId) DO NOTHING RETURNING Id
+        Note over E,DA: Includes PromptData, PromptSchemaVersion, IsCorrect (server), AttemptedAt (server)
 
-        alt RawAnswer matches submitted answer
-            DA_Att-->>Ops: IdempotentReplay
-            Ops-->>Handler: Ok AttemptAlreadyRecorded
-            Handler-->>Client: 200 OK
-        else RawAnswer differs
-            DA_Att-->>Ops: ConflictingReplay
-            Ops-->>Handler: Error ConflictingAttempt
-            Handler-->>Client: 409 Conflict
+        alt Id returned (new row)
+            E->>DA: COMMIT
+            E-->>O: Inserted (AttemptInserted { AttemptId; IsCorrect })
+            O-->>H: Ok (AttemptInserted { ... })
+            H-->>C: 201 Created { "isCorrect": <bool> }
+        else no Id (conflict)
+            E->>DA: SELECT RawAnswer WHERE (SessionId, EntryId)
+            alt RawAnswer matches
+                E->>DA: COMMIT (no write)
+                E-->>O: IdempotentReplay (AttemptAlreadyRecorded { IsCorrect })
+                O-->>H: Ok (AttemptAlreadyRecorded { ... })
+                H-->>C: 200 OK { "isCorrect": <bool> }
+            else RawAnswer differs
+                E->>DA: COMMIT (no write)
+                E-->>O: ConflictingReplay
+                O-->>H: Error ConflictingAttempt
+                H-->>C: 409 Conflict
+            end
         end
+    else Error EvaluateError
+        O-->>H: Error EvaluateError
+        H-->>C: 500 Internal Server Error
     end
 ```
 
 ---
 
-## 7. Entry Selector Resolution
+## 8. Idempotency decision tree
+
+Distilled view of how `RawAnswer` resolves replays. Comparing `IsCorrect` alone cannot distinguish "same wrong answer" from "different wrong answer" — `RawAnswer` is what makes the check unambiguous.
 
 ```mermaid
-flowchart TD
-    Sel["EntrySelector (from request)"]
+flowchart TB
+    Start([INSERT ... ON CONFLICT DO NOTHING RETURNING Id])
+    New{Id returned?}
+    Match{Existing RawAnswer<br/>matches submitted?}
 
-    Sel --> VS[VocabularyScope v]
-    Sel --> CS[CollectionScope c]
-    Sel --> WK["WorstKnown scope n"]
-    Sel --> EE[ExplicitEntries ids]
+    Ins[["Inserted (AttemptInserted { AttemptId; IsCorrect })<br/>→ 201 Created { isCorrect }"]]
+    Idem[["IdempotentReplay (AttemptAlreadyRecorded { IsCorrect })<br/>→ 200 OK { isCorrect }"]]
+    Conf[[ConflictingReplay<br/>→ no write<br/>→ 409 Conflict]]
 
-    VS --> V_OWN{"UserId owns\nvocabulary?"}
-    CS --> C_OWN{"UserId owns\ncollection?"}
-    WK --> W_OWN{"UserId owns\nscope?"}
-    EE --> E_OWN{"All EntryIds\nbelong to UserId?"}
+    Start --> New
+    New -- yes --> Ins
+    New -- no --> Match
+    Match -- yes --> Idem
+    Match -- no --> Conf
+```
 
-    V_OWN -- No --> ERR["Error SelectorError"]
-    C_OWN -- No --> ERR
-    W_OWN -- No --> ERR
-    E_OWN -- No --> ERR
+---
 
-    V_OWN -- Yes --> V_Q["SELECT EntryIds\nWHERE VocabularyId = v"]
-    C_OWN -- Yes --> C_Q["SELECT EntryIds\nWHERE CollectionId = c"]
-    W_OWN -- Yes --> WK_Q["LEFT JOIN EntryKnowledge\nCOALESCE hit_rate 0.0\nORDER BY hit_rate ASC,\nLastAttemptedAt ASC NULLS FIRST,\nEntryId ASC\nLIMIT n"]
-    E_OWN -- Yes --> E_Q["Return ids as-is"]
+## 9. Lifecycle state of a single entry
 
-    V_Q --> RESULT["EntryId list"]
-    C_Q --> RESULT
-    WK_Q --> RESULT
-    E_Q --> RESULT
+How one `EntryId` moves through the system over its lifetime. Notice that `ExerciseAttempts` is the sole source of knowledge metrics; there is no `EntryKnowledge` table. Entry deletion cascades through every tier.
 
-    RESULT --> EMPTY{"List empty?"}
-    EMPTY -- Yes --> ERR2["Error NoEntriesResolved"]
-    EMPTY -- No --> PROCEED["Proceed to prompt generation\n+ session creation"]
+```mermaid
+stateDiagram-v2
+    [*] --> Unseen: entry created<br/>(no ExerciseAttempts rows)
+
+    Unseen --> InSession: selector resolves<br/>→ ExerciseSessionEntries row<br/>(+ PromptData + PromptSchemaVersion snapshot)
+    InSession --> Answered: client submits rawAnswer<br/>server evaluates → isCorrect<br/>→ ExerciseAttempts row (PromptData copy, server IsCorrect + AttemptedAt)
+
+    Unseen --> Answered: first attempt<br/>(ExerciseAttempts row created)
+    Answered --> Answered: further attempts<br/>(additional ExerciseAttempts rows)
+
+    InSession --> Skipped: session purged<br/>before answer
+    Skipped --> [*]: session TTL expires<br/>(no attempt recorded)
+
+    Answered --> Deleted: entry row deleted<br/>CASCADE wipes attempts +<br/>session entries
+    InSession --> Deleted: entry deletion mid-session
+    Unseen --> Deleted: entry deletion
+    Deleted --> [*]
 ```
