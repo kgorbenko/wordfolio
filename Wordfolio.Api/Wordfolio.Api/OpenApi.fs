@@ -56,6 +56,9 @@ let private inlineFSharpOptionSchemas(document: OpenApiDocument) =
                         let innerName =
                             refId.Substring(FSharpOptionPrefix.Length)
 
+                        if not(schemas.ContainsKey(innerName)) then
+                            schemas[innerName] <- innerSchema
+
                         let s = OpenApiSchema()
 
                         s.OneOf <-

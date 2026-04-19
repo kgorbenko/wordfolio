@@ -5,6 +5,7 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 
 open Wordfolio.Api
+open Wordfolio.Api.Configuration.ExerciseSessionPurge
 open Wordfolio.Api.Configuration.GroqApi
 open Wordfolio.Api.Configuration.SqidsEncoder
 open Wordfolio.Api.DataAccess
@@ -14,9 +15,12 @@ open Wordfolio.Api.Api.CollectionsHierarchy.Handlers
 open Wordfolio.Api.Api.Dictionary.Handlers
 open Wordfolio.Api.Api.Drafts.Handlers
 open Wordfolio.Api.Api.Entries.Handlers
+open Wordfolio.Api.Api.Exercises.Handlers
 open Wordfolio.Api.Api.Vocabularies.Handlers
 open Wordfolio.Api.IdentityIntegration
 open Wordfolio.Api.Infrastructure.ChatClient
+open Wordfolio.Api.Infrastructure.ExerciseSessionPurgeRunner
+open Wordfolio.Api.Infrastructure.ExerciseSessionPurgeService
 open Wordfolio.Api.Infrastructure.GroqChatClient
 open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.ServiceDefaults.Builder
@@ -56,6 +60,9 @@ let mapEndpoints(app: IEndpointRouteBuilder) =
     app.MapGroup(Urls.Dictionary.Path).WithTags("Dictionary")
     |> mapDictionaryEndpoints
 
+    app.MapGroup(Urls.Exercises.Path).WithTags("Exercises")
+    |> mapExercisesEndpoints
+
 [<EntryPoint>]
 let main args =
     let builder =
@@ -78,8 +85,23 @@ let main args =
         .BindConfiguration("SqidsEncoder")
     |> ignore
 
+    builder.Services
+        .AddOptions<ExerciseSessionPurgeConfiguration>()
+        .BindConfiguration("ExerciseSessionPurge")
+    |> ignore
+
     builder.Services.AddSingleton<IResourceIdEncoder, ResourceIdEncoder>()
     |> ignore
+
+    let connectionString =
+        builder.Configuration["ConnectionStrings:wordfoliodb"]
+
+    if not(System.String.IsNullOrEmpty(connectionString)) then
+        builder.Services.AddSingleton<ExerciseSessionPurgeRunner>()
+        |> ignore
+
+        builder.Services.AddHostedService<ExerciseSessionPurgeService>()
+        |> ignore
 
     builder.Services.AddSingleton<IChatClient, GroqChatClient>()
     |> ignore

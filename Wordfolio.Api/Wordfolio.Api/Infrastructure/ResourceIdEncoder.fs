@@ -21,6 +21,7 @@ type ResourceIdEncoder(options: IOptions<SqidsEncoderConfiguration>) =
 
             if
                 ids.Count = 1
+                && ids.[0] >= 0
                 && sqids.Encode(ids.[0]) = encoded
             then
                 Some ids.[0]
