@@ -140,3 +140,80 @@ module ExamplesTable =
 
     [<Literal>]
     let SourceColumn = "Source"
+
+module ExerciseSessionsTable =
+
+    [<Literal>]
+    let Name = "ExerciseSessions"
+
+    [<Literal>]
+    let IdColumn = "Id"
+
+    [<Literal>]
+    let UserIdColumn = "UserId"
+
+    [<Literal>]
+    let ExerciseTypeColumn = "ExerciseType"
+
+    [<Literal>]
+    let CreatedAtColumn = "CreatedAt"
+
+module ExerciseSessionEntriesTable =
+
+    [<Literal>]
+    let Name = "ExerciseSessionEntries"
+
+    [<Literal>]
+    let IdColumn = "Id"
+
+    [<Literal>]
+    let SessionIdColumn = "SessionId"
+
+    [<Literal>]
+    let EntryIdColumn = "EntryId"
+
+    [<Literal>]
+    let DisplayOrderColumn = "DisplayOrder"
+
+    [<Literal>]
+    let PromptDataColumn = "PromptData"
+
+    [<Literal>]
+    let PromptSchemaVersionColumn =
+        "PromptSchemaVersion"
+
+module ExerciseAttemptsTable =
+
+    [<Literal>]
+    let Name = "ExerciseAttempts"
+
+    [<Literal>]
+    let IdColumn = "Id"
+
+    [<Literal>]
+    let UserIdColumn = "UserId"
+
+    [<Literal>]
+    let SessionIdColumn = "SessionId"
+
+    [<Literal>]
+    let EntryIdColumn = "EntryId"
+
+    [<Literal>]
+    let ExerciseTypeColumn = "ExerciseType"
+
+    [<Literal>]
+    let PromptDataColumn = "PromptData"
+
+    [<Literal>]
+    let PromptSchemaVersionColumn =
+        "PromptSchemaVersion"
+
+    [<Literal>]
+    let RawAnswerColumn = "RawAnswer"
+
+    [<Literal>]
+    let IsCorrectColumn = "IsCorrect"
+
+    [<Literal>]
+    let AttemptedAtColumn = "AttemptedAt"
