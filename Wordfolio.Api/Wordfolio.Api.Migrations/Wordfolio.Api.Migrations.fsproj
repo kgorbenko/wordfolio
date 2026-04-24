@@ -18,6 +18,9 @@
     <Compile Include="20260110001_AddSystemCollectionsAndDefaultVocabularies.fs" />
     <Compile Include="20260321001_AddCascadeDeleteToVocabulariesCollectionForeignKey.fs" />
     <Compile Include="20260401001_MakeUpdatedAtNotNull.fs" />
+    <Compile Include="20260418001_CreateExerciseSessionsTable.fs" />
+    <Compile Include="20260418002_CreateExerciseSessionEntriesTable.fs" />
+    <Compile Include="20260418003_CreateExerciseAttemptsTable.fs" />
   </ItemGroup>
 
   <ItemGroup>
