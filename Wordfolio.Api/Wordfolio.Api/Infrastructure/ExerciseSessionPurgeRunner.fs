@@ -32,8 +32,7 @@ type ExerciseSessionPurgeRunner
 
                 do! connection.OpenAsync(cancellationToken)
 
-                use transaction =
-                    connection.BeginTransaction()
+                use! transaction = connection.BeginTransactionAsync(cancellationToken)
 
                 let! detachedCount =
                     ExerciseSessionPurge.detachAttemptsFromExpiredSessionsAsync

@@ -67,6 +67,7 @@ let mapExercisesEndpoints(group: RouteGroupBuilder) =
                                         match selector with
                                         | ExplicitEntries entries when entries.Length > Limits.MaxSessionEntries ->
                                             Some $"Cannot specify more than {Limits.MaxSessionEntries} entries"
+                                        | WorstKnown(_, count) when count <= 0 -> Some "Count must be positive"
                                         | WorstKnown(_, count) when count > Limits.MaxSessionEntries ->
                                             Some $"Count cannot exceed {Limits.MaxSessionEntries}"
                                         | _ -> None
@@ -145,34 +146,41 @@ let mapExercisesEndpoints(group: RouteGroupBuilder) =
                             | None, _
                             | _, None -> return Results.NotFound()
                             | Some decodedSessionId, Some decodedEntryId ->
-                                let env =
-                                    TransactionalEnv(dataSource, cancellationToken)
+                                if
+                                    isNull(box request)
+                                    || isNull request.RawAnswer
+                                then
+                                    return Results.BadRequest({| error = "Invalid request body" |})
+                                else
 
-                                let! result =
-                                    runInTransaction env (fun appEnv ->
-                                        submitAttempt
-                                            appEnv
-                                            (UserId userId)
-                                            (ExerciseSessionId decodedSessionId)
-                                            (EntryId decodedEntryId)
-                                            (RawAnswer request.RawAnswer)
-                                            DateTimeOffset.UtcNow)
+                                    let env =
+                                        TransactionalEnv(dataSource, cancellationToken)
 
-                                return
-                                    match result with
-                                    | Ok(Inserted inserted) ->
-                                        let response: SubmitAttemptResponse =
-                                            { IsCorrect = inserted.IsCorrect }
+                                    let! result =
+                                        runInTransaction env (fun appEnv ->
+                                            submitAttempt
+                                                appEnv
+                                                (UserId userId)
+                                                (ExerciseSessionId decodedSessionId)
+                                                (EntryId decodedEntryId)
+                                                (RawAnswer request.RawAnswer)
+                                                DateTimeOffset.UtcNow)
 
-                                        Results.Created(ExerciseUrls.sessionById sessionId, response)
-                                    | Ok(IdempotentReplay replay) ->
-                                        let response: SubmitAttemptResponse =
-                                            { IsCorrect = replay.IsCorrect }
+                                    return
+                                        match result with
+                                        | Ok(Inserted inserted) ->
+                                            let response: SubmitAttemptResponse =
+                                                { IsCorrect = inserted.IsCorrect }
 
-                                        Results.Ok(response)
-                                    | Ok ConflictingReplay ->
-                                        toSubmitAttemptErrorResponse SubmitAttemptError.ConflictingAttempt
-                                    | Error error -> toSubmitAttemptErrorResponse error
+                                            Results.Created(ExerciseUrls.sessionById sessionId, response)
+                                        | Ok(IdempotentReplay replay) ->
+                                            let response: SubmitAttemptResponse =
+                                                { IsCorrect = replay.IsCorrect }
+
+                                            Results.Ok(response)
+                                        | Ok ConflictingReplay ->
+                                            toSubmitAttemptErrorResponse SubmitAttemptError.ConflictingAttempt
+                                        | Error error -> toSubmitAttemptErrorResponse error
                     })
         )
         .Produces<SubmitAttemptResponse>(StatusCodes.Status201Created)

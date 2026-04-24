@@ -99,6 +99,7 @@ let tryMapSelector (encoder: IResourceIdEncoder) (request: EntrySelectorRequest)
                 ExplicitEntries(
                     decoded
                     |> List.choose id
+                    |> List.distinct
                     |> List.map EntryId
                 )
             )

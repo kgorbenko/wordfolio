@@ -161,7 +161,8 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
     let int16ToExerciseType(value: int16) : ExerciseType =
         match value with
         | 0s -> MultipleChoice
-        | _ -> Translation
+        | 1s -> Translation
+        | other -> failwith $"Unknown ExerciseType value: {int other}"
 
     let toEntryHierarchyDomain(entryHierarchy: Wordfolio.Api.DataAccess.EntriesHierarchy.EntryHierarchy) : Entry =
         let definitionsWithExamples =

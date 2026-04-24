@@ -68,6 +68,20 @@ let private inlineFSharpOptionSchemas(document: OpenApiDocument) =
                             )
 
                         s
+                    elif
+                        innerSchema.Type.HasValue
+                        && innerSchema.Type.Value.HasFlag(JsonSchemaType.Array)
+                    then
+                        let s = OpenApiSchema()
+
+                        s.Type <-
+                            Nullable(
+                                JsonSchemaType.Array
+                                ||| JsonSchemaType.Null
+                            )
+
+                        s.Items <- innerSchema.Items
+                        s
                     else
                         let s = OpenApiSchema()
 
