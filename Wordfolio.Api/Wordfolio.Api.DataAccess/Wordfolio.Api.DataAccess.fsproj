@@ -22,6 +22,8 @@
     <Compile Include="Translations.fs" />
     <Compile Include="Examples.fs" />
     <Compile Include="EntriesHierarchy.fs" />
+    <Compile Include="ExerciseSessions.fs" />
+    <Compile Include="ExerciseAttempts.fs" />
   </ItemGroup>
 
   <ItemGroup>

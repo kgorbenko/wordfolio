@@ -55,6 +55,17 @@
     <Compile Include="EntriesHierarchy/GetEntryByIdWithHierarchyTests.fs" />
     <Compile Include="EntriesHierarchy/ClearEntryChildrenTests.fs" />
     <Compile Include="EntriesHierarchy/GetEntriesHierarchyByVocabularyIdTests.fs" />
+    <Compile Include="EntriesHierarchy/GetEntriesByIdsWithHierarchyTests.fs" />
+    <Compile Include="ExerciseSessions/CreateSessionWithEntriesTests.fs" />
+    <Compile Include="ExerciseSessions/GetSessionTests.fs" />
+    <Compile Include="ExerciseSessions/GetSessionEntryTests.fs" />
+    <Compile Include="ExerciseSessions/GetSessionEntriesTests.fs" />
+    <Compile Include="ExerciseAttempts/CommitAttemptTests.fs" />
+    <Compile Include="ExerciseAttempts/GetAttemptsBySessionTests.fs" />
+    <Compile Include="ExerciseAttempts/GetWorstKnownEntriesTests.fs" />
+<Compile Include="Entries/GetEntryIdsByVocabularyIdTests.fs" />
+    <Compile Include="Entries/GetEntryIdsByCollectionIdTests.fs" />
+    <Compile Include="Entries/GetEntryIdsByIdsForUserTests.fs" />
   </ItemGroup>
 
 </Project>
