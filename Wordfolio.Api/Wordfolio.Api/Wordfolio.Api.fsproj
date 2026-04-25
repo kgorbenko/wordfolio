@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <Compile Include="Urls.fs" />
-    <Compile Include="Configuration\ExerciseSessionPurge.fs" />
     <Compile Include="Configuration\GroqApi.fs" />
     <Compile Include="Configuration\SqidsEncoder.fs" />
     <Compile Include="IdentityIntegration.fs" />
@@ -19,8 +18,6 @@
     <Compile Include="Infrastructure\DelimitedStreamProcessor.fs" />
     <Compile Include="Infrastructure\GroqChatClient.fs" />
     <Compile Include="Infrastructure\Environment.fs" />
-    <Compile Include="Infrastructure\ExerciseSessionPurgeRunner.fs" />
-    <Compile Include="Infrastructure\ExerciseSessionPurgeService.fs" />
     <Compile Include="Api\Types.fs" />
     <Compile Include="Api\Mappers.fs" />
     <Compile Include="Api\Helpers.fs" />

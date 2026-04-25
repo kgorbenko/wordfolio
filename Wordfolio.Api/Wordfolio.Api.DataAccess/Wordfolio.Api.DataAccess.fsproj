@@ -24,7 +24,6 @@
     <Compile Include="EntriesHierarchy.fs" />
     <Compile Include="ExerciseSessions.fs" />
     <Compile Include="ExerciseAttempts.fs" />
-    <Compile Include="ExerciseSessionPurge.fs" />
   </ItemGroup>
 
   <ItemGroup>

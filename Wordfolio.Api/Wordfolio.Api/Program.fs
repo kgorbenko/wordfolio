@@ -5,7 +5,6 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 
 open Wordfolio.Api
-open Wordfolio.Api.Configuration.ExerciseSessionPurge
 open Wordfolio.Api.Configuration.GroqApi
 open Wordfolio.Api.Configuration.SqidsEncoder
 open Wordfolio.Api.DataAccess
@@ -19,8 +18,6 @@ open Wordfolio.Api.Api.Exercises.Handlers
 open Wordfolio.Api.Api.Vocabularies.Handlers
 open Wordfolio.Api.IdentityIntegration
 open Wordfolio.Api.Infrastructure.ChatClient
-open Wordfolio.Api.Infrastructure.ExerciseSessionPurgeRunner
-open Wordfolio.Api.Infrastructure.ExerciseSessionPurgeService
 open Wordfolio.Api.Infrastructure.GroqChatClient
 open Wordfolio.Api.Infrastructure.ResourceIdEncoder
 open Wordfolio.ServiceDefaults.Builder
@@ -85,23 +82,8 @@ let main args =
         .BindConfiguration("SqidsEncoder")
     |> ignore
 
-    builder.Services
-        .AddOptions<ExerciseSessionPurgeConfiguration>()
-        .BindConfiguration("ExerciseSessionPurge")
-    |> ignore
-
     builder.Services.AddSingleton<IResourceIdEncoder, ResourceIdEncoder>()
     |> ignore
-
-    let connectionString =
-        builder.Configuration["ConnectionStrings:wordfoliodb"]
-
-    if not(System.String.IsNullOrEmpty(connectionString)) then
-        builder.Services.AddSingleton<ExerciseSessionPurgeRunner>()
-        |> ignore
-
-        builder.Services.AddHostedService<ExerciseSessionPurgeService>()
-        |> ignore
 
     builder.Services.AddSingleton<IChatClient, GroqChatClient>()
     |> ignore
