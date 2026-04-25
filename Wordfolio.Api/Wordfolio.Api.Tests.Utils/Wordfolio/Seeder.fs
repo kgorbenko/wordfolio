@@ -61,6 +61,32 @@ type Example =
       ExampleText: string
       Source: ExampleSource }
 
+type ExerciseSession =
+    { Id: int
+      UserId: int
+      ExerciseType: int16
+      CreatedAt: DateTimeOffset }
+
+type ExerciseSessionEntry =
+    { Id: int
+      SessionId: int
+      EntryId: int
+      DisplayOrder: int
+      PromptData: string
+      PromptSchemaVersion: int16 }
+
+type ExerciseAttempt =
+    { Id: int
+      UserId: int
+      SessionId: int option
+      EntryId: int
+      ExerciseType: int16
+      PromptData: string
+      PromptSchemaVersion: int16
+      RawAnswer: string
+      IsCorrect: bool
+      AttemptedAt: DateTimeOffset }
+
 [<RequireQualifiedAccess>]
 module Entities =
     let makeUser id : Mapping.User =
@@ -198,6 +224,68 @@ module Entities =
 
         translation.Examples.Add(example)
         example
+
+    let makeExerciseSession
+        (user: Mapping.User)
+        (exerciseType: int16)
+        (createdAt: DateTimeOffset)
+        : Mapping.ExerciseSession =
+        let session: Mapping.ExerciseSession =
+            { Id = 0
+              UserId = user.Id
+              ExerciseType = exerciseType
+              CreatedAt = createdAt
+              User = user
+              Entries = ResizeArray() }
+
+        session
+
+    let makeExerciseSessionEntry
+        (session: Mapping.ExerciseSession)
+        (entry: Mapping.Entry)
+        (displayOrder: int)
+        (promptData: string)
+        (promptSchemaVersion: int16)
+        : Mapping.ExerciseSessionEntry =
+        let sessionEntry: Mapping.ExerciseSessionEntry =
+            { Id = 0
+              SessionId = session.Id
+              EntryId = entry.Id
+              DisplayOrder = displayOrder
+              PromptData = promptData
+              PromptSchemaVersion = promptSchemaVersion
+              Session = session
+              Entry = entry }
+
+        session.Entries.Add(sessionEntry)
+        sessionEntry
+
+    let makeExerciseAttempt
+        (user: Mapping.User)
+        (session: Mapping.ExerciseSession option)
+        (entry: Mapping.Entry)
+        (exerciseType: int16)
+        (promptData: string)
+        (promptSchemaVersion: int16)
+        (rawAnswer: string)
+        (isCorrect: bool)
+        (attemptedAt: DateTimeOffset)
+        : Mapping.ExerciseAttempt =
+        { Id = 0
+          UserId = user.Id
+          SessionId =
+            session
+            |> Option.map(fun s -> s.Id)
+            |> Option.toNullable
+          EntryId = entry.Id
+          ExerciseType = exerciseType
+          PromptData = promptData
+          PromptSchemaVersion = promptSchemaVersion
+          RawAnswer = rawAnswer
+          IsCorrect = isCorrect
+          AttemptedAt = attemptedAt
+          User = Unchecked.defaultof<Mapping.User>
+          Entry = Unchecked.defaultof<Mapping.Entry> }
 
 type WordfolioSeeder internal (context: Mapping.WordfolioTestDbContext) =
     member internal _.Context = context
@@ -400,4 +488,151 @@ module Seeder =
                 examples
                 |> Seq.map toExample
                 |> Seq.toList
+        }
+
+    let private toExerciseSession(entity: Mapping.ExerciseSession) : ExerciseSession =
+        { Id = entity.Id
+          UserId = entity.UserId
+          ExerciseType = entity.ExerciseType
+          CreatedAt = entity.CreatedAt }
+
+    let private toExerciseSessionEntry(entity: Mapping.ExerciseSessionEntry) : ExerciseSessionEntry =
+        { Id = entity.Id
+          SessionId = entity.SessionId
+          EntryId = entity.EntryId
+          DisplayOrder = entity.DisplayOrder
+          PromptData = entity.PromptData
+          PromptSchemaVersion = entity.PromptSchemaVersion }
+
+    let private toExerciseAttempt(entity: Mapping.ExerciseAttempt) : ExerciseAttempt =
+        { Id = entity.Id
+          UserId = entity.UserId
+          SessionId = Option.ofNullable entity.SessionId
+          EntryId = entity.EntryId
+          ExerciseType = entity.ExerciseType
+          PromptData = entity.PromptData
+          PromptSchemaVersion = entity.PromptSchemaVersion
+          RawAnswer = entity.RawAnswer
+          IsCorrect = entity.IsCorrect
+          AttemptedAt = entity.AttemptedAt }
+
+    let addExerciseSessions (sessions: Mapping.ExerciseSession list) (seeder: WordfolioSeeder) : WordfolioSeeder =
+        seeder.Context.ExerciseSessions.AddRange(sessions)
+        seeder
+
+    let addExerciseSessionEntries
+        (entries: Mapping.ExerciseSessionEntry list)
+        (seeder: WordfolioSeeder)
+        : WordfolioSeeder =
+        seeder.Context.ExerciseSessionEntries.AddRange(entries)
+        seeder
+
+    let addExerciseAttempts (attempts: Mapping.ExerciseAttempt list) (seeder: WordfolioSeeder) : WordfolioSeeder =
+        seeder.Context.ExerciseAttempts.AddRange(attempts)
+        seeder
+
+    let getAllExerciseSessionsAsync(seeder: WordfolioSeeder) : Task<ExerciseSession list> =
+        task {
+            let! sessions = seeder.Context.ExerciseSessions.AsNoTracking().ToArrayAsync()
+
+            return
+                sessions
+                |> Seq.map toExerciseSession
+                |> Seq.toList
+        }
+
+    let getExerciseSessionByIdAsync (id: int) (seeder: WordfolioSeeder) : Task<ExerciseSession option> =
+        task {
+            let! session =
+                seeder.Context.ExerciseSessions
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(fun s -> s.Id = id)
+
+            return
+                session
+                |> Option.ofObj
+                |> Option.map toExerciseSession
+        }
+
+    let getAllExerciseSessionEntriesAsync(seeder: WordfolioSeeder) : Task<ExerciseSessionEntry list> =
+        task {
+            let! entries = seeder.Context.ExerciseSessionEntries.AsNoTracking().ToArrayAsync()
+
+            return
+                entries
+                |> Seq.map toExerciseSessionEntry
+                |> Seq.toList
+        }
+
+    let getExerciseSessionEntriesBySessionIdAsync
+        (sessionId: int)
+        (seeder: WordfolioSeeder)
+        : Task<ExerciseSessionEntry list> =
+        task {
+            let! entries =
+                seeder.Context.ExerciseSessionEntries
+                    .AsNoTracking()
+                    .Where(fun e -> e.SessionId = sessionId)
+                    .ToArrayAsync()
+
+            return
+                entries
+                |> Seq.map toExerciseSessionEntry
+                |> Seq.toList
+        }
+
+    let getExerciseSessionEntryAsync
+        (sessionId: int)
+        (entryId: int)
+        (seeder: WordfolioSeeder)
+        : Task<ExerciseSessionEntry option> =
+        task {
+            let! entry =
+                seeder.Context.ExerciseSessionEntries
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(fun e ->
+                        e.SessionId = sessionId
+                        && e.EntryId = entryId)
+
+            return
+                entry
+                |> Option.ofObj
+                |> Option.map toExerciseSessionEntry
+        }
+
+    let getAllExerciseAttemptsAsync(seeder: WordfolioSeeder) : Task<ExerciseAttempt list> =
+        task {
+            let! attempts = seeder.Context.ExerciseAttempts.AsNoTracking().ToArrayAsync()
+
+            return
+                attempts
+                |> Seq.map toExerciseAttempt
+                |> Seq.toList
+        }
+
+    let getExerciseAttemptsBySessionIdAsync (sessionId: int) (seeder: WordfolioSeeder) : Task<ExerciseAttempt list> =
+        task {
+            let! attempts =
+                seeder.Context.ExerciseAttempts
+                    .AsNoTracking()
+                    .Where(fun a -> a.SessionId = Nullable(sessionId))
+                    .ToArrayAsync()
+
+            return
+                attempts
+                |> Seq.map toExerciseAttempt
+                |> Seq.toList
+        }
+
+    let getExerciseAttemptByIdAsync (id: int) (seeder: WordfolioSeeder) : Task<ExerciseAttempt option> =
+        task {
+            let! attempt =
+                seeder.Context.ExerciseAttempts
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(fun a -> a.Id = id)
+
+            return
+                attempt
+                |> Option.ofObj
+                |> Option.map toExerciseAttempt
         }

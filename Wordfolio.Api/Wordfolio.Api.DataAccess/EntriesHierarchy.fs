@@ -392,6 +392,62 @@ let clearEntryChildrenAsync
         return deletedDefinitions + deletedTranslations
     }
 
+let getEntriesByIdsWithHierarchyAsync
+    (entryIds: int list)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<EntryHierarchy list> =
+    task {
+        if entryIds.IsEmpty then
+            return []
+        else
+            let sql =
+                """
+                SELECT "Id", "VocabularyId", "EntryText", "CreatedAt", "UpdatedAt"
+                FROM wordfolio."Entries"
+                WHERE "Id" = ANY(@entryIds);
+                """
+
+            let commandDefinition =
+                CommandDefinition(
+                    commandText = sql,
+                    parameters = {| entryIds = entryIds |> List.toArray |},
+                    transaction = transaction,
+                    cancellationToken = cancellationToken
+                )
+
+            let! entries = connection.QueryAsync<EntryRecord>(commandDefinition)
+            let entryList = entries |> Seq.toList
+
+            if entryList.IsEmpty then
+                return []
+            else
+                let! definitions = getDefinitionRecordsByEntryIdsAsync entryIds connection transaction cancellationToken
+
+                let! translations =
+                    getTranslationRecordsByEntryIdsAsync entryIds connection transaction cancellationToken
+
+                let definitionIds =
+                    definitions
+                    |> List.map(fun definition -> definition.Id)
+
+                let translationIds =
+                    translations
+                    |> List.map(fun translation -> translation.Id)
+
+                let! definitionExamples =
+                    getExampleRecordsByDefinitionIdsAsync definitionIds connection transaction cancellationToken
+
+                let! translationExamples =
+                    getExampleRecordsByTranslationIdsAsync translationIds connection transaction cancellationToken
+
+                let examples =
+                    definitionExamples @ translationExamples
+
+                return assembleEntriesWithHierarchy entryList definitions translations examples
+    }
+
 let getEntriesHierarchyByVocabularyIdAsync
     (vocabularyId: int)
     (connection: IDbConnection)

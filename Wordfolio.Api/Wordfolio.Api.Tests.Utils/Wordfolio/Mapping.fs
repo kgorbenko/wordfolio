@@ -71,6 +71,38 @@ and [<CLIMutable>] Example =
       Definition: Definition
       Translation: Translation }
 
+and [<CLIMutable>] ExerciseSession =
+    { Id: int
+      UserId: int
+      ExerciseType: int16
+      CreatedAt: DateTimeOffset
+      User: User
+      Entries: ResizeArray<ExerciseSessionEntry> }
+
+and [<CLIMutable>] ExerciseSessionEntry =
+    { Id: int
+      SessionId: int
+      EntryId: int
+      DisplayOrder: int
+      PromptData: string
+      PromptSchemaVersion: int16
+      Session: ExerciseSession
+      Entry: Entry }
+
+and [<CLIMutable>] ExerciseAttempt =
+    { Id: int
+      UserId: int
+      SessionId: Nullable<int>
+      EntryId: int
+      ExerciseType: int16
+      PromptData: string
+      PromptSchemaVersion: int16
+      RawAnswer: string
+      IsCorrect: bool
+      AttemptedAt: DateTimeOffset
+      User: User
+      Entry: Entry }
+
 type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbContext>) =
     inherit DbContext(options)
 
@@ -94,6 +126,15 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
 
     member this.Examples: DbSet<Example> =
         base.Set<Example>()
+
+    member this.ExerciseSessions: DbSet<ExerciseSession> =
+        base.Set<ExerciseSession>()
+
+    member this.ExerciseSessionEntries: DbSet<ExerciseSessionEntry> =
+        base.Set<ExerciseSessionEntry>()
+
+    member this.ExerciseAttempts: DbSet<ExerciseAttempt> =
+        base.Set<ExerciseAttempt>()
 
     override _.OnModelCreating(modelBuilder: ModelBuilder) =
         let users = modelBuilder.Entity<User>()
@@ -295,6 +336,96 @@ type internal WordfolioTestDbContext(options: DbContextOptions<WordfolioTestDbCo
             .WithOne(fun e -> e.Translation)
             .HasForeignKey(fun e -> e.TranslationId :> obj)
             .IsRequired(false)
+        |> ignore
+
+        let exerciseSessions =
+            modelBuilder.Entity<ExerciseSession>()
+
+        exerciseSessions
+            .ToTable(Schema.ExerciseSessionsTable.Name, Schema.Name)
+            .HasKey(fun x -> x.Id :> obj)
+        |> ignore
+
+        exerciseSessions.Property(_.Id).ValueGeneratedOnAdd()
+        |> ignore
+
+        exerciseSessions.Property(_.UserId).IsRequired()
+        |> ignore
+
+        exerciseSessions.Property(_.ExerciseType).IsRequired()
+        |> ignore
+
+        exerciseSessions.Property(_.CreatedAt).IsRequired()
+        |> ignore
+
+        exerciseSessions
+            .HasMany(fun s -> s.Entries :> IEnumerable<ExerciseSessionEntry>)
+            .WithOne(fun e -> e.Session)
+            .HasForeignKey(fun e -> e.SessionId :> obj)
+        |> ignore
+
+        let exerciseSessionEntries =
+            modelBuilder.Entity<ExerciseSessionEntry>()
+
+        exerciseSessionEntries
+            .ToTable(Schema.ExerciseSessionEntriesTable.Name, Schema.Name)
+            .HasKey(fun x -> x.Id :> obj)
+        |> ignore
+
+        exerciseSessionEntries.Property(_.Id).ValueGeneratedOnAdd()
+        |> ignore
+
+        exerciseSessionEntries.Property(_.SessionId).IsRequired()
+        |> ignore
+
+        exerciseSessionEntries.Property(_.EntryId).IsRequired()
+        |> ignore
+
+        exerciseSessionEntries.Property(_.DisplayOrder).IsRequired()
+        |> ignore
+
+        exerciseSessionEntries.Property(_.PromptData).IsRequired()
+        |> ignore
+
+        exerciseSessionEntries.Property(_.PromptSchemaVersion).IsRequired()
+        |> ignore
+
+        let exerciseAttempts =
+            modelBuilder.Entity<ExerciseAttempt>()
+
+        exerciseAttempts
+            .ToTable(Schema.ExerciseAttemptsTable.Name, Schema.Name)
+            .HasKey(fun x -> x.Id :> obj)
+        |> ignore
+
+        exerciseAttempts.Property(_.Id).ValueGeneratedOnAdd()
+        |> ignore
+
+        exerciseAttempts.Property(_.UserId).IsRequired()
+        |> ignore
+
+        exerciseAttempts.Property(_.SessionId).IsRequired(false)
+        |> ignore
+
+        exerciseAttempts.Property(_.EntryId).IsRequired()
+        |> ignore
+
+        exerciseAttempts.Property(_.ExerciseType).IsRequired()
+        |> ignore
+
+        exerciseAttempts.Property(_.PromptData).IsRequired()
+        |> ignore
+
+        exerciseAttempts.Property(_.PromptSchemaVersion).IsRequired()
+        |> ignore
+
+        exerciseAttempts.Property(_.RawAnswer).IsRequired()
+        |> ignore
+
+        exerciseAttempts.Property(_.IsCorrect).IsRequired()
+        |> ignore
+
+        exerciseAttempts.Property(_.AttemptedAt).IsRequired()
         |> ignore
 
         base.OnModelCreating(modelBuilder)

@@ -5,6 +5,7 @@ open System.Data
 open System.Threading
 open System.Threading.Tasks
 
+open Dapper
 open Dapper.FSharp.PostgreSQL
 
 open Wordfolio.Api.DataAccess.Dapper
@@ -243,4 +244,131 @@ let hasVocabularyAccessInCollectionAsync
             |> trySelectFirstAsync<VocabularyRecord> connection transaction cancellationToken
 
         return result |> Option.isSome
+    }
+
+let getEntryIdsByVocabularyIdAsync
+    (vocabularyId: int)
+    (userId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<int list> =
+    task {
+        let sql =
+            """
+            SELECT e."Id"
+            FROM wordfolio."Entries" e
+            INNER JOIN wordfolio."Vocabularies" v ON v."Id" = e."VocabularyId"
+            INNER JOIN wordfolio."Collections" c ON c."Id" = v."CollectionId"
+            WHERE e."VocabularyId" = @vocabularyId
+              AND c."UserId" = @userId;
+            """
+
+        let commandDefinition =
+            CommandDefinition(
+                commandText = sql,
+                parameters =
+                    {| vocabularyId = vocabularyId
+                       userId = userId |},
+                transaction = transaction,
+                cancellationToken = cancellationToken
+            )
+
+        let! ids = connection.QueryAsync<int>(commandDefinition)
+        return ids |> Seq.toList
+    }
+
+let getEntryIdsByCollectionIdAsync
+    (collectionId: int)
+    (userId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<int list> =
+    task {
+        let sql =
+            """
+            SELECT e."Id"
+            FROM wordfolio."Entries" e
+            INNER JOIN wordfolio."Vocabularies" v ON v."Id" = e."VocabularyId"
+            INNER JOIN wordfolio."Collections" c ON c."Id" = v."CollectionId"
+            WHERE v."CollectionId" = @collectionId
+              AND c."UserId" = @userId;
+            """
+
+        let commandDefinition =
+            CommandDefinition(
+                commandText = sql,
+                parameters =
+                    {| collectionId = collectionId
+                       userId = userId |},
+                transaction = transaction,
+                cancellationToken = cancellationToken
+            )
+
+        let! ids = connection.QueryAsync<int>(commandDefinition)
+        return ids |> Seq.toList
+    }
+
+let getEntryIdsByUserIdAsync
+    (userId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<int list> =
+    task {
+        let sql =
+            """
+            SELECT e."Id"
+            FROM wordfolio."Entries" e
+            INNER JOIN wordfolio."Vocabularies" v ON v."Id" = e."VocabularyId"
+            INNER JOIN wordfolio."Collections" c ON c."Id" = v."CollectionId"
+            WHERE c."UserId" = @userId;
+            """
+
+        let commandDefinition =
+            CommandDefinition(
+                commandText = sql,
+                parameters = {| userId = userId |},
+                transaction = transaction,
+                cancellationToken = cancellationToken
+            )
+
+        let! ids = connection.QueryAsync<int>(commandDefinition)
+        return ids |> Seq.toList
+    }
+
+let getEntryIdsByIdsForUserAsync
+    (requestedIds: int list)
+    (userId: int)
+    (connection: IDbConnection)
+    (transaction: IDbTransaction)
+    (cancellationToken: CancellationToken)
+    : Task<int list> =
+    task {
+        if requestedIds.IsEmpty then
+            return []
+        else
+            let sql =
+                """
+                SELECT e."Id"
+                FROM wordfolio."Entries" e
+                INNER JOIN wordfolio."Vocabularies" v ON v."Id" = e."VocabularyId"
+                INNER JOIN wordfolio."Collections" c ON c."Id" = v."CollectionId"
+                WHERE e."Id" = ANY(@requestedIds)
+                  AND c."UserId" = @userId;
+                """
+
+            let commandDefinition =
+                CommandDefinition(
+                    commandText = sql,
+                    parameters =
+                        {| requestedIds = requestedIds |> List.toArray
+                           userId = userId |},
+                    transaction = transaction,
+                    cancellationToken = cancellationToken
+                )
+
+            let! ids = connection.QueryAsync<int>(commandDefinition)
+            return ids |> Seq.toList
     }
