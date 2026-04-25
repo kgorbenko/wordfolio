@@ -47,6 +47,12 @@
     <Compile Include="Entries\EntryOperations\UpdateTests.fs" />
     <Compile Include="Entries\EntryOperations\MoveTests.fs" />
     <Compile Include="Entries\EntryOperations\DeleteTests.fs" />
+    <Compile Include="Exercises\MultipleChoiceTests.fs" />
+    <Compile Include="Exercises\TranslationTests.fs" />
+    <Compile Include="Exercises\DispatchTests.fs" />
+    <Compile Include="Exercises\CreateSessionTests.fs" />
+    <Compile Include="Exercises\GetSessionTests.fs" />
+    <Compile Include="Exercises\SubmitAttemptTests.fs" />
   </ItemGroup>
 
 </Project>

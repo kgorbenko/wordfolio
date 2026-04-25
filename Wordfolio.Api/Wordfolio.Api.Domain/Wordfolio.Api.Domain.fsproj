@@ -30,6 +30,12 @@
     <Compile Include="Entries\Helpers.fs" />
     <Compile Include="Entries\DraftOperations.fs" />
     <Compile Include="Entries\EntryOperations.fs" />
+    <Compile Include="Exercises\Types.fs" />
+    <Compile Include="Exercises\Errors.fs" />
+    <Compile Include="Exercises\Capabilities.fs" />
+    <Compile Include="Exercises\ExerciseTypes.fs" />
+    <Compile Include="Exercises\Dispatch.fs" />
+    <Compile Include="Exercises\Operations.fs" />
   </ItemGroup>
 
 </Project>

@@ -4,46 +4,6 @@ open System
 
 open Wordfolio.Api.Domain
 
-type DefinitionSource =
-    | Api
-    | Manual
-
-type TranslationSource =
-    | Api
-    | Manual
-
-type ExampleSource =
-    | Api
-    | Custom
-
-type Example =
-    { Id: ExampleId
-      ExampleText: string
-      Source: ExampleSource }
-
-type Definition =
-    { Id: DefinitionId
-      DefinitionText: string
-      Source: DefinitionSource
-      DisplayOrder: int
-      Examples: Example list }
-
-type Translation =
-    { Id: TranslationId
-      TranslationText: string
-      Source: TranslationSource
-      DisplayOrder: int
-      Examples: Example list }
-
-type Entry =
-    { Id: EntryId
-      VocabularyId: VocabularyId
-      EntryText: string
-      CreatedAt: DateTimeOffset
-      UpdatedAt: DateTimeOffset
-      Definitions: Definition list
-      Translations: Translation list }
-
 type ExampleInput =
     { ExampleText: string
       Source: ExampleSource }
