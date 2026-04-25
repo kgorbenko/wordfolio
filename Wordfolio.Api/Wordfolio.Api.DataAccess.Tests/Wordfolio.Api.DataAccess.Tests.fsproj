@@ -63,7 +63,7 @@
     <Compile Include="ExerciseAttempts/CommitAttemptTests.fs" />
     <Compile Include="ExerciseAttempts/GetAttemptsBySessionTests.fs" />
     <Compile Include="ExerciseAttempts/GetWorstKnownEntriesTests.fs" />
-<Compile Include="Entries/GetEntryIdsByVocabularyIdTests.fs" />
+    <Compile Include="Entries/GetEntryIdsByVocabularyIdTests.fs" />
     <Compile Include="Entries/GetEntryIdsByCollectionIdTests.fs" />
     <Compile Include="Entries/GetEntryIdsByIdsForUserTests.fs" />
   </ItemGroup>
