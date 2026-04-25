@@ -260,9 +260,6 @@ type GetWorstKnownEntriesTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            // Both entries have 1 correct + 1 wrong = 50% hit rate.
-            // olderEntry's last attempt is at -2h, newerEntry's at -1h.
-            // With equal hit rates, ORDER BY LastAttemptedAt ASC puts olderEntry first.
             let olderAttempt1 =
                 Entities.makeExerciseAttempt user None olderEntry 0s "{}" 1s "a" true (baseAt.AddHours(-3.0))
 
@@ -314,7 +311,6 @@ type GetWorstKnownEntriesTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            // Both entries have identical hit rate and LastAttemptedAt; tie-break falls to Id ASC.
             let attempt1 =
                 Entities.makeExerciseAttempt user None entry1 0s "{}" 1s "a" false baseAt
 
@@ -362,9 +358,6 @@ type GetWorstKnownEntriesTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user1; user2 ]
                 |> Seeder.saveChangesAsync
 
-            // user1 has 100% hit rate for goodEntry.
-            // user2 has 0% hit rate for goodEntry — must not affect user1's ranking.
-            // coldEntry has no attempts from user1.
             let user1GoodAttempt =
                 Entities.makeExerciseAttempt user1 None goodEntry 0s "{}" 1s "a" true baseAt
 
@@ -410,14 +403,6 @@ type GetWorstKnownEntriesTests(fixture: WordfolioTestFixture) =
                 |> Seeder.addUsers [ user ]
                 |> Seeder.saveChangesAsync
 
-            // entryA: false at -3h, true at -2h
-            //   window=1: hit_rate = 1.0 (only most recent true)
-            //   window=2: hit_rate = 0.5
-            // entryB: true at -4h, false at -1h
-            //   window=1: hit_rate = 0.0 (only most recent false)
-            //   window=2: hit_rate = 0.5
-            // With window=1: B (0.0) before A (1.0) → [B, A]
-            // With window=2: equal hit rates; A last attempted at -2h, B at -1h → A first → [A, B]
             let attemptA1 =
                 Entities.makeExerciseAttempt user None entryA 0s "{}" 1s "a" false (baseAt.AddHours(-3.0))
 
