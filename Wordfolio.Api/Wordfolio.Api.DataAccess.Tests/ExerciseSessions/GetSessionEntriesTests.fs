@@ -105,6 +105,53 @@ type GetSessionEntriesTests(fixture: WordfolioTestFixture) =
                     PromptData = """{"q":"e3"}"""
                     PromptSchemaVersion = 1s } ]
 
+            Assert.Equivalent(expected, actual, strict = true)
+        }
+
+    [<Fact>]
+    member _.``getSessionEntriesAsync returns entries regardless of owning user``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2026, 4, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user1 = Entities.makeUser 733
+            let user2 = Entities.makeUser 734
+
+            let collection =
+                Entities.makeCollection user1 "Collection" None createdAt createdAt false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Vocabulary" None createdAt createdAt false
+
+            let entry =
+                Entities.makeEntry vocabulary "word" createdAt createdAt
+
+            let session =
+                Entities.makeExerciseSession user1 0s createdAt
+
+            let sessionEntry =
+                Entities.makeExerciseSessionEntry session entry 0 "{}" 1s
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user1; user2 ]
+                |> Seeder.addExerciseSessions [ session ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                ExerciseSessions.getSessionEntriesAsync session.Id
+                |> fixture.WithConnectionAsync
+
+            let expected: ExerciseSessionEntry list =
+                [ { Id = sessionEntry.Id
+                    SessionId = session.Id
+                    EntryId = entry.Id
+                    DisplayOrder = 0
+                    PromptData = "{}"
+                    PromptSchemaVersion = 1s } ]
+
             Assert.Equivalent(expected, actual)
         }
 
@@ -133,8 +180,8 @@ type GetSessionEntriesTests(fixture: WordfolioTestFixture) =
             let session2 =
                 Entities.makeExerciseSession user 0s createdAt
 
-            let _ =
-                Entities.makeExerciseSessionEntry session2 entry 0 "{}" 1s
+            Entities.makeExerciseSessionEntry session2 entry 0 "{}" 1s
+            |> ignore
 
             do!
                 fixture.Seeder
@@ -147,4 +194,20 @@ type GetSessionEntriesTests(fixture: WordfolioTestFixture) =
                 |> fixture.WithConnectionAsync
 
             Assert.Empty(actual)
+
+            let! session2Entries =
+                fixture.Seeder
+                |> Seeder.getExerciseSessionEntriesBySessionIdAsync session2.Id
+
+            let session2Entry = session2Entries[0]
+
+            Assert.Equivalent(
+                [ { Id = session2Entry.Id
+                    SessionId = session2.Id
+                    EntryId = entry.Id
+                    DisplayOrder = 0
+                    PromptData = "{}"
+                    PromptSchemaVersion = 1s } ],
+                session2Entries
+            )
         }

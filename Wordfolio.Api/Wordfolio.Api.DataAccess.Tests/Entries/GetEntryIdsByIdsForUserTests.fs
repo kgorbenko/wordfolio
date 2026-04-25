@@ -62,9 +62,7 @@ type GetEntryIdsByIdsForUserTests(fixture: WordfolioTestFixture) =
                 Entries.getEntryIdsByIdsForUserAsync [ entry1.Id; entry2.Id ] user.Id
                 |> fixture.WithConnectionAsync
 
-            Assert.Equal(2, actual.Length)
-            Assert.Contains(entry1.Id, actual)
-            Assert.Contains(entry2.Id, actual)
+            Assert.Equivalent([ entry1.Id; entry2.Id ], actual)
         }
 
     [<Fact>]
@@ -97,6 +95,37 @@ type GetEntryIdsByIdsForUserTests(fixture: WordfolioTestFixture) =
                 |> fixture.WithConnectionAsync
 
             Assert.Empty(actual)
+        }
+
+    [<Fact>]
+    member _.``getEntryIdsByIdsForUserAsync filters out non-existent IDs alongside owned entry``() =
+        task {
+            do! fixture.ResetDatabaseAsync()
+
+            let createdAt =
+                DateTimeOffset(2026, 4, 1, 0, 0, 0, TimeSpan.Zero)
+
+            let user = Entities.makeUser 806
+
+            let collection =
+                Entities.makeCollection user "Collection" None createdAt createdAt false
+
+            let vocabulary =
+                Entities.makeVocabulary collection "Vocabulary" None createdAt createdAt false
+
+            let ownedEntry =
+                Entities.makeEntry vocabulary "word" createdAt createdAt
+
+            do!
+                fixture.Seeder
+                |> Seeder.addUsers [ user ]
+                |> Seeder.saveChangesAsync
+
+            let! actual =
+                Entries.getEntryIdsByIdsForUserAsync [ ownedEntry.Id; 99999 ] user.Id
+                |> fixture.WithConnectionAsync
+
+            Assert.Equivalent([ ownedEntry.Id ], actual)
         }
 
     [<Fact>]
@@ -137,7 +166,5 @@ type GetEntryIdsByIdsForUserTests(fixture: WordfolioTestFixture) =
                 Entries.getEntryIdsByIdsForUserAsync [ ownedEntry.Id; foreignEntry.Id ] user.Id
                 |> fixture.WithConnectionAsync
 
-            Assert.Equal(1, actual.Length)
-            Assert.Contains(ownedEntry.Id, actual)
-            Assert.DoesNotContain(foreignEntry.Id, actual)
+            Assert.Equivalent([ ownedEntry.Id ], actual)
         }

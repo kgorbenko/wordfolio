@@ -71,9 +71,7 @@ type GetEntryIdsByVocabularyIdTests(fixture: WordfolioTestFixture) =
                 Entries.getEntryIdsByVocabularyIdAsync vocabulary.Id user.Id
                 |> fixture.WithConnectionAsync
 
-            Assert.Equal(2, actual.Length)
-            Assert.Contains(entry1.Id, actual)
-            Assert.Contains(entry2.Id, actual)
+            Assert.Equivalent([ entry1.Id; entry2.Id ], actual)
         }
 
     [<Fact>]
@@ -142,6 +140,5 @@ type GetEntryIdsByVocabularyIdTests(fixture: WordfolioTestFixture) =
                 Entries.getEntryIdsByVocabularyIdAsync vocabulary1.Id user.Id
                 |> fixture.WithConnectionAsync
 
-            Assert.Equal(1, actual.Length)
-            Assert.Contains(entry1.Id, actual)
+            Assert.Equivalent([ entry1.Id ], actual)
         }

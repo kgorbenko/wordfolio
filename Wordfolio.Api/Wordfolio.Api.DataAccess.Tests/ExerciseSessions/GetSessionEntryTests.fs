@@ -93,8 +93,8 @@ type GetSessionEntryTests(fixture: WordfolioTestFixture) =
             let session =
                 Entities.makeExerciseSession user 0s createdAt
 
-            let _ =
-                Entities.makeExerciseSessionEntry session entry 0 "{}" 1s
+            Entities.makeExerciseSessionEntry session entry 0 "{}" 1s
+            |> ignore
 
             do!
                 fixture.Seeder

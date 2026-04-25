@@ -71,9 +71,7 @@ type GetEntryIdsByCollectionIdTests(fixture: WordfolioTestFixture) =
                 Entries.getEntryIdsByCollectionIdAsync collection.Id user.Id
                 |> fixture.WithConnectionAsync
 
-            Assert.Equal(2, actual.Length)
-            Assert.Contains(entry1.Id, actual)
-            Assert.Contains(entry2.Id, actual)
+            Assert.Equivalent([ entry1.Id; entry2.Id ], actual)
         }
 
     [<Fact>]
@@ -145,6 +143,5 @@ type GetEntryIdsByCollectionIdTests(fixture: WordfolioTestFixture) =
                 Entries.getEntryIdsByCollectionIdAsync collection1.Id user.Id
                 |> fixture.WithConnectionAsync
 
-            Assert.Equal(1, actual.Length)
-            Assert.Contains(entry1.Id, actual)
+            Assert.Equivalent([ entry1.Id ], actual)
         }
