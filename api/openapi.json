@@ -1554,6 +1554,155 @@
           { }
         ]
       }
+    },
+    "/exercises/sessions": {
+      "post": {
+        "tags": [
+          "Exercises"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionBundleResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          { }
+        ]
+      }
+    },
+    "/exercises/sessions/{sessionId}": {
+      "get": {
+        "tags": [
+          "Exercises"
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionBundleResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          { }
+        ]
+      }
+    },
+    "/exercises/sessions/{sessionId}/entries/{entryId}/attempts": {
+      "post": {
+        "tags": [
+          "Exercises"
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitAttemptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmitAttemptResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmitAttemptResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          { }
+        ]
+      }
     }
   },
   "components": {
@@ -1600,6 +1749,26 @@
           },
           "environment": {
             "type": "string"
+          }
+        }
+      },
+      "AttemptSummaryResponse": {
+        "required": [
+          "rawAnswer",
+          "isCorrect",
+          "attemptedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "rawAnswer": {
+            "type": "string"
+          },
+          "isCorrect": {
+            "type": "boolean"
+          },
+          "attemptedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -1811,6 +1980,21 @@
           }
         }
       },
+      "CreateSessionRequest": {
+        "required": [
+          "exerciseType",
+          "selector"
+        ],
+        "type": "object",
+        "properties": {
+          "exerciseType": {
+            "$ref": "#/components/schemas/ExerciseTypeDto"
+          },
+          "selector": {
+            "$ref": "#/components/schemas/EntrySelectorRequest"
+          }
+        }
+      },
       "CreateVocabularyRequest": {
         "required": [
           "name"
@@ -1948,6 +2132,52 @@
           }
         }
       },
+      "EntrySelectorRequest": {
+        "required": [
+          "type",
+          "entryIds"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "vocabularyId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "collectionId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entryIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "count": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "scope": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/WorstKnownScopeRequest"
+              }
+            ]
+          }
+        }
+      },
       "ExampleRequest": {
         "required": [
           "exampleText",
@@ -1986,6 +2216,12 @@
         "enum": [
           "Api",
           "Custom"
+        ]
+      },
+      "ExerciseTypeDto": {
+        "enum": [
+          "MultipleChoice",
+          "Translation"
         ]
       },
       "ForgotPasswordRequest": {
@@ -2082,6 +2318,7 @@
           }
         }
       },
+      "JsonElement": { },
       "LoginRequest": {
         "required": [
           "email",
@@ -2228,6 +2465,80 @@
           },
           "newPassword": {
             "type": "string"
+          }
+        }
+      },
+      "SessionBundleEntryResponse": {
+        "required": [
+          "entryId",
+          "displayOrder",
+          "promptData"
+        ],
+        "type": "object",
+        "properties": {
+          "entryId": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "promptData": {
+            "$ref": "#/components/schemas/JsonElement"
+          },
+          "attempt": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AttemptSummaryResponse"
+              }
+            ]
+          }
+        }
+      },
+      "SessionBundleResponse": {
+        "required": [
+          "sessionId",
+          "exerciseType",
+          "entries"
+        ],
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string"
+          },
+          "exerciseType": {
+            "$ref": "#/components/schemas/ExerciseTypeDto"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionBundleEntryResponse"
+            }
+          }
+        }
+      },
+      "SubmitAttemptRequest": {
+        "required": [
+          "rawAnswer"
+        ],
+        "type": "object",
+        "properties": {
+          "rawAnswer": {
+            "type": "string"
+          }
+        }
+      },
+      "SubmitAttemptResponse": {
+        "required": [
+          "isCorrect"
+        ],
+        "type": "object",
+        "properties": {
+          "isCorrect": {
+            "type": "boolean"
           }
         }
       },
@@ -2517,6 +2828,29 @@
             "format": "int32"
           }
         }
+      },
+      "WorstKnownScopeRequest": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "vocabularyId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "collectionId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -2552,6 +2886,9 @@
     },
     {
       "name": "Dictionary"
+    },
+    {
+      "name": "Exercises"
     }
   ]
 }

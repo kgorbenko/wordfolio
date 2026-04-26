@@ -14,6 +14,7 @@ open Wordfolio.Api.Api.CollectionsHierarchy.Handlers
 open Wordfolio.Api.Api.Dictionary.Handlers
 open Wordfolio.Api.Api.Drafts.Handlers
 open Wordfolio.Api.Api.Entries.Handlers
+open Wordfolio.Api.Api.Exercises.Handlers
 open Wordfolio.Api.Api.Vocabularies.Handlers
 open Wordfolio.Api.IdentityIntegration
 open Wordfolio.Api.Infrastructure.ChatClient
@@ -55,6 +56,9 @@ let mapEndpoints(app: IEndpointRouteBuilder) =
 
     app.MapGroup(Urls.Dictionary.Path).WithTags("Dictionary")
     |> mapDictionaryEndpoints
+
+    app.MapGroup(Urls.Exercises.Path).WithTags("Exercises")
+    |> mapExercisesEndpoints
 
 [<EntryPoint>]
 let main args =

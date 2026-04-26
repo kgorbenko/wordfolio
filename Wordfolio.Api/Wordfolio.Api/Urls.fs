@@ -88,3 +88,16 @@ module Dictionary =
 
     [<Literal>]
     let Lookup = "/lookup"
+
+module Exercises =
+    [<Literal>]
+    let Path = "/exercises/sessions"
+
+    [<Literal>]
+    let SessionById = "/{sessionId}"
+
+    [<Literal>]
+    let EntryAttempts =
+        "/{sessionId}/entries/{entryId}/attempts"
+
+    let sessionById(sessionId: string) = $"{Path}/{sessionId}"
