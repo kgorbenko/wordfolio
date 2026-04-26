@@ -66,24 +66,16 @@ let makeSessionEntry sessionId entryId promptData schemaVersion =
       PromptSchemaVersion = schemaVersion }
 
 let makeTranslationEntry entryId =
-    let entry =
-        { Id = entryId
-          VocabularyId = VocabularyId 1
-          EntryText = "cat"
-          CreatedAt = timestamp
-          UpdatedAt = timestamp
-          Definitions = []
-          Translations =
-            [ { Id = TranslationId 1
-                TranslationText = "hello"
-                Source = TranslationSource.Manual
-                DisplayOrder = 0
-                Examples = [] } ] }
+    let json =
+        """{"entryText":"cat","acceptedTranslations":["hello"]}"""
 
-    let prompt =
-        Translation.generatePrompt entry
+    makeSessionEntry (ExerciseSessionId 42) entryId (PromptData json) 1s
 
-    makeSessionEntry (ExerciseSessionId 42) entryId prompt.PromptData prompt.PromptSchemaVersion
+let makeMultipleChoiceEntry entryId =
+    let json =
+        """{"entryText":"cat","options":[{"id":"a","text":"apple"}],"correctOptionId":"a"}"""
+
+    makeSessionEntry (ExerciseSessionId 42) entryId (PromptData json) 1s
 
 [<Fact>]
 let ``returns SessionNotFound when session does not exist``() =
@@ -316,6 +308,131 @@ let ``returns Error ConflictingAttempt when commit is conflicting replay``() =
               PromptData = sessionEntry.PromptData
               PromptSchemaVersion = sessionEntry.PromptSchemaVersion
               RawAnswer = RawAnswer "hello"
+              IsCorrect = true
+              AttemptedAt = attemptedAt }
+
+        Assert.Equal<CommitAttemptData list>([ expectedCommitData ], env.CommitAttemptCalls)
+    }
+
+[<Fact>]
+let ``returns EvaluateError MalformedPromptData when prompt data is malformed``() =
+    task {
+        let userId = UserId 1
+        let sessionId = ExerciseSessionId 42
+        let entryId = EntryId 1
+
+        let session =
+            makeSession sessionId userId ExerciseType.Translation
+
+        let sessionEntry =
+            makeSessionEntry sessionId entryId (PromptData """{"entryText":"cat"}""") 1s
+
+        let env =
+            TestEnv(
+                getExerciseSession = (fun _ -> Task.FromResult(Some session)),
+                getExerciseSessionEntry = (fun _ _ -> Task.FromResult(Some sessionEntry)),
+                commitAttempt = (fun _ -> failwith "Should not be called")
+            )
+
+        let! result = submitAttempt env userId sessionId entryId (RawAnswer "hello") timestamp
+
+        Assert.Equal(Error(SubmitAttemptError.EvaluateError EvaluateError.MalformedPromptData), result)
+
+        Assert.Equal<ExerciseSessionId list>([ sessionId ], env.GetExerciseSessionCalls)
+        Assert.Equal<(ExerciseSessionId * EntryId) list>([ (sessionId, entryId) ], env.GetExerciseSessionEntryCalls)
+        Assert.Empty(env.CommitAttemptCalls)
+    }
+
+[<Fact>]
+let ``propagates IsCorrect false into CommitAttemptData when answer is wrong``() =
+    task {
+        let userId = UserId 1
+        let sessionId = ExerciseSessionId 42
+        let entryId = EntryId 1
+
+        let attemptedAt =
+            DateTimeOffset(2025, 6, 1, 10, 0, 0, TimeSpan.Zero)
+
+        let session =
+            makeSession sessionId userId ExerciseType.Translation
+
+        let sessionEntry =
+            makeTranslationEntry entryId
+
+        let inserted =
+            Inserted
+                { AttemptId = ExerciseAttemptId 1
+                  IsCorrect = false }
+
+        let env =
+            TestEnv(
+                getExerciseSession = (fun _ -> Task.FromResult(Some session)),
+                getExerciseSessionEntry = (fun _ _ -> Task.FromResult(Some sessionEntry)),
+                commitAttempt = (fun _ -> Task.FromResult(inserted))
+            )
+
+        let! result = submitAttempt env userId sessionId entryId (RawAnswer "wrong") attemptedAt
+
+        Assert.Equal(Ok inserted, result)
+        Assert.Equal<ExerciseSessionId list>([ sessionId ], env.GetExerciseSessionCalls)
+        Assert.Equal<(ExerciseSessionId * EntryId) list>([ (sessionId, entryId) ], env.GetExerciseSessionEntryCalls)
+
+        let expectedCommitData: CommitAttemptData =
+            { SessionId = sessionId
+              EntryId = entryId
+              UserId = userId
+              ExerciseType = ExerciseType.Translation
+              PromptData = sessionEntry.PromptData
+              PromptSchemaVersion = sessionEntry.PromptSchemaVersion
+              RawAnswer = RawAnswer "wrong"
+              IsCorrect = false
+              AttemptedAt = attemptedAt }
+
+        Assert.Equal<CommitAttemptData list>([ expectedCommitData ], env.CommitAttemptCalls)
+    }
+
+[<Fact>]
+let ``uses MultipleChoice exercise type for evaluation``() =
+    task {
+        let userId = UserId 1
+        let sessionId = ExerciseSessionId 42
+        let entryId = EntryId 1
+
+        let attemptedAt =
+            DateTimeOffset(2025, 6, 1, 10, 0, 0, TimeSpan.Zero)
+
+        let session =
+            makeSession sessionId userId ExerciseType.MultipleChoice
+
+        let sessionEntry =
+            makeMultipleChoiceEntry entryId
+
+        let inserted =
+            Inserted
+                { AttemptId = ExerciseAttemptId 1
+                  IsCorrect = true }
+
+        let env =
+            TestEnv(
+                getExerciseSession = (fun _ -> Task.FromResult(Some session)),
+                getExerciseSessionEntry = (fun _ _ -> Task.FromResult(Some sessionEntry)),
+                commitAttempt = (fun _ -> Task.FromResult(inserted))
+            )
+
+        let! result = submitAttempt env userId sessionId entryId (RawAnswer "a") attemptedAt
+
+        Assert.Equal(Ok inserted, result)
+        Assert.Equal<ExerciseSessionId list>([ sessionId ], env.GetExerciseSessionCalls)
+        Assert.Equal<(ExerciseSessionId * EntryId) list>([ (sessionId, entryId) ], env.GetExerciseSessionEntryCalls)
+
+        let expectedCommitData: CommitAttemptData =
+            { SessionId = sessionId
+              EntryId = entryId
+              UserId = userId
+              ExerciseType = ExerciseType.MultipleChoice
+              PromptData = sessionEntry.PromptData
+              PromptSchemaVersion = sessionEntry.PromptSchemaVersion
+              RawAnswer = RawAnswer "a"
               IsCorrect = true
               AttemptedAt = attemptedAt }
 

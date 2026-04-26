@@ -48,32 +48,69 @@ let ``generatePrompt includes all accepted translations and schema version 1``()
     let dto =
         deserializePrompt prompt.PromptData
 
-    Assert.Equal("cat", dto.entryText)
-    Assert.Equal<string array>([| "hello"; "bonjour" |], dto.acceptedTranslations)
+    let expected: TranslationPromptDto =
+        { entryText = "cat"
+          acceptedTranslations = [| "hello"; "bonjour" |] }
+
+    Assert.Equivalent(expected, dto)
 
 [<Fact>]
-let ``evaluate accepts matching translation with trim and case-insensitive comparison``() =
-    let entry =
-        makeEntry "cat" [ makeTranslation 1 "Hello" ]
-
-    let prompt =
-        Translation.generatePrompt entry
+let ``evaluate returns Ok true for matching translation``() =
+    let json =
+        """{"entryText":"cat","acceptedTranslations":["hello"]}"""
 
     let result =
-        Translation.evaluate 1s prompt.PromptData (RawAnswer "  hello  ")
+        Translation.evaluate 1s (PromptData json) (RawAnswer "hello")
+
+    Assert.Equal(Ok true, result)
+
+[<Fact>]
+let ``evaluate is case-insensitive``() =
+    let json =
+        """{"entryText":"cat","acceptedTranslations":["Hello"]}"""
+
+    let result =
+        Translation.evaluate 1s (PromptData json) (RawAnswer "hello")
+
+    Assert.Equal(Ok true, result)
+
+[<Fact>]
+let ``evaluate trims whitespace from answer``() =
+    let json =
+        """{"entryText":"cat","acceptedTranslations":["hello"]}"""
+
+    let result =
+        Translation.evaluate 1s (PromptData json) (RawAnswer "  hello  ")
+
+    Assert.Equal(Ok true, result)
+
+[<Fact>]
+let ``evaluate accepts any translation in the accepted translations list``() =
+    let json =
+        """{"entryText":"cat","acceptedTranslations":["hello","bonjour"]}"""
+
+    let result =
+        Translation.evaluate 1s (PromptData json) (RawAnswer "bonjour")
 
     Assert.Equal(Ok true, result)
 
 [<Fact>]
 let ``evaluate returns Ok false for wrong answer``() =
-    let entry =
-        makeEntry "cat" [ makeTranslation 1 "hello" ]
-
-    let prompt =
-        Translation.generatePrompt entry
+    let json =
+        """{"entryText":"cat","acceptedTranslations":["hello"]}"""
 
     let result =
-        Translation.evaluate 1s prompt.PromptData (RawAnswer "wrong")
+        Translation.evaluate 1s (PromptData json) (RawAnswer "wrong")
+
+    Assert.Equal(Ok false, result)
+
+[<Fact>]
+let ``evaluate returns Ok false when acceptedTranslations is empty``() =
+    let json =
+        """{"entryText":"cat","acceptedTranslations":[]}"""
+
+    let result =
+        Translation.evaluate 1s (PromptData json) (RawAnswer "hello")
 
     Assert.Equal(Ok false, result)
 
@@ -81,6 +118,15 @@ let ``evaluate returns Ok false for wrong answer``() =
 let ``evaluate returns MalformedPromptData for invalid JSON``() =
     let result =
         Translation.evaluate 1s (PromptData "not json") (RawAnswer "hello")
+
+    Assert.Equal(Error EvaluateError.MalformedPromptData, result)
+
+[<Fact>]
+let ``evaluate returns MalformedPromptData when acceptedTranslations is null``() =
+    let json = """{"entryText":"cat"}"""
+
+    let result =
+        Translation.evaluate 1s (PromptData json) (RawAnswer "hello")
 
     Assert.Equal(Error EvaluateError.MalformedPromptData, result)
 

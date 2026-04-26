@@ -170,23 +170,21 @@ let ``success path preserves selector order, passes prompt data and parameters.C
 
         Assert.Equal(Ok expectedBundle, result)
 
-        let prompt2 =
-            Dispatch.generatePrompt ExerciseType.Translation entry2
-
         let prompt1 =
-            Dispatch.generatePrompt ExerciseType.Translation entry1
+            PromptData """{"entryText":"word1","acceptedTranslations":["trans1"]}"""
+
+        let prompt2 =
+            PromptData """{"entryText":"word2","acceptedTranslations":["trans2"]}"""
 
         let expectedData: CreateExerciseSessionData =
             { UserId = userId
               ExerciseType = ExerciseType.Translation
-              Entries =
-                [ (EntryId 2, 0, prompt2.PromptData, prompt2.PromptSchemaVersion)
-                  (EntryId 1, 1, prompt1.PromptData, prompt1.PromptSchemaVersion) ]
+              Entries = [ (EntryId 2, 0, prompt2, 1s); (EntryId 1, 1, prompt1, 1s) ]
               CreatedAt = createdAt }
 
+        Assert.Equal<CreateExerciseSessionData list>([ expectedData ], env.CreateExerciseSessionCalls)
         Assert.Equal<(UserId * EntrySelector) list>([ (userId, selector) ], env.ResolveEntrySelectorCalls)
         Assert.Equal<EntryId list list>([ [ EntryId 2; EntryId 1 ] ], env.GetEntriesByIdsCalls)
-        Assert.Equal<CreateExerciseSessionData list>([ expectedData ], env.CreateExerciseSessionCalls)
     }
 
 [<Fact>]
@@ -235,9 +233,202 @@ let ``success path truncates resolved entries to MaxSessionEntries``() =
         Assert.Equal<(UserId * EntrySelector) list>([ (userId, selector) ], env.ResolveEntrySelectorCalls)
         Assert.Equal<EntryId list list>([ [ 1..10 ] |> List.map EntryId ], env.GetEntriesByIdsCalls)
 
-        let capturedData =
-            env.CreateExerciseSessionCalls
-            |> List.exactlyOne
+        let prompt =
+            PromptData """{"entryText":"word","acceptedTranslations":["translation"]}"""
 
-        Assert.Equal(10, capturedData.Entries |> List.length)
+        let expectedEntries =
+            [ for i in 1..10 -> (EntryId i, i - 1, prompt, 1s) ]
+
+        let expectedData: CreateExerciseSessionData =
+            { UserId = userId
+              ExerciseType = ExerciseType.Translation
+              Entries = expectedEntries
+              CreatedAt = createdAt }
+
+        Assert.Equal<CreateExerciseSessionData list>([ expectedData ], env.CreateExerciseSessionCalls)
+    }
+
+[<Fact>]
+let ``returns NoEntriesResolved when all entries have empty translations after filtering``() =
+    task {
+        let userId = UserId 1
+
+        let selector =
+            EntrySelector.VocabularyScope(VocabularyId 10)
+
+        let entryWithNoTranslations =
+            makeEntry 1 "word" []
+
+        let env =
+            TestEnv(
+                resolveEntrySelector = (fun _ _ -> Task.FromResult(Ok [ EntryId 1 ])),
+                getEntriesByIds = (fun _ -> Task.FromResult([ entryWithNoTranslations ])),
+                createExerciseSession = (fun _ -> failwith "Should not be called")
+            )
+
+        let parameters: CreateSessionParameters =
+            { UserId = userId
+              ExerciseType = ExerciseType.Translation
+              Selector = selector
+              CreatedAt = DateTimeOffset(2025, 6, 1, 12, 0, 0, TimeSpan.Zero) }
+
+        let! result = createSession env parameters
+
+        Assert.Equal(Error CreateSessionError.NoEntriesResolved, result)
+        Assert.Equal<(UserId * EntrySelector) list>([ (userId, selector) ], env.ResolveEntrySelectorCalls)
+        Assert.Equal<EntryId list list>([ [ EntryId 1 ] ], env.GetEntriesByIdsCalls)
+        Assert.Empty(env.CreateExerciseSessionCalls)
+    }
+
+[<Fact>]
+let ``filters out entries with empty translations and re-indexes remaining entries from zero``() =
+    task {
+        let userId = UserId 1
+
+        let selector =
+            EntrySelector.ExplicitEntries([ EntryId 1; EntryId 2 ])
+
+        let createdAt =
+            DateTimeOffset(2025, 6, 1, 12, 0, 0, TimeSpan.Zero)
+
+        let entryWithTranslations =
+            makeEntry 1 "word1" [ makeTranslation 1 "trans1" ]
+
+        let entryWithoutTranslations =
+            makeEntry 2 "word2" []
+
+        let expectedBundle =
+            makeBundle 42 ExerciseType.Translation
+
+        let env =
+            TestEnv(
+                resolveEntrySelector = (fun _ _ -> Task.FromResult(Ok [ EntryId 1; EntryId 2 ])),
+                getEntriesByIds = (fun _ -> Task.FromResult([ entryWithTranslations; entryWithoutTranslations ])),
+                createExerciseSession = (fun _ -> Task.FromResult(expectedBundle))
+            )
+
+        let parameters: CreateSessionParameters =
+            { UserId = userId
+              ExerciseType = ExerciseType.Translation
+              Selector = selector
+              CreatedAt = createdAt }
+
+        let! result = createSession env parameters
+
+        Assert.Equal(Ok expectedBundle, result)
+
+        let prompt =
+            PromptData """{"entryText":"word1","acceptedTranslations":["trans1"]}"""
+
+        let expectedData: CreateExerciseSessionData =
+            { UserId = userId
+              ExerciseType = ExerciseType.Translation
+              Entries = [ (EntryId 1, 0, prompt, 1s) ]
+              CreatedAt = createdAt }
+
+        Assert.Equal<CreateExerciseSessionData list>([ expectedData ], env.CreateExerciseSessionCalls)
+        Assert.Equal<(UserId * EntrySelector) list>([ (userId, selector) ], env.ResolveEntrySelectorCalls)
+        Assert.Equal<EntryId list list>([ [ EntryId 1; EntryId 2 ] ], env.GetEntriesByIdsCalls)
+    }
+
+[<Fact>]
+let ``handles getEntriesByIds returning fewer entries than resolved ids``() =
+    task {
+        let userId = UserId 1
+
+        let selector =
+            EntrySelector.ExplicitEntries([ EntryId 1; EntryId 2; EntryId 3 ])
+
+        let createdAt =
+            DateTimeOffset(2025, 6, 1, 12, 0, 0, TimeSpan.Zero)
+
+        let entry1 =
+            makeEntry 1 "word1" [ makeTranslation 1 "trans1" ]
+
+        let entry3 =
+            makeEntry 3 "word3" [ makeTranslation 3 "trans3" ]
+
+        let expectedBundle =
+            makeBundle 42 ExerciseType.Translation
+
+        let env =
+            TestEnv(
+                resolveEntrySelector = (fun _ _ -> Task.FromResult(Ok [ EntryId 1; EntryId 2; EntryId 3 ])),
+                getEntriesByIds = (fun _ -> Task.FromResult([ entry1; entry3 ])),
+                createExerciseSession = (fun _ -> Task.FromResult(expectedBundle))
+            )
+
+        let parameters: CreateSessionParameters =
+            { UserId = userId
+              ExerciseType = ExerciseType.Translation
+              Selector = selector
+              CreatedAt = createdAt }
+
+        let! result = createSession env parameters
+
+        Assert.Equal(Ok expectedBundle, result)
+
+        let prompt1 =
+            PromptData """{"entryText":"word1","acceptedTranslations":["trans1"]}"""
+
+        let prompt3 =
+            PromptData """{"entryText":"word3","acceptedTranslations":["trans3"]}"""
+
+        let expectedData: CreateExerciseSessionData =
+            { UserId = userId
+              ExerciseType = ExerciseType.Translation
+              Entries = [ (EntryId 1, 0, prompt1, 1s); (EntryId 3, 1, prompt3, 1s) ]
+              CreatedAt = createdAt }
+
+        Assert.Equal<CreateExerciseSessionData list>([ expectedData ], env.CreateExerciseSessionCalls)
+        Assert.Equal<(UserId * EntrySelector) list>([ (userId, selector) ], env.ResolveEntrySelectorCalls)
+        Assert.Equal<EntryId list list>([ [ EntryId 1; EntryId 2; EntryId 3 ] ], env.GetEntriesByIdsCalls)
+    }
+
+[<Fact>]
+let ``uses MultipleChoice exercise type to generate prompts``() =
+    task {
+        let userId = UserId 1
+
+        let selector =
+            EntrySelector.ExplicitEntries([ EntryId 1 ])
+
+        let createdAt =
+            DateTimeOffset(2025, 6, 1, 12, 0, 0, TimeSpan.Zero)
+
+        let entry =
+            makeEntry 1 "cat" [ makeTranslation 1 "apple" ]
+
+        let expectedBundle =
+            makeBundle 42 ExerciseType.MultipleChoice
+
+        let env =
+            TestEnv(
+                resolveEntrySelector = (fun _ _ -> Task.FromResult(Ok [ EntryId 1 ])),
+                getEntriesByIds = (fun _ -> Task.FromResult([ entry ])),
+                createExerciseSession = (fun _ -> Task.FromResult(expectedBundle))
+            )
+
+        let parameters: CreateSessionParameters =
+            { UserId = userId
+              ExerciseType = ExerciseType.MultipleChoice
+              Selector = selector
+              CreatedAt = createdAt }
+
+        let! result = createSession env parameters
+
+        Assert.Equal(Ok expectedBundle, result)
+
+        let prompt =
+            PromptData """{"entryText":"cat","options":[{"id":"a","text":"apple"}],"correctOptionId":"a"}"""
+
+        let expectedData: CreateExerciseSessionData =
+            { UserId = userId
+              ExerciseType = ExerciseType.MultipleChoice
+              Entries = [ (EntryId 1, 0, prompt, 1s) ]
+              CreatedAt = createdAt }
+
+        Assert.Equal<CreateExerciseSessionData list>([ expectedData ], env.CreateExerciseSessionCalls)
+        Assert.Equal<(UserId * EntrySelector) list>([ (userId, selector) ], env.ResolveEntrySelectorCalls)
+        Assert.Equal<EntryId list list>([ [ EntryId 1 ] ], env.GetEntriesByIdsCalls)
     }

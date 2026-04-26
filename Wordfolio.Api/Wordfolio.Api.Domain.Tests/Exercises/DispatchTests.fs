@@ -54,36 +54,30 @@ let ``generatePrompt routes to Translation for Translation exercise type``() =
 
 [<Fact>]
 let ``evaluate routes to MultipleChoice for MultipleChoice exercise type``() =
-    let entry =
-        makeEntry "cat" [ makeTranslation 1 "apple" ]
-
-    let prompt =
-        MultipleChoice.generatePrompt entry
+    let promptData =
+        PromptData """{"entryText":"cat","options":[{"id":"a","text":"apple"}],"correctOptionId":"a"}"""
 
     let rawAnswer = RawAnswer "a"
 
     let expected =
-        MultipleChoice.evaluate 1s prompt.PromptData rawAnswer
+        MultipleChoice.evaluate 1s promptData rawAnswer
 
     let actual =
-        Dispatch.evaluate ExerciseType.MultipleChoice 1s prompt.PromptData rawAnswer
+        Dispatch.evaluate ExerciseType.MultipleChoice 1s promptData rawAnswer
 
     Assert.Equal(expected, actual)
 
 [<Fact>]
 let ``evaluate routes to Translation for Translation exercise type``() =
-    let entry =
-        makeEntry "cat" [ makeTranslation 1 "apple" ]
-
-    let prompt =
-        Translation.generatePrompt entry
+    let promptData =
+        PromptData """{"entryText":"cat","acceptedTranslations":["apple"]}"""
 
     let rawAnswer = RawAnswer "apple"
 
     let expected =
-        Translation.evaluate 1s prompt.PromptData rawAnswer
+        Translation.evaluate 1s promptData rawAnswer
 
     let actual =
-        Dispatch.evaluate ExerciseType.Translation 1s prompt.PromptData rawAnswer
+        Dispatch.evaluate ExerciseType.Translation 1s promptData rawAnswer
 
     Assert.Equal(expected, actual)
