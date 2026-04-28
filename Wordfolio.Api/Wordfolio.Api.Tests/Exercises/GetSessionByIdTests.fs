@@ -149,23 +149,25 @@ type GetSessionByIdTests(fixture: WordfolioIdentityTestFixture) =
             let! body = response.Content.ReadAsStringAsync()
 
             Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}. Body: {body}")
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode)
 
             let! actual = response.Content.ReadFromJsonAsync<SessionBundleResponse>()
 
-            Assert.Equal(encoder.Encode session.Id, actual.SessionId)
-            Assert.Equal(ExerciseTypeDto.Translation, actual.ExerciseType)
-            Assert.Equal(1, actual.Entries.Length)
+            let expected: SessionBundleResponse =
+                { SessionId = encoder.Encode session.Id
+                  ExerciseType = ExerciseTypeDto.Translation
+                  Entries =
+                    [ { EntryId = encoder.Encode entry.Id
+                        DisplayOrder = 0
+                        PromptData = actual.Entries[0].PromptData
+                        Attempt =
+                          Some
+                              { RawAnswer = "hola"
+                                IsCorrect = true
+                                AttemptedAt = attemptedAt } } ] }
 
-            let entryResult = actual.Entries[0]
-            Assert.Equal(encoder.Encode entry.Id, entryResult.EntryId)
-            Assert.True(entryResult.Attempt.IsSome)
-
-            let attemptResult =
-                entryResult.Attempt.Value
-
-            Assert.Equal("hola", attemptResult.RawAnswer)
-            Assert.True(attemptResult.IsCorrect)
-            Assert.Equal(attemptedAt, attemptResult.AttemptedAt)
+            Assert.Equal(expected, actual)
+            Assert.Equal(System.Text.Json.JsonValueKind.Object, actual.Entries[0].PromptData.ValueKind)
         }
 
     [<Fact>]
