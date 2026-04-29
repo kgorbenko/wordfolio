@@ -136,28 +136,19 @@ let getAttemptsBySessionAsync
     (cancellationToken: CancellationToken)
     : Task<ExerciseAttempt list> =
     task {
-        let sql =
-            """
-            SELECT "Id", "UserId", "SessionId", "EntryId", "ExerciseType", "PromptData", "PromptSchemaVersion", "RawAnswer", "IsCorrect", "AttemptedAt"
-            FROM wordfolio."ExerciseAttempts"
-            WHERE "SessionId" = @sessionId
-            ORDER BY "Id";
-            """
+        let attemptsTable =
+            table'<ExerciseAttemptRecord> Schema.ExerciseAttemptsTable.Name
+            |> inSchema Schema.Name
 
-        let commandDefinition =
-            CommandDefinition(
-                commandText = sql,
-                parameters = {| sessionId = sessionId |},
-                transaction = transaction,
-                cancellationToken = cancellationToken
-            )
+        let! results =
+            select {
+                for a in attemptsTable do
+                    where(a.SessionId = Some sessionId)
+                    orderBy a.Id
+            }
+            |> selectAsync<ExerciseAttemptRecord> connection transaction cancellationToken
 
-        let! results = connection.QueryAsync<ExerciseAttemptRecord>(commandDefinition)
-
-        return
-            results
-            |> Seq.map fromRecord
-            |> Seq.toList
+        return results |> List.map fromRecord
     }
 
 let getWorstKnownEntriesAsync

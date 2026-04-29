@@ -187,26 +187,19 @@ let getSessionEntriesAsync
     (cancellationToken: CancellationToken)
     : Task<ExerciseSessionEntry list> =
     task {
-        let sql =
-            """
-            SELECT "Id", "SessionId", "EntryId", "DisplayOrder", "PromptData", "PromptSchemaVersion"
-            FROM wordfolio."ExerciseSessionEntries"
-            WHERE "SessionId" = @sessionId
-            ORDER BY "DisplayOrder";
-            """
+        let sessionEntriesTable =
+            table'<ExerciseSessionEntryRecord> Schema.ExerciseSessionEntriesTable.Name
+            |> inSchema Schema.Name
 
-        let commandDefinition =
-            CommandDefinition(
-                commandText = sql,
-                parameters = {| sessionId = sessionId |},
-                transaction = transaction,
-                cancellationToken = cancellationToken
-            )
-
-        let! results = connection.QueryAsync<ExerciseSessionEntryRecord>(commandDefinition)
+        let! results =
+            select {
+                for e in sessionEntriesTable do
+                    where(e.SessionId = sessionId)
+                    orderBy e.DisplayOrder
+            }
+            |> selectAsync<ExerciseSessionEntryRecord> connection transaction cancellationToken
 
         return
             results
-            |> Seq.map fromSessionEntryRecord
-            |> Seq.toList
+            |> List.map fromSessionEntryRecord
     }

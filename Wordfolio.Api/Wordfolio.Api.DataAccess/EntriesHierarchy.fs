@@ -402,25 +402,18 @@ let getEntriesByIdsWithHierarchyAsync
         if entryIds.IsEmpty then
             return []
         else
-            let sql =
-                """
-                SELECT "Id", "VocabularyId", "EntryText", "CreatedAt", "UpdatedAt"
-                FROM wordfolio."Entries"
-                WHERE "Id" = ANY(@entryIds);
-                """
+            let entriesTable =
+                table'<EntryRecord> Schema.EntriesTable.Name
+                |> inSchema Schema.Name
 
-            let commandDefinition =
-                CommandDefinition(
-                    commandText = sql,
-                    parameters = {| entryIds = entryIds |> List.toArray |},
-                    transaction = transaction,
-                    cancellationToken = cancellationToken
-                )
+            let! entries =
+                select {
+                    for e in entriesTable do
+                        where(isIn e.Id entryIds)
+                }
+                |> selectAsync<EntryRecord> connection transaction cancellationToken
 
-            let! entries = connection.QueryAsync<EntryRecord>(commandDefinition)
-            let entryList = entries |> Seq.toList
-
-            if entryList.IsEmpty then
+            if entries.IsEmpty then
                 return []
             else
                 let! definitions = getDefinitionRecordsByEntryIdsAsync entryIds connection transaction cancellationToken
@@ -445,7 +438,7 @@ let getEntriesByIdsWithHierarchyAsync
                 let examples =
                     definitionExamples @ translationExamples
 
-                return assembleEntriesWithHierarchy entryList definitions translations examples
+                return assembleEntriesWithHierarchy entries definitions translations examples
     }
 
 let getEntriesHierarchyByVocabularyIdAsync
