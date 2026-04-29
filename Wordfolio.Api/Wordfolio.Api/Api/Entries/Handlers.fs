@@ -3,6 +3,7 @@ module Wordfolio.Api.Api.Entries.Handlers
 open System
 open System.Security.Claims
 open System.Threading
+open System.Threading.Tasks
 
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Http
@@ -75,6 +76,53 @@ let private toMoveErrorResponse(error: MoveEntryError) : IResult =
     match error with
     | MoveEntryError.EntryNotFound _ -> Results.NotFound()
     | MoveEntryError.VocabularyNotFoundOrAccessDenied _ -> Results.NotFound({| error = "Vocabulary not found" |})
+
+let private moveEntryHandler
+    (collectionId: string)
+    (vocabularyId: string)
+    (id: string)
+    (request: MoveEntryRequest)
+    (user: ClaimsPrincipal)
+    (encoder: IResourceIdEncoder)
+    (dataSource: NpgsqlDataSource)
+    (cancellationToken: CancellationToken)
+    : Task<IResult> =
+    match getUserId user with
+    | None -> Task.FromResult(Results.Unauthorized())
+    | Some userId ->
+        let decodedTargetVocabularyId =
+            request.VocabularyId
+            |> Option.bind encoder.Decode
+
+        let targetVocabularyIdValid =
+            request.VocabularyId.IsNone
+            || decodedTargetVocabularyId.IsSome
+
+        match ResourceIdsHelper.Decode(encoder, collectionId, vocabularyId, id) with
+        | None -> Task.FromResult(Results.NotFound())
+        | _ when not targetVocabularyIdValid -> Task.FromResult(Results.NotFound())
+        | Some(decodedCollectionId, decodedVocabularyId, decodedId) ->
+            let env =
+                TransactionalEnv(dataSource, cancellationToken)
+
+            let moveParameters =
+                { UserId = UserId userId
+                  CollectionId = CollectionId decodedCollectionId
+                  VocabularyId = VocabularyId decodedVocabularyId
+                  EntryId = EntryId decodedId
+                  TargetVocabularyId =
+                    decodedTargetVocabularyId
+                    |> Option.map VocabularyId
+                  UpdatedAt = DateTimeOffset.UtcNow }
+
+            task {
+                let! result = move env moveParameters
+
+                return
+                    match result with
+                    | Ok entry -> Results.Ok(toEntryResponse encoder entry)
+                    | Error error -> toMoveErrorResponse error
+            }
 
 let mapEntriesEndpoints(group: RouteGroupBuilder) =
     group
@@ -287,42 +335,7 @@ let mapEntriesEndpoints(group: RouteGroupBuilder) =
             UrlTokens.ById + "/move",
             Func<string, string, string, MoveEntryRequest, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
                 (fun collectionId vocabularyId id request user encoder dataSource cancellationToken ->
-                    task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
-                            let decodedTargetVocabularyId =
-                                request.VocabularyId
-                                |> Option.bind encoder.Decode
-
-                            let targetVocabularyIdValid =
-                                request.VocabularyId.IsNone
-                                || decodedTargetVocabularyId.IsSome
-
-                            match ResourceIdsHelper.Decode(encoder, collectionId, vocabularyId, id) with
-                            | None -> return Results.NotFound()
-                            | _ when not targetVocabularyIdValid -> return Results.NotFound()
-                            | Some(collectionId, vocabularyId, id) ->
-                                let env =
-                                    TransactionalEnv(dataSource, cancellationToken)
-
-                                let! result =
-                                    move
-                                        env
-                                        { UserId = UserId userId
-                                          CollectionId = CollectionId collectionId
-                                          VocabularyId = VocabularyId vocabularyId
-                                          EntryId = EntryId id
-                                          TargetVocabularyId =
-                                            decodedTargetVocabularyId
-                                            |> Option.map VocabularyId
-                                          UpdatedAt = DateTimeOffset.UtcNow }
-
-                                return
-                                    match result with
-                                    | Ok entry -> Results.Ok(toEntryResponse encoder entry)
-                                    | Error error -> toMoveErrorResponse error
-                    })
+                    moveEntryHandler collectionId vocabularyId id request user encoder dataSource cancellationToken)
         )
         .Produces<EntryResponse>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
