@@ -3,6 +3,7 @@ module Wordfolio.Api.Api.Exercises.Handlers
 open System
 open System.Security.Claims
 open System.Threading
+open System.Threading.Tasks
 
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Http
@@ -44,58 +45,66 @@ let private toSubmitAttemptErrorResponse(error: SubmitAttemptError) : IResult =
     | SubmitAttemptError.ConflictingAttempt -> Results.Conflict({| error = "A conflicting attempt already exists" |})
     | SubmitAttemptError.EvaluateError _ -> Results.StatusCode(StatusCodes.Status500InternalServerError)
 
+let private createSessionHandler
+    (request: CreateSessionRequest)
+    (user: ClaimsPrincipal)
+    (encoder: IResourceIdEncoder)
+    (dataSource: NpgsqlDataSource)
+    (cancellationToken: CancellationToken)
+    : Task<IResult> =
+    match getUserId user with
+    | None -> Task.FromResult(Results.Unauthorized())
+    | Some userId ->
+        if
+            isNull(box request)
+            || isNull(box request.Selector)
+        then
+            Task.FromResult(Results.BadRequest({| error = "Invalid request body" |}))
+        else
+            match tryMapSelector encoder request.Selector with
+            | Error message -> Task.FromResult(Results.BadRequest({| error = message |}))
+            | Ok selector ->
+                let limitError =
+                    match selector with
+                    | ExplicitEntries entries when entries.Length > Limits.MaxSessionEntries ->
+                        Some $"Cannot specify more than {Limits.MaxSessionEntries} entries"
+                    | WorstKnown(_, count) when count <= 0 -> Some "Count must be positive"
+                    | WorstKnown(_, count) when count > Limits.MaxSessionEntries ->
+                        Some $"Count cannot exceed {Limits.MaxSessionEntries}"
+                    | _ -> None
+
+                match limitError with
+                | Some message -> Task.FromResult(Results.BadRequest({| error = message |}))
+                | None ->
+                    let parameters: CreateSessionParameters =
+                        { UserId = UserId userId
+                          ExerciseType = toExerciseTypeDomain request.ExerciseType
+                          Selector = selector
+                          CreatedAt = DateTimeOffset.UtcNow }
+
+                    let env =
+                        TransactionalEnv(dataSource, cancellationToken)
+
+                    task {
+                        let! result = runInTransaction env (fun appEnv -> createSession appEnv parameters)
+
+                        return
+                            match result with
+                            | Ok bundle ->
+                                let response =
+                                    toSessionBundleResponse encoder bundle
+
+                                Results.Created(ExerciseUrls.sessionById response.SessionId, response)
+                            | Error error -> toCreateSessionErrorResponse error
+                    }
+
 let mapExercisesEndpoints(group: RouteGroupBuilder) =
     group
         .MapPost(
             UrlTokens.Root,
             Func<CreateSessionRequest, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
                 (fun request user encoder dataSource cancellationToken ->
-                    task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
-                            if
-                                isNull(box request)
-                                || isNull(box request.Selector)
-                            then
-                                return Results.BadRequest({| error = "Invalid request body" |})
-                            else
-                                match tryMapSelector encoder request.Selector with
-                                | Error message -> return Results.BadRequest({| error = message |})
-                                | Ok selector ->
-                                    let limitError =
-                                        match selector with
-                                        | ExplicitEntries entries when entries.Length > Limits.MaxSessionEntries ->
-                                            Some $"Cannot specify more than {Limits.MaxSessionEntries} entries"
-                                        | WorstKnown(_, count) when count <= 0 -> Some "Count must be positive"
-                                        | WorstKnown(_, count) when count > Limits.MaxSessionEntries ->
-                                            Some $"Count cannot exceed {Limits.MaxSessionEntries}"
-                                        | _ -> None
-
-                                    match limitError with
-                                    | Some message -> return Results.BadRequest({| error = message |})
-                                    | None ->
-                                        let parameters: CreateSessionParameters =
-                                            { UserId = UserId userId
-                                              ExerciseType = toExerciseTypeDomain request.ExerciseType
-                                              Selector = selector
-                                              CreatedAt = DateTimeOffset.UtcNow }
-
-                                        let env =
-                                            TransactionalEnv(dataSource, cancellationToken)
-
-                                        let! result =
-                                            runInTransaction env (fun appEnv -> createSession appEnv parameters)
-
-                                        return
-                                            match result with
-                                            | Ok bundle ->
-                                                let response =
-                                                    toSessionBundleResponse encoder bundle
-
-                                                Results.Created(ExerciseUrls.sessionById response.SessionId, response)
-                                            | Error error -> toCreateSessionErrorResponse error
-                    })
+                    createSessionHandler request user encoder dataSource cancellationToken)
         )
         .Produces<SessionBundleResponse>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
