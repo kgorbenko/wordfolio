@@ -97,11 +97,11 @@ let commitAttemptAsync
                 cancellationToken = cancellationToken
             )
 
-        let! insertedId = connection.QueryFirstOrDefaultAsync<Nullable<int>>(insertCommand)
+        let! insertedId = connection.QueryFirstOrDefaultAsync<int option>(insertCommand)
 
-        if insertedId.HasValue then
-            return AttemptInserted insertedId.Value
-        else
+        match insertedId with
+        | Some id -> return AttemptInserted id
+        | None ->
             let readSql =
                 """
                 SELECT "Id", "UserId", "SessionId", "EntryId", "ExerciseType", "PromptData", "PromptSchemaVersion", "RawAnswer", "IsCorrect", "AttemptedAt"
@@ -121,12 +121,13 @@ let commitAttemptAsync
 
             let! existing = connection.QueryFirstOrDefaultAsync<ExerciseAttemptRecord>(readCommand)
 
-            if box existing = null then
-                return ConflictingReplay
-            else if existing.RawAnswer = parameters.RawAnswer then
-                return IdempotentReplay existing.IsCorrect
-            else
-                return ConflictingReplay
+            match existing |> Option.ofObj with
+            | None -> return ConflictingReplay
+            | Some record ->
+                if record.RawAnswer = parameters.RawAnswer then
+                    return IdempotentReplay record.IsCorrect
+                else
+                    return ConflictingReplay
     }
 
 let getAttemptsBySessionAsync
