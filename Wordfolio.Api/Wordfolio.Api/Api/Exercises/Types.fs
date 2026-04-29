@@ -17,7 +17,7 @@ type EntrySelectorRequest =
     { Type: string
       VocabularyId: string option
       CollectionId: string option
-      EntryIds: string list option
+      EntryIds: string array option
       Count: int option
       Scope: WorstKnownScopeRequest option }
 

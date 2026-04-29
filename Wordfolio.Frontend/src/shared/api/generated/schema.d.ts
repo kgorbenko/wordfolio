@@ -81,7 +81,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateCollectionRequest"];
                 };
@@ -177,7 +177,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["UpdateCollectionRequest"];
                 };
@@ -322,7 +322,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateVocabularyRequest"];
                 };
@@ -427,7 +427,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["UpdateVocabularyRequest"];
                 };
@@ -539,7 +539,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["MoveVocabularyRequest"];
                 };
@@ -631,7 +631,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateEntryRequest"];
                 };
@@ -738,7 +738,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["UpdateEntryRequest"];
                 };
@@ -838,7 +838,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["MoveEntryRequest"];
                 };
@@ -1068,7 +1068,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateDraftRequest"];
                 };
@@ -1164,7 +1164,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["UpdateEntryRequest"];
                 };
@@ -1260,7 +1260,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["MoveDraftRequest"];
                 };
@@ -1809,7 +1809,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateSessionRequest"];
                 };
@@ -1923,7 +1923,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["SubmitAttemptRequest"];
                 };
@@ -2097,7 +2097,7 @@ export interface components {
             type: string;
             vocabularyId?: null | string;
             collectionId?: null | string;
-            entryIds: string[];
+            entryIds?: null | string[];
             count?: null | number;
             scope?: null | components["schemas"]["WorstKnownScopeRequest"];
         };
@@ -2153,6 +2153,15 @@ export interface components {
         MoveVocabularyRequest: {
             collectionId: string;
         };
+        MultipleChoicePromptDataResponse: {
+            entryText: string;
+            options: components["schemas"]["MultipleChoicePromptOptionResponse"][];
+            correctOptionId: string;
+        };
+        MultipleChoicePromptOptionResponse: {
+            id: string;
+            text: string;
+        };
         PasswordRequirementsResponse: {
             /** Format: int32 */
             requiredLength: number;
@@ -2182,7 +2191,7 @@ export interface components {
             entryId: string;
             /** Format: int32 */
             displayOrder: number;
-            promptData: components["schemas"]["JsonElement"];
+            promptData: components["schemas"]["MultipleChoicePromptDataResponse"] | components["schemas"]["TranslationPromptDataResponse"];
             attempt?: null | components["schemas"]["AttemptSummaryResponse"];
         };
         SessionBundleResponse: {
@@ -2195,6 +2204,10 @@ export interface components {
         };
         SubmitAttemptResponse: {
             isCorrect: boolean;
+        };
+        TranslationPromptDataResponse: {
+            entryText: string;
+            acceptedTranslations: string[];
         };
         TranslationRequest: {
             translationText: string;

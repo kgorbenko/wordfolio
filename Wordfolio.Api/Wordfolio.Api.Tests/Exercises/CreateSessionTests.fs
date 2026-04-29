@@ -262,7 +262,7 @@ type CreateSessionTests(fixture: WordfolioIdentityTestFixture) =
                     { Type = "explicitEntries"
                       VocabularyId = None
                       CollectionId = None
-                      EntryIds = Some [ encoder.Encode entry.Id ]
+                      EntryIds = Some [| encoder.Encode entry.Id |]
                       Count = None
                       Scope = None } }
 
@@ -583,6 +583,7 @@ type CreateSessionTests(fixture: WordfolioIdentityTestFixture) =
                         Some(
                             entries
                             |> List.map(fun e -> encoder.Encode e.Id)
+                            |> List.toArray
                         )
                       Count = None
                       Scope = None } }
@@ -890,7 +891,7 @@ type CreateSessionTests(fixture: WordfolioIdentityTestFixture) =
                     { Type = "explicitEntries"
                       VocabularyId = None
                       CollectionId = None
-                      EntryIds = Some [ encoder.Encode ownerEntry.Id ]
+                      EntryIds = Some [| encoder.Encode ownerEntry.Id |]
                       Count = None
                       Scope = None } }
 

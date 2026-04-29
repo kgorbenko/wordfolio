@@ -62,7 +62,8 @@
                 "$ref": "#/components/schemas/CreateCollectionRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -148,7 +149,8 @@
                 "$ref": "#/components/schemas/UpdateCollectionRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -272,7 +274,8 @@
                 "$ref": "#/components/schemas/CreateVocabularyRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -377,7 +380,8 @@
                 "$ref": "#/components/schemas/UpdateVocabularyRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -478,7 +482,8 @@
                 "$ref": "#/components/schemas/MoveVocabularyRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -580,7 +585,8 @@
                 "$ref": "#/components/schemas/CreateEntryRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -746,7 +752,8 @@
                 "$ref": "#/components/schemas/UpdateEntryRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -812,7 +819,8 @@
                 "$ref": "#/components/schemas/MoveEntryRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -968,7 +976,8 @@
                 "$ref": "#/components/schemas/CreateDraftRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -1054,7 +1063,8 @@
                 "$ref": "#/components/schemas/UpdateEntryRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -1133,7 +1143,8 @@
                 "$ref": "#/components/schemas/MoveDraftRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -1567,7 +1578,8 @@
                 "$ref": "#/components/schemas/CreateSessionRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -1663,7 +1675,8 @@
                 "$ref": "#/components/schemas/SubmitAttemptRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -2134,8 +2147,7 @@
       },
       "EntrySelectorRequest": {
         "required": [
-          "type",
-          "entryIds"
+          "type"
         ],
         "type": "object",
         "properties": {
@@ -2155,7 +2167,10 @@
             ]
           },
           "entryIds": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
             }
@@ -2379,6 +2394,43 @@
           }
         }
       },
+      "MultipleChoicePromptDataResponse": {
+        "required": [
+          "entryText",
+          "options",
+          "correctOptionId"
+        ],
+        "type": "object",
+        "properties": {
+          "entryText": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MultipleChoicePromptOptionResponse"
+            }
+          },
+          "correctOptionId": {
+            "type": "string"
+          }
+        }
+      },
+      "MultipleChoicePromptOptionResponse": {
+        "required": [
+          "id",
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      },
       "PasswordRequirementsResponse": {
         "required": [
           "requiredLength",
@@ -2484,7 +2536,14 @@
             "format": "int32"
           },
           "promptData": {
-            "$ref": "#/components/schemas/JsonElement"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/MultipleChoicePromptDataResponse"
+              },
+              {
+                "$ref": "#/components/schemas/TranslationPromptDataResponse"
+              }
+            ]
           },
           "attempt": {
             "oneOf": [
@@ -2539,6 +2598,24 @@
         "properties": {
           "isCorrect": {
             "type": "boolean"
+          }
+        }
+      },
+      "TranslationPromptDataResponse": {
+        "required": [
+          "entryText",
+          "acceptedTranslations"
+        ],
+        "type": "object",
+        "properties": {
+          "entryText": {
+            "type": "string"
+          },
+          "acceptedTranslations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },

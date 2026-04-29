@@ -89,18 +89,19 @@ let tryMapSelector (encoder: IResourceIdEncoder) (request: EntrySelectorRequest)
     | "explicitEntries" ->
         let entryIds =
             request.EntryIds
-            |> Option.defaultValue []
+            |> Option.defaultValue [||]
 
         let decoded =
-            entryIds |> List.map encoder.Decode
+            entryIds |> Array.map encoder.Decode
 
-        if decoded |> List.forall Option.isSome then
+        if decoded |> Array.forall Option.isSome then
             Ok(
                 ExplicitEntries(
                     decoded
-                    |> List.choose id
-                    |> List.distinct
-                    |> List.map EntryId
+                    |> Array.choose id
+                    |> Array.distinct
+                    |> Array.map EntryId
+                    |> Array.toList
                 )
             )
         else
