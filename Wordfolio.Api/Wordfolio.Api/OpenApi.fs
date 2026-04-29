@@ -1,8 +1,8 @@
 module Wordfolio.Api.OpenApi
 
 open System
-open System.Threading.Tasks
 open System.Collections.Generic
+open System.Threading.Tasks
 
 open Microsoft.AspNetCore.Authorization
 open Microsoft.Extensions.DependencyInjection
@@ -56,6 +56,9 @@ let private inlineFSharpOptionSchemas(document: OpenApiDocument) =
                         let innerName =
                             refId.Substring(FSharpOptionPrefix.Length)
 
+                        if not(schemas.ContainsKey(innerName)) then
+                            schemas[innerName] <- innerSchema
+
                         let s = OpenApiSchema()
 
                         s.OneOf <-
@@ -64,6 +67,20 @@ let private inlineFSharpOptionSchemas(document: OpenApiDocument) =
                                   OpenApiSchemaReference(innerName, document) :> IOpenApiSchema ]
                             )
 
+                        s
+                    elif
+                        innerSchema.Type.HasValue
+                        && innerSchema.Type.Value.HasFlag(JsonSchemaType.Array)
+                    then
+                        let s = OpenApiSchema()
+
+                        s.Type <-
+                            Nullable(
+                                JsonSchemaType.Array
+                                ||| JsonSchemaType.Null
+                            )
+
+                        s.Items <- innerSchema.Items
                         s
                     else
                         let s = OpenApiSchema()
@@ -125,6 +142,99 @@ let private removeStringFromIntegerProperties(document: OpenApiDocument) =
                         p.Pattern <- null
                 | _ -> ()
 
+let private addExercisePromptSchemas(document: OpenApiDocument) =
+    let schemas = document.Components.Schemas
+
+    let createObjectSchema(requiredProperties: string list) =
+        let schema = OpenApiSchema()
+        schema.Type <- Nullable JsonSchemaType.Object
+        schema.Required <- HashSet<string>(requiredProperties)
+        schema.Properties <- Dictionary<string, IOpenApiSchema>()
+        schema
+
+    let createStringSchema() =
+        OpenApiSchema(Type = Nullable JsonSchemaType.String)
+
+    let createStringArraySchema() =
+        let items = createStringSchema()
+        let schema = OpenApiSchema()
+        schema.Type <- Nullable JsonSchemaType.Array
+        schema.Items <- items
+        schema
+
+    let createSchemaReference(name: string) =
+        OpenApiSchemaReference(name, document) :> IOpenApiSchema
+
+    let multipleChoiceOptionSchema =
+        let schema =
+            createObjectSchema [ "id"; "text" ]
+
+        schema.Properties["id"] <- createStringSchema()
+        schema.Properties["text"] <- createStringSchema()
+        schema
+
+    schemas["MultipleChoicePromptOptionResponse"] <- multipleChoiceOptionSchema
+
+    let multipleChoicePromptSchema =
+        let schema =
+            createObjectSchema [ "entryText"; "options"; "correctOptionId" ]
+
+        let optionsSchema = OpenApiSchema()
+        optionsSchema.Type <- Nullable JsonSchemaType.Array
+        optionsSchema.Items <- createSchemaReference "MultipleChoicePromptOptionResponse"
+
+        schema.Properties["entryText"] <- createStringSchema()
+        schema.Properties["options"] <- optionsSchema
+        schema.Properties["correctOptionId"] <- createStringSchema()
+        schema
+
+    schemas["MultipleChoicePromptDataResponse"] <- multipleChoicePromptSchema
+
+    let translationPromptSchema =
+        let schema =
+            createObjectSchema [ "entryText"; "acceptedTranslations" ]
+
+        schema.Properties["entryText"] <- createStringSchema()
+        schema.Properties["acceptedTranslations"] <- createStringArraySchema()
+        schema
+
+    schemas["TranslationPromptDataResponse"] <- translationPromptSchema
+
+    match schemas.TryGetValue("SessionBundleEntryResponse") with
+    | true, (:? OpenApiSchema as sessionBundleEntrySchema) when not(isNull sessionBundleEntrySchema.Properties) ->
+        let promptDataSchema = OpenApiSchema()
+
+        promptDataSchema.OneOf <-
+            ResizeArray<IOpenApiSchema>(
+                [ createSchemaReference "MultipleChoicePromptDataResponse"
+                  createSchemaReference "TranslationPromptDataResponse" ]
+            )
+
+        sessionBundleEntrySchema.Properties["promptData"] <- promptDataSchema
+    | _ -> ()
+
+let private normalizeEntrySelectorSchema(document: OpenApiDocument) =
+    match document.Components.Schemas.TryGetValue("EntrySelectorRequest") with
+    | true, (:? OpenApiSchema as entrySelectorSchema) when not(isNull entrySelectorSchema.Properties) ->
+        entrySelectorSchema.Required.Remove("entryIds")
+        |> ignore
+
+        match entrySelectorSchema.Properties.TryGetValue("entryIds") with
+        | true, (:? OpenApiSchema as entryIdsSchema) ->
+            let normalizedEntryIdsSchema =
+                OpenApiSchema()
+
+            normalizedEntryIdsSchema.Type <-
+                Nullable(
+                    JsonSchemaType.Array
+                    ||| JsonSchemaType.Null
+                )
+
+            normalizedEntryIdsSchema.Items <- entryIdsSchema.Items
+            entrySelectorSchema.Properties["entryIds"] <- normalizedEntryIdsSchema
+        | _ -> ()
+    | _ -> ()
+
 let addOpenApi<'TBuilder when 'TBuilder :> IHostApplicationBuilder>(builder: 'TBuilder) =
     builder.Services.AddOpenApi(fun options ->
         options.AddDocumentTransformer(fun document _ _ ->
@@ -160,9 +270,27 @@ let addOpenApi<'TBuilder when 'TBuilder :> IHostApplicationBuilder>(builder: 'TB
             Task.CompletedTask)
         |> ignore
 
+        options.AddDocumentTransformer(fun document _ _ ->
+            addExercisePromptSchemas document
+            Task.CompletedTask)
+        |> ignore
+
+        options.AddDocumentTransformer(fun document _ _ ->
+            normalizeEntrySelectorSchema document
+            Task.CompletedTask)
+        |> ignore
+
         options.AddOperationTransformer(fun operation context _ ->
             let metadata =
                 context.Description.ActionDescriptor.EndpointMetadata
+
+            if not(isNull operation.RequestBody) then
+                operation.RequestBody <-
+                    OpenApiRequestBody(
+                        Content = operation.RequestBody.Content,
+                        Description = operation.RequestBody.Description,
+                        Required = true
+                    )
 
             let hasAllowAnonymous =
                 metadata

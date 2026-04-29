@@ -62,7 +62,8 @@
                 "$ref": "#/components/schemas/CreateCollectionRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -148,7 +149,8 @@
                 "$ref": "#/components/schemas/UpdateCollectionRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -272,7 +274,8 @@
                 "$ref": "#/components/schemas/CreateVocabularyRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -377,7 +380,8 @@
                 "$ref": "#/components/schemas/UpdateVocabularyRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -478,7 +482,8 @@
                 "$ref": "#/components/schemas/MoveVocabularyRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -580,7 +585,8 @@
                 "$ref": "#/components/schemas/CreateEntryRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -746,7 +752,8 @@
                 "$ref": "#/components/schemas/UpdateEntryRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -812,7 +819,8 @@
                 "$ref": "#/components/schemas/MoveEntryRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -968,7 +976,8 @@
                 "$ref": "#/components/schemas/CreateDraftRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -1054,7 +1063,8 @@
                 "$ref": "#/components/schemas/UpdateEntryRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -1133,7 +1143,8 @@
                 "$ref": "#/components/schemas/MoveDraftRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -1554,6 +1565,157 @@
           { }
         ]
       }
+    },
+    "/exercises/sessions": {
+      "post": {
+        "tags": [
+          "Exercises"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionBundleResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          { }
+        ]
+      }
+    },
+    "/exercises/sessions/{sessionId}": {
+      "get": {
+        "tags": [
+          "Exercises"
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionBundleResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          { }
+        ]
+      }
+    },
+    "/exercises/sessions/{sessionId}/entries/{entryId}/attempts": {
+      "post": {
+        "tags": [
+          "Exercises"
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitAttemptRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmitAttemptResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmitAttemptResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          { }
+        ]
+      }
     }
   },
   "components": {
@@ -1600,6 +1762,26 @@
           },
           "environment": {
             "type": "string"
+          }
+        }
+      },
+      "AttemptSummaryResponse": {
+        "required": [
+          "rawAnswer",
+          "isCorrect",
+          "attemptedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "rawAnswer": {
+            "type": "string"
+          },
+          "isCorrect": {
+            "type": "boolean"
+          },
+          "attemptedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -1811,6 +1993,21 @@
           }
         }
       },
+      "CreateSessionRequest": {
+        "required": [
+          "exerciseType",
+          "selector"
+        ],
+        "type": "object",
+        "properties": {
+          "exerciseType": {
+            "$ref": "#/components/schemas/ExerciseTypeDto"
+          },
+          "selector": {
+            "$ref": "#/components/schemas/EntrySelectorRequest"
+          }
+        }
+      },
       "CreateVocabularyRequest": {
         "required": [
           "name"
@@ -1948,6 +2145,54 @@
           }
         }
       },
+      "EntrySelectorRequest": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "vocabularyId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "collectionId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entryIds": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "count": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "scope": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/WorstKnownScopeRequest"
+              }
+            ]
+          }
+        }
+      },
       "ExampleRequest": {
         "required": [
           "exampleText",
@@ -1986,6 +2231,12 @@
         "enum": [
           "Api",
           "Custom"
+        ]
+      },
+      "ExerciseTypeDto": {
+        "enum": [
+          "MultipleChoice",
+          "Translation"
         ]
       },
       "ForgotPasswordRequest": {
@@ -2082,6 +2333,7 @@
           }
         }
       },
+      "JsonElement": { },
       "LoginRequest": {
         "required": [
           "email",
@@ -2138,6 +2390,43 @@
         "type": "object",
         "properties": {
           "collectionId": {
+            "type": "string"
+          }
+        }
+      },
+      "MultipleChoicePromptDataResponse": {
+        "required": [
+          "entryText",
+          "options",
+          "correctOptionId"
+        ],
+        "type": "object",
+        "properties": {
+          "entryText": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MultipleChoicePromptOptionResponse"
+            }
+          },
+          "correctOptionId": {
+            "type": "string"
+          }
+        }
+      },
+      "MultipleChoicePromptOptionResponse": {
+        "required": [
+          "id",
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
             "type": "string"
           }
         }
@@ -2228,6 +2517,105 @@
           },
           "newPassword": {
             "type": "string"
+          }
+        }
+      },
+      "SessionBundleEntryResponse": {
+        "required": [
+          "entryId",
+          "displayOrder",
+          "promptData"
+        ],
+        "type": "object",
+        "properties": {
+          "entryId": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "promptData": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/MultipleChoicePromptDataResponse"
+              },
+              {
+                "$ref": "#/components/schemas/TranslationPromptDataResponse"
+              }
+            ]
+          },
+          "attempt": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AttemptSummaryResponse"
+              }
+            ]
+          }
+        }
+      },
+      "SessionBundleResponse": {
+        "required": [
+          "sessionId",
+          "exerciseType",
+          "entries"
+        ],
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string"
+          },
+          "exerciseType": {
+            "$ref": "#/components/schemas/ExerciseTypeDto"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionBundleEntryResponse"
+            }
+          }
+        }
+      },
+      "SubmitAttemptRequest": {
+        "required": [
+          "rawAnswer"
+        ],
+        "type": "object",
+        "properties": {
+          "rawAnswer": {
+            "type": "string"
+          }
+        }
+      },
+      "SubmitAttemptResponse": {
+        "required": [
+          "isCorrect"
+        ],
+        "type": "object",
+        "properties": {
+          "isCorrect": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TranslationPromptDataResponse": {
+        "required": [
+          "entryText",
+          "acceptedTranslations"
+        ],
+        "type": "object",
+        "properties": {
+          "entryText": {
+            "type": "string"
+          },
+          "acceptedTranslations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -2517,6 +2905,29 @@
             "format": "int32"
           }
         }
+      },
+      "WorstKnownScopeRequest": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "vocabularyId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "collectionId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -2552,6 +2963,9 @@
     },
     {
       "name": "Dictionary"
+    },
+    {
+      "name": "Exercises"
     }
   ]
 }

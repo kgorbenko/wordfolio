@@ -57,6 +57,9 @@
     <Compile Include="Drafts/DeleteDraftTests.fs" />
     <Compile Include="Drafts/MoveDraftTests.fs" />
     <Compile Include="Dictionary/GetLookupTests.fs" />
+    <Compile Include="Exercises/CreateSessionTests.fs" />
+    <Compile Include="Exercises/GetSessionByIdTests.fs" />
+    <Compile Include="Exercises/SubmitAttemptTests.fs" />
     <Compile Include="StatusTests.fs" />
     <Compile Include="OpenApiTests.fs" />
   </ItemGroup>

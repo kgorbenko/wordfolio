@@ -81,7 +81,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateCollectionRequest"];
                 };
@@ -177,7 +177,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["UpdateCollectionRequest"];
                 };
@@ -322,7 +322,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateVocabularyRequest"];
                 };
@@ -427,7 +427,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["UpdateVocabularyRequest"];
                 };
@@ -539,7 +539,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["MoveVocabularyRequest"];
                 };
@@ -631,7 +631,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateEntryRequest"];
                 };
@@ -738,7 +738,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["UpdateEntryRequest"];
                 };
@@ -838,7 +838,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["MoveEntryRequest"];
                 };
@@ -1068,7 +1068,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateDraftRequest"];
                 };
@@ -1164,7 +1164,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["UpdateEntryRequest"];
                 };
@@ -1260,7 +1260,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
+            requestBody: {
                 content: {
                     "application/json": components["schemas"]["MoveDraftRequest"];
                 };
@@ -1793,6 +1793,196 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/exercises/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateSessionRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SessionBundleResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/exercises/sessions/{sessionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sessionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SessionBundleResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/exercises/sessions/{sessionId}/entries/{entryId}/attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sessionId: string;
+                    entryId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SubmitAttemptRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SubmitAttemptResponse"];
+                    };
+                };
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SubmitAttemptResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1808,6 +1998,12 @@ export interface components {
             application: string;
             version: string;
             environment: string;
+        };
+        AttemptSummaryResponse: {
+            rawAnswer: string;
+            isCorrect: boolean;
+            /** Format: date-time */
+            attemptedAt: string;
         };
         CollectionResponse: {
             id: string;
@@ -1859,6 +2055,10 @@ export interface components {
             translations: components["schemas"]["TranslationRequest"][];
             allowDuplicate?: null | boolean;
         };
+        CreateSessionRequest: {
+            exerciseType: components["schemas"]["ExerciseTypeDto"];
+            selector: components["schemas"]["EntrySelectorRequest"];
+        };
         CreateVocabularyRequest: {
             name: string;
             description?: null | string;
@@ -1893,6 +2093,14 @@ export interface components {
             definitions: components["schemas"]["DefinitionResponse"][];
             translations: components["schemas"]["TranslationResponse"][];
         };
+        EntrySelectorRequest: {
+            type: string;
+            vocabularyId?: null | string;
+            collectionId?: null | string;
+            entryIds?: null | string[];
+            count?: null | number;
+            scope?: null | components["schemas"]["WorstKnownScopeRequest"];
+        };
         ExampleRequest: {
             exampleText: string;
             source: components["schemas"]["ExampleSource"];
@@ -1904,6 +2112,8 @@ export interface components {
         };
         /** @enum {unknown} */
         ExampleSource: "Api" | "Custom";
+        /** @enum {unknown} */
+        ExerciseTypeDto: "MultipleChoice" | "Translation";
         ForgotPasswordRequest: {
             email: string;
         };
@@ -1927,6 +2137,7 @@ export interface components {
             email: string;
             isEmailConfirmed: boolean;
         };
+        JsonElement: unknown;
         LoginRequest: {
             email: string;
             password: string;
@@ -1941,6 +2152,15 @@ export interface components {
         };
         MoveVocabularyRequest: {
             collectionId: string;
+        };
+        MultipleChoicePromptDataResponse: {
+            entryText: string;
+            options: components["schemas"]["MultipleChoicePromptOptionResponse"][];
+            correctOptionId: string;
+        };
+        MultipleChoicePromptOptionResponse: {
+            id: string;
+            text: string;
         };
         PasswordRequirementsResponse: {
             /** Format: int32 */
@@ -1966,6 +2186,28 @@ export interface components {
             email: string;
             resetCode: string;
             newPassword: string;
+        };
+        SessionBundleEntryResponse: {
+            entryId: string;
+            /** Format: int32 */
+            displayOrder: number;
+            promptData: components["schemas"]["MultipleChoicePromptDataResponse"] | components["schemas"]["TranslationPromptDataResponse"];
+            attempt?: null | components["schemas"]["AttemptSummaryResponse"];
+        };
+        SessionBundleResponse: {
+            sessionId: string;
+            exerciseType: components["schemas"]["ExerciseTypeDto"];
+            entries: components["schemas"]["SessionBundleEntryResponse"][];
+        };
+        SubmitAttemptRequest: {
+            rawAnswer: string;
+        };
+        SubmitAttemptResponse: {
+            isCorrect: boolean;
+        };
+        TranslationPromptDataResponse: {
+            entryText: string;
+            acceptedTranslations: string[];
         };
         TranslationRequest: {
             translationText: string;
@@ -2041,6 +2283,11 @@ export interface components {
             updatedAt: string;
             /** Format: int32 */
             entryCount: number;
+        };
+        WorstKnownScopeRequest: {
+            type: string;
+            vocabularyId?: null | string;
+            collectionId?: null | string;
         };
     };
     responses: never;
