@@ -2,31 +2,22 @@ namespace Wordfolio.Api.Domain
 
 open System
 
-[<Struct>]
 type UserId = | UserId of int
 
-[<Struct>]
 type CollectionId = | CollectionId of int
 
-[<Struct>]
 type VocabularyId = | VocabularyId of int
 
-[<Struct>]
 type EntryId = | EntryId of int
 
-[<Struct>]
 type DefinitionId = | DefinitionId of int
 
-[<Struct>]
 type TranslationId = | TranslationId of int
 
-[<Struct>]
 type ExampleId = | ExampleId of int
 
-[<Struct>]
 type ExerciseSessionId = | ExerciseSessionId of int
 
-[<Struct>]
 type ExerciseAttemptId = | ExerciseAttemptId of int
 
 module UserId =
