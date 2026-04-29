@@ -180,6 +180,9 @@ let deleteEntryAsync
     }
 
 [<CLIMutable>]
+type private EntryIdRecord = { Id: int; VocabularyId: int }
+
+[<CLIMutable>]
 type private CollectionRecord =
     { Id: int; UserId: int; IsSystem: bool }
 
@@ -254,28 +257,32 @@ let getEntryIdsByVocabularyIdAsync
     (cancellationToken: CancellationToken)
     : Task<int list> =
     task {
-        let sql =
-            """
-            SELECT e."Id"
-            FROM wordfolio."Entries" e
-            INNER JOIN wordfolio."Vocabularies" v ON v."Id" = e."VocabularyId"
-            INNER JOIN wordfolio."Collections" c ON c."Id" = v."CollectionId"
-            WHERE e."VocabularyId" = @vocabularyId
-              AND c."UserId" = @userId;
-            """
+        let entriesTable =
+            table'<EntryIdRecord> Schema.EntriesTable.Name
+            |> inSchema Schema.Name
 
-        let commandDefinition =
-            CommandDefinition(
-                commandText = sql,
-                parameters =
-                    {| vocabularyId = vocabularyId
-                       userId = userId |},
-                transaction = transaction,
-                cancellationToken = cancellationToken
-            )
+        let vocabulariesTable =
+            table'<VocabularyRecord> Schema.VocabulariesTable.Name
+            |> inSchema Schema.Name
 
-        let! ids = connection.QueryAsync<int>(commandDefinition)
-        return ids |> Seq.toList
+        let collectionsTable =
+            table'<CollectionRecord> Schema.CollectionsTable.Name
+            |> inSchema Schema.Name
+
+        let! results =
+            select {
+                for e in entriesTable do
+                    innerJoin v in vocabulariesTable on (e.VocabularyId = v.Id)
+                    innerJoin c in collectionsTable on (v.CollectionId = c.Id)
+
+                    where(
+                        e.VocabularyId = vocabularyId
+                        && c.UserId = userId
+                    )
+            }
+            |> selectAsync<EntryIdRecord> connection transaction cancellationToken
+
+        return results |> List.map(fun r -> r.Id)
     }
 
 let getEntryIdsByCollectionIdAsync
@@ -286,28 +293,32 @@ let getEntryIdsByCollectionIdAsync
     (cancellationToken: CancellationToken)
     : Task<int list> =
     task {
-        let sql =
-            """
-            SELECT e."Id"
-            FROM wordfolio."Entries" e
-            INNER JOIN wordfolio."Vocabularies" v ON v."Id" = e."VocabularyId"
-            INNER JOIN wordfolio."Collections" c ON c."Id" = v."CollectionId"
-            WHERE v."CollectionId" = @collectionId
-              AND c."UserId" = @userId;
-            """
+        let entriesTable =
+            table'<EntryIdRecord> Schema.EntriesTable.Name
+            |> inSchema Schema.Name
 
-        let commandDefinition =
-            CommandDefinition(
-                commandText = sql,
-                parameters =
-                    {| collectionId = collectionId
-                       userId = userId |},
-                transaction = transaction,
-                cancellationToken = cancellationToken
-            )
+        let vocabulariesTable =
+            table'<VocabularyRecord> Schema.VocabulariesTable.Name
+            |> inSchema Schema.Name
 
-        let! ids = connection.QueryAsync<int>(commandDefinition)
-        return ids |> Seq.toList
+        let collectionsTable =
+            table'<CollectionRecord> Schema.CollectionsTable.Name
+            |> inSchema Schema.Name
+
+        let! results =
+            select {
+                for e in entriesTable do
+                    innerJoin v in vocabulariesTable on (e.VocabularyId = v.Id)
+                    innerJoin c in collectionsTable on (v.CollectionId = c.Id)
+
+                    where(
+                        v.CollectionId = collectionId
+                        && c.UserId = userId
+                    )
+            }
+            |> selectAsync<EntryIdRecord> connection transaction cancellationToken
+
+        return results |> List.map(fun r -> r.Id)
     }
 
 let getEntryIdsByUserIdAsync
@@ -317,25 +328,28 @@ let getEntryIdsByUserIdAsync
     (cancellationToken: CancellationToken)
     : Task<int list> =
     task {
-        let sql =
-            """
-            SELECT e."Id"
-            FROM wordfolio."Entries" e
-            INNER JOIN wordfolio."Vocabularies" v ON v."Id" = e."VocabularyId"
-            INNER JOIN wordfolio."Collections" c ON c."Id" = v."CollectionId"
-            WHERE c."UserId" = @userId;
-            """
+        let entriesTable =
+            table'<EntryIdRecord> Schema.EntriesTable.Name
+            |> inSchema Schema.Name
 
-        let commandDefinition =
-            CommandDefinition(
-                commandText = sql,
-                parameters = {| userId = userId |},
-                transaction = transaction,
-                cancellationToken = cancellationToken
-            )
+        let vocabulariesTable =
+            table'<VocabularyRecord> Schema.VocabulariesTable.Name
+            |> inSchema Schema.Name
 
-        let! ids = connection.QueryAsync<int>(commandDefinition)
-        return ids |> Seq.toList
+        let collectionsTable =
+            table'<CollectionRecord> Schema.CollectionsTable.Name
+            |> inSchema Schema.Name
+
+        let! results =
+            select {
+                for e in entriesTable do
+                    innerJoin v in vocabulariesTable on (e.VocabularyId = v.Id)
+                    innerJoin c in collectionsTable on (v.CollectionId = c.Id)
+                    where(c.UserId = userId)
+            }
+            |> selectAsync<EntryIdRecord> connection transaction cancellationToken
+
+        return results |> List.map(fun r -> r.Id)
     }
 
 let getEntryIdsByIdsForUserAsync
@@ -349,26 +363,30 @@ let getEntryIdsByIdsForUserAsync
         if requestedIds.IsEmpty then
             return []
         else
-            let sql =
-                """
-                SELECT e."Id"
-                FROM wordfolio."Entries" e
-                INNER JOIN wordfolio."Vocabularies" v ON v."Id" = e."VocabularyId"
-                INNER JOIN wordfolio."Collections" c ON c."Id" = v."CollectionId"
-                WHERE e."Id" = ANY(@requestedIds)
-                  AND c."UserId" = @userId;
-                """
+            let entriesTable =
+                table'<EntryIdRecord> Schema.EntriesTable.Name
+                |> inSchema Schema.Name
 
-            let commandDefinition =
-                CommandDefinition(
-                    commandText = sql,
-                    parameters =
-                        {| requestedIds = requestedIds |> List.toArray
-                           userId = userId |},
-                    transaction = transaction,
-                    cancellationToken = cancellationToken
-                )
+            let vocabulariesTable =
+                table'<VocabularyRecord> Schema.VocabulariesTable.Name
+                |> inSchema Schema.Name
 
-            let! ids = connection.QueryAsync<int>(commandDefinition)
-            return ids |> Seq.toList
+            let collectionsTable =
+                table'<CollectionRecord> Schema.CollectionsTable.Name
+                |> inSchema Schema.Name
+
+            let! results =
+                select {
+                    for e in entriesTable do
+                        innerJoin v in vocabulariesTable on (e.VocabularyId = v.Id)
+                        innerJoin c in collectionsTable on (v.CollectionId = c.Id)
+
+                        where(
+                            isIn e.Id requestedIds
+                            && c.UserId = userId
+                        )
+                }
+                |> selectAsync<EntryIdRecord> connection transaction cancellationToken
+
+            return results |> List.map(fun r -> r.Id)
     }
