@@ -4,10 +4,8 @@ open System
 
 open Wordfolio.Api.Domain
 
-[<Struct>]
 type PromptData = | PromptData of string
 
-[<Struct>]
 type RawAnswer = | RawAnswer of string
 
 module PromptData =
