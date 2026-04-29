@@ -10,6 +10,7 @@ on:
       - 'Wordfolio.MigrationRunner/**'
       - 'Wordfolio.ServiceDefaults/**'
       - '*.sln'
+      - 'global.json'
       - 'fantomas-config.json'
       - '*.props'
       - '*.targets'
