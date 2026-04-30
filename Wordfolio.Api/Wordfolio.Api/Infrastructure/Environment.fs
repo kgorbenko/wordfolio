@@ -773,164 +773,6 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                         toEntryDomain(entryHierarchy.Entry, definitionsWithExamples, translationsWithExamples))
             }
 
-    interface IResolveEntrySelector with
-        member _.ResolveEntrySelector (UserId userId) selector =
-            task {
-                match selector with
-                | VocabularyScope(VocabularyId vocabularyId) ->
-                    let! hasAccess =
-                        Wordfolio.Api.DataAccess.Entries.hasVocabularyAccessAsync
-                            vocabularyId
-                            userId
-                            connection
-                            transaction
-                            cancellationToken
-
-                    if not hasAccess then
-                        return Error(SelectorError.VocabularyNotOwnedByUser(VocabularyId vocabularyId))
-                    else
-                        let! ids =
-                            Wordfolio.Api.DataAccess.Entries.getEntryIdsByVocabularyIdAsync
-                                vocabularyId
-                                userId
-                                connection
-                                transaction
-                                cancellationToken
-
-                        return Ok(ids |> List.map EntryId)
-
-                | CollectionScope(CollectionId collectionId) ->
-                    let! maybeCollection =
-                        Wordfolio.Api.DataAccess.Collections.getCollectionByIdAsync
-                            collectionId
-                            connection
-                            transaction
-                            cancellationToken
-
-                    match maybeCollection with
-                    | None -> return Error(SelectorError.CollectionNotOwnedByUser(CollectionId collectionId))
-                    | Some collection when collection.UserId <> userId ->
-                        return Error(SelectorError.CollectionNotOwnedByUser(CollectionId collectionId))
-                    | Some _ ->
-                        let! ids =
-                            Wordfolio.Api.DataAccess.Entries.getEntryIdsByCollectionIdAsync
-                                collectionId
-                                userId
-                                connection
-                                transaction
-                                cancellationToken
-
-                        return Ok(ids |> List.map EntryId)
-
-                | ExplicitEntries requestedIds ->
-                    let rawIds =
-                        requestedIds |> List.map EntryId.value
-
-                    let! ownedIds =
-                        Wordfolio.Api.DataAccess.Entries.getEntryIdsByIdsForUserAsync
-                            rawIds
-                            userId
-                            connection
-                            transaction
-                            cancellationToken
-
-                    let ownedSet = ownedIds |> Set.ofList
-
-                    let notOwned =
-                        rawIds
-                        |> List.filter(fun id -> not(ownedSet.Contains id))
-
-                    if not notOwned.IsEmpty then
-                        return Error(SelectorError.EntryNotOwnedByUser(notOwned |> List.map EntryId))
-                    else
-                        return Ok requestedIds
-
-                | WorstKnown(AllUserEntries, count) ->
-                    let! allIds =
-                        Wordfolio.Api.DataAccess.Entries.getEntryIdsByUserIdAsync
-                            userId
-                            connection
-                            transaction
-                            cancellationToken
-
-                    let! worstIds =
-                        Wordfolio.Api.DataAccess.ExerciseAttempts.getWorstKnownEntriesAsync
-                            userId
-                            allIds
-                            count
-                            Limits.KnowledgeWindowSize
-                            connection
-                            transaction
-                            cancellationToken
-
-                    return Ok(worstIds |> List.map EntryId)
-
-                | WorstKnown(WithinVocabulary(VocabularyId vocabularyId), count) ->
-                    let! hasAccess =
-                        Wordfolio.Api.DataAccess.Entries.hasVocabularyAccessAsync
-                            vocabularyId
-                            userId
-                            connection
-                            transaction
-                            cancellationToken
-
-                    if not hasAccess then
-                        return Error(SelectorError.VocabularyNotOwnedByUser(VocabularyId vocabularyId))
-                    else
-                        let! scopedIds =
-                            Wordfolio.Api.DataAccess.Entries.getEntryIdsByVocabularyIdAsync
-                                vocabularyId
-                                userId
-                                connection
-                                transaction
-                                cancellationToken
-
-                        let! worstIds =
-                            Wordfolio.Api.DataAccess.ExerciseAttempts.getWorstKnownEntriesAsync
-                                userId
-                                scopedIds
-                                count
-                                Limits.KnowledgeWindowSize
-                                connection
-                                transaction
-                                cancellationToken
-
-                        return Ok(worstIds |> List.map EntryId)
-
-                | WorstKnown(WithinCollection(CollectionId collectionId), count) ->
-                    let! maybeCollection =
-                        Wordfolio.Api.DataAccess.Collections.getCollectionByIdAsync
-                            collectionId
-                            connection
-                            transaction
-                            cancellationToken
-
-                    match maybeCollection with
-                    | None -> return Error(SelectorError.CollectionNotOwnedByUser(CollectionId collectionId))
-                    | Some collection when collection.UserId <> userId ->
-                        return Error(SelectorError.CollectionNotOwnedByUser(CollectionId collectionId))
-                    | Some _ ->
-                        let! scopedIds =
-                            Wordfolio.Api.DataAccess.Entries.getEntryIdsByCollectionIdAsync
-                                collectionId
-                                userId
-                                connection
-                                transaction
-                                cancellationToken
-
-                        let! worstIds =
-                            Wordfolio.Api.DataAccess.ExerciseAttempts.getWorstKnownEntriesAsync
-                                userId
-                                scopedIds
-                                count
-                                Limits.KnowledgeWindowSize
-                                connection
-                                transaction
-                                cancellationToken
-
-                        return Ok(worstIds |> List.map EntryId)
-            }
-
     interface IGetEntriesByIds with
         member _.GetEntriesByIds(entryIds: EntryId list) =
             task {
@@ -948,6 +790,10 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                     hierarchies
                     |> List.map toEntryHierarchyDomain
             }
+
+    interface IResolveEntrySelector with
+        member self.ResolveEntrySelector userId selector =
+            Wordfolio.Api.Domain.Exercises.Operations.resolveEntrySelector self userId selector
 
     interface ICreateExerciseSession with
         member _.CreateExerciseSession(data: CreateExerciseSessionData) =
@@ -972,19 +818,7 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                         transaction
                         cancellationToken
 
-                let bundleEntries =
-                    data.Entries
-                    |> List.map(fun (entryId, displayOrder, promptData, _schemaVersion) ->
-                        { EntryId = entryId
-                          DisplayOrder = displayOrder
-                          PromptData = promptData
-                          Attempt = None }
-                        : SessionBundleEntry)
-
-                return
-                    { SessionId = ExerciseSessionId sessionId
-                      ExerciseType = data.ExerciseType
-                      Entries = bundleEntries }
+                return ExerciseSessionId sessionId
             }
 
     interface IGetExerciseSession with
@@ -1018,56 +852,114 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                     |> Option.map toExerciseSessionEntryDomain
             }
 
-    interface IGetSessionBundle with
-        member _.GetSessionBundle (UserId userId) (ExerciseSessionId sessionId) =
+    interface IGetExerciseSessionEntries with
+        member _.GetExerciseSessionEntries(ExerciseSessionId sessionId) =
             task {
-                let! maybeSession =
-                    Wordfolio.Api.DataAccess.ExerciseSessions.getSessionAsync
+                let! entries =
+                    Wordfolio.Api.DataAccess.ExerciseSessions.getSessionEntriesAsync
                         sessionId
                         connection
                         transaction
                         cancellationToken
 
-                match maybeSession with
-                | None -> return None
-                | Some session when session.UserId <> userId -> return None
-                | Some session ->
-                    let! sessionEntries =
-                        Wordfolio.Api.DataAccess.ExerciseSessions.getSessionEntriesAsync
-                            sessionId
-                            connection
-                            transaction
-                            cancellationToken
+                return
+                    entries
+                    |> List.map toExerciseSessionEntryDomain
+            }
 
-                    let! attempts =
-                        Wordfolio.Api.DataAccess.ExerciseAttempts.getAttemptsBySessionAsync
-                            sessionId
-                            connection
-                            transaction
-                            cancellationToken
+    interface IGetAttemptsBySession with
+        member _.GetAttemptsBySession(ExerciseSessionId sessionId) =
+            task {
+                let! attempts =
+                    Wordfolio.Api.DataAccess.ExerciseAttempts.getAttemptsBySessionAsync
+                        sessionId
+                        connection
+                        transaction
+                        cancellationToken
 
-                    let attemptByEntryId =
-                        attempts
-                        |> List.map(fun a -> (a.EntryId, a))
-                        |> Map.ofList
+                return
+                    attempts
+                    |> List.map(fun a ->
+                        { EntryId = EntryId a.EntryId
+                          RawAnswer = RawAnswer a.RawAnswer
+                          IsCorrect = a.IsCorrect
+                          AttemptedAt = a.AttemptedAt }
+                        : SessionAttempt)
+            }
 
-                    let bundleEntries =
-                        sessionEntries
-                        |> List.map(fun e ->
-                            { EntryId = EntryId e.EntryId
-                              DisplayOrder = e.DisplayOrder
-                              PromptData = PromptData e.PromptData
-                              Attempt =
-                                attemptByEntryId
-                                |> Map.tryFind e.EntryId
-                                |> Option.map toAttemptSummary }
-                            : SessionBundleEntry)
+    interface IGetEntryIdsByVocabularyId with
+        member _.GetEntryIdsByVocabularyId(data: GetEntryIdsByVocabularyIdData) =
+            task {
+                let! ids =
+                    Wordfolio.Api.DataAccess.Entries.getEntryIdsByVocabularyIdAsync
+                        (VocabularyId.value data.VocabularyId)
+                        (UserId.value data.UserId)
+                        connection
+                        transaction
+                        cancellationToken
 
-                    return
-                        Some
-                            { SessionId = ExerciseSessionId session.Id
-                              ExerciseType = int16ToExerciseType session.ExerciseType
-                              Entries = bundleEntries }
+                return ids |> List.map EntryId
+            }
+
+    interface IGetEntryIdsByCollectionId with
+        member _.GetEntryIdsByCollectionId(data: GetEntryIdsByCollectionIdData) =
+            task {
+                let! ids =
+                    Wordfolio.Api.DataAccess.Entries.getEntryIdsByCollectionIdAsync
+                        (CollectionId.value data.CollectionId)
+                        (UserId.value data.UserId)
+                        connection
+                        transaction
+                        cancellationToken
+
+                return ids |> List.map EntryId
+            }
+
+    interface IGetOwnedEntryIds with
+        member _.GetOwnedEntryIds(data: GetOwnedEntryIdsData) =
+            task {
+                let rawIds =
+                    data.EntryIds |> List.map EntryId.value
+
+                let! ids =
+                    Wordfolio.Api.DataAccess.Entries.getEntryIdsByIdsForUserAsync
+                        rawIds
+                        (UserId.value data.UserId)
+                        connection
+                        transaction
+                        cancellationToken
+
+                return ids |> List.map EntryId
+            }
+
+    interface IGetEntryIdsByUserId with
+        member _.GetEntryIdsByUserId(UserId userId) =
+            task {
+                let! ids =
+                    Wordfolio.Api.DataAccess.Entries.getEntryIdsByUserIdAsync
+                        userId
+                        connection
+                        transaction
+                        cancellationToken
+
+                return ids |> List.map EntryId
+            }
+
+    interface IGetWorstKnownEntryIds with
+        member _.GetWorstKnownEntryIds(data: GetWorstKnownEntryIdsData) =
+            task {
+                let! ids =
+                    Wordfolio.Api.DataAccess.ExerciseAttempts.getWorstKnownEntriesAsync
+                        (UserId.value data.UserId)
+                        (data.ScopedEntryIds
+                         |> List.map EntryId.value)
+                        data.Count
+                        data.KnowledgeWindowSize
+                        connection
+                        transaction
+                        cancellationToken
+
+                return ids |> List.map EntryId
             }
 
     interface ICommitAttempt with

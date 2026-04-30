@@ -6,6 +6,13 @@ open System.Threading.Tasks
 type ITransactional<'env> =
     abstract RunInTransaction<'a, 'err> : ('env -> Task<Result<'a, 'err>>) -> Task<Result<'a, 'err>>
 
+type HasVocabularyAccessData =
+    { VocabularyId: VocabularyId
+      UserId: UserId }
+
+type IHasVocabularyAccess =
+    abstract HasVocabularyAccess: HasVocabularyAccessData -> Task<bool>
+
 type CreateDefaultVocabularyParameters =
     { CollectionId: CollectionId
       Name: string
@@ -35,6 +42,8 @@ type ICreateDefaultCollection =
 
 module Capabilities =
     let runInTransaction (env: #ITransactional<'env>) operation = env.RunInTransaction(operation)
+
+    let hasVocabularyAccess (env: #IHasVocabularyAccess) data = env.HasVocabularyAccess(data)
 
     let getCollectionById (env: #IGetCollectionById) collectionId = env.GetCollectionById(collectionId)
 
