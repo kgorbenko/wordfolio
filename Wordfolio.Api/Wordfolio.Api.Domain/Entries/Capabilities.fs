@@ -50,10 +50,6 @@ type HasVocabularyAccessInCollectionData =
       CollectionId: CollectionId
       UserId: UserId }
 
-type HasVocabularyAccessData =
-    { VocabularyId: VocabularyId
-      UserId: UserId }
-
 type IGetEntryById =
     abstract GetEntryById: EntryId -> Task<Entry option>
 
@@ -83,9 +79,6 @@ type IMoveEntry =
 
 type IClearEntryChildren =
     abstract ClearEntryChildren: EntryId -> Task<unit>
-
-type IHasVocabularyAccess =
-    abstract HasVocabularyAccess: HasVocabularyAccessData -> Task<bool>
 
 type IHasVocabularyAccessInCollection =
     abstract HasVocabularyAccessInCollection: HasVocabularyAccessInCollectionData -> Task<bool>
@@ -117,8 +110,6 @@ module Capabilities =
     let moveEntry (env: #IMoveEntry) data = env.MoveEntry(data)
 
     let clearEntryChildren (env: #IClearEntryChildren) entryId = env.ClearEntryChildren(entryId)
-
-    let hasVocabularyAccess (env: #IHasVocabularyAccess) data = env.HasVocabularyAccess(data)
 
     let hasVocabularyAccessInCollection (env: #IHasVocabularyAccessInCollection) data =
         env.HasVocabularyAccessInCollection(data)

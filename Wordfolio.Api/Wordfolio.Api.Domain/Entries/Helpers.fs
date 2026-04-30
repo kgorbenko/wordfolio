@@ -4,6 +4,7 @@ open System
 open System.Threading.Tasks
 
 open Wordfolio.Api.Domain
+open Wordfolio.Api.Domain.Capabilities
 open Wordfolio.Api.Domain.Entries.Capabilities
 
 type CreateDefinitionsParameters =

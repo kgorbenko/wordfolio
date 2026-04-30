@@ -43,6 +43,12 @@ type AttemptSummary =
       IsCorrect: bool
       AttemptedAt: DateTimeOffset }
 
+type SessionAttempt =
+    { EntryId: EntryId
+      RawAnswer: RawAnswer
+      IsCorrect: bool
+      AttemptedAt: DateTimeOffset }
+
 type SessionBundleEntry =
     { EntryId: EntryId
       DisplayOrder: int

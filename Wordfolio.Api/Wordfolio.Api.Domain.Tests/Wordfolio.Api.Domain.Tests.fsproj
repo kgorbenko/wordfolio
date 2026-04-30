@@ -50,6 +50,7 @@
     <Compile Include="Exercises\MultipleChoiceTests.fs" />
     <Compile Include="Exercises\TranslationTests.fs" />
     <Compile Include="Exercises\DispatchTests.fs" />
+    <Compile Include="Exercises\ResolveEntrySelectorTests.fs" />
     <Compile Include="Exercises\CreateSessionTests.fs" />
     <Compile Include="Exercises\GetSessionTests.fs" />
     <Compile Include="Exercises\SubmitAttemptTests.fs" />

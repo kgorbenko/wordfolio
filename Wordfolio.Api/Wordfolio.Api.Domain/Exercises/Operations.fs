@@ -7,9 +7,133 @@ open Wordfolio.Api.Domain
 open Wordfolio.Api.Domain.Exercises
 open Wordfolio.Api.Domain.Exercises.Capabilities
 
+module DomainCapabilities = Wordfolio.Api.Domain.Capabilities
+
+let resolveEntrySelector env (userId: UserId) (selector: EntrySelector) : Task<Result<EntryId list, SelectorError>> =
+    task {
+        match selector with
+        | VocabularyScope vocabularyId ->
+            let! hasAccess =
+                DomainCapabilities.hasVocabularyAccess
+                    env
+                    { VocabularyId = vocabularyId
+                      UserId = userId }
+
+            if not hasAccess then
+                return Error(SelectorError.VocabularyNotOwnedByUser vocabularyId)
+            else
+                let! ids =
+                    getEntryIdsByVocabularyId
+                        env
+                        { VocabularyId = vocabularyId
+                          UserId = userId }
+
+                return Ok ids
+
+        | CollectionScope collectionId ->
+            let! maybeCollection = DomainCapabilities.getCollectionById env collectionId
+
+            match maybeCollection with
+            | None -> return Error(SelectorError.CollectionNotOwnedByUser collectionId)
+            | Some collection when collection.UserId <> userId ->
+                return Error(SelectorError.CollectionNotOwnedByUser collectionId)
+            | Some _ ->
+                let! ids =
+                    getEntryIdsByCollectionId
+                        env
+                        { CollectionId = collectionId
+                          UserId = userId }
+
+                return Ok ids
+
+        | ExplicitEntries requestedIds ->
+            if requestedIds.IsEmpty then
+                return Ok []
+            else
+                let! ownedIds =
+                    getOwnedEntryIds
+                        env
+                        { EntryIds = requestedIds
+                          UserId = userId }
+
+                let ownedSet = ownedIds |> Set.ofList
+
+                let notOwned =
+                    requestedIds
+                    |> List.filter(fun id -> not(ownedSet.Contains id))
+
+                if not notOwned.IsEmpty then
+                    return Error(SelectorError.EntryNotOwnedByUser notOwned)
+                else
+                    return Ok requestedIds
+
+        | WorstKnown(AllUserEntries, count) ->
+            let! allIds = getEntryIdsByUserId env userId
+
+            let! worstIds =
+                getWorstKnownEntryIds
+                    env
+                    { UserId = userId
+                      ScopedEntryIds = allIds
+                      Count = count
+                      KnowledgeWindowSize = Limits.KnowledgeWindowSize }
+
+            return Ok worstIds
+
+        | WorstKnown(WithinVocabulary vocabularyId, count) ->
+            let! hasAccess =
+                DomainCapabilities.hasVocabularyAccess
+                    env
+                    { VocabularyId = vocabularyId
+                      UserId = userId }
+
+            if not hasAccess then
+                return Error(SelectorError.VocabularyNotOwnedByUser vocabularyId)
+            else
+                let! scopedIds =
+                    getEntryIdsByVocabularyId
+                        env
+                        { VocabularyId = vocabularyId
+                          UserId = userId }
+
+                let! worstIds =
+                    getWorstKnownEntryIds
+                        env
+                        { UserId = userId
+                          ScopedEntryIds = scopedIds
+                          Count = count
+                          KnowledgeWindowSize = Limits.KnowledgeWindowSize }
+
+                return Ok worstIds
+
+        | WorstKnown(WithinCollection collectionId, count) ->
+            let! maybeCollection = DomainCapabilities.getCollectionById env collectionId
+
+            match maybeCollection with
+            | None -> return Error(SelectorError.CollectionNotOwnedByUser collectionId)
+            | Some collection when collection.UserId <> userId ->
+                return Error(SelectorError.CollectionNotOwnedByUser collectionId)
+            | Some _ ->
+                let! scopedIds =
+                    getEntryIdsByCollectionId
+                        env
+                        { CollectionId = collectionId
+                          UserId = userId }
+
+                let! worstIds =
+                    getWorstKnownEntryIds
+                        env
+                        { UserId = userId
+                          ScopedEntryIds = scopedIds
+                          Count = count
+                          KnowledgeWindowSize = Limits.KnowledgeWindowSize }
+
+                return Ok worstIds
+    }
+
 let createSession env (parameters: CreateSessionParameters) : Task<Result<SessionBundle, CreateSessionError>> =
     task {
-        let! selectorResult = resolveEntrySelector env parameters.UserId parameters.Selector
+        let! selectorResult = Capabilities.resolveEntrySelector env parameters.UserId parameters.Selector
 
         match selectorResult with
         | Error selectorError -> return Error(CreateSessionError.SelectorFailed selectorError)
@@ -46,18 +170,61 @@ let createSession env (parameters: CreateSessionParameters) : Task<Result<Sessio
                       Entries = entries
                       CreatedAt = parameters.CreatedAt }
 
-                let! bundle = createExerciseSession env sessionData
-                return Ok bundle
+                let! sessionId = createExerciseSession env sessionData
+
+                let bundleEntries =
+                    entries
+                    |> List.map(fun (entryId, displayOrder, promptData, _schemaVersion) ->
+                        { EntryId = entryId
+                          DisplayOrder = displayOrder
+                          PromptData = promptData
+                          Attempt = None }
+                        : SessionBundleEntry)
+
+                return
+                    Ok
+                        { SessionId = sessionId
+                          ExerciseType = parameters.ExerciseType
+                          Entries = bundleEntries }
     }
 
 let getSession env (userId: UserId) (sessionId: ExerciseSessionId) : Task<Result<SessionBundle, GetSessionError>> =
     task {
-        let! maybeBundle = getSessionBundle env userId sessionId
+        let! maybeSession = getExerciseSession env sessionId
 
-        return
-            match maybeBundle with
-            | None -> Error GetSessionError.NotFound
-            | Some bundle -> Ok bundle
+        match maybeSession with
+        | None -> return Error GetSessionError.NotFound
+        | Some session when session.UserId <> userId -> return Error GetSessionError.NotFound
+        | Some session ->
+            let! sessionEntries = getExerciseSessionEntries env sessionId
+            let! attempts = getAttemptsBySession env sessionId
+
+            let attemptByEntryId =
+                attempts
+                |> List.map(fun a -> (a.EntryId, a))
+                |> Map.ofList
+
+            let bundleEntries =
+                sessionEntries
+                |> List.map(fun entry ->
+                    { EntryId = entry.EntryId
+                      DisplayOrder = entry.DisplayOrder
+                      PromptData = entry.PromptData
+                      Attempt =
+                        attemptByEntryId
+                        |> Map.tryFind entry.EntryId
+                        |> Option.map(fun a ->
+                            { RawAnswer = a.RawAnswer
+                              IsCorrect = a.IsCorrect
+                              AttemptedAt = a.AttemptedAt }
+                            : AttemptSummary) }
+                    : SessionBundleEntry)
+
+            return
+                Ok
+                    { SessionId = session.Id
+                      ExerciseType = session.ExerciseType
+                      Entries = bundleEntries }
     }
 
 let submitAttempt
