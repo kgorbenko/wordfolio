@@ -803,11 +803,11 @@ type AppEnv(connection: IDbConnection, transaction: IDbTransaction, cancellation
                       ExerciseType = exerciseTypeToInt16 data.ExerciseType
                       Entries =
                         data.Entries
-                        |> List.map(fun (entryId, displayOrder, promptData, schemaVersion) ->
-                            { EntryId = EntryId.value entryId
-                              DisplayOrder = displayOrder
-                              PromptData = PromptData.value promptData
-                              PromptSchemaVersion = schemaVersion }
+                        |> List.map(fun entry ->
+                            { EntryId = EntryId.value entry.EntryId
+                              DisplayOrder = entry.DisplayOrder
+                              PromptData = PromptData.value entry.PromptData
+                              PromptSchemaVersion = entry.PromptSchemaVersion }
                             : DataAccess.CreateSessionEntryParameters)
                       CreatedAt = data.CreatedAt }
 

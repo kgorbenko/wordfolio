@@ -162,7 +162,10 @@ let createSession env (parameters: CreateSessionParameters) : Task<Result<Sessio
                         let prompt =
                             Dispatch.generatePrompt parameters.ExerciseType entry
 
-                        (entry.Id, index, prompt.PromptData, prompt.PromptSchemaVersion))
+                        { EntryId = entry.Id
+                          DisplayOrder = index
+                          PromptData = prompt.PromptData
+                          PromptSchemaVersion = prompt.PromptSchemaVersion })
 
                 let sessionData: CreateExerciseSessionData =
                     { UserId = parameters.UserId
@@ -174,10 +177,10 @@ let createSession env (parameters: CreateSessionParameters) : Task<Result<Sessio
 
                 let bundleEntries =
                     entries
-                    |> List.map(fun (entryId, displayOrder, promptData, _schemaVersion) ->
-                        { EntryId = entryId
-                          DisplayOrder = displayOrder
-                          PromptData = promptData
+                    |> List.map(fun entry ->
+                        { EntryId = entry.EntryId
+                          DisplayOrder = entry.DisplayOrder
+                          PromptData = entry.PromptData
                           Attempt = None }
                         : SessionBundleEntry)
 

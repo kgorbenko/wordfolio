@@ -5,10 +5,16 @@ open System.Threading.Tasks
 
 open Wordfolio.Api.Domain
 
+type CreateExerciseSessionEntryData =
+    { EntryId: EntryId
+      DisplayOrder: int
+      PromptData: PromptData
+      PromptSchemaVersion: int16 }
+
 type CreateExerciseSessionData =
     { UserId: UserId
       ExerciseType: ExerciseType
-      Entries: (EntryId * int * PromptData * int16) list
+      Entries: CreateExerciseSessionEntryData list
       CreatedAt: DateTimeOffset }
 
 type CommitAttemptData =

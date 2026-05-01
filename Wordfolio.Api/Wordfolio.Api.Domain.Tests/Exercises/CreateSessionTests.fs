@@ -59,6 +59,17 @@ let makeEntry id text translations =
       Definitions = []
       Translations = translations }
 
+let makeCreateExerciseSessionEntryData
+    entryId
+    displayOrder
+    promptData
+    promptSchemaVersion
+    : CreateExerciseSessionEntryData =
+    { EntryId = entryId
+      DisplayOrder = displayOrder
+      PromptData = promptData
+      PromptSchemaVersion = promptSchemaVersion }
+
 let notCalledEnv() =
     TestEnv(
         resolveEntrySelector = (fun _ _ -> failwith "Should not be called"),
@@ -180,7 +191,9 @@ let ``success path preserves selector order, passes prompt data and parameters.C
         let expectedData: CreateExerciseSessionData =
             { UserId = userId
               ExerciseType = ExerciseType.Translation
-              Entries = [ (EntryId 2, 0, prompt2, 1s); (EntryId 1, 1, prompt1, 1s) ]
+              Entries =
+                [ makeCreateExerciseSessionEntryData (EntryId 2) 0 prompt2 1s
+                  makeCreateExerciseSessionEntryData (EntryId 1) 1 prompt1 1s ]
               CreatedAt = createdAt }
 
         Assert.Equal<CreateExerciseSessionData list>([ expectedData ], env.CreateExerciseSessionCalls)
@@ -244,7 +257,7 @@ let ``success path truncates resolved entries to MaxSessionEntries``() =
             PromptData """{"entryText":"word","acceptedTranslations":["translation"]}"""
 
         let expectedEntries =
-            [ for i in 1..10 -> (EntryId i, i - 1, prompt, 1s) ]
+            [ for i in 1..10 -> makeCreateExerciseSessionEntryData (EntryId i) (i - 1) prompt 1s ]
 
         let expectedData: CreateExerciseSessionData =
             { UserId = userId
@@ -348,7 +361,7 @@ let ``filters out entries with empty translations and re-indexes remaining entri
         let expectedData: CreateExerciseSessionData =
             { UserId = userId
               ExerciseType = ExerciseType.Translation
-              Entries = [ (EntryId 1, 0, prompt, 1s) ]
+              Entries = [ makeCreateExerciseSessionEntryData (EntryId 1) 0 prompt 1s ]
               CreatedAt = createdAt }
 
         Assert.Equal<CreateExerciseSessionData list>([ expectedData ], env.CreateExerciseSessionCalls)
@@ -412,7 +425,9 @@ let ``handles getEntriesByIds returning fewer entries than resolved ids``() =
         let expectedData: CreateExerciseSessionData =
             { UserId = userId
               ExerciseType = ExerciseType.Translation
-              Entries = [ (EntryId 1, 0, prompt1, 1s); (EntryId 3, 1, prompt3, 1s) ]
+              Entries =
+                [ makeCreateExerciseSessionEntryData (EntryId 1) 0 prompt1 1s
+                  makeCreateExerciseSessionEntryData (EntryId 3) 1 prompt3 1s ]
               CreatedAt = createdAt }
 
         Assert.Equal<CreateExerciseSessionData list>([ expectedData ], env.CreateExerciseSessionCalls)
@@ -466,7 +481,7 @@ let ``uses MultipleChoice exercise type to generate prompts``() =
         let expectedData: CreateExerciseSessionData =
             { UserId = userId
               ExerciseType = ExerciseType.MultipleChoice
-              Entries = [ (EntryId 1, 0, prompt, 1s) ]
+              Entries = [ makeCreateExerciseSessionEntryData (EntryId 1) 0 prompt 1s ]
               CreatedAt = createdAt }
 
         Assert.Equal<CreateExerciseSessionData list>([ expectedData ], env.CreateExerciseSessionCalls)
