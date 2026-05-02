@@ -48,6 +48,13 @@ let private toSubmitAttemptErrorResponse(error: SubmitAttemptError) : IResult =
 let private invalidRequestBody() : IResult =
     Results.BadRequest({| error = "Invalid request body" |})
 
+let private tryGetRawAnswer(request: SubmitAttemptRequest) : string option =
+    request
+    |> Option.ofObj
+    |> Option.bind(fun submitAttemptRequest ->
+        submitAttemptRequest.RawAnswer
+        |> Option.ofObj)
+
 let private createSessionHandler
     (request: CreateSessionRequest)
     (user: ClaimsPrincipal)
@@ -101,6 +108,53 @@ let private createSessionHandler
                                 | Error error -> toCreateSessionErrorResponse error
                         }
 
+let private submitAttemptHandler
+    (sessionId: string)
+    (entryId: string)
+    (request: SubmitAttemptRequest)
+    (user: ClaimsPrincipal)
+    (encoder: IResourceIdEncoder)
+    (dataSource: NpgsqlDataSource)
+    (cancellationToken: CancellationToken)
+    : Task<IResult> =
+    match getUserId user with
+    | None -> Task.FromResult(Results.Unauthorized())
+    | Some userId ->
+        match encoder.Decode(sessionId), encoder.Decode(entryId), tryGetRawAnswer request with
+        | None, _, _
+        | _, None, _ -> Task.FromResult(Results.NotFound())
+        | _, _, None -> Task.FromResult(invalidRequestBody())
+        | Some decodedSessionId, Some decodedEntryId, Some rawAnswer ->
+            let env =
+                TransactionalEnv(dataSource, cancellationToken)
+
+            task {
+                let! result =
+                    runInTransaction env (fun appEnv ->
+                        submitAttempt
+                            appEnv
+                            (UserId userId)
+                            (ExerciseSessionId decodedSessionId)
+                            (EntryId decodedEntryId)
+                            (RawAnswer rawAnswer)
+                            DateTimeOffset.UtcNow)
+
+                return
+                    match result with
+                    | Ok(Inserted inserted) ->
+                        let response: SubmitAttemptResponse =
+                            { IsCorrect = inserted.IsCorrect }
+
+                        Results.Created(ExerciseUrls.sessionById sessionId, response)
+                    | Ok(IdempotentReplay replay) ->
+                        let response: SubmitAttemptResponse =
+                            { IsCorrect = replay.IsCorrect }
+
+                        Results.Ok(response)
+                    | Ok ConflictingReplay -> toSubmitAttemptErrorResponse SubmitAttemptError.ConflictingAttempt
+                    | Error error -> toSubmitAttemptErrorResponse error
+            }
+
 let mapExercisesEndpoints(group: RouteGroupBuilder) =
     group
         .MapPost(
@@ -150,49 +204,7 @@ let mapExercisesEndpoints(group: RouteGroupBuilder) =
             ExerciseUrls.EntryAttempts,
             Func<string, string, SubmitAttemptRequest, ClaimsPrincipal, IResourceIdEncoder, NpgsqlDataSource, CancellationToken, _>
                 (fun sessionId entryId request user encoder dataSource cancellationToken ->
-                    task {
-                        match getUserId user with
-                        | None -> return Results.Unauthorized()
-                        | Some userId ->
-                            match encoder.Decode(sessionId), encoder.Decode(entryId) with
-                            | None, _
-                            | _, None -> return Results.NotFound()
-                            | Some decodedSessionId, Some decodedEntryId ->
-                                match request |> Option.ofObj with
-                                | None -> return invalidRequestBody()
-                                | Some request ->
-                                    match request.RawAnswer |> Option.ofObj with
-                                    | None -> return invalidRequestBody()
-                                    | Some rawAnswer ->
-                                        let env =
-                                            TransactionalEnv(dataSource, cancellationToken)
-
-                                        let! result =
-                                            runInTransaction env (fun appEnv ->
-                                                submitAttempt
-                                                    appEnv
-                                                    (UserId userId)
-                                                    (ExerciseSessionId decodedSessionId)
-                                                    (EntryId decodedEntryId)
-                                                    (RawAnswer rawAnswer)
-                                                    DateTimeOffset.UtcNow)
-
-                                        return
-                                            match result with
-                                            | Ok(Inserted inserted) ->
-                                                let response: SubmitAttemptResponse =
-                                                    { IsCorrect = inserted.IsCorrect }
-
-                                                Results.Created(ExerciseUrls.sessionById sessionId, response)
-                                            | Ok(IdempotentReplay replay) ->
-                                                let response: SubmitAttemptResponse =
-                                                    { IsCorrect = replay.IsCorrect }
-
-                                                Results.Ok(response)
-                                            | Ok ConflictingReplay ->
-                                                toSubmitAttemptErrorResponse SubmitAttemptError.ConflictingAttempt
-                                            | Error error -> toSubmitAttemptErrorResponse error
-                    })
+                    submitAttemptHandler sessionId entryId request user encoder dataSource cancellationToken)
         )
         .Produces<SubmitAttemptResponse>(StatusCodes.Status201Created)
         .Produces<SubmitAttemptResponse>(StatusCodes.Status200OK)
