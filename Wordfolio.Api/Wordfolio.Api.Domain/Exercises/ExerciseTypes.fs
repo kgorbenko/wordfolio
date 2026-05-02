@@ -20,13 +20,8 @@ module MultipleChoice =
 
     let private tryDeserialize(json: string) : PromptDto option =
         try
-            let result =
-                JsonSerializer.Deserialize<PromptDto>(json)
-
-            if isNull(box result) then
-                None
-            else
-                Some result
+            JsonSerializer.Deserialize<PromptDto>(json)
+            |> Option.ofObj
         with :? JsonException ->
             None
 
@@ -89,11 +84,13 @@ module MultipleChoice =
 
             match tryDeserialize json with
             | None -> Error EvaluateError.MalformedPromptData
-            | Some dto when isNull dto.correctOptionId -> Error EvaluateError.MalformedPromptData
             | Some dto ->
                 let (RawAnswer answer) = rawAnswer
 
-                Ok(String.Equals(dto.correctOptionId.Trim(), answer.Trim(), StringComparison.OrdinalIgnoreCase))
+                match dto.correctOptionId |> Option.ofObj with
+                | None -> Error EvaluateError.MalformedPromptData
+                | Some correctOptionId ->
+                    Ok(String.Equals(correctOptionId.Trim(), answer.Trim(), StringComparison.OrdinalIgnoreCase))
 
 module Translation =
     [<CLIMutable>]
@@ -103,13 +100,8 @@ module Translation =
 
     let private tryDeserialize(json: string) : PromptDto option =
         try
-            let result =
-                JsonSerializer.Deserialize<PromptDto>(json)
-
-            if isNull(box result) then
-                None
-            else
-                Some result
+            JsonSerializer.Deserialize<PromptDto>(json)
+            |> Option.ofObj
         with :? JsonException ->
             None
 
@@ -136,15 +128,17 @@ module Translation =
 
             match tryDeserialize json with
             | None -> Error EvaluateError.MalformedPromptData
-            | Some dto when isNull dto.acceptedTranslations -> Error EvaluateError.MalformedPromptData
             | Some dto ->
                 let (RawAnswer answer) = rawAnswer
 
-                let normalizedAnswer =
-                    answer.Trim().ToLowerInvariant()
+                match dto.acceptedTranslations |> Option.ofObj with
+                | None -> Error EvaluateError.MalformedPromptData
+                | Some acceptedTranslations ->
+                    let normalizedAnswer =
+                        answer.Trim().ToLowerInvariant()
 
-                let isCorrect =
-                    dto.acceptedTranslations
-                    |> Array.exists(fun t -> t.Trim().ToLowerInvariant() = normalizedAnswer)
+                    let isCorrect =
+                        acceptedTranslations
+                        |> Array.exists(fun t -> t.Trim().ToLowerInvariant() = normalizedAnswer)
 
-                Ok isCorrect
+                    Ok isCorrect

@@ -45,6 +45,9 @@ let private toSubmitAttemptErrorResponse(error: SubmitAttemptError) : IResult =
     | SubmitAttemptError.ConflictingAttempt -> Results.Conflict({| error = "A conflicting attempt already exists" |})
     | SubmitAttemptError.EvaluateError _ -> Results.StatusCode(StatusCodes.Status500InternalServerError)
 
+let private invalidRequestBody() : IResult =
+    Results.BadRequest({| error = "Invalid request body" |})
+
 let private createSessionHandler
     (request: CreateSessionRequest)
     (user: ClaimsPrincipal)
@@ -55,48 +58,48 @@ let private createSessionHandler
     match getUserId user with
     | None -> Task.FromResult(Results.Unauthorized())
     | Some userId ->
-        if
-            isNull(box request)
-            || isNull(box request.Selector)
-        then
-            Task.FromResult(Results.BadRequest({| error = "Invalid request body" |}))
-        else
-            match tryMapSelector encoder request.Selector with
-            | Error message -> Task.FromResult(Results.BadRequest({| error = message |}))
-            | Ok selector ->
-                let limitError =
-                    match selector with
-                    | ExplicitEntries entries when entries.Length > Limits.MaxSessionEntries ->
-                        Some $"Cannot specify more than {Limits.MaxSessionEntries} entries"
-                    | WorstKnown(_, count) when count <= 0 -> Some "Count must be positive"
-                    | WorstKnown(_, count) when count > Limits.MaxSessionEntries ->
-                        Some $"Count cannot exceed {Limits.MaxSessionEntries}"
-                    | _ -> None
+        match request |> Option.ofObj with
+        | None -> Task.FromResult(invalidRequestBody())
+        | Some request ->
+            match request.Selector |> Option.ofObj with
+            | None -> Task.FromResult(invalidRequestBody())
+            | Some selectorRequest ->
+                match tryMapSelector encoder selectorRequest with
+                | Error message -> Task.FromResult(Results.BadRequest({| error = message |}))
+                | Ok selector ->
+                    let limitError =
+                        match selector with
+                        | ExplicitEntries entries when entries.Length > Limits.MaxSessionEntries ->
+                            Some $"Cannot specify more than {Limits.MaxSessionEntries} entries"
+                        | WorstKnown(_, count) when count <= 0 -> Some "Count must be positive"
+                        | WorstKnown(_, count) when count > Limits.MaxSessionEntries ->
+                            Some $"Count cannot exceed {Limits.MaxSessionEntries}"
+                        | _ -> None
 
-                match limitError with
-                | Some message -> Task.FromResult(Results.BadRequest({| error = message |}))
-                | None ->
-                    let parameters: CreateSessionParameters =
-                        { UserId = UserId userId
-                          ExerciseType = toExerciseTypeDomain request.ExerciseType
-                          Selector = selector
-                          CreatedAt = DateTimeOffset.UtcNow }
+                    match limitError with
+                    | Some message -> Task.FromResult(Results.BadRequest({| error = message |}))
+                    | None ->
+                        let parameters: CreateSessionParameters =
+                            { UserId = UserId userId
+                              ExerciseType = toExerciseTypeDomain request.ExerciseType
+                              Selector = selector
+                              CreatedAt = DateTimeOffset.UtcNow }
 
-                    let env =
-                        TransactionalEnv(dataSource, cancellationToken)
+                        let env =
+                            TransactionalEnv(dataSource, cancellationToken)
 
-                    task {
-                        let! result = runInTransaction env (fun appEnv -> createSession appEnv parameters)
+                        task {
+                            let! result = runInTransaction env (fun appEnv -> createSession appEnv parameters)
 
-                        return
-                            match result with
-                            | Ok bundle ->
-                                let response =
-                                    toSessionBundleResponse encoder bundle
+                            return
+                                match result with
+                                | Ok bundle ->
+                                    let response =
+                                        toSessionBundleResponse encoder bundle
 
-                                Results.Created(ExerciseUrls.sessionById response.SessionId, response)
-                            | Error error -> toCreateSessionErrorResponse error
-                    }
+                                    Results.Created(ExerciseUrls.sessionById response.SessionId, response)
+                                | Error error -> toCreateSessionErrorResponse error
+                        }
 
 let mapExercisesEndpoints(group: RouteGroupBuilder) =
     group
@@ -155,41 +158,40 @@ let mapExercisesEndpoints(group: RouteGroupBuilder) =
                             | None, _
                             | _, None -> return Results.NotFound()
                             | Some decodedSessionId, Some decodedEntryId ->
-                                if
-                                    isNull(box request)
-                                    || isNull request.RawAnswer
-                                then
-                                    return Results.BadRequest({| error = "Invalid request body" |})
-                                else
+                                match request |> Option.ofObj with
+                                | None -> return invalidRequestBody()
+                                | Some request ->
+                                    match request.RawAnswer |> Option.ofObj with
+                                    | None -> return invalidRequestBody()
+                                    | Some rawAnswer ->
+                                        let env =
+                                            TransactionalEnv(dataSource, cancellationToken)
 
-                                    let env =
-                                        TransactionalEnv(dataSource, cancellationToken)
+                                        let! result =
+                                            runInTransaction env (fun appEnv ->
+                                                submitAttempt
+                                                    appEnv
+                                                    (UserId userId)
+                                                    (ExerciseSessionId decodedSessionId)
+                                                    (EntryId decodedEntryId)
+                                                    (RawAnswer rawAnswer)
+                                                    DateTimeOffset.UtcNow)
 
-                                    let! result =
-                                        runInTransaction env (fun appEnv ->
-                                            submitAttempt
-                                                appEnv
-                                                (UserId userId)
-                                                (ExerciseSessionId decodedSessionId)
-                                                (EntryId decodedEntryId)
-                                                (RawAnswer request.RawAnswer)
-                                                DateTimeOffset.UtcNow)
+                                        return
+                                            match result with
+                                            | Ok(Inserted inserted) ->
+                                                let response: SubmitAttemptResponse =
+                                                    { IsCorrect = inserted.IsCorrect }
 
-                                    return
-                                        match result with
-                                        | Ok(Inserted inserted) ->
-                                            let response: SubmitAttemptResponse =
-                                                { IsCorrect = inserted.IsCorrect }
+                                                Results.Created(ExerciseUrls.sessionById sessionId, response)
+                                            | Ok(IdempotentReplay replay) ->
+                                                let response: SubmitAttemptResponse =
+                                                    { IsCorrect = replay.IsCorrect }
 
-                                            Results.Created(ExerciseUrls.sessionById sessionId, response)
-                                        | Ok(IdempotentReplay replay) ->
-                                            let response: SubmitAttemptResponse =
-                                                { IsCorrect = replay.IsCorrect }
-
-                                            Results.Ok(response)
-                                        | Ok ConflictingReplay ->
-                                            toSubmitAttemptErrorResponse SubmitAttemptError.ConflictingAttempt
-                                        | Error error -> toSubmitAttemptErrorResponse error
+                                                Results.Ok(response)
+                                            | Ok ConflictingReplay ->
+                                                toSubmitAttemptErrorResponse SubmitAttemptError.ConflictingAttempt
+                                            | Error error -> toSubmitAttemptErrorResponse error
                     })
         )
         .Produces<SubmitAttemptResponse>(StatusCodes.Status201Created)
